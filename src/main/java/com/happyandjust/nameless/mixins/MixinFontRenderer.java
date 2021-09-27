@@ -65,7 +65,7 @@ public abstract class MixinFontRenderer {
     @Shadow
     private boolean unicodeFlag;
 
-    @Shadow
+    @Shadow(remap = false)
     protected abstract void setColor(float r, float g, float b, float a);
 
     @Shadow
@@ -74,7 +74,7 @@ public abstract class MixinFontRenderer {
     @Shadow
     protected abstract float renderChar(char ch, boolean italic);
 
-    @Shadow
+    @Shadow(remap = false)
     protected abstract void doDraw(float f);
 
     @Inject(method = "renderStringAtPos", at = @At("HEAD"), cancellable = true)

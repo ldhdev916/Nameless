@@ -44,8 +44,13 @@ public class MixinRenderGlobal {
         cir.setReturnValue(hook.canDisplayOutline());
     }
 
-    @Inject(method = "renderEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;isRenderEntityOutlines()Z"), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(method = "renderEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;isRenderEntityOutlines()Z"), locals = LocalCapture.CAPTURE_FAILSOFT)
     public void renderEntities(Entity renderViewEntity, ICamera camera, float partialTicks, CallbackInfo ci, int pass, double d0, double d1, double d2, Entity entity, double d3, double d4, double d5, List<Entity> list) {
+        hook.renderOutline(list, camera, d0, d1, d2, partialTicks);
+    }
+
+    @Inject(method = "renderEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;isRenderEntityOutlines()Z"), locals = LocalCapture.CAPTURE_FAILSOFT)
+    public void renderEntities(Entity renderViewEntity, ICamera camera, float partialTicks, CallbackInfo ci, int pass, double d0, double d1, double d2, Entity entity, double d3, double d4, double d5, List<Entity> list, boolean optifine1, boolean optifne2, int optifine3) {
         hook.renderOutline(list, camera, d0, d1, d2, partialTicks);
     }
 

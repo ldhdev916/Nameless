@@ -51,7 +51,7 @@ object FontRendererHook {
         return list
     }
 
-    fun getCurrentSessionNickname() = mc.session.username ?: ""
+    private fun getCurrentSessionNickname() = mc.session.username ?: ""
 
 
     data class MatchInfo(val start: Int, val end: Int, val addNext: Int) {

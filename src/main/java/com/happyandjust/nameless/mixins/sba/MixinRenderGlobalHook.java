@@ -16,25 +16,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.mixins;
+package com.happyandjust.nameless.mixins.sba;
 
-import com.happyandjust.nameless.mixinhooks.GuiPlayerTabOverlayHook;
-import net.minecraft.client.gui.GuiPlayerTabOverlay;
-import net.minecraft.client.network.NetworkPlayerInfo;
+import net.minecraft.client.renderer.culling.ICamera;
+import net.minecraft.entity.Entity;
+import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(GuiPlayerTabOverlay.class)
-public class MixinGuiPlayerTabOverlay {
+import java.util.List;
 
-    @Unique
-    private final GuiPlayerTabOverlayHook hook = GuiPlayerTabOverlayHook.INSTANCE;
+@Pseudo
+@Mixin(targets = "codes.biscuit.skyblockaddons.asm.hooks.RenderGlobalHook", remap = false)
+public abstract class MixinRenderGlobalHook {
 
-    @Inject(method = "drawPing", at = @At("HEAD"), cancellable = true)
-    public void drawCustomPing(int p_175245_1_, int p_175245_2_, int p_175245_3_, NetworkPlayerInfo networkPlayerInfoIn, CallbackInfo ci) {
-        hook.drawCustomPing(p_175245_1_, p_175245_2_, p_175245_3_, networkPlayerInfoIn, ci);
+    @Dynamic
+    @Inject(method = "blockRenderingSkyblockItemOutlines", at = @At("RETURN"), cancellable = true)
+    private static void dontBlockRenderOutline(ICamera camera, float partialTicks, double x, double y, double z, List<Entity> entities, CallbackInfoReturnable<Boolean> cir) {
+        cir.setReturnValue(true);
     }
 }

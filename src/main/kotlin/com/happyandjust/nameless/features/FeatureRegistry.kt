@@ -112,18 +112,7 @@ object FeatureRegistry {
         register(SimpleFeature(Category.QOL, "f5fix", "F5 Fix", "Allow you to look through blocks when using f5", true))
     val MURDERER_FINDER = register(FeatureMurdererFinder())
     val TRAJECTORY_PREVIEW = register(FeatureTrajectoryPreview())
-    val SHOW_PING_NUMBER_IN_TAB =
-        register(SimpleFeature(Category.QOL, "pingtab", "Show Ping numbers in TabList", "")).also {
-            it.parameters["color"] = FeatureParameter(
-                0,
-                "pingtab",
-                "color",
-                "Ping Text Color",
-                "",
-                Color.green.toChromaColor(),
-                TypeRegistry.getConverterByClass(ChromaColor::class)
-            )
-        }
+    val SHOW_PING_NUMBER_IN_TAB = register(FeatureShowPingInTab())
     val GTB_HELPER = register(FeatureGTBHelper())
     val PARTY_GAMES_HELPER = register(FeaturePartyGamesHelper())
 

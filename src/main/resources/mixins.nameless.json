@@ -12,6 +12,7 @@
     "MixinRenderGlobal",
     "accessors.AccessorGuiChat",
     "accessors.AccessorGuiDisconnected",
+    "accessors.AccessorGuiIngame",
     "accessors.AccessorGuiPlayerTabOverlay",
     "accessors.AccessorMinecraft",
     "accessors.AccessorRenderGlobal"
@@ -20,6 +21,7 @@
     "MixinEntity",
     "MixinEntityLivingBase",
     "MixinUtil",
-    "accessors.AccessorNBTTagList"
+    "accessors.AccessorNBTTagList",
+    "sba.MixinRenderGlobalHook"
   ]
 }
