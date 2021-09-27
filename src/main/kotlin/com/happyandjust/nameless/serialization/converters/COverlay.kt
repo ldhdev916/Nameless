@@ -24,7 +24,7 @@ import com.happyandjust.nameless.core.Point
 import com.happyandjust.nameless.serialization.Converter
 import com.happyandjust.nameless.textureoverlay.Overlay
 
-class COverlay : Converter<Overlay> {
+object COverlay : Converter<Overlay> {
     override fun serialize(t: Overlay): JsonElement = JsonObject().also {
         it.addProperty("x", t.point.x)
         it.addProperty("y", t.point.y)

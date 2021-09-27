@@ -21,10 +21,11 @@ package com.happyandjust.nameless.hypixel.fairysoul
 import com.happyandjust.nameless.config.ConfigHandler
 import com.happyandjust.nameless.config.ConfigMap
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CFairySoulProfile
 
 object FairySoulProfileCache {
 
+    private val cFairySoulProfile = CFairySoulProfile
     private val generatedFairySoulProfiles = ConfigMap(
         "profiles",
         { s, k -> ConfigHandler.get(s, k, defaultProfile, cFairySoulProfile) }) { s, k, v ->
@@ -35,7 +36,6 @@ object FairySoulProfileCache {
             cFairySoulProfile
         )
     }
-    private val cFairySoulProfile = TypeRegistry.getConverterByClass(FairySoulProfile::class)
     private val defaultProfile = FairySoulProfile("default", hashMapOf())
     private val currentlyLoadedProfileConfig =
         ConfigValue(

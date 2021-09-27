@@ -23,7 +23,7 @@ import com.google.gson.JsonObject
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.serialization.Converter
 
-class CFairySoul : Converter<FairySoul> {
+object CFairySoul : Converter<FairySoul> {
     override fun serialize(t: FairySoul): JsonElement {
         return JsonObject().apply {
             addProperty("x", t.x)

@@ -23,7 +23,7 @@ import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.serialization.Converter
 
-class CChromaColor : Converter<ChromaColor> {
+object CChromaColor : Converter<ChromaColor> {
     override fun serialize(t: ChromaColor): JsonElement = JsonObject().also {
         it.addProperty("rgb", t.originRGB)
         it.addProperty("chroma", t.chromaEnabled)

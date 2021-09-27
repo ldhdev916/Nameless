@@ -22,6 +22,7 @@ import com.happyandjust.nameless.core.ClientCommandBase
 import com.happyandjust.nameless.devqol.sendClientMessage
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoulProfileCache
 import net.minecraft.command.ICommandSender
+import net.minecraft.util.BlockPos
 
 class FairySoulProfileCommand : ClientCommandBase("fairysoulprofile") {
 
@@ -83,5 +84,23 @@ class FairySoulProfileCommand : ClientCommandBase("fairysoulprofile") {
                 }
             }
         }
+    }
+
+    override fun addTabCompletionOptions(
+        sender: ICommandSender,
+        args: Array<out String>,
+        pos: BlockPos
+    ): MutableList<String> {
+        if (args.size == 2 && args[0] == "load") {
+            val list = arrayListOf<String>().also {
+                for (profile in FairySoulProfileCache.getProfiles()) {
+                    it.add(profile.name.takeIf { s -> s.startsWith(args[0], true) } ?: continue)
+                }
+            }
+
+            return list
+        }
+
+        return mutableListOf()
     }
 }

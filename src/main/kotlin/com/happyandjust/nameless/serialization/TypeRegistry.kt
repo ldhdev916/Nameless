@@ -28,15 +28,15 @@ import kotlin.reflect.KClass
 object TypeRegistry {
 
     private val registeredConverters = hashMapOf(
-        Int::class to CInt(),
-        Double::class to CDouble(),
-        Boolean::class to CBoolean(),
-        String::class to CString(),
-        Float::class to CFloat(),
-        FairySoul::class to CFairySoul(),
-        ChromaColor::class to CChromaColor(),
-        Overlay::class to COverlay(),
-        FairySoulProfile::class to CFairySoulProfile()
+        Int::class to CInt,
+        Double::class to CDouble,
+        Boolean::class to CBoolean,
+        String::class to CString,
+        Float::class to CFloat,
+        FairySoul::class to CFairySoul,
+        ChromaColor::class to CChromaColor,
+        Overlay::class to COverlay,
+        FairySoulProfile::class to CFairySoulProfile
     )
 
     fun <T : Any> getConverterByClass(clazz: KClass<T>) = registeredConverters[clazz] as Converter<T>

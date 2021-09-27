@@ -25,9 +25,9 @@ import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoulProfile
 import com.happyandjust.nameless.serialization.Converter
 
-class CFairySoulProfile : Converter<FairySoulProfile> {
+object CFairySoulProfile : Converter<FairySoulProfile> {
 
-    private val cFairySoul = CFairySoul()
+    private val cFairySoul = CFairySoul
 
     override fun serialize(t: FairySoulProfile): JsonElement {
 

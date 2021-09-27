@@ -22,7 +22,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import com.happyandjust.nameless.serialization.Converter
 
-class CDouble : Converter<Double> {
+object CDouble : Converter<Double> {
     override fun serialize(t: Double): JsonElement = JsonPrimitive(t)
 
     override fun deserialize(jsonElement: JsonElement): Double = jsonElement.asDouble

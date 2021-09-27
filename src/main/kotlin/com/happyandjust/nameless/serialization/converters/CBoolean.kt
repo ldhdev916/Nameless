@@ -22,7 +22,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import com.happyandjust.nameless.serialization.Converter
 
-class CBoolean : Converter<Boolean> {
+object CBoolean : Converter<Boolean> {
     override fun serialize(t: Boolean): JsonElement = JsonPrimitive(t)
 
     override fun deserialize(jsonElement: JsonElement): Boolean = jsonElement.asBoolean
