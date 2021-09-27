@@ -1,0 +1,25 @@
+{
+  "package": "com.happyandjust.nameless.mixins",
+  "refmap": "mixins.nameless.refmap.json",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "MixinEntityRenderer",
+    "MixinFontRenderer",
+    "MixinGuiConnecting",
+    "MixinGuiPlayerTabOverlay",
+    "MixinMinecraft",
+    "MixinRendererLivingEntity",
+    "MixinRenderGlobal",
+    "accessors.AccessorGuiChat",
+    "accessors.AccessorGuiDisconnected",
+    "accessors.AccessorGuiPlayerTabOverlay",
+    "accessors.AccessorMinecraft",
+    "accessors.AccessorRenderGlobal"
+  ],
+  "mixins": [
+    "MixinEntity",
+    "MixinEntityLivingBase",
+    "MixinUtil",
+    "accessors.AccessorNBTTagList"
+  ]
+}

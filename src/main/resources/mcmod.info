@@ -1,0 +1,18 @@
+[
+  {
+    "modid": "nameless",
+    "name": "Nameless",
+    "description": "A Hypixel QOL Mod",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "updateUrl": "",
+    "authorList": [
+      "HappyAndJust"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]
