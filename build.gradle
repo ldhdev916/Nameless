@@ -50,6 +50,12 @@ shadowJar {
 
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
 
+    exclude(
+            "dummyThing",
+            "LICENSE.txt",
+            "META-INF/versions/"
+    )
+
     manifest.attributes(
             'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
             'MixinConfigs': "mixins.${modid}.json",

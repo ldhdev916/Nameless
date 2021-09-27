@@ -27,7 +27,7 @@ object FairySoulProfileCache {
 
     private val generatedFairySoulProfiles = ConfigMap(
         "profiles",
-        { s, k -> ConfigHandler.get(s, k, dummyProfile, cFairySoulProfile) }) { s, k, v ->
+        { s, k -> ConfigHandler.get(s, k, defaultProfile, cFairySoulProfile) }) { s, k, v ->
         ConfigHandler.write(
             s,
             k,
@@ -36,12 +36,12 @@ object FairySoulProfileCache {
         )
     }
     private val cFairySoulProfile = TypeRegistry.getConverterByClass(FairySoulProfile::class)
-    private val dummyProfile = FairySoulProfile("dummy", hashMapOf())
+    private val defaultProfile = FairySoulProfile("default", hashMapOf())
     private val currentlyLoadedProfileConfig =
         ConfigValue(
             "fairysoul",
             "currentprofile",
-            dummyProfile,
+            defaultProfile,
             { s, k, v -> ConfigHandler.get(s, k, v, cFairySoulProfile) },
             { s, k, v ->
                 ConfigHandler.write(
@@ -49,12 +49,17 @@ object FairySoulProfileCache {
                     cFairySoulProfile
                 )
             })
-    var currentlyLoadedProfile: FairySoulProfile? =
-        currentlyLoadedProfileConfig.value.takeUnless { it === dummyProfile }
+    var currentlyLoadedProfile: FairySoulProfile = currentlyLoadedProfileConfig.value
         set(value) {
             field = value
-            currentlyLoadedProfileConfig.value = value ?: dummyProfile
+            currentlyLoadedProfileConfig.value = value
         }
+
+    init {
+        if (!generatedFairySoulProfiles.containsValue(defaultProfile)) {
+            generatedFairySoulProfiles["default"] = defaultProfile
+        }
+    }
 
 
     fun getProfiles() = generatedFairySoulProfiles.values

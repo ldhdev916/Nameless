@@ -48,7 +48,7 @@ class FeatureFairySoulWaypoint : SimpleFeature(
     Category.SKYBLOCK,
     "fairysoulwaypoint",
     "FairySoul Waypoint",
-    "Renders outline box on fairysoul except the ones you've already found\nTo collect found fairysouls data, we need your profile type /fairysoulprofile for help"
+    "Renders outline box on fairysoul except the ones you've already found\nTo collect found fairysouls data, we need your profile type /fairysoulprofile for help\nas a default, we pre-created profile named 'default'"
 ), WorldRenderListener, WorldJoinListener, ClientTickListener, KeyInputListener, PacketListener {
 
     var currentSkyblockIsland: String? = null
@@ -94,8 +94,7 @@ class FeatureFairySoulWaypoint : SimpleFeature(
             currentSkyblockIsland?.let {
 
                 foundFairySoulsInThisProfile =
-                    FairySoulProfileCache.currentlyLoadedProfile?.foundFairySouls?.get(currentSkyblockIsland)
-                        ?: emptyList()
+                    FairySoulProfileCache.currentlyLoadedProfile.foundFairySouls[currentSkyblockIsland] ?: emptyList()
 
                 if (getParameterValue("path")) {
                     pathTick = (pathTick + 1) % REFRESH_TICK
@@ -137,7 +136,7 @@ class FeatureFairySoulWaypoint : SimpleFeature(
 
     override fun onSendingPacket(e: PacketEvent.Sending) {
         if (Hypixel.currentGame != GameType.SKYBLOCK) return
-        FairySoulProfileCache.currentlyLoadedProfile?.let {
+        FairySoulProfileCache.currentlyLoadedProfile.let {
             val msg = e.packet
             if (msg is C02PacketUseEntity && msg.action == C02PacketUseEntity.Action.ATTACK) {
                 val entity = msg.getEntityFromWorld(mc.theWorld)
