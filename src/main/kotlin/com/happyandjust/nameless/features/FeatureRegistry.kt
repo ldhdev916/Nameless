@@ -69,6 +69,7 @@ object FeatureRegistry {
         }
     )
     val BEDWARS_ESP = register(FeatureBedwarsESP())
+    val HIDE_NPC = register(FeatureHideNPC())
 
     //MISC
     val UPDATE_CHECKER = register(FeatureUpdateChecker())

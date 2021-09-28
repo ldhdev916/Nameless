@@ -18,23 +18,36 @@
 
 package com.happyandjust.nameless.mixins;
 
+import com.google.common.collect.Collections2;
+import com.happyandjust.nameless.features.FeatureRegistry;
+import com.happyandjust.nameless.features.impl.FeatureHideNPC;
 import com.happyandjust.nameless.mixinhooks.GuiPlayerTabOverlayHook;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
+import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Collection;
 
 @Mixin(GuiPlayerTabOverlay.class)
 public class MixinGuiPlayerTabOverlay {
 
-    @Unique
     private final GuiPlayerTabOverlayHook hook = GuiPlayerTabOverlayHook.INSTANCE;
+    private final FeatureHideNPC feature = FeatureRegistry.INSTANCE.getHIDE_NPC();
 
     @Inject(method = "drawPing", at = @At("HEAD"), cancellable = true)
     public void drawCustomPing(int p_175245_1_, int p_175245_2_, int p_175245_3_, NetworkPlayerInfo networkPlayerInfoIn, CallbackInfo ci) {
         hook.drawCustomPing(p_175245_1_, p_175245_2_, p_175245_3_, networkPlayerInfoIn, ci);
+    }
+
+    @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/NetHandlerPlayClient;getPlayerInfoMap()Ljava/util/Collection;"))
+    public Collection<NetworkPlayerInfo> filterNPC(NetHandlerPlayClient netHandlerPlayClient) {
+        Collection<NetworkPlayerInfo> map = netHandlerPlayClient.getPlayerInfoMap();
+
+        return feature.getEnabled() ? Collections2.filter(map, player -> player != null && player.getGameProfile().getId().version() != 2) : map;
     }
 }

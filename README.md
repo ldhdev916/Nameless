@@ -23,6 +23,7 @@
   - Glow All Players
   - Remove Negative Effects (blindness, nausea)
   - Bedwars ESP
+  - Hide NPC in Lobby
 </details>
 <details>
   <summary>Quality of Life</summary>

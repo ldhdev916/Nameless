@@ -25,10 +25,7 @@ import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.events.PartyGameChangeEvent
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.listener.*
-import net.minecraftforge.client.event.ClientChatReceivedEvent
-import net.minecraftforge.client.event.GuiScreenEvent
-import net.minecraftforge.client.event.RenderGameOverlayEvent
-import net.minecraftforge.client.event.RenderWorldLastEvent
+import net.minecraftforge.client.event.*
 import net.minecraftforge.event.entity.player.ItemTooltipEvent
 import net.minecraftforge.fml.common.eventhandler.EventPriority
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
@@ -132,6 +129,16 @@ class FeatureListener {
     @SubscribeEvent
     fun itemTooltip(e: ItemTooltipEvent) {
         invoke<ItemTooltipListener> { onItemTooltip(e) }
+    }
+
+    @SubscribeEvent
+    fun playerPre(e: RenderPlayerEvent.Pre) {
+        invoke<RenderPlayerListener> { onRenderPlayerPre(e) }
+    }
+
+    @SubscribeEvent
+    fun playerPost(e: RenderPlayerEvent.Post) {
+        invoke<RenderPlayerListener> { onRenderPlayerPost(e) }
     }
 
 }

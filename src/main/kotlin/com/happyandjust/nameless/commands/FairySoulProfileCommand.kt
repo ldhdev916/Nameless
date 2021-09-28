@@ -38,20 +38,26 @@ class FairySoulProfileCommand : ClientCommandBase("fairysoulprofile") {
                     Then what if you change your mc account or skyblock profile?
                     Then simply create a new profile by typeing /fairysoulprofile generate [profile name]
                     And then if you change your skyblock profile back to original one, type /fairysoulprofile load [profile name]
-                    To see all generated profiles, type /fairysoulprofile list
+                    To see all generated profiles, type /fairysoulprofile list,
+                    To see current profile, type /fairysoulprofile current
                 """.trimIndent()
                 )
             }
             1 -> {
-                if (args[0] == "list") {
-                    for (profile in FairySoulProfileCache.getProfiles()) {
-                        var foundFairySouls = 0
+                when (args[0]) {
+                    "list" -> {
+                        for (profile in FairySoulProfileCache.getProfiles()) {
+                            var foundFairySouls = 0
 
-                        for ((_, fairySouls) in profile.foundFairySouls) {
-                            foundFairySouls += fairySouls.size
+                            for ((_, fairySouls) in profile.foundFairySouls) {
+                                foundFairySouls += fairySouls.size
+                            }
+
+                            sendClientMessage("§eName: ${profile.name} Found FairySouls: $foundFairySouls")
                         }
-
-                        sendClientMessage("§eName: ${profile.name} Found FairySouls: $foundFairySouls")
+                    }
+                    "current" -> {
+                        sendClientMessage("Current: ${FairySoulProfileCache.currentlyLoadedProfile.name}")
                     }
                 }
             }
@@ -94,7 +100,7 @@ class FairySoulProfileCommand : ClientCommandBase("fairysoulprofile") {
         if (args.size == 2 && args[0] == "load") {
             val list = arrayListOf<String>().also {
                 for (profile in FairySoulProfileCache.getProfiles()) {
-                    it.add(profile.name.takeIf { s -> s.startsWith(args[0], true) } ?: continue)
+                    it.add(profile.name.takeIf { s -> s.startsWith(args[1], true) } ?: continue)
                 }
             }
 
