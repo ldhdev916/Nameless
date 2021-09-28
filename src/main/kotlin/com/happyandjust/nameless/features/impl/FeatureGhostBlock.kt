@@ -46,6 +46,7 @@ class FeatureGhostBlock : SimpleFeature(
 ), ClientTickListener, PacketListener {
 
     private val ghostBlocks = hashMapOf<BlockPos, BlockInfo>()
+    private var tick = 0
 
     init {
         parameters["restore"] = FeatureParameter(
@@ -78,6 +79,9 @@ class FeatureGhostBlock : SimpleFeature(
 
         if (seconds == -1) return // infinity
 
+        tick = (tick + 1) % 20
+        if (tick != 0) return
+
         val iterator = ghostBlocks.iterator()
 
         for (blockInfo in iterator) {
@@ -85,12 +89,12 @@ class FeatureGhostBlock : SimpleFeature(
                 iterator.remove()
                 continue
             }
-            if (blockInfo.value.tick == 0) { // restore
+            if (blockInfo.value.second == 0) { // restore
                 mc.theWorld.setBlockState(blockInfo.key, blockInfo.value.blockState)
                 iterator.remove()
             }
 
-            blockInfo.value.tick--
+            blockInfo.value.second--
         }
     }
 
@@ -102,7 +106,7 @@ class FeatureGhostBlock : SimpleFeature(
     }
 
     inner class BlockInfo(var blockState: IBlockState) {
-        var tick = getParameterValue<Int>("restore") * 20
+        var second = getParameterValue<Int>("restore")
     }
 
     override fun onSendingPacket(e: PacketEvent.Sending) {

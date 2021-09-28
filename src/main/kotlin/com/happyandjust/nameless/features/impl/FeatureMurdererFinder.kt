@@ -103,6 +103,8 @@ class FeatureMurdererFinder : SimpleFeature(
     private val ALPHA_FOUND = Pattern.compile("The alpha, (?<alpha>\\w+), has been revealed by \\w+!")
     private val INFECTED = Pattern.compile("\\w+(\\s\\w+)? infected (?<infected>\\w+)")
     private val ENVIRONMENT_INFECTED = Pattern.compile("(?<infected>\\w+) was infected by the environment!")
+    private val ALPHA_LEFT =
+        Pattern.compile("The alpha left the game. (?<name>\\w+) was chosen to be the new alpha infected!")
 
     private var targetName: String? = null
     private var prevTargetName: String? = null
@@ -275,6 +277,9 @@ class FeatureMurdererFinder : SimpleFeature(
                     val infectedName = it.group("infected")
                     murderers.add(infectedName)
                     survivors.remove(infectedName)
+                }
+                ALPHA_LEFT.matchesMatcher(msg) {
+                    alpha = it.group("name")
                 }
             }
             MurdererMode.ASSASSIN -> {
