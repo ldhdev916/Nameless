@@ -3,6 +3,7 @@
   "refmap": "mixins.nameless.refmap.json",
   "compatibilityLevel": "JAVA_8",
   "client": [
+    "MixinActiveRenderInfo",
     "MixinEntityRenderer",
     "MixinFontRenderer",
     "MixinGuiConnecting",
@@ -10,6 +11,7 @@
     "MixinMinecraft",
     "MixinRendererLivingEntity",
     "MixinRenderGlobal",
+    "MixinRenderManager",
     "accessors.AccessorGuiChat",
     "accessors.AccessorGuiDisconnected",
     "accessors.AccessorGuiIngame",
@@ -21,6 +23,8 @@
     "MixinEntity",
     "MixinEntityLivingBase",
     "MixinUtil",
+    "accessors.AccessorItemAxe",
+    "accessors.AccessorItemPickaxe",
     "accessors.AccessorNBTTagList",
     "sba.MixinRenderGlobalHook"
   ]

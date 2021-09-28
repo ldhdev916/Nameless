@@ -40,10 +40,11 @@ import net.minecraft.init.Blocks
 import net.minecraft.init.Items
 import net.minecraft.item.Item
 import net.minecraft.item.ItemMap
+import net.minecraft.item.ItemStack
 import net.minecraft.network.play.server.S04PacketEntityEquipment
+import net.minecraft.network.play.server.S09PacketHeldItemChange
 import net.minecraft.util.BlockPos
 import net.minecraft.util.ResourceLocation
-import net.minecraft.world.World
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import java.awt.Color
 import java.util.regex.Pattern
@@ -53,7 +54,7 @@ class FeatureMurdererFinder : SimpleFeature(
     "murdererfinder",
     "Murderer Finder",
     "Supports All types of murder mystery in hypixel"
-), ClientTickListener, WorldJoinListener, ChatListener, WorldRenderListener, StencilListener, RenderOverlayListener,
+), ClientTickListener, ServerChangeListener, ChatListener, WorldRenderListener, StencilListener, RenderOverlayListener,
     PacketListener {
     private val sword_list = hashSetOf(
         Items.iron_sword,
@@ -182,6 +183,15 @@ class FeatureMurdererFinder : SimpleFeature(
                 "",
                 Color(128, 0, 128).toChromaColor(),
                 cChromaColor
+            ),
+            "showinfect" to FeatureParameter(
+                2,
+                "murderer",
+                "showinfect",
+                "Show Direction Arrow to Nearest Infection",
+                "Render arrow on your screen which is pointing nearest infection",
+                false,
+                cBoolean
             )
         )
 
@@ -246,7 +256,7 @@ class FeatureMurdererFinder : SimpleFeature(
     /**
      * Clear all data here
      */
-    override fun onWorldJoin(world: World) {
+    override fun onServerChange(server: String) {
         murderers.clear()
         survivors.clear()
         alpha = null
@@ -306,44 +316,49 @@ class FeatureMurdererFinder : SimpleFeature(
 
     override fun onReceivedPacket(e: PacketEvent.Received) {
         if (!checkForEnabledAndMurderMystery()) return
-        val msg = e.packet
+        val entityPlayer: EntityPlayer
+        val heldItem: ItemStack?
+        when (val msg = e.packet) {
+            is S04PacketEntityEquipment -> {
+                entityPlayer = mc.theWorld.getEntityByID(msg.entityID) as? EntityPlayer ?: return
+                heldItem = msg.itemStack
+            }
+            is S09PacketHeldItemChange -> {
+                entityPlayer = mc.thePlayer
+                heldItem = mc.thePlayer.inventory.getStackInSlot(msg.heldItemHotbarIndex)
+            }
+            else -> return
+        }
+        heldItem ?: return
 
-        if (msg is S04PacketEntityEquipment) {
+        val mode = Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)
 
-            val mode = Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)
+        if (mode == MurdererMode.ASSASSIN) return
 
-            if (mode == MurdererMode.ASSASSIN) return
+        val isInfection = mode == MurdererMode.INFECTION
 
-            val entity = mc.theWorld.getEntityByID(msg.entityID)
-            if (entity is EntityPlayer) {
-                val heldItem = msg.itemStack ?: return
+        if (sword_list.contains(heldItem.item)) { // found
+            if (isInfection && entityPlayer.getEquipmentInSlot(3)?.item == Items.iron_chestplate) {
+                alpha = entityPlayer.name
+            } else {
+                murderers.add(entityPlayer.name)
 
-                val isInfection = mode == MurdererMode.INFECTION
-
-                if (sword_list.contains(heldItem.item)) { // found
-                    if (isInfection && entity.getEquipmentInSlot(3)?.item == Items.iron_chestplate) {
-                        alpha = entity.name
-                    } else {
-                        murderers.add(entity.name)
-
-                        if (isInfection) {
-                            survivors.remove(entity.name)
+                if (isInfection) {
+                    survivors.remove(entityPlayer.name)
+                }
+            }
+        } else {
+            if (isInfection) {
+                when (heldItem.item) {
+                    Items.bow -> {
+                        if (heldItem.displayName.contains("§c")) { // fake bow
+                            alpha = entityPlayer.name
+                        } else if (heldItem.displayName.contains("§a")) {
+                            survivors.add(entityPlayer.name)
                         }
                     }
-                } else {
-                    if (isInfection) {
-                        when (heldItem.item) {
-                            Items.bow -> {
-                                if (heldItem.displayName.contains("§c")) { // fake bow
-                                    alpha = entity.name
-                                } else if (heldItem.displayName.contains("§a")) {
-                                    survivors.add(entity.name)
-                                }
-                            }
-                            Items.arrow -> { // there's no FAKE ARROW
-                                survivors.add(entity.name)
-                            }
-                        }
+                    Items.arrow -> { // there's no FAKE ARROW
+                        survivors.add(entityPlayer.name)
                     }
                 }
             }

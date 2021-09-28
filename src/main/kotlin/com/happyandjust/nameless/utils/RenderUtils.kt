@@ -171,6 +171,38 @@ object RenderUtils {
         }
     }
 
+    fun draw3DLine(start: Vec3, end: Vec3, width: Double, color: Int, partialTicks: Float) {
+        val render = mc.renderViewEntity ?: return
+
+        matrix {
+            translate(
+                -render.getRenderPosX(partialTicks),
+                -render.getRenderPosY(partialTicks),
+                -render.getRenderPosZ(partialTicks)
+            )
+
+            disableTexture2D()
+            enableBlend()
+            disableDepth()
+            tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO)
+            color(color)
+            GL11.glLineWidth(width.toFloat())
+
+            val wr = tessellator.worldRenderer
+
+            wr.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION)
+
+            wr.pos(start.xCoord, start.yCoord, start.zCoord).endVertex()
+            wr.pos(end.xCoord, end.yCoord, end.zCoord).endVertex()
+
+            tessellator.draw()
+
+            enableDepth()
+            disableBlend()
+            enableTexture2D()
+        }
+    }
+
     fun drawBox(axisAlignedBB: AxisAlignedBB, color: Int, partialTicks: Float) {
         val render = mc.renderViewEntity ?: return
 

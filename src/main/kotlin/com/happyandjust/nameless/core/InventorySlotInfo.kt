@@ -16,11 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.listener
+package com.happyandjust.nameless.core
 
-import net.minecraft.world.World
+import net.minecraft.item.ItemStack
 
-interface WorldJoinListener {
-
-    fun onWorldJoin(world: World)
-}
+/**
+ * @param slot 0 ~ 8
+ */
+data class InventorySlotInfo(val slot: Int, val keyName: String, val itemStack: ItemStack?)

@@ -25,14 +25,17 @@ import net.minecraft.client.gui.ScaledResolution
 
 class ERelocateGui(
     private val relocatablePanel: ERelocatablePanel,
-    private val savePoint: (Point) -> Unit,
-    private val saveScale: (Double) -> Unit
+    private val saveOverlay: (Overlay) -> Unit
 ) : GuiScreen() {
 
 
     override fun onGuiClosed() {
-        savePoint(Point(relocatablePanel.rectangle.left, relocatablePanel.rectangle.top))
-        saveScale(relocatablePanel.scale)
+        saveOverlay(
+            Overlay(
+                Point(relocatablePanel.rectangle.left, relocatablePanel.rectangle.top),
+                relocatablePanel.scale
+            )
+        )
     }
 
     override fun drawScreen(mouseX: Int, mouseY: Int, partialTicks: Float) {

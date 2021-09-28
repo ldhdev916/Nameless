@@ -27,36 +27,29 @@ import com.happyandjust.nameless.textureoverlay.Overlay
 import java.awt.Color
 import kotlin.math.roundToInt
 
-class EGTBOverlay(overlay: Overlay) : ERelocatablePanel(Rectangle.ORIGIN, overlay.scale) {
+class EBedwarsRayTraceOverlay(overlay: Overlay) : ERelocatablePanel(Rectangle.ORIGIN, overlay.scale) {
 
     private val text = """
-            Something Something
-            Something Something
-            Something Something
-            Something Something
-            Something Something
-            Something Something
-            Something Something
-            Something Something
-            Something Something
-        """.trimIndent()
+        0
+        1
+        2
+        3
+        3
+    """.trimIndent()
 
     init {
-        rectangle =
-            Rectangle.fromWidthHeight(
-                overlay.point.x,
-                overlay.point.y,
-                (mc.fontRendererObj.getStringWidth("Something Something") * scale).roundToInt(),
-                (mc.fontRendererObj.FONT_HEIGHT * text.split("\n").size * scale).roundToInt()
-            )
-
+        setRectangle(overlay.point.x, overlay.point.y)
     }
 
     override fun onUpdateScale(scale: Double) {
+        setRectangle(rectangle.left, rectangle.top)
+    }
+
+    private fun setRectangle(left: Int, top: Int) {
         rectangle = Rectangle.fromWidthHeight(
-            rectangle.left,
-            rectangle.top,
-            (mc.fontRendererObj.getStringWidth("Something Something") * scale).roundToInt(),
+            left,
+            top,
+            (mc.fontRendererObj.getStringWidth("3") * scale).roundToInt(),
             (mc.fontRendererObj.FONT_HEIGHT * text.split("\n").size * scale).roundToInt()
         )
     }
@@ -67,6 +60,4 @@ class EGTBOverlay(overlay: Overlay) : ERelocatablePanel(Rectangle.ORIGIN, overla
             mc.fontRendererObj.drawSplitString(text, 0, 0, Int.MAX_VALUE, Color.red.rgb)
         }
     }
-
-
 }

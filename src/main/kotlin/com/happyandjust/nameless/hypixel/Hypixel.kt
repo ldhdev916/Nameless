@@ -20,13 +20,16 @@ package com.happyandjust.nameless.hypixel
 
 import com.happyandjust.nameless.devqol.inHypixel
 import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.utils.ScoreboardUtils
+import net.minecraftforge.common.MinecraftForge
 
 object Hypixel {
     var currentGame: GameType? = null
     val currentProperty = hashMapOf<PropertyKey, Any>()
     var inLobby = false
     var locrawInfo: LocrawInfo? = null
+    private var prevServer: String? = null
 
     fun <T> getProperty(key: PropertyKey): T {
         val value = currentProperty[key] ?: return key.defaultValue as T
@@ -43,6 +46,14 @@ object Hypixel {
         if (mc.thePlayer?.inHypixel() != true) return
 
         val locraw = locrawInfo ?: return
+
+        var serverChanged = false
+
+        val server = locraw.server
+        if (prevServer != server) {
+            serverChanged = true
+        }
+        prevServer = server
 
         if (locraw.mode == "lobby") {
             inLobby = true
@@ -85,6 +96,11 @@ object Hypixel {
                     }
                 }
             }
+        }
+
+        if (serverChanged) {
+            MinecraftForge.EVENT_BUS.post(HypixelServerChangeEvent(server))
+            // to notify game changes at the end, we post event
         }
 
     }

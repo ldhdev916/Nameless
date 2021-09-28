@@ -18,17 +18,17 @@
 
 package com.happyandjust.nameless.textureoverlay.impl
 
-import com.happyandjust.nameless.core.Point
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.features.impl.FeatureTextureOverlay
 import com.happyandjust.nameless.gui.Rectangle
 import com.happyandjust.nameless.textureoverlay.ERelocatablePanel
+import com.happyandjust.nameless.textureoverlay.Overlay
 import net.minecraft.client.gui.Gui
 
-class ETextureOverlay(point: Point, scale: Double, val overlayInfo: FeatureTextureOverlay.OverlayInfo) :
+class ETextureOverlay(overlay: Overlay, val overlayInfo: FeatureTextureOverlay.OverlayInfo) :
     ERelocatablePanel(
         Rectangle.ORIGIN,
-        scale
+        overlay.scale
     ) {
 
     init {
@@ -36,8 +36,8 @@ class ETextureOverlay(point: Point, scale: Double, val overlayInfo: FeatureTextu
         wheelSensitive = 8000.0
 
         rectangle = Rectangle.fromWidthHeight(
-            point.x,
-            point.y,
+            overlay.point.x,
+            overlay.point.y,
             (overlayInfo.width * scale).toInt(),
             (overlayInfo.height * scale).toInt()
         )

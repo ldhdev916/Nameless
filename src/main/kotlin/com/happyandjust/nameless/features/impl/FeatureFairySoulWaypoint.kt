@@ -41,7 +41,6 @@ import com.happyandjust.nameless.utils.SkyblockUtils
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.network.play.client.C02PacketUseEntity
 import net.minecraft.util.BlockPos
-import net.minecraft.world.World
 import java.awt.Color
 
 class FeatureFairySoulWaypoint : SimpleFeature(
@@ -49,7 +48,7 @@ class FeatureFairySoulWaypoint : SimpleFeature(
     "fairysoulwaypoint",
     "FairySoul Waypoint",
     "Renders outline box on fairysoul except the ones you've already found\nTo collect found fairysouls data, we need your profile type /fairysoulprofile for help\nas a default, we pre-created profile named 'default'"
-), WorldRenderListener, WorldJoinListener, ClientTickListener, KeyInputListener, PacketListener {
+), WorldRenderListener, ServerChangeListener, ClientTickListener, KeyInputListener, PacketListener {
 
     var currentSkyblockIsland: String? = null
     private var fairySoulPaths = listOf<BlockPos>()
@@ -124,7 +123,7 @@ class FeatureFairySoulWaypoint : SimpleFeature(
         }
     }
 
-    override fun onWorldJoin(world: World) {
+    override fun onServerChange(server: String) {
         currentSkyblockIsland = null
     }
 

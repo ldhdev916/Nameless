@@ -137,12 +137,11 @@ class FeatureGTBHelper : OverlayFeature(
     }
 
     override fun getRelocateGui(): ERelocateGui {
-        val gtbOverlay = EGTBOverlay(overlayPoint.value.point, overlayPoint.value.scale)
+        val gtbOverlay = EGTBOverlay(overlayPoint.value)
 
         return ERelocateGui(
-            gtbOverlay,
-            { overlayPoint.value = Overlay(it, overlayPoint.value.scale) },
-            { overlayPoint.value = Overlay(overlayPoint.value.point, it) })
+            gtbOverlay
+        ) { overlayPoint.value = it }
     }
 
     override fun renderOverlay(partialTicks: Float) {

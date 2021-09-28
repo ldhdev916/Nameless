@@ -48,7 +48,7 @@ abstract class ERelocatablePanel(rectangle: Rectangle, var scale: Double) : EPan
             translate(sr.scaledWidth / 2, sr.scaledHeight / 2, 0)
 
             mc.fontRendererObj.drawCenteredString(
-                "Drag Element to Relocate, Scale Mouse Wheel to Scale Up/Down",
+                "Drag Element to Relocate, Scroll Mouse Wheel to Scale Up/Down",
                 Color.lightGray.rgb,
                 true
             )
@@ -97,7 +97,7 @@ abstract class ERelocatablePanel(rectangle: Rectangle, var scale: Double) : EPan
         drawInformation()
     }
 
-    protected open fun onUpdateScale(scale: Double) {}
+    abstract fun onUpdateScale(scale: Double)
 
     abstract fun drawElement()
 }

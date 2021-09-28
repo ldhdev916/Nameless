@@ -24,6 +24,7 @@
   - Remove Negative Effects (blindness, nausea)
   - Bedwars ESP
   - Hide NPC in Lobby
+  - Bedwars Ray Trace Bed
 </details>
 <details>
   <summary>Quality of Life</summary>

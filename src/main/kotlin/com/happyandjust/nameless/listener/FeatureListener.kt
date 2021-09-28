@@ -19,8 +19,8 @@
 package com.happyandjust.nameless.listener
 
 import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.events.CurrentPlayerJoinWorldEvent
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
+import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.events.PartyGameChangeEvent
 import com.happyandjust.nameless.features.FeatureRegistry
@@ -77,8 +77,8 @@ class FeatureListener {
     }
 
     @SubscribeEvent
-    fun onWorldJoin(e: CurrentPlayerJoinWorldEvent) {
-        invoke<WorldJoinListener> { onWorldJoin(e.world) }
+    fun onServerChange(e: HypixelServerChangeEvent) {
+        invoke<ServerChangeListener> { onServerChange(e.server) }
     }
 
     @SubscribeEvent

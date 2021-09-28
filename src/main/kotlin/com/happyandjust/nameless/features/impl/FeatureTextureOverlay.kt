@@ -70,12 +70,11 @@ class FeatureTextureOverlay : SimpleFeature(
                     cOverlay
                 ).also {
                     it.relocateGui = {
-                        val textureOverlay = ETextureOverlay(it.value.point, it.value.scale, textureCache[name]!!)
+                        val textureOverlay = ETextureOverlay(it.value, textureCache[name]!!)
 
                         ERelocateGui(
-                            textureOverlay,
-                            { point -> it.value = Overlay(point, it.value.scale) },
-                            { scale -> it.value = Overlay(it.value.point, scale) })
+                            textureOverlay
+                        ) { overlay -> it.value = overlay }
                     }
                 }
 

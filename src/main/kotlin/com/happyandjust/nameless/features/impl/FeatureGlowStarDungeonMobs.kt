@@ -26,15 +26,14 @@ import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
+import com.happyandjust.nameless.features.listener.ServerChangeListener
 import com.happyandjust.nameless.features.listener.StencilListener
-import com.happyandjust.nameless.features.listener.WorldJoinListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.serialization.TypeRegistry
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityArmorStand
-import net.minecraft.world.World
 import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.pow
@@ -44,7 +43,7 @@ class FeatureGlowStarDungeonMobs : SimpleFeature(
     "stardungeonmobs",
     "Glow Star Dungeon Mobs",
     "Glow Star Dungeons mobs"
-), ClientTickListener, StencilListener, WorldJoinListener {
+), ClientTickListener, StencilListener, ServerChangeListener {
 
     init {
         parameters["color"] = FeatureParameter(
@@ -114,7 +113,7 @@ class FeatureGlowStarDungeonMobs : SimpleFeature(
 
     override fun getEntityColor(entity: Entity): ColorInfo? = null
 
-    override fun onWorldJoin(world: World) {
+    override fun onServerChange(server: String) {
         checkedDungeonMobs.clear()
     }
 }

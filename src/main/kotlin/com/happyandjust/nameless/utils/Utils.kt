@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.utils
 
+import com.happyandjust.nameless.core.InventorySlotInfo
 import com.happyandjust.nameless.devqol.getBlockAtPos
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiPlayerTabOverlay
@@ -33,6 +34,20 @@ object Utils {
         if (keyCode == Keyboard.KEY_NONE) return false
 
         return if (keyCode < 0) Mouse.isButtonDown(keyCode + 100) else Keyboard.isKeyDown(keyCode)
+    }
+
+    fun getKeyBindingNameInEverySlot(): Map<Int, InventorySlotInfo> {
+
+        val map = hashMapOf<Int, InventorySlotInfo>()
+
+        val inventory = mc.thePlayer.inventory
+
+        for (keyBinding in mc.gameSettings.keyBindsHotbar) {
+            val slot = keyBinding.keyDescription.split("key.hotbar.")[1].toInt() - 1
+            map[slot] = InventorySlotInfo(slot, Keyboard.getKeyName(keyBinding.keyCode), inventory.getStackInSlot(slot))
+        }
+
+        return map
     }
 
     fun getHighestGround(pos: BlockPos, shouldBeValid: Boolean): BlockPos {

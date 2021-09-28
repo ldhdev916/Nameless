@@ -27,11 +27,10 @@ import com.happyandjust.nameless.devqol.LOGGER
 import com.happyandjust.nameless.devqol.sendClientMessage
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.WorldJoinListener
+import com.happyandjust.nameless.features.listener.ServerChangeListener
 import com.happyandjust.nameless.network.Request
 import net.minecraft.event.ClickEvent
 import net.minecraft.util.ChatComponentText
-import net.minecraft.world.World
 import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion
 
 class FeatureUpdateChecker : SimpleFeature(
@@ -40,11 +39,11 @@ class FeatureUpdateChecker : SimpleFeature(
     "Auto Update Checker",
     "automatically checks if currently loaded mod version is latest version",
     true
-), WorldJoinListener {
+), ServerChangeListener {
 
     private var checkedVersion = false
 
-    override fun onWorldJoin(world: World) {
+    override fun onServerChange(server: String) {
         if (checkedVersion || !enabled) return
         checkedVersion = true
         threadPool.execute {
@@ -95,6 +94,5 @@ class FeatureUpdateChecker : SimpleFeature(
                 )
             }
         }
-
     }
 }

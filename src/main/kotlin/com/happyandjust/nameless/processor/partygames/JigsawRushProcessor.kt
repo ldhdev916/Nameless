@@ -26,12 +26,12 @@ import com.happyandjust.nameless.features.listener.WorldRenderListener
 import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
+import com.happyandjust.nameless.utils.Utils
 import net.minecraft.init.Blocks
 import net.minecraft.item.Item
 import net.minecraft.util.BlockPos
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.Vec3
-import org.lwjgl.input.Keyboard
 import java.awt.Color
 
 object JigsawRushProcessor : Processor(), ClientTickListener, PartyGameChangeListener, WorldRenderListener {
@@ -69,19 +69,10 @@ object JigsawRushProcessor : Processor(), ClientTickListener, PartyGameChangeLis
 
             val itemKeyBindingMap = hashMapOf<Item, String>()
 
-            val keyCategoryKeyName = hashMapOf<Int, String>()
+            val keyCategoryKeyName = Utils.getKeyBindingNameInEverySlot()
 
-            for (keyBinding in mc.gameSettings.keyBindsHotbar) {
-                keyCategoryKeyName[keyBinding.keyDescription.split("key.hotbar.")[1].toInt() - 1] =
-                    Keyboard.getKeyName(keyBinding.keyCode)
-            }
-
-            val inventory = mc.thePlayer.inventory
-
-            for (i in 0..8) {
-                val item = inventory.getStackInSlot(i)?.item ?: continue
-
-                itemKeyBindingMap[item] = keyCategoryKeyName[i]!!
+            for ((_, inventorySlotInfo) in keyCategoryKeyName) {
+                itemKeyBindingMap[inventorySlotInfo.itemStack?.item ?: continue] = inventorySlotInfo.keyName
             }
 
             if (itemKeyBindingMap.size != 9) return

@@ -24,8 +24,8 @@ import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ChatListener
 import com.happyandjust.nameless.features.listener.ClientTickListener
+import com.happyandjust.nameless.features.listener.ServerChangeListener
 import com.happyandjust.nameless.features.listener.StencilListener
-import com.happyandjust.nameless.features.listener.WorldJoinListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.serialization.TypeRegistry
@@ -33,7 +33,6 @@ import com.happyandjust.nameless.utils.Utils
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemArmor
-import net.minecraft.world.World
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 
 class FeatureBedwarsESP : SimpleFeature(
@@ -41,7 +40,7 @@ class FeatureBedwarsESP : SimpleFeature(
     "bedwarsesp",
     "Bedwars ESP",
     "Glow all players in your game according to their team color."
-), ClientTickListener, StencilListener, WorldJoinListener, ChatListener {
+), ClientTickListener, StencilListener, ServerChangeListener, ChatListener {
 
     private fun checkForEnabledAndBedwars() = enabled && Hypixel.currentGame == GameType.BEDWARS
     val teamColorCache = hashMapOf<EntityPlayer, Int>()
@@ -63,6 +62,7 @@ class FeatureBedwarsESP : SimpleFeature(
         if (!checkForEnabledAndBedwars()) return
 
         // You know once assigned team color doesn't change, so we don't need to scan every tick
+        // Known bugs: NPC go brrrr
         scanTick = (scanTick + 1) % 40
 
         if (scanTick == 0) {
@@ -91,7 +91,7 @@ class FeatureBedwarsESP : SimpleFeature(
 
     override fun getEntityColor(entity: Entity): ColorInfo? = null
 
-    override fun onWorldJoin(world: World) {
+    override fun onServerChange(server: String) {
         teamColorCache.clear()
     }
 
