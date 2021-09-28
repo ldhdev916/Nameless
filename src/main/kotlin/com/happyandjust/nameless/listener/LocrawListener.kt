@@ -22,30 +22,34 @@ import com.google.gson.Gson
 import com.happyandjust.nameless.devqol.inHypixel
 import com.happyandjust.nameless.devqol.matchesMatcher
 import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.events.CurrentPlayerJoinWorldEvent
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.LocrawInfo
 import net.minecraftforge.client.event.ClientChatReceivedEvent
+import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
-import java.util.*
 import java.util.concurrent.Executors
 import java.util.regex.Pattern
-import kotlin.concurrent.timerTask
 
 class LocrawListener {
 
     private var sentCommand = false
     private val JSON = Pattern.compile("\\{.+}")
     private val gson = Gson()
-    private var lastJoined = -1L
     private var updateTick = 0
     private val threadPool = Executors.newFixedThreadPool(2)
-    private val locrawTimer = Timer()
+    private var locrawTick = 0
 
     @SubscribeEvent
     fun onClientTick(e: TickEvent.ClientTickEvent) {
+        if (e.phase == TickEvent.Phase.START) return
         val entityPlayerSP = mc.thePlayer ?: return
+
+        locrawTick++
+        if (locrawTick == 20 && entityPlayerSP.inHypixel()) {
+            sentCommand = true
+            entityPlayerSP.sendChatMessage("/locraw")
+        }
 
         updateTick = (updateTick + 1) % 40
 
@@ -60,22 +64,8 @@ class LocrawListener {
 
 
     @SubscribeEvent
-    fun onWorldJoin(e: CurrentPlayerJoinWorldEvent) {
-        if (mc.thePlayer.inHypixel()) {
-            System.currentTimeMillis().also {
-                if (it - lastJoined >= 1500) { // are you changing lobby every 1.5 seconds??
-                    sentCommand = true
-                    mc.thePlayer.sendChatMessage("/locraw")
-
-                    locrawTimer.schedule(timerTask {  // in case somewhat error occurs
-                        sentCommand = true
-                        mc.thePlayer.sendChatMessage("/locraw")
-                    }, 2000L)
-                }
-
-                lastJoined = it
-            }
-        }
+    fun onWorldLoad(e: WorldEvent.Load) {
+        locrawTick = 0
     }
 
     @SubscribeEvent(receiveCanceled = true)

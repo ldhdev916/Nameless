@@ -22,7 +22,7 @@ enum class GameType(val displayName: String, vararg val modeReqs: String) {
 
     SKYBLOCK("SKYBLOCK"),
     MURDER_MYSTERY("MURDER_MYSTERY"),
-    BEDWARS("BED_WARS"),
+    BEDWARS("BEDWARS"),
     GUESS_THE_BUILD("BUILD_BATTLE", "BUILD_BATTLE_GUESS_THE_BUILD"),
     PARTY_GAMES("ARCADE", "PARTY")
 
