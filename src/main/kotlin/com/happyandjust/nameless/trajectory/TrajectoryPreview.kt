@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.trajectory
 
 import com.happyandjust.nameless.devqol.mc
+import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.entity.Entity
 import net.minecraft.init.Blocks
 import net.minecraft.util.AxisAlignedBB
@@ -29,18 +30,7 @@ import java.util.*
 
 abstract class TrajectoryPreview {
 
-    companion object {
-        val gaussian: Double
-        val bool: Boolean
-
-        init {
-            val random = Random()
-            gaussian = random.nextGaussian()
-            bool = random.nextBoolean()
-        }
-    }
-
-    protected val entityPlayerSP = mc.thePlayer
+    protected val entityPlayerSP: EntityPlayerSP = mc.thePlayer
     protected var posX: Double = 0.0
     protected var posY: Double = 0.0
     protected var posZ: Double = 0.0
@@ -48,8 +38,17 @@ abstract class TrajectoryPreview {
     protected var motionY: Double = 0.0
     protected var motionZ: Double = 0.0
     protected var entityHit: Entity? = null
+    private val random = Random()
+    var gaussian = 0.0
+    var bool = false
 
-    init {
+    fun setRandomValue() {
+        gaussian = random.nextGaussian()
+        bool = random.nextBoolean()
+    }
+
+
+    fun init() {
         setInitialLocation()
     }
 

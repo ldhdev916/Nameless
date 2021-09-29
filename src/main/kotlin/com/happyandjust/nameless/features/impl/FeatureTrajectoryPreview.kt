@@ -31,11 +31,13 @@ import com.happyandjust.nameless.features.listener.StencilListener
 import com.happyandjust.nameless.features.listener.WorldRenderListener
 import com.happyandjust.nameless.serialization.TypeRegistry
 import com.happyandjust.nameless.trajectory.ArrowTrajectoryPreview
+import com.happyandjust.nameless.trajectory.FishHookTrajectory
 import com.happyandjust.nameless.trajectory.ThrowableTrajectoryPreview
 import com.happyandjust.nameless.trajectory.TrajectoryCalculateResult
 import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.entity.Entity
 import net.minecraft.init.Items
+import net.minecraft.item.ItemPotion
 import java.awt.Color
 
 class FeatureTrajectoryPreview : SimpleFeature(
@@ -122,7 +124,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 cBoolean
             ),
             "enderperal" to FeatureParameter(
-                1,
+                0,
                 "trajectory",
                 "enderpearl",
                 "Enable Trajectory for Ender Pearl",
@@ -131,7 +133,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 cBoolean
             ),
             "egg" to FeatureParameter(
-                2,
+                0,
                 "trajectory",
                 "egg",
                 "Enable Trajectory for Egg",
@@ -140,12 +142,39 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 cBoolean
             ),
             "snowball" to FeatureParameter(
-                3,
+                0,
                 "trajectory",
                 "snowball",
                 "Enable Trajectory for Snowball",
                 "",
                 true,
+                cBoolean
+            ),
+            "potion" to FeatureParameter(
+                0,
+                "trajectory",
+                "potion",
+                "Enable Trajectory for Potion",
+                "",
+                false,
+                cBoolean
+            ),
+            "expbottle" to FeatureParameter(
+                0,
+                "trajectory",
+                "expbottle",
+                "Enable Trajectory for Exp Bottle",
+                "",
+                false,
+                cBoolean
+            ),
+            "fishingrod" to FeatureParameter(
+                0,
+                "trajectory",
+                "fishingrod",
+                "Enable Trajectory for Fishing Rod",
+                "",
+                false,
                 cBoolean
             )
         )
@@ -157,7 +186,9 @@ class FeatureTrajectoryPreview : SimpleFeature(
     override fun tick() {
         if (!enabled) return
 
-        val heldItem = mc.thePlayer.heldItem?.item ?: run {
+        val heldItemStack = mc.thePlayer.heldItem
+
+        val heldItem = heldItemStack?.item ?: run {
             trajectoryCalculateResult = null
             return
         }
@@ -167,9 +198,21 @@ class FeatureTrajectoryPreview : SimpleFeature(
             Items.ender_pearl -> if (getParameterValue("enderpearl")) ThrowableTrajectoryPreview() else null
             Items.egg -> if (getParameterValue("egg")) ThrowableTrajectoryPreview() else null
             Items.bow -> if (mc.thePlayer.itemInUse?.item == Items.bow && getParameterValue("bow")) ArrowTrajectoryPreview() else null
+            Items.potionitem -> if (getParameterValue("potion") && ItemPotion.isSplash(heldItemStack.metadata)) ThrowableTrajectoryPreview(
+                ThrowableTrajectoryPreview.ThrowableType.POTION
+            ) else null
+            Items.experience_bottle -> if (getParameterValue("potion")) ThrowableTrajectoryPreview(
+                ThrowableTrajectoryPreview.ThrowableType.EXP_BOTTLE
+            ) else null
+            Items.fishing_rod -> if (getParameterValue("fishingrod")) FishHookTrajectory() else null
             else -> null
         }
 
+        if (trajectoryCalculateResult == null) { // new
+            preview?.setRandomValue()
+        }
+
+        preview?.init()
         trajectoryCalculateResult = preview?.calculate()
 
     }

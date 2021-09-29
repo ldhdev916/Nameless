@@ -63,12 +63,18 @@ class ArrowTrajectoryPreview : TrajectoryPreview() {
 
     override fun calculate(): TrajectoryCalculateResult {
         val list = arrayListOf<Vec3>()
-        var f4 = 0.99f
         val f6 = 0.05f
         val num = 120
         var end: Vec3? = null
 
         label@ while (canMove()) {
+
+            val f4 = if (isInWater()) 0.99F else 0.6F
+
+            motionX *= f4.toDouble()
+            motionY *= f4.toDouble()
+            motionZ *= f4.toDouble()
+            motionY -= f6.toDouble()
 
             for (i in 0 until num) {
                 if (posY < 0) break@label
@@ -85,13 +91,6 @@ class ArrowTrajectoryPreview : TrajectoryPreview() {
                 posY += motionY / num
                 posZ += motionZ / num
             }
-            if (isInWater()) {
-                f4 = 0.6f
-            }
-            motionX *= f4.toDouble()
-            motionY *= f4.toDouble()
-            motionZ *= f4.toDouble()
-            motionY -= f6.toDouble()
         }
         return TrajectoryCalculateResult(entityHit, end, list)
     }

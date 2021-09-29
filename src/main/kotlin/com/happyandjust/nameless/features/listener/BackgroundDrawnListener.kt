@@ -16,15 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.hypixel
+package com.happyandjust.nameless.features.listener
 
-enum class GameType(val displayName: String, vararg val modeReqs: String) {
+import net.minecraftforge.client.event.GuiScreenEvent
 
-    SKYBLOCK("SKYBLOCK"),
-    MURDER_MYSTERY("MURDER_MYSTERY"),
-    BEDWARS("BEDWARS"),
-    GUESS_THE_BUILD("BUILD_BATTLE", "BUILD_BATTLE_GUESS_THE_BUILD"),
-    PARTY_GAMES("ARCADE", "PARTY"),
-    SKYWARS("SKYWARS")
+interface BackgroundDrawnListener {
 
+    fun onBackgroundDrawn(e: GuiScreenEvent.BackgroundDrawnEvent)
 }

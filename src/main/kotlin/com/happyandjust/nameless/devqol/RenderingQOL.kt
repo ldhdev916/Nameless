@@ -20,15 +20,18 @@ package com.happyandjust.nameless.devqol
 
 import com.happyandjust.nameless.core.Direction
 import com.happyandjust.nameless.gui.Rectangle
+import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
 import com.happyandjust.nameless.utils.GLScissorStack
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.ScaledResolution
+import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.WorldRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.entity.Entity
+import net.minecraft.inventory.Slot
 import org.lwjgl.opengl.GL11
 import java.nio.FloatBuffer
 
@@ -293,4 +296,12 @@ inline fun disableEntityShadow(block: () -> Unit) {
     block()
 
     mc.gameSettings.entityShadows = entityShadow
+}
+
+fun GuiContainer.drawOnSlot(slot: Slot, color: Int) {
+    val left = (this as AccessorGuiContainer).guiLeft + slot.xDisplayPosition
+    val top = (this as AccessorGuiContainer).guiTop + slot.yDisplayPosition
+
+    Gui.drawRect(left, top, left + 16, top + 16, color)
+
 }

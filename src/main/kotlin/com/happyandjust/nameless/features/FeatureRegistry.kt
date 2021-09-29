@@ -71,6 +71,7 @@ object FeatureRegistry {
     val BEDWARS_ESP = register(FeatureBedwarsESP())
     val HIDE_NPC = register(FeatureHideNPC())
     val BEDWARS_RAY_TRACE_BED = register(FeatureBedwarsRayTraceBed())
+    val DISPLAY_BETTER_ARMOR = register(FeatureDisplayBetterArmor())
 
     //MISC
     val UPDATE_CHECKER = register(FeatureUpdateChecker())

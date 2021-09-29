@@ -143,4 +143,9 @@ class FeatureListener {
         invoke<RenderPlayerListener> { onRenderPlayerPost(e) }
     }
 
+    @SubscribeEvent
+    fun backgroundDrawn(e: GuiScreenEvent.BackgroundDrawnEvent) {
+        invoke<BackgroundDrawnListener> { onBackgroundDrawn(e) }
+    }
+
 }

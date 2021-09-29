@@ -25,6 +25,7 @@
   - Bedwars ESP
   - Hide NPC in Lobby
   - Bedwars Ray Trace Bed
+  - Display Better Armor in SkyWars
 </details>
 <details>
   <summary>Quality of Life</summary>
