@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.features.impl
 
 import com.happyandjust.nameless.core.ChromaColor
+import com.happyandjust.nameless.core.Point
 import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.events.PartyGameChangeEvent
 import com.happyandjust.nameless.features.Category
@@ -31,6 +32,9 @@ import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.processor.partygames.*
 import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.textureoverlay.ERelocateGui
+import com.happyandjust.nameless.textureoverlay.Overlay
+import com.happyandjust.nameless.textureoverlay.impl.ELabEscapeOverlay
 import net.minecraftforge.common.MinecraftForge
 import java.awt.Color
 
@@ -164,6 +168,30 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
             true,
             cBoolean
         )
+        parameters["labescape"] = FeatureParameter(
+            0,
+            "partygames",
+            "labescape",
+            "Lab Escape",
+            "Render what key you have to press on your screen",
+            true,
+            cBoolean
+        ).also {
+            it.parameters["overlay"] = FeatureParameter(
+                0,
+                "partygames",
+                "labescapeoverlay",
+                "Relocate Overlay",
+                "",
+                Overlay(Point(0, 0), 1.0),
+                TypeRegistry.getConverterByClass(Overlay::class)
+            ).also { overlayParameter ->
+                val labEscapeOverlay = ELabEscapeOverlay(overlayParameter.value)
+
+                overlayParameter.relocateGui =
+                    { ERelocateGui(labEscapeOverlay) { overlay -> overlayParameter.value = overlay } }
+            }
+        }
 
         processors[AnimalSlaughterProcessor.also {
             it.entityColor = { getParameter<Boolean>("animal").getParameterValue<Color>("color").rgb }
@@ -190,6 +218,9 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
         }] = { partyGameType == PartyGamesType.RPG_16 && getParameterValue("rpg16") }
 
         processors[SpiderMazeProcessor] = { partyGameType == PartyGamesType.SPIDER_MAZE && getParameterValue("maze") }
+        processors[LabEscapeProcessor.also {
+            it.overlay = { getParameter<Boolean>("labescape").getParameterValue("overlay") }
+        }] = { partyGameType == PartyGamesType.LAB_ESCAPE && getParameterValue("labescape") }
     }
 
     private var partyGameType: PartyGamesType? = null

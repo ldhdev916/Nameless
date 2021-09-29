@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.listener
 
+import com.happyandjust.nameless.devqol.color
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
@@ -74,6 +75,7 @@ class FeatureListener {
         if (e.type == RenderGameOverlayEvent.ElementType.BOSSHEALTH) {
             invoke<RenderOverlayListener> { renderOverlay(e.partialTicks) }
         }
+        color(1f, 1f, 1f, 1f)
     }
 
     @SubscribeEvent
