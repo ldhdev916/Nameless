@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.config
 
-import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
@@ -28,7 +27,6 @@ import java.io.File
 
 object ConfigHandler {
     private val file = File("config/Nameless.json")
-    private val gson = GsonBuilder().setPrettyPrinting().create()
     private val handler: JSONHandler
         get() = JSONHandler(file)
 
