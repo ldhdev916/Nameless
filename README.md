@@ -48,6 +48,7 @@
     - Spider Maze
     - Dive
     - Workshop
+    - Lab Escape
 </details>
 <details>
   <summary>SkyBlock</summary>
