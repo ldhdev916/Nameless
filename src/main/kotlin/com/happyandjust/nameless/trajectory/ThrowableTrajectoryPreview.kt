@@ -95,11 +95,6 @@ class ThrowableTrajectoryPreview(private val throwableType: ThrowableType = Thro
         label@ while (canMove()) {
             val f4 = if (isInWater()) 0.8F else 0.99f
 
-            motionX *= f4.toDouble()
-            motionY *= f4.toDouble()
-            motionZ *= f4.toDouble()
-            motionY -= f6.toDouble()
-
             for (i in 0 until num) {
                 if (posY < 0) break@label
                 if (!canMove()) {
@@ -108,12 +103,18 @@ class ThrowableTrajectoryPreview(private val throwableType: ThrowableType = Thro
                 if (checkEntity()) {
                     break@label
                 }
+
                 list.add(Vec3(posX, posY, posZ))
                 end = Vec3(posX, posY, posZ)
                 posX += motionX / num
                 posY += motionY / num
                 posZ += motionZ / num
             }
+
+            motionX *= f4.toDouble()
+            motionY *= f4.toDouble()
+            motionZ *= f4.toDouble()
+            motionY -= f6.toDouble()
         }
         return TrajectoryCalculateResult(entityHit, end, list)
 
