@@ -20,10 +20,13 @@ package com.happyandjust.nameless.listener
 
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.devqol.LOGGER
+import com.happyandjust.nameless.devqol.inHypixel
 import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.devqol.sendClientMessage
 import com.happyandjust.nameless.events.CurrentPlayerJoinWorldEvent
 import com.happyandjust.nameless.gui.EGui
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
+import com.happyandjust.nameless.utils.Utils
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.entity.EntityJoinWorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
@@ -44,6 +47,20 @@ class BasicListener {
     fun onKeyInput(e: InputEvent.KeyInputEvent) {
         if (Nameless.INSTANCE.keyBindings[KeyBindingCategory.OPEN_GUI]!!.isKeyDown) {
             mc.displayGuiScreen(EGui())
+        }
+        if (Nameless.INSTANCE.keyBindings[KeyBindingCategory.AUTO_WDR]!!.isKeyDown && mc.thePlayer.inHypixel()) {
+
+            val tab = Utils.getPlayersInTab()
+
+            val players =
+                mc.theWorld.playerEntities.filter { tab.contains(it) && it != mc.thePlayer }
+                    .sortedBy { mc.thePlayer.getDistanceToEntity(it) }
+            if(players.isEmpty()) return
+
+            val player = players[0]
+
+            sendClientMessage("§aSending WatchDog Report to ${player.name} with Type bhop,ka,reach")
+            mc.thePlayer.sendChatMessage("/wdr ${player.name} bhop ka reach")
         }
     }
 
