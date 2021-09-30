@@ -123,7 +123,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 true,
                 cBoolean
             ),
-            "enderperal" to FeatureParameter(
+            "enderpearl" to FeatureParameter(
                 0,
                 "trajectory",
                 "enderpearl",
