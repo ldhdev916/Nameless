@@ -55,8 +55,11 @@ class NodeProcessorPath(val canFly: Boolean) : NodeProcessor() {
         return state.getValue(BlockFenceGate.OPEN)
     }
 
-    private fun isValid(pos: BlockPos) =
-        if (!canFly && !jumpCheck(pos.down())) false else mc.theWorld.getBlockAtPos(pos).isPassable(mc.theWorld, pos)
+    private fun isValid(pos: BlockPos): Boolean {
+        val b = mc.theWorld.getBlockAtPos(pos)
+        return if (!canFly && !jumpCheck(pos.down())) false else b != Blocks.web && b.isPassable(mc.theWorld, pos)
+    }
+
 
     override fun getPathPointTo(entityIn: Entity): PathPoint = openPoint(
         MathHelper.floor_double(entityIn.posX),
