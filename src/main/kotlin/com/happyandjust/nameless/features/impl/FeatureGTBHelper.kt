@@ -20,8 +20,6 @@ package com.happyandjust.nameless.features.impl
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.config.ConfigHandler
-import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.JSONHandler
 import com.happyandjust.nameless.core.Point
 import com.happyandjust.nameless.devqol.*
@@ -36,7 +34,6 @@ import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiChat
 import com.happyandjust.nameless.serialization.TypeRegistry
-import com.happyandjust.nameless.textureoverlay.ERelocateGui
 import com.happyandjust.nameless.textureoverlay.Overlay
 import com.happyandjust.nameless.textureoverlay.impl.EGTBOverlay
 import net.minecraft.client.gui.inventory.GuiChest
@@ -96,11 +93,7 @@ class FeatureGTBHelper : OverlayFeature(
     private val THEME = Pattern.compile("The theme is (?<word>.+)")
     private val matches = arrayListOf<String>()
     private var prevWord: String? = null
-    private val overlayPoint = ConfigValue(
-        "gtboverlay", "overlay", Overlay(Point(0, 0), 0.7),
-        { s, k, v -> ConfigHandler.get(s, k, v, TypeRegistry.getConverterByClass(Overlay::class)) },
-        { s, k, v -> ConfigHandler.write(s, k, v, TypeRegistry.getConverterByClass(Overlay::class)) }
-    )
+    override val overlayPoint = getOverlayConfig("gtboverlay", "overlay", Overlay(Point(0, 0), 1.0))
 
     override fun onChatReceived(e: ClientChatReceivedEvent) {
         if (!checkForEnabledAndGuessTheBuild()) return
@@ -136,13 +129,7 @@ class FeatureGTBHelper : OverlayFeature(
         }
     }
 
-    override fun getRelocateGui(): ERelocateGui {
-        val gtbOverlay = EGTBOverlay(overlayPoint.value)
-
-        return ERelocateGui(
-            gtbOverlay
-        ) { overlayPoint.value = it }
-    }
+    override fun getRelocatablePanel() = EGTBOverlay(overlayPoint.value)
 
     override fun renderOverlay(partialTicks: Float) {
         if (!checkForEnabledAndGuessTheBuild()) return

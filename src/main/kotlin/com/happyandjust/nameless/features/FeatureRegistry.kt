@@ -118,6 +118,7 @@ object FeatureRegistry {
     val SHOW_PING_NUMBER_IN_TAB = register(FeatureShowPingInTab())
     val GTB_HELPER = register(FeatureGTBHelper())
     val PARTY_GAMES_HELPER = register(FeaturePartyGamesHelper())
+    val AUTO_ACCEPT_PARTY = register(FeatureAutoAcceptParty())
 
     //SKYBLOCK
     val FAIRY_SOUL_WAYPOINT = register(FeatureFairySoulWaypoint())

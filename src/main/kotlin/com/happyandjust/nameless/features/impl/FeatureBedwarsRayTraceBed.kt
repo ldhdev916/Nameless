@@ -18,8 +18,6 @@
 
 package com.happyandjust.nameless.features.impl
 
-import com.happyandjust.nameless.config.ConfigHandler
-import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.Point
 import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.features.Category
@@ -31,8 +29,6 @@ import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.mixins.accessors.AccessorItemAxe
 import com.happyandjust.nameless.mixins.accessors.AccessorItemPickaxe
-import com.happyandjust.nameless.serialization.TypeRegistry
-import com.happyandjust.nameless.textureoverlay.ERelocateGui
 import com.happyandjust.nameless.textureoverlay.Overlay
 import com.happyandjust.nameless.textureoverlay.impl.EBedwarsRayTraceOverlay
 import com.happyandjust.nameless.utils.RenderUtils
@@ -73,10 +69,7 @@ class FeatureBedwarsRayTraceBed : OverlayFeature(
     private var rayTraceTick = 0
     private val beds = hashSetOf<BlockPos>()
     private var currentRayTraceInfo: RayTraceInfo? = null
-    private val overlayPoint = ConfigValue(
-        "bedwarsoverlay", "overlay", Overlay(Point(0, 0), 1.0),
-        { s, k, v -> ConfigHandler.get(s, k, v, TypeRegistry.getConverterByClass(Overlay::class)) }
-    ) { s, k, v -> ConfigHandler.write(s, k, v, TypeRegistry.getConverterByClass(Overlay::class)) }
+    override val overlayPoint = getOverlayConfig("bedwarsoverlay", "overlay", Overlay(Point(0, 0), 1.0))
 
     override fun tick() {
         if (!enabled) return
@@ -243,12 +236,7 @@ class FeatureBedwarsRayTraceBed : OverlayFeature(
         }
     }
 
-    override fun getRelocateGui(): ERelocateGui {
-        val bedwarsRayTracePanel = EBedwarsRayTraceOverlay(overlayPoint.value)
-        return ERelocateGui(
-            bedwarsRayTracePanel,
-        ) { overlayPoint.value = it }
-    }
+    override fun getRelocatablePanel() = EBedwarsRayTraceOverlay(overlayPoint.value)
 
     private fun storeBlockToKeyName(list: Iterable<Block>) {
         blockToKeyName.clear()

@@ -26,5 +26,7 @@ enum class KeyBindingCategory(val desc: String, val key: Int) {
     PERSPECTIVE("Perspective", Keyboard.KEY_C),
     FREEZE_FAIRYSOUL_PATHS("Freeze FairySoul Paths", Keyboard.KEY_NONE),
     GHOST_BLOCK("Ghost Block", Keyboard.KEY_X),
-    AUTO_WDR("Auto Send WatchDog Report to Nearest Player", Keyboard.KEY_H)
+    AUTO_WDR("Auto Send WatchDog Report to Nearest Player", Keyboard.KEY_H),
+    ACCEPT_PARTY("Accept Party", Keyboard.KEY_Y),
+    DENY_PARTY("Deny Party", Keyboard.KEY_N)
 }

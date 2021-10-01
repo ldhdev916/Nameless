@@ -49,6 +49,7 @@
     - Dive
     - Workshop
     - Lab Escape
+  - Auto Accept Party
 </details>
 <details>
   <summary>SkyBlock</summary>
@@ -72,6 +73,8 @@
   - Perspective
   - Freeze FairySoul Paths
   - Ghost Block
+  - Accept Party
+  - Deny Party
 </details>
 <details>
   <summary>Commands</summary>
