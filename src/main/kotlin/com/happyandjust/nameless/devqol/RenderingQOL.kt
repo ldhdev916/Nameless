@@ -33,6 +33,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.entity.Entity
 import net.minecraft.inventory.Slot
 import org.lwjgl.opengl.GL11
+import java.awt.Color
 import java.nio.FloatBuffer
 
 fun disableAlpha() = GlStateManager.disableAlpha()
@@ -215,14 +216,14 @@ fun Rectangle.drawGradientRect(direction: Direction, startColor: Int, endColor: 
             wr.pos(right, bottom, 0).color(endColor).endVertex()
             wr.pos(right, top, 0).color(endColor).endVertex()
         }
-        Direction.TOP -> {
+        Direction.UP -> {
             wr.pos(left, bottom, 0).color(startColor).endVertex()
             wr.pos(right, bottom, 0).color(startColor).endVertex()
 
             wr.pos(right, top, 0).color(endColor).endVertex()
             wr.pos(left, top, 0).color(endColor).endVertex()
         }
-        Direction.BOTTOM -> {
+        Direction.DOWN -> {
             wr.pos(left, top, 0).color(startColor).endVertex()
             wr.pos(right, top, 0).color(startColor).endVertex()
 
@@ -303,5 +304,50 @@ fun GuiContainer.drawOnSlot(slot: Slot, color: Int) {
     val top = (this as AccessorGuiContainer).guiTop + slot.yDisplayPosition
 
     Gui.drawRect(left, top, left + 16, top + 16, color)
+}
 
+fun Rectangle.drawChromaRect(direction: Direction, startHue: Float = 0F) {
+    disableTexture2D()
+    enableBlend()
+    disableCull()
+    shadeModel(GL11.GL_SMOOTH)
+    tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO)
+
+    val addEach = when (direction) {
+        Direction.UP, Direction.DOWN -> height / 360.0
+        Direction.RIGHT, Direction.LEFT -> width / 360.0
+    }
+    val starting = when (direction) {
+        Direction.LEFT -> right
+        Direction.UP -> bottom
+        Direction.RIGHT -> left
+        Direction.DOWN -> top
+    }
+
+    val wr = tessellator.worldRenderer
+
+    wr.begin(GL11.GL_QUAD_STRIP, DefaultVertexFormats.POSITION_COLOR)
+
+    repeat(361) {
+        val currentPosition = starting + (addEach * it)
+        val color = Color.HSBtoRGB(it / 360F + startHue, 1f, 1f)
+
+        when (direction) {
+            Direction.LEFT, Direction.RIGHT -> {
+                wr.pos(currentPosition, top.toDouble(), 0.0).color(color).endVertex()
+                wr.pos(currentPosition, bottom.toDouble(), 0.0).color(color).endVertex()
+            }
+            Direction.UP, Direction.DOWN -> {
+                wr.pos(left.toDouble(), currentPosition, 0.0).color(color).endVertex()
+                wr.pos(right.toDouble(), currentPosition, 0.0).color(color).endVertex()
+            }
+        }
+    }
+
+    tessellator.draw()
+
+    shadeModel(GL11.GL_FLAT)
+    enableCull()
+    disableBlend()
+    enableTexture2D()
 }

@@ -19,10 +19,9 @@
 package com.happyandjust.nameless.gui.elements
 
 import com.happyandjust.nameless.core.ChromaColor
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.core.Direction
+import com.happyandjust.nameless.devqol.drawChromaRect
 import com.happyandjust.nameless.gui.Rectangle
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import org.lwjgl.opengl.GL11
 import java.awt.Color
 
 class EChromaColorSlider(
@@ -65,34 +64,7 @@ class EChromaColorSlider(
     }
 
     override fun drawGradientRect(rectangle: Rectangle) {
-        val addEach = rectangle.width / 360.0
-
-        val wr = tessellator.worldRenderer
-
-        disableTexture2D()
-        enableBlend()
-        tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO)
-
-        translate(rectangle.left, rectangle.top, 0) {
-
-            wr.begin(GL11.GL_QUAD_STRIP, DefaultVertexFormats.POSITION_COLOR)
-
-            for (i in 0..360) {
-                val c = Color.HSBtoRGB(i / 360F, 1f, 1f)
-
-                val x = addEach * i
-
-                wr.pos(x, 0.0, 0.0).color(c).endVertex()
-                wr.pos(x, rectangle.height.toDouble(), 0.0).color(c).endVertex()
-            }
-
-            tessellator.draw()
-        }
-
-
-
-        disableBlend()
-        enableTexture2D()
+        rectangle.drawChromaRect(Direction.RIGHT)
     }
 
     override fun onRectangleDoubleClicked() {

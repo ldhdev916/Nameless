@@ -55,7 +55,7 @@ class BasicListener {
             val players =
                 mc.theWorld.playerEntities.filter { tab.contains(it) && it != mc.thePlayer }
                     .sortedBy { mc.thePlayer.getDistanceToEntity(it) }
-            if(players.isEmpty()) return
+            if (players.isEmpty()) return
 
             val player = players[0]
 

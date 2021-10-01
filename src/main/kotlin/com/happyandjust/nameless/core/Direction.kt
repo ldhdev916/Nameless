@@ -19,5 +19,5 @@
 package com.happyandjust.nameless.core
 
 enum class Direction {
-    LEFT, RIGHT, TOP, BOTTOM
+    LEFT, RIGHT, UP, DOWN
 }
