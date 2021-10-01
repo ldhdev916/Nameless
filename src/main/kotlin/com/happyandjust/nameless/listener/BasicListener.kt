@@ -26,14 +26,18 @@ import com.happyandjust.nameless.devqol.sendClientMessage
 import com.happyandjust.nameless.events.CurrentPlayerJoinWorldEvent
 import com.happyandjust.nameless.gui.EGui
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
+import com.happyandjust.nameless.mixinhooks.FontRendererHook
 import com.happyandjust.nameless.utils.Utils
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.entity.EntityJoinWorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.InputEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.common.network.FMLNetworkEvent
 
 class BasicListener {
+
+    private var tick = 0
 
     @SubscribeEvent
     fun onWorldJoin(e: EntityJoinWorldEvent) {
@@ -68,5 +72,16 @@ class BasicListener {
     fun onClientConnectedToServer(e: FMLNetworkEvent.ClientConnectedToServerEvent) {
         e.manager.channel().pipeline().addBefore("packet_handler", "namelees_packet_handler", PacketHandler())
         LOGGER.info("Added Packet Handler")
+    }
+
+    @SubscribeEvent
+    fun onClientTick(e: TickEvent.ClientTickEvent) {
+        if (e.phase == TickEvent.Phase.START) return
+
+        tick = (tick + 1) % (20 * 60)
+
+        if (tick == 0) {
+            FontRendererHook.cache.clear()
+        }
     }
 }
