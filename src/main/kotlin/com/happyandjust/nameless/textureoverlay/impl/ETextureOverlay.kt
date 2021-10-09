@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.textureoverlay.impl
 
 import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.features.impl.FeatureTextureOverlay
+import com.happyandjust.nameless.features.impl.misc.FeatureTextureOverlay
 import com.happyandjust.nameless.gui.Rectangle
 import com.happyandjust.nameless.textureoverlay.ERelocatablePanel
 import com.happyandjust.nameless.textureoverlay.Overlay

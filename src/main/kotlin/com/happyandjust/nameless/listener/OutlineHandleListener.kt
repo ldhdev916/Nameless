@@ -29,52 +29,59 @@ import net.minecraft.entity.EntityLivingBase
 import net.minecraftforge.client.event.RenderLivingEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent
 
 class OutlineHandleListener {
 
     var manualRendering = false
+    private val outlineEntityCache = hashMapOf<Entity, Int>()
+    private val changeColorEntityCache = hashMapOf<Entity, Int>()
+
+    @SubscribeEvent
+    fun onClientTick(e: TickEvent.ClientTickEvent) {
+        if (e.phase == TickEvent.Phase.START) return
+        if (mc.theWorld == null) return
+
+        outlineEntityCache.clear()
+        changeColorEntityCache.clear()
+
+        for (entity in mc.theWorld.loadedEntityList) {
+            var outlineColorInfo: ColorInfo? = null
+            var entityColorInfo: ColorInfo? = null
+
+            for (feature in FeatureRegistry.features.filterIsInstance<StencilListener>()) {
+                feature.getOutlineColor(entity)?.let {
+                    outlineColorInfo = outlineColorInfo.checkAndReplace(it)
+                }
+                feature.getEntityColor(entity)?.let {
+                    entityColorInfo = entityColorInfo.checkAndReplace(it)
+                }
+            }
+
+            outlineColorInfo?.let {
+                outlineEntityCache[entity] = it.color
+            }
+
+            entityColorInfo?.let {
+                changeColorEntityCache[entity] = it.color
+            }
+        }
+    }
 
     @SubscribeEvent
     fun onWorldRender(e: RenderWorldLastEvent) {
 
         for (entity in mc.theWorld.loadedEntityList) {
-            var entityColorInfo: ColorInfo? = null
 
-            for (feature in FeatureRegistry.features) {
-                if (feature is StencilListener) {
-                    feature.getEntityColor(entity)?.let {
-                        entityColorInfo = entityColorInfo.checkAndReplace(it)
-                    }
-                }
-            }
-            entityColorInfo?.let {
-                manualRendering = true
-                RenderUtils.changeEntityColor(entity, it.color, e.partialTicks)
-                manualRendering = false
-            }
+            val color = changeColorEntityCache[entity] ?: continue
+            manualRendering = true
+            RenderUtils.changeEntityColor(entity, color, e.partialTicks)
+            manualRendering = false
+
         }
     }
 
-    fun getOutlineColorForEntity(entity: Entity): Int? {
-        var outlineColorInfo: ColorInfo? = null
-
-        for (feature in FeatureRegistry.features) {
-            if (feature is StencilListener) {
-                feature.getOutlineColor(entity)?.let {
-                    outlineColorInfo = outlineColorInfo.checkAndReplace(it)
-                }
-            }
-            for ((processor, shouldExecute) in feature.processors) {
-                if (processor is StencilListener && shouldExecute()) {
-                    processor.getOutlineColor(entity)?.let {
-                        outlineColorInfo = outlineColorInfo.checkAndReplace(it)
-                    }
-                }
-            }
-        }
-
-        return outlineColorInfo?.color
-    }
+    fun getOutlineColorForEntity(entity: Entity) = outlineEntityCache[entity]
 
     @SubscribeEvent
     fun onRenderName(e: RenderLivingEvent.Specials.Pre<EntityLivingBase>) {

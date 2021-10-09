@@ -19,12 +19,16 @@
 package com.happyandjust.nameless.hypixel
 
 import com.happyandjust.nameless.devqol.inHypixel
+import com.happyandjust.nameless.devqol.matchesMatcher
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
+import com.happyandjust.nameless.hypixel.skyblock.DungeonFloor
 import com.happyandjust.nameless.utils.ScoreboardUtils
 import net.minecraftforge.common.MinecraftForge
+import java.util.regex.Pattern
 
 object Hypixel {
+    private val DUNGEONS_FLOOR_PATTERN = Pattern.compile("The Catacombs \\((?<name>([FM][1-7]|E))\\)")
     var currentGame: GameType? = null
     val currentProperty = hashMapOf<PropertyKey, Any>()
     var inLobby = false
@@ -85,6 +89,13 @@ object Hypixel {
             GameType.SKYBLOCK -> {
                 currentProperty[PropertyKey.DUNGEON] = locraw.mode == "dungeon"
                 currentProperty[PropertyKey.ISLAND] = locraw.mode
+
+                detect@ for (scoreboard in ScoreboardUtils.getSidebarLines(true)) {
+                    DUNGEONS_FLOOR_PATTERN.matchesMatcher(scoreboard.trim()) {
+                        currentProperty[PropertyKey.DUNGEON_FLOOR] =
+                            DungeonFloor.getByScoreboardName(it.group("name")) ?: return@matchesMatcher
+                    }
+                }
             }
             GameType.PARTY_GAMES -> {
                 detect@ for (scoreboard in ScoreboardUtils.getSidebarLines(true)) {

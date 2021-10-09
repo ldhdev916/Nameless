@@ -20,16 +20,14 @@ package com.happyandjust.nameless.features.property
 
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.gui.Rectangle
-import com.happyandjust.nameless.gui.elements.EBasicSlider
+import com.happyandjust.nameless.gui.elements.EEnumSelectPanel
 
-class DoubleProperty(
-    featureParameter: FeatureParameter<Double>,
-) : Property<Double>(
-    featureParameter,
-    EBasicSlider(
-        Rectangle.fromWidthHeight(0, 0, 200, 8),
-        featureParameter.minValue,
-        featureParameter.maxValue,
+class EnumProperty(featureParameter: FeatureParameter<Enum<*>>) : Property<Enum<*>>(
+    featureParameter, EEnumSelectPanel(
+        Rectangle.fromWidthHeight(0, 0, 50, 14),
         featureParameter.value,
-        1
-    ) { featureParameter.value = it })
+        featureParameter.allEnumList
+    ).also {
+        it.onCurrentEnumChange = { enum -> featureParameter.value = enum }
+    }
+)

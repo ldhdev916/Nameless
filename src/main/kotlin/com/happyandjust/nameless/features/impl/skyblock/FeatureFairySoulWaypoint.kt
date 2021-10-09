@@ -16,10 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.impl
+package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.devqol.LOGGER
 import com.happyandjust.nameless.devqol.getAxisAlignedBB
 import com.happyandjust.nameless.devqol.isFairySoul
 import com.happyandjust.nameless.devqol.mc
@@ -59,6 +58,7 @@ class FeatureFairySoulWaypoint : SimpleFeature(
     private val REFRESH_TICK = 20
     private var pathTick = 0
     private var foundFairySoulsInThisProfile = emptyList<FairySoul>()
+    private var dungeonFairySoulScanTick = 0
 
     init {
         parameters["path"] = FeatureParameter(
@@ -92,6 +92,14 @@ class FeatureFairySoulWaypoint : SimpleFeature(
         if (Hypixel.currentGame == GameType.SKYBLOCK) {
             currentSkyblockIsland?.let {
 
+                if (it == "dungeon") {
+                    dungeonFairySoulScanTick = (dungeonFairySoulScanTick + 1) % 20
+
+                    if (dungeonFairySoulScanTick == 0) {
+                        currentIslandFairySouls = SkyblockUtils.getAllFairySoulsByEntity("dungeon")
+                    }
+                }
+
                 foundFairySoulsInThisProfile =
                     FairySoulProfileCache.currentlyLoadedProfile.foundFairySouls[currentSkyblockIsland] ?: emptyList()
 
@@ -99,23 +107,23 @@ class FeatureFairySoulWaypoint : SimpleFeature(
                     pathTick = (pathTick + 1) % REFRESH_TICK
 
                     if (pathTick == 0) {
-                        currentIslandFairySouls.filter { !foundFairySoulsInThisProfile.contains(it) }.apply {
-                            if (isNotEmpty() && !pathFreezed) {
-                                threadPool.execute {
-                                    fairySoulPaths = ModPathFinding(
-                                        sortedBy { fairySoul -> mc.thePlayer.getDistanceSq(fairySoul.toBlockPos()) }[0].toBlockPos(),
-                                        true
-                                    ).findPath().get()
+                        currentIslandFairySouls.filter { fairySoul -> !foundFairySoulsInThisProfile.contains(fairySoul) }
+                            .apply {
+                                if (isNotEmpty() && !pathFreezed) {
+                                    threadPool.execute {
+                                        fairySoulPaths = ModPathFinding(
+                                            sortedBy { fairySoul -> mc.thePlayer.getDistanceSq(fairySoul.toBlockPos()) }[0].toBlockPos(),
+                                            true
+                                        ).findPath().get()
+                                    }
                                 }
                             }
-                        }
                     }
                 }
             } ?: run {
                 currentSkyblockIsland = Hypixel.getProperty(PropertyKey.ISLAND)
 
                 currentSkyblockIsland?.let {
-                    LOGGER.info("Found SkyBlock Island: $it")
                     currentIslandFairySouls = SkyblockUtils.getAllFairySoulsInWorld(it)
                 }
 

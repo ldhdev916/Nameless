@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.features.FeatureRegistry;
+import com.happyandjust.nameless.features.impl.qol.FeatureAFKMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
 import org.objectweb.asm.Opcodes;
@@ -28,6 +29,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
@@ -49,5 +51,12 @@ public class MixinMinecraft {
         } else {
             gameSettings.thirdPersonView = value;
         }
+    }
+
+    @Inject(method = "getLimitFramerate", at = @At("HEAD"), cancellable = true)
+    public void afkMode(CallbackInfoReturnable<Integer> cir) {
+        FeatureAFKMode feature = FeatureRegistry.INSTANCE.getAFK_MODE();
+
+        if (feature.getEnabled()) cir.setReturnValue(feature.getParameterValue("fps"));
     }
 }

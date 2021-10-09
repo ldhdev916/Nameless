@@ -16,15 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.gui.elements
+package com.happyandjust.nameless.hypixel.skyblock
 
-import com.happyandjust.nameless.devqol.drawOutlineBox
-import com.happyandjust.nameless.gui.EPanel
-import com.happyandjust.nameless.gui.Rectangle
+import net.minecraft.entity.EntityLivingBase
+import net.minecraft.entity.item.EntityArmorStand
 
-class EOutline(rectangle: Rectangle, var color: Int, var outlineWidth: Int = 1) : EPanel(rectangle) {
-
-    override fun draw(mouseX: Int, mouseY: Int, scale: Int) {
-        rectangle.drawOutlineBox(color, outlineWidth)
-    }
-}
+data class SkyBlockMonster<T : EntityLivingBase>(
+    val name: String,
+    val level: Int,
+    val currentHealth: Int,
+    val maxHealth: Int,
+    val actualEntity: T,
+    val identificationArmorStand: EntityArmorStand
+)

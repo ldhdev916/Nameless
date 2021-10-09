@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.impl
+package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.ColorInfo
@@ -34,6 +34,10 @@ import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.serialization.TypeRegistry
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityArmorStand
+import net.minecraft.entity.item.EntityItem
+import net.minecraft.entity.item.EntityItemFrame
+import net.minecraft.entity.item.EntityXPOrb
+import net.minecraft.entity.projectile.EntityFishHook
 import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.pow
@@ -67,6 +71,8 @@ class FeatureGlowStarDungeonMobs : SimpleFeature(
     }
 
     val checkedDungeonMobs = hashMapOf<EntityArmorStand, Entity>()
+    private val ignoreMobs: (Entity) -> Boolean =
+        { it is EntityArmorStand || it is EntityItem || it is EntityItemFrame || it is EntityXPOrb || it is EntityFishHook }
     private var checkTick = 0
     private var validTick = 0
 
@@ -81,11 +87,12 @@ class FeatureGlowStarDungeonMobs : SimpleFeature(
 
         if (checkTick == 0) {
             for (entityArmorStand in mc.theWorld.loadedEntityList.filterIsInstance<EntityArmorStand>()
-                .filter { !checkedDungeonMobs.contains(it) && it.alwaysRenderNameTag && it.name.contains("✯") }) {
+                .filter { !checkedDungeonMobs.contains(it) && it.displayName.unformattedText.contains("✯") }) {
                 val availMobs = mc.theWorld.getEntitiesWithinAABB(
                     Entity::class.java,
-                    entityArmorStand.entityBoundingBox.expand(0.0, 0.3, 0.0)
-                ).sortedBy { (it.posX - entityArmorStand.posX).pow(2) + (it.posZ - entityArmorStand.posZ).pow(2) }
+                    entityArmorStand.entityBoundingBox.expand(0.6, 1.4, 0.6)
+                ).also { it.removeIf(ignoreMobs) }
+                    .sortedBy { (it.posX - entityArmorStand.posX).pow(2) + (it.posZ - entityArmorStand.posZ).pow(2) }
 
                 if (availMobs.isEmpty()) { // this is cursed
                     continue

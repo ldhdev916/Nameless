@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.impl
+package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.devqol.LOGGER
 import com.happyandjust.nameless.devqol.mc
@@ -39,7 +39,7 @@ class FeatureReconnectButton : SimpleFeature(
     true
 ), ScreenInitListener, ScreenActionPerformedListener {
 
-    var lastServerData: ServerData? = null
+    private var lastServerData: ServerData? = null
 
     override fun actionPerformedPre(e: GuiScreenEvent.ActionPerformedEvent.Pre) {
 
@@ -54,30 +54,35 @@ class FeatureReconnectButton : SimpleFeature(
     }
 
     override fun screenInitPre(e: GuiScreenEvent.InitGuiEvent.Pre) {
-
     }
 
     override fun screenInitPost(e: GuiScreenEvent.InitGuiEvent.Post) {
-        if (e.gui is GuiDisconnected && enabled) {
-            if (lastServerData != null) { // This should not be happened
+        when (e.gui) {
+            is GuiDisconnected -> {
+                if (enabled) {
+                    if (lastServerData != null) { // This should not be happened
 
-                for (button in e.buttonList) {
-                    if (button.id == 0) {
-                        e.buttonList.add(
-                            GuiButton(
-                                101,
-                                button.xPosition,
-                                button.yPosition + button.height + 10,
-                                "Reconnect"
-                            )
-                        )
-                        break
+                        for (button in e.buttonList) {
+                            if (button.id == 0) {
+                                e.buttonList.add(
+                                    GuiButton(
+                                        101,
+                                        button.xPosition,
+                                        button.yPosition + button.height + 10,
+                                        "Reconnect"
+                                    )
+                                )
+                                break
+                            }
+                        }
+
+                    } else {
+                        LOGGER.error("ERROR: ServerData is null, how tf you got disconnected from server")
                     }
                 }
-
-            } else {
-                LOGGER.error("ERROR: ServerData is null, how tf you got disconnected from server")
             }
+            is GuiConnecting -> lastServerData = mc.currentServerData
         }
+
     }
 }

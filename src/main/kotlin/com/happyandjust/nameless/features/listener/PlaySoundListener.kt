@@ -16,20 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.property
+package com.happyandjust.nameless.features.listener
 
-import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.gui.Rectangle
-import com.happyandjust.nameless.gui.elements.EBasicSlider
+import net.minecraftforge.client.event.sound.PlaySoundEvent
+import net.minecraftforge.event.entity.PlaySoundAtEntityEvent
 
-class DoubleProperty(
-    featureParameter: FeatureParameter<Double>,
-) : Property<Double>(
-    featureParameter,
-    EBasicSlider(
-        Rectangle.fromWidthHeight(0, 0, 200, 8),
-        featureParameter.minValue,
-        featureParameter.maxValue,
-        featureParameter.value,
-        1
-    ) { featureParameter.value = it })
+interface PlaySoundListener {
+
+    fun onPlaySound(e: PlaySoundEvent)
+
+    fun onPlaySoundAtEntity(e: PlaySoundAtEntityEvent)
+}

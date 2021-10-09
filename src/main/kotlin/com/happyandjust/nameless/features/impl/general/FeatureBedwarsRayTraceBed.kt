@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.impl
+package com.happyandjust.nameless.features.impl.general
 
 import com.happyandjust.nameless.core.Point
 import com.happyandjust.nameless.devqol.*

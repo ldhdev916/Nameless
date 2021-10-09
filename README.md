@@ -47,15 +47,20 @@
     - Anvil Spleef
     - Spider Maze
     - Dive
-    - Workshop
     - Lab Escape
   - Auto Accept Party
+  - AFK Mode
+  - Hide Tip Message
 </details>
 <details>
   <summary>SkyBlock</summary>
 
   - Fairy Soul Waypoint
   - Glow Star Dungeon Mobs
+  - Damage Indicator
+  - Change Item Name
+  - Render Pointing Arrow to Wither/Blood Key
+  - Blaze Solver
 </details>
 <details>
  <summary>Miscellaneous</summary>

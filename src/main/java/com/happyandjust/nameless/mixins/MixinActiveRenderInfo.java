@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.features.FeatureRegistry;
-import com.happyandjust.nameless.features.impl.FeaturePerspective;
+import com.happyandjust.nameless.features.impl.qol.FeaturePerspective;
 import com.happyandjust.nameless.mixinhooks.EntityRendererHook;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import org.objectweb.asm.Opcodes;

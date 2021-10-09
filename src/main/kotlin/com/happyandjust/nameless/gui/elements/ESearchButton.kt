@@ -73,19 +73,28 @@ class ESearchButton(rectangle: Rectangle, val textFieldWidth: Int, textScale: Do
         }
     }
 
-    fun disableTextField() {
+    private fun disableTextField() {
         textField.isFocused = false.also(onTextFieldStateChange)
         textField.visible = false
         textField.text = ""
 
-        rectangle = rectangle.offset(textField.rectangle.width, 0)
+        adjustRectangleToTextField(textField.rectangle.right - rectangle.width)
     }
 
-    fun enableTextField() {
+    private fun enableTextField() {
         textField.isFocused = true.also(onTextFieldStateChange)
         textField.visible = true
 
-        rectangle = rectangle.offset(-textField.rectangle.width, 0)
+        adjustRectangleToTextField(textField.rectangle.left - rectangle.width)
+    }
+
+    private fun adjustRectangleToTextField(left: Int) {
+        rectangle = Rectangle.fromWidthHeight(
+            left,
+            rectangle.top,
+            rectangle.width,
+            rectangle.height
+        )
     }
 
     override fun keyTyped(typedChar: Char, keyCode: Int) {

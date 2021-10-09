@@ -27,6 +27,8 @@ import com.happyandjust.nameless.events.PartyGameChangeEvent
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.listener.*
 import net.minecraftforge.client.event.*
+import net.minecraftforge.client.event.sound.PlaySoundEvent
+import net.minecraftforge.event.entity.PlaySoundAtEntityEvent
 import net.minecraftforge.event.entity.player.ItemTooltipEvent
 import net.minecraftforge.fml.common.eventhandler.EventPriority
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
@@ -146,6 +148,16 @@ class FeatureListener {
     @SubscribeEvent
     fun backgroundDrawn(e: GuiScreenEvent.BackgroundDrawnEvent) {
         invoke<BackgroundDrawnListener> { onBackgroundDrawn(e) }
+    }
+
+    @SubscribeEvent
+    fun playSound(e: PlaySoundEvent) {
+        invoke<PlaySoundListener> { onPlaySound(e) }
+    }
+
+    @SubscribeEvent
+    fun playSoundAtEntity(e: PlaySoundAtEntityEvent) {
+        invoke<PlaySoundListener> { onPlaySoundAtEntity(e) }
     }
 
 }

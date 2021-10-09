@@ -16,20 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.property
+package com.happyandjust.nameless.serialization.converters
 
-import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.gui.Rectangle
-import com.happyandjust.nameless.gui.elements.EBasicSlider
+import com.google.gson.JsonElement
+import com.google.gson.JsonPrimitive
+import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
+import com.happyandjust.nameless.serialization.Converter
 
-class DoubleProperty(
-    featureParameter: FeatureParameter<Double>,
-) : Property<Double>(
-    featureParameter,
-    EBasicSlider(
-        Rectangle.fromWidthHeight(0, 0, 200, 8),
-        featureParameter.minValue,
-        featureParameter.maxValue,
-        featureParameter.value,
-        1
-    ) { featureParameter.value = it })
+object CDamageIndicateType : Converter<DamageIndicateType> {
+    override fun serialize(t: DamageIndicateType) = JsonPrimitive(t.name)
+
+    override fun deserialize(jsonElement: JsonElement) = DamageIndicateType.valueOf(jsonElement.asString)
+}

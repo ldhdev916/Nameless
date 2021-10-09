@@ -16,20 +16,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.property
+package com.happyandjust.nameless.hypixel.skyblock
 
-import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.gui.Rectangle
-import com.happyandjust.nameless.gui.elements.EBasicSlider
+enum class ItemRarity(val webName: String) {
 
-class DoubleProperty(
-    featureParameter: FeatureParameter<Double>,
-) : Property<Double>(
-    featureParameter,
-    EBasicSlider(
-        Rectangle.fromWidthHeight(0, 0, 200, 8),
-        featureParameter.minValue,
-        featureParameter.maxValue,
-        featureParameter.value,
-        1
-    ) { featureParameter.value = it })
+
+    COMMON("COMMON"),
+    UNCOMMON("UNCOMMON"),
+    RARE("RARE"),
+    EPIC("EPIC"),
+    LEGENDARY("LEGENDARY"),
+    MYTHIC("MYTHIC"),
+    SUPREME("SUPREME"),
+    SPECIAL("SPECIAL"),
+    VERY_SPECIAL("VERY_SPECIAL");
+
+    companion object {
+
+        private val values = values()
+
+        fun fromString(name: String): ItemRarity {
+            for (rarity in values) {
+                if (rarity.webName == name) return rarity
+            }
+
+            throw IllegalArgumentException("No Such ItemRarity: $name")
+        }
+    }
+}

@@ -19,14 +19,18 @@
 package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.features.FeatureRegistry;
-import com.happyandjust.nameless.features.impl.FeatureBedwarsESP;
-import com.happyandjust.nameless.features.impl.FeatureGlowStarDungeonMobs;
+import com.happyandjust.nameless.features.impl.general.FeatureBedwarsESP;
+import com.happyandjust.nameless.features.impl.skyblock.FeatureGlowStarDungeonMobs;
+import com.happyandjust.nameless.mixinhooks.EntityHook;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.util.ChatComponentText;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
@@ -36,6 +40,8 @@ public class MixinEntity {
     private final FeatureBedwarsESP bedwarsESP = FeatureRegistry.INSTANCE.getBEDWARS_ESP();
     @Unique
     private final FeatureGlowStarDungeonMobs glowStarDungeonMobs = FeatureRegistry.INSTANCE.getGLOW_STAR_DUNGEON_MOBS();
+    @Unique
+    private final EntityHook hook = EntityHook.INSTANCE;
     private final Entity $this = (Entity) (Object) this;
 
     @Inject(method = "isInvisible", at = @At("HEAD"), cancellable = true)
@@ -47,6 +53,12 @@ public class MixinEntity {
         if ($this instanceof EntityEnderman && glowStarDungeonMobs.getEnabled() && glowStarDungeonMobs.getCheckedDungeonMobs().containsValue(this) && (boolean) glowStarDungeonMobs.getParameterValue("fel")) {
             cir.setReturnValue(false);
         }
+    }
+
+    @ModifyVariable(method = "getDisplayName", at = @At(value = "STORE"))
+    public ChatComponentText getCustomDamageName(ChatComponentText origin) {
+        if (!($this instanceof EntityArmorStand)) return origin;
+        return hook.getCustomDamageName(origin);
     }
 
 }

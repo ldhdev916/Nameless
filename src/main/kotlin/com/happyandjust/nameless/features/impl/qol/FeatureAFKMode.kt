@@ -16,51 +16,60 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.impl
+package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.core.ChromaColor
-import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.FeatureStateListener
-import com.happyandjust.nameless.mixins.accessors.AccessorGuiIngame
+import com.happyandjust.nameless.features.listener.PlaySoundListener
 import com.happyandjust.nameless.serialization.TypeRegistry
-import net.minecraft.client.gui.GuiPlayerTabOverlay
-import java.awt.Color
+import net.minecraftforge.client.event.sound.PlaySoundEvent
+import net.minecraftforge.event.entity.PlaySoundAtEntityEvent
 
-class FeatureShowPingInTab : SimpleFeature(Category.QOL, "pingtab", "Show Ping numbers in Tab"), FeatureStateListener {
-
-    private var prevTabOverlay: GuiPlayerTabOverlay? = null
+class FeatureAFKMode :
+    SimpleFeature(
+        Category.QOL,
+        "afkmode",
+        "AFK Mode",
+        "Disable rendering blocks, entities, sounds, other things and limit fps"
+    ),
+    FeatureStateListener, PlaySoundListener {
 
     init {
-        parameters["color"] = FeatureParameter(
+        parameters["fps"] = FeatureParameter(
             0,
-            "pingtab",
-            "color",
-            "Ping Text Color",
+            "afkmode",
+            "fps",
+            "Limit FPS",
             "",
-            Color.green.toChromaColor(),
-            TypeRegistry.getConverterByClass(ChromaColor::class)
-        )
+            15,
+            TypeRegistry.getConverterByClass(Int::class)
+        ).also {
+            it.minValue = 5.0
+            it.maxValue = 100.0
+        }
     }
 
     override fun onFeatureStateChangePre(e: FeatureStateChangeEvent.Pre) {
-
     }
 
     override fun onFeatureStateChangePost(e: FeatureStateChangeEvent.Post) {
-        if (e.feature == this) {
-            if (e.enabledAfter) {
-                prevTabOverlay = mc.ingameGUI.tabList
-                (mc.ingameGUI as AccessorGuiIngame).setOverlayPlayerList(GuiPlayerTabOverlay(mc, mc.ingameGUI))
-            } else {
-                prevTabOverlay?.let {
-                    (mc.ingameGUI as AccessorGuiIngame).setOverlayPlayerList(it)
-                }
-            }
+        if (e.enabledAfter && e.feature == this) {
+            mc.thePlayer.closeScreen()
+            mc.renderGlobal.loadRenderers()
         }
+    }
+
+    override fun onPlaySound(e: PlaySoundEvent) {
+        if (!enabled) return
+        e.result = null
+    }
+
+    override fun onPlaySoundAtEntity(e: PlaySoundAtEntityEvent) {
+        if (!enabled) return
+        e.isCanceled = true
     }
 }

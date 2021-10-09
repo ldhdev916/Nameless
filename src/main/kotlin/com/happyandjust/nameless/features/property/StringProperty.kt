@@ -24,12 +24,13 @@ import com.happyandjust.nameless.gui.elements.ETextField
 
 class StringProperty(
     featureParameter: FeatureParameter<String>,
-    validator: (String) -> Boolean = { true },
-    maxStringWidth: Int = 100
 ) :
     Property<String>(
         featureParameter,
-        ETextField(Rectangle.fromWidthHeight(0, 0, 60, 20)).also {
-            it.validator = validator
-            it.maxStringWidth = maxStringWidth
+        ETextField(Rectangle.fromWidthHeight(0, 0, 160, 20)).also {
+            it.validator = featureParameter.validator
+            it.maxStringWidth = featureParameter.maxStringWidth
+
+            it.onKeyTyped = { text -> featureParameter.value = text }
+            it.text = featureParameter.value
         })

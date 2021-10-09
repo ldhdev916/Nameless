@@ -25,16 +25,18 @@ import com.happyandjust.nameless.gui.Rectangle
 
 /**
  * Identical to [com.happyandjust.nameless.gui.elements.EFeatureSettingPanel]
- *
- * To enable recursion, lamda in constructor is removed
  */
 class EParameterSettingPanel(
     rectangle: Rectangle,
-    featureParameter: FeatureParameter<*>,
-    scrollStacks: EScrollPanelStacks
+    private val featureParameter: FeatureParameter<*>,
+    private val scrollStacks: EScrollPanelStacks
 ) : EScrollPanel(rectangle, 10, emptyList()) {
 
     init {
+        filter { true }
+    }
+
+    fun filter(f: (FeatureParameter<*>) -> Boolean) {
         with(rectangle) {
             val params = arrayListOf<EPanel>()
 
@@ -43,6 +45,9 @@ class EParameterSettingPanel(
             val inCategorySorted = hashMapOf<String, ArrayList<FeatureParameter<*>>>()
 
             for (parameter in sortedParams) {
+
+                if (!f(featureParameter)) continue
+
                 val list = inCategorySorted[parameter.inCategory] ?: arrayListOf()
 
                 list.add(parameter)

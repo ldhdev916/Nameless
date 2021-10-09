@@ -203,20 +203,13 @@ class EParameter(rectangle: Rectangle, val parameter: FeatureParameter<*>, val o
 
     init {
         val property = when (parameter.defaultValue) {
-            is Int -> IntProperty(
-                parameter as FeatureParameter<Int>,
-                parameter.minValue.toInt(),
-                parameter.maxValue.toInt()
-            )
-            is Double -> DoubleProperty(
-                parameter as FeatureParameter<Double>,
-                parameter.minValue,
-                parameter.maxValue
-            )
+            is Int -> IntProperty(parameter as FeatureParameter<Int>)
+            is Double -> DoubleProperty(parameter as FeatureParameter<Double>)
             is Boolean -> BooleanProperty(parameter as FeatureParameter<Boolean>)
             is String -> StringProperty(parameter as FeatureParameter<String>)
             is ChromaColor -> ChromaColorProperty(parameter as FeatureParameter<ChromaColor>)
-            is Overlay -> OverlayProperty(parameter as FeatureParameter<Overlay>, parameter.relocateGui()!!)
+            is Overlay -> OverlayProperty(parameter as FeatureParameter<Overlay>)
+            is Enum<*> -> EnumProperty(parameter as FeatureParameter<Enum<*>>)
             else -> throw IllegalArgumentException("Unsupported Property")
         }
 

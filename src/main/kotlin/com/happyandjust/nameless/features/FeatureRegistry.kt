@@ -20,7 +20,12 @@ package com.happyandjust.nameless.features
 
 import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.features.impl.*
+import com.happyandjust.nameless.features.impl.general.*
+import com.happyandjust.nameless.features.impl.misc.FeatureTextureOverlay
+import com.happyandjust.nameless.features.impl.misc.FeatureUpdateChecker
+import com.happyandjust.nameless.features.impl.qol.*
+import com.happyandjust.nameless.features.impl.skyblock.*
+import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
 import com.happyandjust.nameless.serialization.TypeRegistry
 import java.awt.Color
 
@@ -119,10 +124,49 @@ object FeatureRegistry {
     val GTB_HELPER = register(FeatureGTBHelper())
     val PARTY_GAMES_HELPER = register(FeaturePartyGamesHelper())
     val AUTO_ACCEPT_PARTY = register(FeatureAutoAcceptParty())
+    val AFK_MODE = register(FeatureAFKMode())
+    val HIDE_TIP_MESSAGE = register(FeatureHideTipMessage())
 
     //SKYBLOCK
     val FAIRY_SOUL_WAYPOINT = register(FeatureFairySoulWaypoint())
     val GLOW_STAR_DUNGEON_MOBS = register(FeatureGlowStarDungeonMobs())
+    val TRACK_AUCTION = register(FeatureTrackAuction())
+    val DAMAGE_INDICATOR = register(
+        SimpleFeature(
+            Category.SKYBLOCK,
+            "damageindicator",
+            "Damage Indicator",
+            "Transform damage into K or M or B"
+        ).also {
+            it.parameters["type"] = FeatureParameter(
+                0,
+                "damageindicator",
+                "type",
+                "Damage Indicate Type",
+                "K, M, B",
+                DamageIndicateType.M,
+                TypeRegistry.getConverterByClass(DamageIndicateType::class)
+            ).also { featureParameter ->
+                featureParameter.allEnumList = DamageIndicateType.values().toList()
+            }
+
+            it.parameters["precision"] = FeatureParameter(
+                0,
+                "damageindicator",
+                "precision",
+                "Precision",
+                "",
+                1,
+                TypeRegistry.getConverterByClass(Int::class)
+            ).also { featureParameter ->
+                featureParameter.minValue = 0.0
+                featureParameter.maxValue = 7.0
+            }
+        }
+    )
+    val CHANGE_ITEM_NAME = register(FeatureChangeItemName())
+    val DUNGEON_DOOR_KEY = register(FeatureDungeonsDoorKey())
+    val BLAZE_SOLVER = register(FeatureBlazeSolver())
 
 
 }

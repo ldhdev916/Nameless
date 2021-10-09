@@ -86,7 +86,9 @@ object ConfigHandler {
     }
 
     fun deleteCategory(category: String) {
-        handler.write(readConfig().remove(category))
+        val config = readConfig()
+        config.remove(category)
+        handler.write(config)
     }
 
     fun deleteKey(category: String, key: String) {
@@ -94,7 +96,10 @@ object ConfigHandler {
         val configObject = readConfig()
 
         val categoryObject = readCategory(category, configObject)
-        configObject.add(category, categoryObject.remove(key))
+
+        categoryObject.remove(key)
+
+        configObject.add(category, categoryObject)
 
         handler.write(configObject)
     }

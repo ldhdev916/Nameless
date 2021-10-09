@@ -61,8 +61,6 @@ object Utils {
         return if (shouldBeValid) pos.up() else pos
     }
 
-    fun getSeconds(start: Long, end: Long) = (end - start) / 10_0000_0000.0
-
     fun getPlayersInTab(): List<EntityPlayer> {
         val players = arrayListOf<EntityPlayer>()
 

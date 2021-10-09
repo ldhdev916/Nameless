@@ -18,10 +18,14 @@
 
 package com.happyandjust.nameless.mixins;
 
+import com.happyandjust.nameless.features.FeatureRegistry;
+import com.happyandjust.nameless.features.impl.qol.FeatureAFKMode;
 import com.happyandjust.nameless.mixinhooks.RenderGlobalHook;
 import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.EnumWorldBlockLayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -38,6 +42,7 @@ public class MixinRenderGlobal {
 
     @Unique
     private final RenderGlobalHook hook = RenderGlobalHook.INSTANCE;
+    private final FeatureAFKMode feature = FeatureRegistry.INSTANCE.getAFK_MODE();
 
     @Inject(method = "isRenderEntityOutlines", at = @At("HEAD"), cancellable = true)
     public void renderEntityOutline(CallbackInfoReturnable<Boolean> cir) {
@@ -59,4 +64,65 @@ public class MixinRenderGlobal {
         return false;
     }
 
+    // AFK
+
+    @Inject(method = "renderEntities", at = @At("HEAD"), cancellable = true)
+    public void stopRenderEntities(Entity renderViewEntity, ICamera camera, float partialTicks, CallbackInfo ci) {
+        if (feature.getEnabled()) ci.cancel();
+    }
+
+    @Inject(method = "setupTerrain", at = @At("HEAD"), cancellable = true)
+    public void stopRenderBlocks(Entity viewEntity, double partialTicks, ICamera camera, int frameCount, boolean playerSpectator, CallbackInfo ci) {
+        if (feature.getEnabled()) ci.cancel();
+    }
+
+    @Inject(method = "spawnParticle(IZDDDDDD[I)V", at = @At("HEAD"), cancellable = true)
+    public void stopRenderingParticles(int particleID, boolean ignoreRange, double xCoord, double yCoord, double zCoord, double xOffset, double yOffset, double zOffset, int[] parameters, CallbackInfo ci) {
+        if (feature.getEnabled()) ci.cancel();
+    }
+
+    @Inject(method = "renderStars", at = @At("HEAD"), cancellable = true)
+    public void stopRenderingStar(WorldRenderer worldRendererIn, CallbackInfo ci) {
+        if (feature.getEnabled()) ci.cancel();
+    }
+
+    @Inject(method = "renderClouds", at = @At("HEAD"), cancellable = true)
+    public void stopRenderingClouds(float partialTicks, int pass, CallbackInfo ci) {
+        if (feature.getEnabled()) ci.cancel();
+    }
+
+    @Inject(method = "renderSky(FI)V", at = @At("HEAD"), cancellable = true)
+    public void stopRenderingSky1(float partialTicks, int pass, CallbackInfo ci) {
+        if (feature.getEnabled()) ci.cancel();
+    }
+
+    @Inject(method = "renderSky(Lnet/minecraft/client/renderer/WorldRenderer;FZ)V", at = @At("HEAD"), cancellable = true)
+    public void stopRenderingSky2(WorldRenderer worldRendererIn, float posY, boolean reverseX, CallbackInfo ci) {
+        if (feature.getEnabled()) ci.cancel();
+    }
+
+    @Inject(method = "renderBlockLayer(Lnet/minecraft/util/EnumWorldBlockLayer;DILnet/minecraft/entity/Entity;)I", at = @At("HEAD"), cancellable = true)
+    public void stopRenderingBlockLayer1(EnumWorldBlockLayer blockLayerIn, double partialTicks, int pass, Entity entityIn, CallbackInfoReturnable<Integer> cir) {
+        if (feature.getEnabled()) cir.setReturnValue(0);
+    }
+
+    @Inject(method = "renderBlockLayer(Lnet/minecraft/util/EnumWorldBlockLayer;)V", at = @At("HEAD"), cancellable = true)
+    public void stopRenderingBlockLayer2(EnumWorldBlockLayer blockLayerIn, CallbackInfo ci) {
+        if (feature.getEnabled()) ci.cancel();
+    }
+
+    @Inject(method = "generateSky", at = @At("HEAD"), cancellable = true)
+    public void stopGeneratingSky(CallbackInfo ci) {
+        if (feature.getEnabled()) ci.cancel();
+    }
+
+    @Inject(method = "generateSky2", at = @At("HEAD"), cancellable = true)
+    public void stopGeneratingSky2(CallbackInfo ci) {
+        if (feature.getEnabled()) ci.cancel();
+    }
+
+    @Inject(method = "generateStars", at = @At("HEAD"), cancellable = true)
+    public void stopGeneratingStars(CallbackInfo ci) {
+        if (feature.getEnabled()) ci.cancel();
+    }
 }

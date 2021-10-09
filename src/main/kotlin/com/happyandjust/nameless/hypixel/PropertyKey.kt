@@ -18,10 +18,13 @@
 
 package com.happyandjust.nameless.hypixel
 
+import com.happyandjust.nameless.hypixel.skyblock.DungeonFloor
+
 enum class PropertyKey(supportedGame: GameType, val defaultValue: Any, description: String = "") {
 
     DUNGEON(GameType.SKYBLOCK, false, "if player is in skyblock dungeon"),
     MURDERER_TYPE(GameType.MURDER_MYSTERY, MurdererMode.CLASSIC, "assassin, classic, infection"),
     PARTY_GAME_TYPE(GameType.PARTY_GAMES, PartyGamesType.NOTHING, "Supported Party Games Types"),
-    ISLAND(GameType.SKYBLOCK, "", "SkyBlock island")
+    ISLAND(GameType.SKYBLOCK, "", "SkyBlock island"),
+    DUNGEON_FLOOR(GameType.SKYBLOCK, DungeonFloor.ENTRANCE, "Dungeons Floor")
 }

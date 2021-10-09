@@ -38,9 +38,9 @@ abstract class TrajectoryPreview {
     protected var motionY: Double = 0.0
     protected var motionZ: Double = 0.0
     protected var entityHit: Entity? = null
-    private val random = Random()
-    var gaussian = 0.0
-    var bool = false
+    protected val random = Random()
+    protected var gaussian = 0.0
+    protected var bool = false
 
     fun setRandomValue() {
         gaussian = random.nextGaussian()

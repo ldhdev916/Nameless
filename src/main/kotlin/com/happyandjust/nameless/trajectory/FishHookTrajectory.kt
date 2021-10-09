@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.trajectory
 
-import net.minecraft.block.material.Material
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.MathHelper
 import net.minecraft.util.Vec3
@@ -78,13 +77,15 @@ class FishHookTrajectory : TrajectoryPreview() {
 
         label@ while (canMove()) {
 
-
             for (i in 0 until num) {
                 if (posY < 0) break@label
 
                 if (!canMove()) break@label
 
                 if (checkEntity()) break@label
+
+                // umm always stops if collide with water
+                if (isInWater()) break@label
 
                 list.add(Vec3(posX, posY, posZ))
                 end = Vec3(posX, posY, posZ)
@@ -94,32 +95,11 @@ class FishHookTrajectory : TrajectoryPreview() {
                 posZ += motionZ / num
             }
 
-            var f6 = 0.92F
+            val f6 = 0.92F
 
-            var d10 = 0.0
-
-            val aabb = getAxisAlignedBB()
-
-            for (k in 0 until 5) {
-                val d3 = aabb.maxY - aabb.minY
-                val d4 = aabb.minY + d3 * k.toDouble() / 5.0
-                val d5 = aabb.minY + d3 * (k + 1).toDouble() / 5.0
-
-                val aabb2 = AxisAlignedBB(aabb.minX, d4, aabb.minZ, aabb.maxX, d5, aabb.maxZ)
-
-                if (entityPlayerSP.worldObj.isAABBInMaterial(aabb2, Material.water)) {
-                    d10 += 0.2
-                }
-            }
-
-            val d11 = d10 * 2.0 - 1.0
+            val d11 = -1.0
 
             motionY += 0.03999999910593033 * d11
-
-            if (d10 > 0) {
-                f6 *= 0.9F
-                motionY *= 0.8
-            }
 
             motionX *= f6
             motionY *= f6

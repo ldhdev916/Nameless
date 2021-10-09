@@ -27,6 +27,9 @@ class FairySoulProfile(val name: String, val foundFairySouls: HashMap<String, Li
     private val cFairySoulProfile = TypeRegistry.getConverterByClass(FairySoulProfile::class)
 
     fun addFoundFairySoul(island: String, fairySoulPosition: BlockPos) {
+
+        if (island == "dungeon") return
+
         val existing = foundFairySouls[island]?.toMutableList() ?: arrayListOf()
 
         val fairySoul = FairySoul(fairySoulPosition.x, fairySoulPosition.y, fairySoulPosition.z, island)

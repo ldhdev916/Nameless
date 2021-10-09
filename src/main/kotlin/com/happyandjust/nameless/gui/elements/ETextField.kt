@@ -34,6 +34,9 @@ import kotlin.math.roundToInt
 open class ETextField(rectangle: Rectangle, private val textScale: Double = 1.0) : EPanel(rectangle) {
 
     private val fontRenderer = mc.fontRendererObj
+
+    var onKeyTyped: (String) -> Unit = {}
+
     var cursorPosition = 0
         get() = field.compress(0, text.length)
         set(value) {
@@ -44,6 +47,7 @@ open class ETextField(rectangle: Rectangle, private val textScale: Double = 1.0)
         set(value) {
             if (validator(value)) {
                 field = if (value.length > maxStringWidth) value.substring(0, maxStringWidth) else value
+                onKeyTyped(field)
             }
         }
 

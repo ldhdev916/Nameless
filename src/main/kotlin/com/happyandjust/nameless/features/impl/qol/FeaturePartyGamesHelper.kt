@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.impl
+package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.Point
@@ -159,15 +159,6 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
                 cChromaColor
             )
         }
-        parameters["workshop"] = FeatureParameter(
-            0,
-            "partygames",
-            "workshop",
-            "Workshop",
-            "Draw boxes on blocks which you should break",
-            true,
-            cBoolean
-        )
         parameters["labescape"] = FeatureParameter(
             0,
             "partygames",

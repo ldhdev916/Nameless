@@ -20,7 +20,7 @@ package com.happyandjust.nameless.mixins;
 
 import com.google.common.collect.Collections2;
 import com.happyandjust.nameless.features.FeatureRegistry;
-import com.happyandjust.nameless.features.impl.FeatureHideNPC;
+import com.happyandjust.nameless.features.impl.qol.FeatureHideNPC;
 import com.happyandjust.nameless.mixinhooks.GuiPlayerTabOverlayHook;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
 import net.minecraft.client.network.NetHandlerPlayClient;

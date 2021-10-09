@@ -47,6 +47,10 @@ open class ConfigMap<V>(
         return super.put(key, value)
     }
 
+    override fun clear() {
+        ConfigHandler.deleteCategory(category)
+        super.clear()
+    }
 
     @Deprecated("Not Supported", ReplaceWith("this.put(value)", "java.util.HashMap"))
     override fun putAll(from: Map<out String, V>) {

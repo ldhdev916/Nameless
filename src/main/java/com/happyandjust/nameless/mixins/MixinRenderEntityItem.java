@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.features.FeatureRegistry;
-import com.happyandjust.nameless.features.impl.FeatureDisplayBetterArmor;
+import com.happyandjust.nameless.features.impl.general.FeatureDisplayBetterArmor;
 import com.happyandjust.nameless.hypixel.GameType;
 import com.happyandjust.nameless.hypixel.Hypixel;
 import net.minecraft.client.renderer.GlStateManager;
@@ -35,7 +35,7 @@ public class MixinRenderEntityItem {
 
     private final FeatureDisplayBetterArmor feature = FeatureRegistry.INSTANCE.getDISPLAY_BETTER_ARMOR();
 
-    @Inject(method = "doRender", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;pushMatrix()V", shift = At.Shift.AFTER))
+    @Inject(method = "doRender*", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;pushMatrix()V", shift = At.Shift.AFTER))
     public void modifyScale(EntityItem entity, double x, double y, double z, float entityYaw, float partialTicks, CallbackInfo ci) {
         if (feature.getEnabled() && Hypixel.INSTANCE.getCurrentGame() == GameType.SKYWARS && feature.getScaledItems().contains(entity)) {
             double scale = feature.getParameterValue("scale");

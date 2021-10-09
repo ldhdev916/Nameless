@@ -23,13 +23,13 @@ import com.happyandjust.nameless.gui.Rectangle
 import com.happyandjust.nameless.gui.elements.EBasicSlider
 import kotlin.math.roundToInt
 
-class IntProperty(featureParameter: FeatureParameter<Int>, minValue: Int, maxValue: Int) :
+class IntProperty(featureParameter: FeatureParameter<Int>) :
     Property<Int>(
         featureParameter,
         EBasicSlider(
-            Rectangle.fromWidthHeight(0, 0, 120, 8),
-            minValue.toDouble(),
-            maxValue.toDouble(),
+            Rectangle.fromWidthHeight(0, 0, 200, 8),
+            featureParameter.minValue,
+            featureParameter.maxValue,
             featureParameter.value.toDouble(),
             0
         ) { featureParameter.value = it.roundToInt() })

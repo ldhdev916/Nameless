@@ -85,7 +85,12 @@ class Nameless {
         outlineHandleListener = OutlineHandleListener()
         locrawListener = LocrawListener()
 
-        registerCommands(DevCommand(), HypixelCommand(), TextureCommand(), FairySoulProfileCommand())
+        registerCommands(
+            DevCommand(),
+            HypixelCommand(),
+            TextureCommand(),
+            FairySoulProfileCommand(),
+        )
         registerListeners(FeatureListener(), BasicListener(), outlineHandleListener, locrawListener)
 
         ProgressManager.pop(progressBar)

@@ -38,6 +38,9 @@ class FeatureParameter<T>(
 
     val parameters = hashMapOf<String, FeatureParameter<*>>()
     var relocateGui: () -> ERelocateGui? = { null }
+    var allEnumList = emptyList<Enum<*>>()
+    var maxStringWidth = 100
+    var validator: (String) -> Boolean = { true }
     var inCategory = ""
     var minValue: Double = 0.0
     var maxValue: Double = 0.0

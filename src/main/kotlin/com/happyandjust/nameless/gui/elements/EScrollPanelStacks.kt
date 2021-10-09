@@ -29,6 +29,7 @@ class EScrollPanelStacks(rectangle: Rectangle) : EPanel(rectangle) {
     private val goBackButton = EButton(Rectangle.ORIGIN, "Go Back", true).also {
         it.onClick = { pop() }
     }
+    var onStateChange = {}
 
     fun push(scrollPanel: EScrollPanel) {
 
@@ -55,9 +56,11 @@ class EScrollPanelStacks(rectangle: Rectangle) : EPanel(rectangle) {
 
         addChild(scrollPanel)
         scrollStack.push(scrollPanel)
+
+        onStateChange()
     }
 
-    fun pop() {
+    private fun pop() {
         if (scrollStack.isNotEmpty()) {
             scrollStack.pop().also { removeChild(it) }
 
@@ -69,6 +72,8 @@ class EScrollPanelStacks(rectangle: Rectangle) : EPanel(rectangle) {
         if (scrollStack.isNotEmpty()) {
             addChild(scrollStack.peek())
         }
+
+        onStateChange()
     }
 
     fun clear() {
@@ -79,7 +84,11 @@ class EScrollPanelStacks(rectangle: Rectangle) : EPanel(rectangle) {
 
             removeChild(goBackButton)
         }
+
+        onStateChange()
     }
+
+    fun peek(): EScrollPanel? = scrollStack.peek()
 
     override fun draw(mouseX: Int, mouseY: Int, scale: Int) {
 

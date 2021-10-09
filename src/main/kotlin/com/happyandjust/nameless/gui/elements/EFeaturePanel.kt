@@ -26,7 +26,7 @@ import com.happyandjust.nameless.gui.Rectangle
 
 class EFeaturePanel(
     rectangle: Rectangle,
-    val onFeatureSettingButtonClicked: (SimpleFeature) -> Unit
+    private val scrollStacks: EScrollPanelStacks
 ) : EScrollPanel(rectangle, 10, emptyList()) {
 
     fun filter(f: (SimpleFeature) -> Boolean) {
@@ -71,7 +71,9 @@ class EFeaturePanel(
                                 (mc.fontRendererObj.FONT_HEIGHT * 4) + (descSize * mc.fontRendererObj.FONT_HEIGHT) + 6
                             ),
                             feature
-                        ) { onFeatureSettingButtonClicked(it.feature) }
+                        ) {
+                            scrollStacks.push(EFeatureSettingPanel(rectangle, feature, scrollStacks))
+                        }
                     )
                 }
             }

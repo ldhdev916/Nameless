@@ -26,11 +26,15 @@ import com.happyandjust.nameless.gui.Rectangle
 
 class EFeatureSettingPanel(
     rectangle: Rectangle,
-    feature: SimpleFeature,
-    val onSettingButtonClicked: (FeatureParameter<*>) -> Unit
+    private val feature: SimpleFeature,
+    private val scrollStacks: EScrollPanelStacks
 ) : EScrollPanel(rectangle, 10, emptyList()) {
 
     init {
+        filter { true }
+    }
+
+    fun filter(f: (FeatureParameter<*>) -> Boolean) {
         // we need to update element here because we can't use 'this' in constructor
         with(rectangle) {
             val params = arrayListOf<EPanel>()
@@ -40,6 +44,9 @@ class EFeatureSettingPanel(
             val inCategorySorted = hashMapOf<String, ArrayList<FeatureParameter<*>>>()
 
             for (parameter in sortedParams) { // sort by in category
+
+                if (!f(parameter)) continue // filter
+
                 val list = inCategorySorted[parameter.inCategory] ?: arrayListOf()
 
                 list.add(parameter)
@@ -69,7 +76,9 @@ class EFeatureSettingPanel(
                                 fontHeight * (descSize + 4) + 6
                             ),
                             parameter
-                        ) { onSettingButtonClicked(it.parameter) }
+                        ) {
+                            scrollStacks.push(EParameterSettingPanel(rectangle, parameter, scrollStacks))
+                        }
                     )
                 }
             }

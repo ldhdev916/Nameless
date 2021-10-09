@@ -16,20 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.property
+package com.happyandjust.nameless.hypixel.skyblock
 
-import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.gui.Rectangle
-import com.happyandjust.nameless.gui.elements.EBasicSlider
+enum class DamageIndicateType {
 
-class DoubleProperty(
-    featureParameter: FeatureParameter<Double>,
-) : Property<Double>(
-    featureParameter,
-    EBasicSlider(
-        Rectangle.fromWidthHeight(0, 0, 200, 8),
-        featureParameter.minValue,
-        featureParameter.maxValue,
-        featureParameter.value,
-        1
-    ) { featureParameter.value = it })
+    K, M, B
+}

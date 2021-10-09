@@ -18,13 +18,18 @@
 
 package com.happyandjust.nameless.utils
 
+import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JSONHandler
 import com.happyandjust.nameless.devqol.isFairySoul
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.devqol.stripControlCodes
+import com.happyandjust.nameless.hypixel.auction.AuctionInfo
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
+import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
+import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
+import com.happyandjust.nameless.network.Request
 import com.happyandjust.nameless.serialization.TypeRegistry
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityArmorStand
@@ -33,9 +38,27 @@ import net.minecraft.util.BlockPos
 import net.minecraft.util.ResourceLocation
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import kotlin.math.pow
 
 object SkyblockUtils {
     private val fairySoulMap = hashMapOf<String, List<FairySoul>>()
+    private val gson = Gson()
+    val allItems = hashMapOf<String, SkyBlockItem>().also {
+        val s = Request.get("https://api.hypixel.net/resources/skyblock/items")
+
+        val json = JSONHandler(s).read(JsonObject())
+
+        val items = json["items"].asJsonArray
+
+        for (item in items) {
+            val skyBlockItem = gson.fromJson(item, SkyBlockItem::class.java)
+
+            skyBlockItem.rarity = ItemRarity.fromString(skyBlockItem.stringRarity)
+            it[skyBlockItem.id] = skyBlockItem
+        }
+    }
+
+    fun getItemFromId(id: String) = allItems[id.uppercase()]!!
 
     fun fetchSkyBlockData() {
         val handler = JSONHandler(ResourceLocation("nameless", "fairysouls.json"))
@@ -93,7 +116,7 @@ object SkyblockUtils {
         list.removeIf { !matchesName(it, getDefaultPattern()).matches() }
 
         if (list.size > 0) {
-            list.sortBy { entity.getDistanceToEntity(it) }
+            list.sortBy { (it.posX - entity.posX).pow(2) + (it.posZ - entity.posZ).pow(2) }
 
             return list[0]
         }
@@ -108,5 +131,23 @@ object SkyblockUtils {
         }
 
         return fairySoulMap[island] ?: return emptyList()
+    }
+
+    fun getAuctionDataInPage(page: Int): List<AuctionInfo> {
+        val s = Request.get("https://api.hypixel.net/skyblock/auctions?page=$page")
+
+        val json = JSONHandler(s).read(JsonObject())
+
+        if (!json["success"].asBoolean) return emptyList()
+
+        val list = arrayListOf<AuctionInfo>()
+
+        val auctions = json["auctions"].asJsonArray
+
+        for (auction in auctions) {
+            list.add(gson.fromJson(auction, AuctionInfo::class.java))
+        }
+
+        return list
     }
 }

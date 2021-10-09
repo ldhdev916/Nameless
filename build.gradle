@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "org.jetbrains.kotlin.jvm" version "1.5.30"
+    id "org.jetbrains.kotlin.jvm" version "1.5.31"
     id "com.github.johnrengelman.shadow" version "6.1.0"
     id "net.minecraftforge.gradle.forge" version "6f53277"
     id "org.spongepowered.mixin" version "d75e32e"
@@ -10,7 +10,7 @@ version = project.modVersion
 group = "com.happyandjust"
 archivesBaseName = project.modName
 String modid = project.modId
-String kotlin_version = "1.5.30"
+String kotlin_version = "1.5.31"
 
 sourceCompatibility = targetCompatibility = 1.8
 compileJava.options.encoding = 'UTF-8'

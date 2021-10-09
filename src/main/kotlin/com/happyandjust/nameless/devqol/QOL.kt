@@ -21,11 +21,14 @@ package com.happyandjust.nameless.devqol
 import com.happyandjust.nameless.config.ConfigMap
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.skyblock.SkyBlockMonster
 import com.happyandjust.nameless.mixins.accessors.AccessorNBTTagList
+import com.happyandjust.nameless.utils.SkyblockUtils
 import net.minecraft.client.Minecraft
 import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.client.renderer.WorldRenderer
 import net.minecraft.entity.Entity
+import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.item.ItemStack
 import net.minecraft.launchwrapper.Launch
@@ -48,6 +51,7 @@ import java.text.DecimalFormatSymbols
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import kotlin.math.floor
 import kotlin.math.pow
 
 private val hsbCache = hashMapOf<Int, FloatArray>()
@@ -66,6 +70,25 @@ fun String.getMD5(): String = md5Cache[this] ?: run {
     builder.toString().also {
         md5Cache[this] = it
     }
+}
+
+fun <T : EntityLivingBase> T.toSkyBlockMonster(): SkyBlockMonster<T>? {
+    val identification = SkyblockUtils.getIdentifyArmorStand(this) ?: return null
+
+    val matcher = SkyblockUtils.matchesName(identification, SkyblockUtils.getDefaultPattern())
+
+    if (matcher.matches()) {
+        return SkyBlockMonster(
+            matcher.group("name"),
+            matcher.group("level").toInt(),
+            matcher.group("current").toInt(),
+            matcher.group("health").toInt(),
+            this,
+            identification
+        )
+    }
+
+    return null
 }
 
 fun String.copyToClipboard() =
@@ -174,8 +197,7 @@ fun Int.getBrightness() = hsbCache[this]?.get(2) ?: run {
 
 fun Int.toHexString() = String.format("%08x", this)
 
-val mc: Minecraft
-    get() = Minecraft.getMinecraft()
+val mc: Minecraft = Minecraft.getMinecraft()
 
 fun World.getBlockAtPos(pos: BlockPos) = getBlockState(pos).block
 
@@ -254,9 +276,17 @@ fun Entity.rayTraceEntity(
 
 fun EntityPlayerSP?.inHypixel() = this?.clientBrand?.startsWith("Hypixel BungeeCord") == true
 
-fun Pattern.matchesMatcher(s: String, block: (Matcher) -> Unit) = matcher(s).takeIf { it.matches() }?.also(block)
+inline fun Pattern.matchesMatcher(s: String, block: (Matcher) -> Unit) = matcher(s).takeIf { it.matches() }?.also(block)
 
-fun Pattern.findMatcher(s: String, block: (Matcher) -> Unit) = matcher(s).takeIf { it.find() }?.also(block)
+inline fun Pattern.findMatcher(s: String, block: (Matcher) -> Unit) = matcher(s).takeIf { it.find() }?.also(block)
 
 fun Entity.toVec3() = Vec3(posX, posY, posZ)
+
+fun Double.transformToPrecision(precision: Int): Double {
+    if (precision == 0) return toInt().toDouble()
+
+    val pow = 10.pow(precision)
+
+    return floor(this * pow) / pow
+}
 

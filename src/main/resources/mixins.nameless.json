@@ -6,7 +6,6 @@
     "MixinActiveRenderInfo",
     "MixinEntityRenderer",
     "MixinFontRenderer",
-    "MixinGuiConnecting",
     "MixinGuiPlayerTabOverlay",
     "MixinMinecraft",
     "MixinRenderEntityItem",
@@ -24,6 +23,7 @@
   "mixins": [
     "MixinEntity",
     "MixinEntityLivingBase",
+    "MixinItemStack",
     "MixinUtil",
     "accessors.AccessorItemAxe",
     "accessors.AccessorItemPickaxe",

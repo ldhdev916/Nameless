@@ -21,10 +21,9 @@ package com.happyandjust.nameless.features.property
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.gui.Rectangle
 import com.happyandjust.nameless.gui.elements.ERelocateButton
-import com.happyandjust.nameless.textureoverlay.ERelocateGui
 import com.happyandjust.nameless.textureoverlay.Overlay
 
-class OverlayProperty(featureParameter: FeatureParameter<Overlay>, relocateGui: ERelocateGui) : Property<Overlay>(
+class OverlayProperty(featureParameter: FeatureParameter<Overlay>) : Property<Overlay>(
     featureParameter,
-    ERelocateButton(Rectangle.fromWidthHeight(0, 0, 60, 14), relocateGui)
+    ERelocateButton(Rectangle.fromWidthHeight(0, 0, 60, 14), featureParameter.relocateGui()!!)
 )
