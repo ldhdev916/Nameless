@@ -44,7 +44,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
     Category.QOL,
     "trajectorypreview",
     "Trajectory Preview",
-    "Shows trajectory preview of bow, ender pearl, egg, snowball"
+    "Shows trajectory preview of many projectiles"
 ), ClientTickListener, WorldRenderListener, StencilListener {
 
     init {
