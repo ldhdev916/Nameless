@@ -22,6 +22,7 @@ import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.checkAndReplace
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.features.FeatureRegistry
+import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.StencilListener
 import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.entity.Entity
@@ -55,6 +56,17 @@ class OutlineHandleListener {
                 }
                 feature.getEntityColor(entity)?.let {
                     entityColorInfo = entityColorInfo.checkAndReplace(it)
+                }
+
+                for ((processor, shouldExecute) in (feature as SimpleFeature).processors) {
+                    if (shouldExecute() && processor is StencilListener) {
+                        processor.getOutlineColor(entity)?.let {
+                            outlineColorInfo = outlineColorInfo.checkAndReplace(it)
+                        }
+                        processor.getEntityColor(entity)?.let {
+                            entityColorInfo = entityColorInfo.checkAndReplace(it)
+                        }
+                    }
                 }
             }
 
