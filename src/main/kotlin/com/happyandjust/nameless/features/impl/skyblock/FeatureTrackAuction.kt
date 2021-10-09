@@ -43,7 +43,7 @@ class FeatureTrackAuction : SimpleFeature(
     Category.SKYBLOCK,
     "trackauction",
     "Track Auction",
-    "Set items and prices via commands, mod will keep tracking all auctions\nAnd if there's a one whose price(bin) is lower than the one you set before, mods will notify you\nCommands: /trackauction add [Lowest Price] [Item Name], /trackauction remove [Item Name], /trackauction list"
+    "Set items and prices via commands, mod will keep tracking all auctions\nAnd if there's a one whose price(bin) is lower than the one you set before, mods will notify you"
 ), ClientTickListener {
 
     private val tracks = hashMapOf<String, Int>()
@@ -53,7 +53,6 @@ class FeatureTrackAuction : SimpleFeature(
     init {
         val cBoolean = TypeRegistry.getConverterByClass(Boolean::class)
         val cString = TypeRegistry.getConverterByClass(String::class)
-
 
         for (skyBlockItem in SkyblockUtils.allItems.values) {
             val id = skyBlockItem.id.lowercase()

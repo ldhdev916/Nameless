@@ -157,7 +157,7 @@ class FeatureDisplayBetterArmor : SimpleFeature(
         for (armor in armorInventory) {
             armor ?: continue
 
-            val armorType = (armor.item as ItemArmor).armorType
+            val armorType = (armor.item as? ItemArmor)?.armorType ?: continue
 
             var bestEntityItem: EntityItem? = null
             var bestArmor: ItemStack? = null
