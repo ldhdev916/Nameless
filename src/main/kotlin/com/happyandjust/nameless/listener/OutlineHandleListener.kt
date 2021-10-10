@@ -23,6 +23,7 @@ import com.happyandjust.nameless.core.checkAndReplace
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.listener.StencilListener
+import com.happyandjust.nameless.mixinhooks.RenderGlobalHook
 import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
@@ -87,10 +88,20 @@ class OutlineHandleListener {
 
         for (entity in mc.theWorld.loadedEntityList) {
 
-            val color = changeColorEntityCache[entity] ?: continue
-            manualRendering = true
-            RenderUtils.changeEntityColor(entity, color, e.partialTicks)
-            manualRendering = false
+            changeColorEntityCache[entity]?.let {
+                manualRendering = true
+                RenderUtils.changeEntityColor(entity, it, e.partialTicks)
+                manualRendering = false
+            }
+
+
+            if (!RenderGlobalHook.canDisplayOutline()) {
+                outlineEntityCache[entity]?.let {
+                    manualRendering = true
+                    RenderUtils.renderOutlineOnEntity(entity, it, e.partialTicks)
+                    manualRendering = false
+                }
+            }
 
         }
     }

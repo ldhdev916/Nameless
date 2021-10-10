@@ -79,8 +79,11 @@ object AvalancheProcessor : Processor(), ChatListener, PartyGameChangeListener, 
     }
 
     override fun renderWorld(partialTicks: Float) {
-        for (slab in slabs) {
-            RenderUtils.drawOutlinedBox(slab, boxColor(), partialTicks)
+        try {
+            for (slab in slabs) {
+                RenderUtils.drawOutlinedBox(slab, boxColor(), partialTicks)
+            }
+        } catch (ignored: ConcurrentModificationException) {
         }
     }
 }
