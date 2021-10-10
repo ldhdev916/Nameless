@@ -79,7 +79,7 @@ class FeatureUpdateChecker : SimpleFeature(
                     )
                 }
                 val chat =
-                    ChatComponentText("§c$MOD_NAME is outdated. Please update to $latestTag.\n").appendSibling(
+                    ChatComponentText("§c§l$MOD_NAME is outdated. Please update to $latestTag.\n").appendSibling(
                         openGithub
                     ).appendText(" ").appendSibling(download)
 

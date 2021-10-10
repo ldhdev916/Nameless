@@ -76,7 +76,7 @@ class SearchBinCommand : ClientCommandBase("searchbin") {
             when (method) {
                 "all" -> {
                     while (priorityQueue.isNotEmpty()) {
-                        sendClientMessage(feature.getChatTextForAuctionInfo(priorityQueue.peek()))
+                        sendClientMessage(feature.getChatTextForAuctionInfo(priorityQueue.poll()))
                     }
                 }
                 "lowest" -> {
