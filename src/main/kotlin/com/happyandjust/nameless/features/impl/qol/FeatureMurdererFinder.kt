@@ -184,15 +184,6 @@ class FeatureMurdererFinder : SimpleFeature(
                 Color(128, 0, 128).toChromaColor(),
                 cChromaColor
             ),
-            "showinfect" to FeatureParameter(
-                2,
-                "murderer",
-                "showinfect",
-                "Show Direction Arrow to Nearest Infection",
-                "Render arrow on your screen which is pointing nearest infection",
-                false,
-                cBoolean
-            )
         )
 
         inCategory(
