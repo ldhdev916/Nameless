@@ -97,12 +97,12 @@ object EntityHook {
     }
 
     private fun getDamageFromString(text: String): Pair<Int, Boolean>? {
-        if (text.matches(DAMAGE_REGEX)) return text.toInt() to false
+        if (text.matches(DAMAGE_REGEX)) return Pair(text.toIntOrNull() ?: return null, false)
 
         var damage: Pair<Int, Boolean>? = null
 
         CRIT_DAMAGE.matchesMatcher(text) {
-            damage = it.group("damage").toInt() to true
+            damage = Pair(it.group("damage").toIntOrNull() ?: return null, true)
         }
 
         return damage

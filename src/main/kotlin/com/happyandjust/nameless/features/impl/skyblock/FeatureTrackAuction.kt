@@ -62,7 +62,7 @@ class FeatureTrackAuction : SimpleFeature(
                 "trackauction",
                 id,
                 skyBlockItem.name,
-                "",
+                "SkyBlock ID: ${skyBlockItem.id}",
                 false,
                 cBoolean
             ).also {
