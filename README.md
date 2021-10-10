@@ -61,6 +61,7 @@
   - Change Item Name
   - Render Pointing Arrow to Wither/Blood Key
   - Blaze Solver
+  - Track Auction
 </details>
 <details>
  <summary>Miscellaneous</summary>
