@@ -36,11 +36,9 @@ object EntityHook {
     private val transformedDamageCache = hashMapOf<String, ChatComponentText>()
     private val critDamageColor = arrayOf("§f", "§f", "§e", "§6", "§c", "§c")
     private var prevIndicateType: DamageIndicateType? = null
+    private var prevPrecision: Int? = null
 
-    private fun transformDamage(damage: Int, type: DamageIndicateType): String {
-
-        val precision = FeatureRegistry.DAMAGE_INDICATOR.getParameterValue<Int>("precision")
-
+    private fun transformDamage(damage: Int, type: DamageIndicateType, precision: Int): String {
         return when (type) {
             DamageIndicateType.K -> (damage / 1000.0).transformToPrecision(precision)
             DamageIndicateType.M -> (damage / 100_0000.0).transformToPrecision(precision)
@@ -62,13 +60,21 @@ object EntityHook {
             }
 
             prevIndicateType = type
+
+            val precision = FeatureRegistry.DAMAGE_INDICATOR.getParameterValue<Int>("precision")
+
+            if (prevPrecision != precision) {
+                transformedDamageCache.clear()
+            }
+
+            prevPrecision = precision
             //
 
             if (transformedDamageCache.containsKey(unformattedText)) return transformedDamageCache[unformattedText]!!
 
             val damagePair = getDamageFromString(unformattedText.stripControlCodes()) ?: return origin
 
-            val damageText = transformDamage(damagePair.first, type)
+            val damageText = transformDamage(damagePair.first, type, precision)
 
             val chatComponentText = if (damagePair.second) { // critical
                 val builder = StringBuilder()

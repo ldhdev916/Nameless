@@ -43,7 +43,7 @@ class FeatureTrackAuction : SimpleFeature(
     Category.SKYBLOCK,
     "trackauction",
     "Track Auction",
-    "Set items and prices via commands, mod will keep tracking all auctions\nAnd if there's a one whose price(bin) is lower than the one you set before, mods will notify you"
+    "Mod will keep tracking all auctions\nAnd if there's a one whose price(bin) is lower than the one you set before, mods will notify you"
 ), ClientTickListener {
 
     private val tracks = hashMapOf<String, Int>()
