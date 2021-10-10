@@ -80,6 +80,7 @@
   - Ghost Block
   - Accept Party
   - Deny Party
+  - Auto Send WatchDog Report to Nearest Player
 </details>
 <details>
   <summary>Commands</summary>
