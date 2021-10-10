@@ -99,10 +99,6 @@ class FeatureTrackAuction : SimpleFeature(
 
             lastScanAuction = System.currentTimeMillis()
 
-            val element = tracks.entries.toTypedArray()[0]
-
-            sendClientMessage("${element.key} ${element.value}")
-
             repeat(getMaxAuctionPage()) {
                 for (auctionInfo in SkyblockUtils.getAuctionDataInPage(it)
                     .filter { data -> data.bin && data.bids.size() == 0 }) {
