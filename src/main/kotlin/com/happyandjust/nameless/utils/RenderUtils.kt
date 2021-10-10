@@ -99,69 +99,6 @@ object RenderUtils {
         }
     }
 
-    fun renderOutlineOnEntity(entity: Entity, color: Int, partialTicks: Float) {
-        val render = mc.renderViewEntity.takeUnless { it == entity } ?: return
-
-        val renderX = render.getRenderPosX(partialTicks)
-        val renderY = render.getRenderPosY(partialTicks)
-        val renderZ = render.getRenderPosZ(partialTicks)
-
-        val entityX = entity.getRenderPosX(partialTicks)
-        val entityY = entity.getRenderPosY(partialTicks)
-        val entityZ = entity.getRenderPosZ(partialTicks)
-        val entityYaw = entity.getRenderYaw(partialTicks)
-
-        disableEntityShadow {
-            glEnable(GL11.GL_STENCIL_TEST) {
-
-                GL11.glClearStencil(0)
-                clear(GL11.GL_STENCIL_BUFFER_BIT)
-
-                GL11.glStencilMask(0xFF)
-                GL11.glStencilOp(GL11.GL_REPLACE, GL11.GL_REPLACE, GL11.GL_REPLACE)
-                GL11.glStencilFunc(GL11.GL_NEVER, 1, 0xFF)
-
-                matrix {
-                    translate(-renderX, -renderY, -renderZ)
-                    mc.renderManager.doRenderEntity(
-                        entity,
-                        entityX,
-                        entityY,
-                        entityZ,
-                        entityYaw,
-                        partialTicks,
-                        true
-                    )
-                }
-
-                GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_REPLACE, GL11.GL_REPLACE)
-                GL11.glStencilFunc(GL11.GL_NOTEQUAL, 3, 0x01)
-
-                matrix {
-                    translate(-renderX, -renderY, -renderZ)
-                    translate(entityX, entityY, entityZ)
-                    scale(1.1, 1.05, 1.1)
-
-                    mc.renderManager.doRenderEntity(
-                        entity,
-                        0.0,
-                        0.0,
-                        0.0,
-                        entityYaw,
-                        partialTicks,
-                        true
-                    )
-                }
-
-                GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP)
-                GL11.glStencilFunc(GL11.GL_EQUAL, 3, 0xFF)
-
-                drawBox(entity.entityBoundingBox.expand(1.0, 1.0, 1.0), color, partialTicks)
-
-            }
-        }
-    }
-
     fun changeEntityColor(entity: Entity, color: Int, partialTicks: Float) {
         val render = mc.renderViewEntity?.takeUnless { it == entity } ?: return
 

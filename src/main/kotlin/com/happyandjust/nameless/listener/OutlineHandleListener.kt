@@ -21,6 +21,8 @@ package com.happyandjust.nameless.listener
 import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.checkAndReplace
 import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.devqol.sendClientMessage
+import com.happyandjust.nameless.events.CurrentPlayerJoinWorldEvent
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.listener.StencilListener
 import com.happyandjust.nameless.mixinhooks.RenderGlobalHook
@@ -37,6 +39,7 @@ class OutlineHandleListener {
     var manualRendering = false
     private val outlineEntityCache = hashMapOf<Entity, Int>()
     private val changeColorEntityCache = hashMapOf<Entity, Int>()
+    private var notifiedCannotRenderOutline = false
 
     @SubscribeEvent
     fun onClientTick(e: TickEvent.ClientTickEvent) {
@@ -97,12 +100,24 @@ class OutlineHandleListener {
 
             if (!RenderGlobalHook.canDisplayOutline()) {
                 outlineEntityCache[entity]?.let {
-                    manualRendering = true
-                    RenderUtils.renderOutlineOnEntity(entity, it, e.partialTicks)
-                    manualRendering = false
+                    RenderUtils.drawOutlinedBox(entity.entityBoundingBox, it, e.partialTicks)
                 }
             }
 
+        }
+    }
+
+    @SubscribeEvent
+    fun onWorldJoin(e: CurrentPlayerJoinWorldEvent) {
+        if (!RenderGlobalHook.canDisplayOutline() && !notifiedCannotRenderOutline) {
+            sendClientMessage(
+                """
+                §c[Nameless] Mod found that one of these things on optifine is enabled.
+                §cFast Render, Shaders, Antialiasing.
+                §cThus, You can't use Chroma Nickname, All outlines will be replaced with rendering box.
+            """.trimIndent()
+            )
+            notifiedCannotRenderOutline = true
         }
     }
 
