@@ -80,7 +80,7 @@ class SearchBinCommand : ClientCommandBase("searchbin") {
                     }
                 }
                 "lowest" -> {
-
+                    sendClientMessage(feature.getChatTextForAuctionInfo(priorityQueue.peek()))
                 }
                 else -> sendClientMessage("No Such Method $method")
             }
