@@ -18,10 +18,7 @@
 
 package com.happyandjust.nameless
 
-import com.happyandjust.nameless.commands.DevCommand
-import com.happyandjust.nameless.commands.FairySoulProfileCommand
-import com.happyandjust.nameless.commands.HypixelCommand
-import com.happyandjust.nameless.commands.TextureCommand
+import com.happyandjust.nameless.commands.*
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
@@ -90,6 +87,7 @@ class Nameless {
             HypixelCommand(),
             TextureCommand(),
             FairySoulProfileCommand(),
+            SearchBinCommand()
         )
         registerListeners(FeatureListener(), BasicListener(), outlineHandleListener, locrawListener)
 
@@ -113,4 +111,4 @@ class Nameless {
 
 const val MOD_ID = "nameless"
 const val MOD_NAME = "Nameless"
-const val VERSION = "1.0.0"
+const val VERSION = "1.0.1"

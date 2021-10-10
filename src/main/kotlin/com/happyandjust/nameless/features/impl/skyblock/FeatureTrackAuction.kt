@@ -111,7 +111,7 @@ class FeatureTrackAuction : SimpleFeature(
         }
     }
 
-    private fun getMaxAuctionPage(): Int {
+    fun getMaxAuctionPage(): Int {
         val s = Request.get("https://api.hypixel.net/skyblock/auctions")
 
         val json = JSONHandler(s).read(JsonObject())
@@ -126,7 +126,7 @@ class FeatureTrackAuction : SimpleFeature(
         return json["totalPages"].asInt
     }
 
-    private fun getChatTextForAuctionInfo(auctionInfo: AuctionInfo): IChatComponent {
+    fun getChatTextForAuctionInfo(auctionInfo: AuctionInfo): IChatComponent {
         try {
             val textComponent =
                 ChatComponentText("§aFound §6${auctionInfo.item_name} §awith Price §6${auctionInfo.price}\n")

@@ -1,6 +1,6 @@
 <p align="center">
-<a href="https://github.com/HappyAndJust/Nameless/releases" target="_blank">
-    <img alt="downloads" src="https://img.shields.io/github/v/release/HappyAndJust/Nameless?color=00FFFF&style=for-the-badge" />
+<a href="https://github.com/HappyAndJust/Nameless/releases/latest" target="_blank">
+    <img alt="release" src="https://img.shields.io/github/v/release/HappyAndJust/Nameless?color=00FFFF&style=for-the-badge" />
   </a>
 <a href="https://github.com/HappyAndJust/Nameless/blob/master/LICENSE">
     <img alt="license" src="https://img.shields.io/github/license/HappyAndJust/Nameless?color=00FFFF&style=for-the-badge">
@@ -8,10 +8,15 @@
 <a href="https://github.com/HappyAndJust/Nameless/">
     <img alt="lines" src="https://img.shields.io/tokei/lines/github/HappyAndJust/Nameless?color=00FFFF&style=for-the-badge">
  </a>
+<a href="https://github.com/HappyAndJust/Nameless/releases/latest">
+    <img alt="downloads" src="https://img.shields.io/github/downloads/HappyAndJust/Nameless/total?color=00FFFF&style=for-the-badge" />
+</a>
 </p>
 
 # Nameless
 1.8.9 Minecraft Mod. adding lots of Hypixel Quality of Life Features
+If you're using Optifine, Please turn off Fast Render, Shaders, Antialiasing
+Unless, You can't use rendering outline on entity
 
 ## Incompatibilities
 - ChatTriggers below version 1.3.2 - Crashes due to low kotlin version
@@ -89,4 +94,5 @@
  - /currentdata - prints current game of hypixel
  - /reloadtexture - Reload Texture Overlay's texture
  - /fairysoulprofile - handle FairySoul data based on pre-generated profiles
+ - /searchbin - Search bins of specific item
 </details>

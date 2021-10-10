@@ -20,6 +20,7 @@ package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.core.ChromaColor;
 import com.happyandjust.nameless.core.Direction;
+import com.happyandjust.nameless.devqol.QOLKt;
 import com.happyandjust.nameless.devqol.RenderingQOLKt;
 import com.happyandjust.nameless.features.FeatureRegistry;
 import com.happyandjust.nameless.gui.Rectangle;
@@ -35,12 +36,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 @Mixin(FontRenderer.class)
 public abstract class MixinFontRenderer {
-
-    private static final Pattern colorCodes = Pattern.compile("(?i)\u00A7[0-9A-FKM-OR]");
     @Unique
     private final FontRendererHook hook = FontRendererHook.INSTANCE;
     @Shadow
@@ -91,7 +89,7 @@ public abstract class MixinFontRenderer {
     @Inject(method = "renderStringAtPos", at = @At("HEAD"), cancellable = true)
     private void renderString(String text, boolean shadow, CallbackInfo ci) {
 
-        if (FeatureRegistry.INSTANCE.getCHANGE_NICKNAME_COLOR().getEnabled()) {
+        if (QOLKt.getFontRendererNotNull() && FeatureRegistry.INSTANCE.getCHANGE_NICKNAME_COLOR().getEnabled()) {
 
             List<FontRendererHook.MatchInfo> matchInfos = getMatchInfoForString(text);
 

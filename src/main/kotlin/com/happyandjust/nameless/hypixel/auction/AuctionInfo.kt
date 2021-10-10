@@ -20,6 +20,7 @@ package com.happyandjust.nameless.hypixel.auction
 
 import com.google.gson.JsonArray
 import com.google.gson.annotations.SerializedName
+import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 
 class AuctionInfo {
 
@@ -40,6 +41,11 @@ class AuctionInfo {
 
     @SerializedName("bids")
     var bids = JsonArray()
+
+    @SerializedName("tier")
+    var tier_string = ""
+
+    var rarity = ItemRarity.COMMON
 
     @SerializedName("item_lore")
     var lore = ""

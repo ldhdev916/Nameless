@@ -145,7 +145,13 @@ object SkyblockUtils {
         val auctions = json["auctions"].asJsonArray
 
         for (auction in auctions) {
-            list.add(gson.fromJson(auction, AuctionInfo::class.java))
+            list.add(gson.fromJson(auction, AuctionInfo::class.java).also {
+                try {
+                    it.rarity = ItemRarity.fromString(it.tier_string)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            })
         }
 
         return list

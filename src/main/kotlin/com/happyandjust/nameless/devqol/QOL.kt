@@ -290,3 +290,15 @@ fun Double.transformToPrecision(precision: Int): Double {
     return floor(this * pow) / pow
 }
 
+val fontRendererNotNull: Boolean
+    get() = mc.fontRendererObj != null
+
+fun <T> Collection<T>.convertToStringList(transform: (T) -> String): List<String> {
+    val list = arrayListOf<String>()
+
+    for (element in this) {
+        list.add(transform(element))
+    }
+
+    return list
+}
