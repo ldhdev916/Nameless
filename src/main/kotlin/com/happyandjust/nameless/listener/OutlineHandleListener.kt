@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.listener
 
+import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.checkAndReplace
 import com.happyandjust.nameless.devqol.mc
@@ -90,6 +91,7 @@ class OutlineHandleListener {
     fun onWorldRender(e: RenderWorldLastEvent) {
 
         for (entity in mc.theWorld.loadedEntityList) {
+            if (entity == mc.renderViewEntity) continue
 
             changeColorEntityCache[entity]?.let {
                 manualRendering = true
@@ -118,6 +120,7 @@ class OutlineHandleListener {
             """.trimIndent()
             )
             notifiedCannotRenderOutline = true
+            FeatureRegistry.CHANGE_NICKNAME_COLOR.getParameter<ChromaColor>("color").value.chromaEnabled = false
         }
     }
 

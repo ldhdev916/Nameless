@@ -26,7 +26,6 @@ import com.happyandjust.nameless.gui.Rectangle;
 import com.happyandjust.nameless.mixinhooks.FontRendererHook;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.StringUtils;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -36,10 +35,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Mixin(FontRenderer.class)
 public abstract class MixinFontRenderer {
 
+    private static final Pattern colorCodes = Pattern.compile("(?i)\u00A7[0-9A-FKM-OR]");
     @Unique
     private final FontRendererHook hook = FontRendererHook.INSTANCE;
     @Shadow
@@ -100,9 +101,7 @@ public abstract class MixinFontRenderer {
                 if (color.getChromaEnabled()) {
                     drawChromaString(text, matchInfos);
                 } else {
-                    int nicknameColor = color.getRGB();
-
-                    drawCustomString(text, matchInfos, nicknameColor);
+                    drawCustomString(text, matchInfos, color.getRGB());
                 }
 
                 ci.cancel();
@@ -225,7 +224,7 @@ public abstract class MixinFontRenderer {
         GL11.glStencilMask(0xFF);
         GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP);
 
-        text = StringUtils.stripControlCodes(text);
+        text = colorCodes.matcher(text).replaceAll("");
 
         drawPureString(text, getMatchInfoForString(text));
 
