@@ -44,6 +44,8 @@ import org.apache.logging.log4j.Logger
 import java.awt.Color
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
+import java.io.File
+import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.text.DecimalFormat
@@ -301,4 +303,13 @@ fun <T> Collection<T>.convertToStringList(transform: (T) -> String): List<String
     }
 
     return list
+}
+
+fun URL.downloadToFile(target: File) {
+    val inputStream = openStream().buffered()
+
+    val outputStream = target.outputStream().buffered()
+
+    outputStream.write(inputStream.readBytes())
+    outputStream.flush()
 }

@@ -23,7 +23,7 @@ import com.happyandjust.nameless.devqol.sendClientMessage
 import com.happyandjust.nameless.features.FeatureRegistry
 import net.minecraft.command.ICommandSender
 
-class TextureCommand : ClientCommandBase("reloadtexture") {
+object TextureCommand : ClientCommandBase("reloadtexture") {
     override fun processCommand(sender: ICommandSender, args: Array<out String>) {
         sendClientMessage("§aReloading Textures...")
 

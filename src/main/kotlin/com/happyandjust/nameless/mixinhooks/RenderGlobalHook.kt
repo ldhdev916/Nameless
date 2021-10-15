@@ -19,7 +19,9 @@
 package com.happyandjust.nameless.mixinhooks
 
 import com.happyandjust.nameless.Nameless
+import com.happyandjust.nameless.core.OutlineMode
 import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.listener.OutlineHandleListener
 import com.happyandjust.nameless.mixins.accessors.AccessorRenderGlobal
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.client.renderer.culling.ICamera
@@ -82,8 +84,6 @@ object RenderGlobalHook {
     fun renderOutline(entities: List<Entity>, camera: ICamera, x: Double, y: Double, z: Double, partialTicks: Float) {
         if (!canDisplayOutline()) return
 
-        val outlineHandler = Nameless.INSTANCE.outlineHandleListener
-
         mc.renderGlobal.apply {
             this as AccessorRenderGlobal
 
@@ -95,30 +95,33 @@ object RenderGlobalHook {
             RenderHelper.disableStandardItemLighting()
             mc.renderManager.setRenderOutlines(true)
 
-            for (entity in entities) {
-                val flag = with(mc.renderViewEntity) {
-                    this is EntityLivingBase && isPlayerSleeping
-                }
-                val flag1 = (entity is EntityPlayer || entity.isInRangeToRender3d(
-                    x,
-                    y,
-                    z
-                )) && (entity.ignoreFrustumCheck || camera.isBoundingBoxInFrustum(entity.entityBoundingBox) || entity.riddenByEntity == mc.thePlayer)
+            if (Nameless.INSTANCE.selectedOutlineMode == OutlineMode.OUTLINE) {
+                for (entity in entities) {
+                    val flag = with(mc.renderViewEntity) {
+                        this is EntityLivingBase && isPlayerSleeping
+                    }
+                    val flag1 = (entity is EntityPlayer || entity.isInRangeToRender3d(
+                        x,
+                        y,
+                        z
+                    )) && (entity.ignoreFrustumCheck || camera.isBoundingBoxInFrustum(entity.entityBoundingBox) || entity.riddenByEntity == mc.thePlayer)
 
-                if ((entity != mc.renderViewEntity || mc.gameSettings.thirdPersonView != 0 || flag) && flag1) {
-                    getOutlineColor(entity)?.let {
-                        matrix {
-                            enableOutlineMode(it)
+                    if ((entity != mc.renderViewEntity || mc.gameSettings.thirdPersonView != 0 || flag) && flag1) {
+                        getOutlineColor(entity)?.let {
+                            matrix {
+                                enableOutlineMode(it)
 
-                            outlineHandler.manualRendering = true
-                            mc.renderManager.renderEntitySimple(entity, partialTicks)
-                            outlineHandler.manualRendering = false
+                                OutlineHandleListener.manualRendering = true
+                                mc.renderManager.renderEntitySimple(entity, partialTicks)
+                                OutlineHandleListener.manualRendering = false
 
-                            disableOutlineMode()
+                                disableOutlineMode()
+                            }
                         }
                     }
                 }
             }
+            
             mc.renderManager.setRenderOutlines(false)
             RenderHelper.enableStandardItemLighting()
             depthMask(false)
@@ -162,5 +165,5 @@ object RenderGlobalHook {
     }
 
     fun getOutlineColor(entity: Entity) =
-        Nameless.INSTANCE.outlineHandleListener.getOutlineColorForEntity(entity)
+        OutlineHandleListener.getOutlineColorForEntity(entity)
 }

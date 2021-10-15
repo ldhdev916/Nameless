@@ -35,7 +35,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.InputEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 
-class FeatureListener {
+object FeatureListener {
 
     private inline fun <reified T> invoke(block: T.() -> Unit) {
         for (feature in FeatureRegistry.features) {

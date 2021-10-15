@@ -25,6 +25,7 @@ import java.util.regex.Pattern
 object FontRendererHook {
 
     val cache = hashMapOf<String, List<MatchInfo>>()
+    private var prevSessionName: String? = null
 
     fun isMatching(i: Int, matchInfos: List<MatchInfo>): Boolean {
         for (matchInfo in matchInfos) {
@@ -38,7 +39,16 @@ object FontRendererHook {
         var text = text ?: return emptyList()
         val nickname = getCurrentSessionNickname()
         val list = arrayListOf(MatchInfo(-1, -1, 0))
-        val pattern = Pattern.compile("(?i)${getCurrentSessionNickname()}")
+
+        val session = getCurrentSessionNickname()
+
+        if (session != prevSessionName) {
+            cache.clear()
+        }
+
+        prevSessionName = session
+
+        val pattern = Pattern.compile("(?i)$session")
         var matcher: Matcher = pattern.matcher(text)
         while (matcher.find()) {
             val addNext = list.last().addNext

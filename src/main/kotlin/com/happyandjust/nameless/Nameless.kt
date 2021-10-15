@@ -19,6 +19,9 @@
 package com.happyandjust.nameless
 
 import com.happyandjust.nameless.commands.*
+import com.happyandjust.nameless.config.ConfigHandler
+import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.core.OutlineMode
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
@@ -28,6 +31,7 @@ import com.happyandjust.nameless.listener.FeatureListener
 import com.happyandjust.nameless.listener.LocrawListener
 import com.happyandjust.nameless.listener.OutlineHandleListener
 import com.happyandjust.nameless.mixins.accessors.AccessorMinecraft
+import com.happyandjust.nameless.serialization.TypeRegistry
 import com.happyandjust.nameless.textureoverlay.OverlayResourcePack
 import com.happyandjust.nameless.utils.SkyblockUtils
 import net.minecraft.command.CommandBase
@@ -37,6 +41,8 @@ import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.ProgressManager
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import java.io.File
 
 @Mod(modid = MOD_ID, name = MOD_NAME, version = VERSION)
 class Nameless {
@@ -52,8 +58,26 @@ class Nameless {
                 NamelessKeyBinding(category.desc, category.key).also { ClientRegistry.registerKeyBinding(it) }
         }
     }
-    lateinit var outlineHandleListener: OutlineHandleListener
-    lateinit var locrawListener: LocrawListener
+    private val selectedOutlineModeConfig = ConfigValue(
+        "outline",
+        "selected",
+        OutlineMode.OUTLINE,
+        { s, k, v -> ConfigHandler.get(s, k, v, TypeRegistry.getConverterByClass(OutlineMode::class)) },
+        { s, k, v -> ConfigHandler.write(s, k, v, TypeRegistry.getConverterByClass(OutlineMode::class)) }
+    )
+    var selectedOutlineMode = OutlineMode.OUTLINE
+        get() = selectedOutlineModeConfig.value
+        set(value) {
+            field = value
+
+            selectedOutlineModeConfig.value = value
+        }
+    lateinit var modFile: File
+
+    @Mod.EventHandler
+    fun preInit(e: FMLPreInitializationEvent) {
+        modFile = e.sourceFile
+    }
 
     @Mod.EventHandler
     fun init(e: FMLInitializationEvent) {
@@ -79,17 +103,17 @@ class Nameless {
 
         progressBar.step("Registering Command & Events...")
 
-        outlineHandleListener = OutlineHandleListener()
-        locrawListener = LocrawListener()
-
         registerCommands(
-            DevCommand(),
-            HypixelCommand(),
-            TextureCommand(),
-            FairySoulProfileCommand(),
-            SearchBinCommand()
+            DevCommand,
+            HypixelCommand,
+            TextureCommand,
+            FairySoulProfileCommand,
+            SearchBinCommand,
+            OutlineModeSelectCommand,
+            FixFarmCommand,
+            ShutDownCommand
         )
-        registerListeners(FeatureListener(), BasicListener(), outlineHandleListener, locrawListener)
+        registerListeners(FeatureListener, BasicListener, OutlineHandleListener, LocrawListener)
 
         ProgressManager.pop(progressBar)
     }

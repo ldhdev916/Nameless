@@ -18,8 +18,10 @@
 
 package com.happyandjust.nameless.listener
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.ColorInfo
+import com.happyandjust.nameless.core.OutlineMode
 import com.happyandjust.nameless.core.checkAndReplace
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.devqol.sendClientMessage
@@ -35,7 +37,7 @@ import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 
-class OutlineHandleListener {
+object OutlineHandleListener {
 
     var manualRendering = false
     private val outlineEntityCache = hashMapOf<Entity, Int>()
@@ -100,7 +102,7 @@ class OutlineHandleListener {
             }
 
 
-            if (!RenderGlobalHook.canDisplayOutline()) {
+            if (!RenderGlobalHook.canDisplayOutline() || Nameless.INSTANCE.selectedOutlineMode == OutlineMode.BOX) {
                 outlineEntityCache[entity]?.let {
                     RenderUtils.drawOutlinedBox(entity.entityBoundingBox, it, e.partialTicks)
                 }

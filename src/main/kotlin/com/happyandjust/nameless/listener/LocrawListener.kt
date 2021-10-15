@@ -31,7 +31,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent
 import java.util.concurrent.Executors
 import java.util.regex.Pattern
 
-class LocrawListener {
+object LocrawListener {
 
     private var sentCommand = false
     private val JSON = Pattern.compile("\\{.+}")

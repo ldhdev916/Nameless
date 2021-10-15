@@ -14,8 +14,8 @@
 </p>
 
 # Nameless
-1.8.9 Minecraft Mod. adding lots of Hypixel Quality of Life Features
-If you're using Optifine, Please turn off Fast Render, Shaders, Antialiasing
+1.8.9 Minecraft Mod. adding lots of Hypixel Quality of Life Features<br>
+If you're using Optifine, Please turn off Fast Render, Shaders, Antialiasing<br>
 Unless, You can't use rendering outline on entity
 
 ## Incompatibilities
@@ -95,4 +95,6 @@ Unless, You can't use rendering outline on entity
  - /reloadtexture - Reload Texture Overlay's texture
  - /fairysoulprofile - handle FairySoul data based on pre-generated profiles
  - /searchbin - Search bins of specific item
+ - /selectoutline - Select Outline Mode
+ - /fixfarm - Print in Chat/Render Text what problems your farm currently has
 </details>

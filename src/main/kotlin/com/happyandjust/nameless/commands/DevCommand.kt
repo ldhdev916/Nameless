@@ -21,7 +21,7 @@ package com.happyandjust.nameless.commands
 import com.happyandjust.nameless.core.ClientCommandBase
 import net.minecraft.command.ICommandSender
 
-class DevCommand : ClientCommandBase("devtest") {
+object DevCommand : ClientCommandBase("devtest") {
 
     override fun processCommand(sender: ICommandSender, args: Array<out String>) {
         try {

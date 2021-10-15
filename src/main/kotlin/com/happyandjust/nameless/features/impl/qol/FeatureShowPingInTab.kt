@@ -20,21 +20,13 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.FeatureStateListener
-import com.happyandjust.nameless.mixins.accessors.AccessorGuiIngame
 import com.happyandjust.nameless.serialization.TypeRegistry
-import net.minecraft.client.gui.GuiPlayerTabOverlay
 import java.awt.Color
 
-class FeatureShowPingInTab : SimpleFeature(Category.QOL, "pingtab", "Show Ping numbers in Tab"), FeatureStateListener {
-
-    private var prevTabOverlay: GuiPlayerTabOverlay? = null
-
+class FeatureShowPingInTab : SimpleFeature(Category.QOL, "pingtab", "Show Ping numbers in Tab") {
     init {
         parameters["color"] = FeatureParameter(
             0,
@@ -45,22 +37,5 @@ class FeatureShowPingInTab : SimpleFeature(Category.QOL, "pingtab", "Show Ping n
             Color.green.toChromaColor(),
             TypeRegistry.getConverterByClass(ChromaColor::class)
         )
-    }
-
-    override fun onFeatureStateChangePre(e: FeatureStateChangeEvent.Pre) {
-
-    }
-
-    override fun onFeatureStateChangePost(e: FeatureStateChangeEvent.Post) {
-        if (e.feature == this) {
-            if (e.enabledAfter) {
-                prevTabOverlay = mc.ingameGUI.tabList
-                (mc.ingameGUI as AccessorGuiIngame).setOverlayPlayerList(GuiPlayerTabOverlay(mc, mc.ingameGUI))
-            } else {
-                prevTabOverlay?.let {
-                    (mc.ingameGUI as AccessorGuiIngame).setOverlayPlayerList(it)
-                }
-            }
-        }
     }
 }

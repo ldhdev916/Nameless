@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.serialization
 
 import com.happyandjust.nameless.core.ChromaColor
+import com.happyandjust.nameless.core.OutlineMode
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoulProfile
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
@@ -38,7 +39,8 @@ object TypeRegistry {
         ChromaColor::class to CChromaColor,
         Overlay::class to COverlay,
         FairySoulProfile::class to CFairySoulProfile,
-        DamageIndicateType::class to CDamageIndicateType
+        DamageIndicateType::class to CDamageIndicateType,
+        OutlineMode::class to COutlineMode
     )
 
     fun <T : Any> getConverterByClass(clazz: KClass<T>) = registeredConverters[clazz] as Converter<T>

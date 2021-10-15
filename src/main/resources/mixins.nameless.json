@@ -25,6 +25,7 @@
     "MixinEntityLivingBase",
     "MixinItemStack",
     "MixinUtil",
+    "accessors.AccessorBlockFarmland",
     "accessors.AccessorItemAxe",
     "accessors.AccessorItemPickaxe",
     "accessors.AccessorNBTTagList",

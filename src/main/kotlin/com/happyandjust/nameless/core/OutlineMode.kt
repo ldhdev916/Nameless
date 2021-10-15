@@ -16,23 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.commands
+package com.happyandjust.nameless.core
 
-import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.devqol.sendClientMessage
-import com.happyandjust.nameless.hypixel.Hypixel
-import net.minecraft.command.ICommandSender
+enum class OutlineMode {
 
-object HypixelCommand : ClientCommandBase("currentdata") {
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
-
-        sendClientMessage("Current Hypixel Game: ${Hypixel.currentGame}\n")
-
-        for ((key, value) in Hypixel.currentProperty) {
-            sendClientMessage("Property Key: $key Value: $value")
-        }
-
-        sendClientMessage("\n${Hypixel.locrawInfo}")
-
-    }
+    BOX, OUTLINE
 }

@@ -22,8 +22,10 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.MOD_NAME
 import com.happyandjust.nameless.VERSION
+import com.happyandjust.nameless.commands.ShutDownCommand
 import com.happyandjust.nameless.core.JSONHandler
 import com.happyandjust.nameless.devqol.LOGGER
+import com.happyandjust.nameless.devqol.getMD5
 import com.happyandjust.nameless.devqol.sendClientMessage
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
@@ -42,6 +44,7 @@ class FeatureUpdateChecker : SimpleFeature(
 ), ServerChangeListener {
 
     private var checkedVersion = false
+    var needUpdate = false
 
     override fun onServerChange(server: String) {
         if (checkedVersion || !enabled) return
@@ -62,10 +65,16 @@ class FeatureUpdateChecker : SimpleFeature(
 
             val download_url = asset["browser_download_url"].asString
 
+            ShutDownCommand.downloadURL = download_url
+            ShutDownCommand.jarName = asset["name"].asString
+
             val currentVersion = DefaultArtifactVersion(VERSION)
             val latestVersion = DefaultArtifactVersion(latestTag)
 
             if (currentVersion < latestVersion) { // do update
+
+                needUpdate = true
+
                 val openGithub = ChatComponentText("§a§l[Open Github]").apply {
                     chatStyle =
                         chatStyle.setChatClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, html_url))
@@ -78,10 +87,23 @@ class FeatureUpdateChecker : SimpleFeature(
                         )
                     )
                 }
+
+                val auto_download = ChatComponentText("§6§l[Auto Update]").apply {
+                    chatStyle = chatStyle.setChatClickEvent(
+                        ClickEvent(
+                            ClickEvent.Action.RUN_COMMAND,
+                            "autoupdateshutdown ${"auto-update".getMD5()}"
+                        )
+                    )
+                }
+
                 val chat =
-                    ChatComponentText("§c§l$MOD_NAME is outdated. Please update to $latestTag.\n").appendSibling(
-                        openGithub
-                    ).appendText(" ").appendSibling(download)
+                    ChatComponentText("§c§l$MOD_NAME is outdated. Please update to $latestTag.\n")
+                        .appendSibling(openGithub)
+                        .appendText(" ")
+                        .appendSibling(download)
+                        .appendText(" ")
+                        .appendSibling(auto_download)
 
                 sendClientMessage(chat)
 

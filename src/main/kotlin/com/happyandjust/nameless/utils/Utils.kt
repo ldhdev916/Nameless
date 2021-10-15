@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.utils
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.InventorySlotInfo
 import com.happyandjust.nameless.devqol.getBlockAtPos
 import com.happyandjust.nameless.devqol.mc
@@ -26,6 +27,8 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.BlockPos
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
+import java.io.File
+import java.io.IOException
 
 object Utils {
 
@@ -72,4 +75,44 @@ object Utils {
 
         return players
     }
+
+    /**
+     * @link https://stackoverflow.com/a/47925649
+     */
+    @Throws(IOException::class)
+    fun getJavaRuntime(): String {
+        val os = System.getProperty("os.name")
+        val java = "${System.getProperty("java.home")}${File.separator}bin${File.separator}${
+            if (os != null && os.lowercase().startsWith("windows")) "java.exe" else "java"
+        }"
+        if (!File(java).isFile) {
+            throw IOException("Unable to find suitable java runtime at $java")
+        }
+        return java
+    }
+
+    /**
+     * Taken from Skytils under AGPL-3.0
+     *
+     * Modified
+     *
+     * https://github.com/Skytils/SkytilsMod/blob/1.x/LICENSE.md
+     */
+    fun deleteOldJar() {
+        val modFile = Nameless.INSTANCE.modFile
+
+        if (modFile.delete()) {
+            return
+        }
+        val runtime = getJavaRuntime()
+
+        val file = File("config/HappyAndJust/Deleter.jar")
+
+        val cmd = "\"$runtime\" -jar \"${file.absolutePath}\" \"${modFile.absolutePath}\""
+
+        Runtime.getRuntime().exec(cmd)
+
+    }
+
+
 }

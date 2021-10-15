@@ -16,23 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.commands
+package com.happyandjust.nameless.mixins.accessors;
 
-import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.devqol.sendClientMessage
-import com.happyandjust.nameless.hypixel.Hypixel
-import net.minecraft.command.ICommandSender
+import net.minecraft.block.BlockFarmland;
+import net.minecraft.util.BlockPos;
+import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
-object HypixelCommand : ClientCommandBase("currentdata") {
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
+@Mixin(BlockFarmland.class)
+public interface AccessorBlockFarmland {
 
-        sendClientMessage("Current Hypixel Game: ${Hypixel.currentGame}\n")
-
-        for ((key, value) in Hypixel.currentProperty) {
-            sendClientMessage("Property Key: $key Value: $value")
-        }
-
-        sendClientMessage("\n${Hypixel.locrawInfo}")
-
-    }
+    @Invoker
+    boolean invokeHasCrops(World worldIn, BlockPos pos);
 }

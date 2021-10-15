@@ -24,7 +24,7 @@ import com.happyandjust.nameless.hypixel.fairysoul.FairySoulProfileCache
 import net.minecraft.command.ICommandSender
 import net.minecraft.util.BlockPos
 
-class FairySoulProfileCommand : ClientCommandBase("fairysoulprofile") {
+object FairySoulProfileCommand : ClientCommandBase("fairysoulprofile") {
 
     override fun processCommand(sender: ICommandSender, args: Array<out String>) {
         when (args.size) {

@@ -30,7 +30,7 @@ import net.minecraft.util.BlockPos
 import java.util.*
 import kotlin.concurrent.thread
 
-class SearchBinCommand : ClientCommandBase("searchbin") {
+object SearchBinCommand : ClientCommandBase("searchbin") {
 
     override fun processCommand(sender: ICommandSender, args: Array<out String>) {
         if (args.size < 3) {
