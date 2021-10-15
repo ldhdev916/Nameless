@@ -39,6 +39,8 @@ open class SimpleFeature(
     val parameters = hashMapOf<String, FeatureParameter<*>>()
     val processors = hashMapOf<Processor, () -> Boolean>()
 
+    fun hasParameter(key: String) = parameters.contains(key)
+
     fun <T> getParameter(key: String) = parameters[key] as FeatureParameter<T>
 
     fun <T> getParameterValue(key: String) = getParameter<T>(key).value

@@ -126,6 +126,7 @@ object FeatureRegistry {
     val AUTO_ACCEPT_PARTY = register(FeatureAutoAcceptParty())
     val AFK_MODE = register(FeatureAFKMode())
     val HIDE_TIP_MESSAGE = register(FeatureHideTipMessage())
+    val CANCEL_CERTAIN_BLOCK_RENDERING = register(FeatureCancelCertainBlockRendering())
 
     //SKYBLOCK
     val FAIRY_SOUL_WAYPOINT = register(FeatureFairySoulWaypoint())

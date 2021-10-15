@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_8",
   "client": [
     "MixinActiveRenderInfo",
+    "MixinBlockRendererDispatcher",
     "MixinEntityRenderer",
     "MixinFontRenderer",
     "MixinGuiPlayerTabOverlay",

@@ -56,6 +56,7 @@ Unless, You can't use rendering outline on entity
   - Auto Accept Party
   - AFK Mode
   - Hide Tip Message
+  - Cancel Certain Block Rendering
 </details>
 <details>
   <summary>SkyBlock</summary>

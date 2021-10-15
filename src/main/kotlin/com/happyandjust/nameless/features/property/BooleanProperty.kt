@@ -24,4 +24,7 @@ import com.happyandjust.nameless.gui.elements.EToggleButton
 
 class BooleanProperty(featureParameter: FeatureParameter<Boolean>) : Property<Boolean>(featureParameter, EToggleButton(
     Rectangle.fromWidthHeight(0, 0, 28, 14), featureParameter.value
-) { featureParameter.value = it })
+) {
+    featureParameter.value = it
+    featureParameter.onToggleClick(it)
+})
