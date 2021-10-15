@@ -105,7 +105,7 @@ class FeatureMurdererFinder : SimpleFeature(
     private val INFECTED = Pattern.compile("\\w+(\\s\\w+)? infected (?<infected>\\w+)")
     private val ENVIRONMENT_INFECTED = Pattern.compile("(?<infected>\\w+) was infected by the environment!")
     private val ALPHA_LEFT =
-        Pattern.compile("The alpha left the game. (?<name>\\w+) was chosen to be the new alpha infected!")
+        Pattern.compile("The alpha left the game\\. (?<name>\\w+) was chosen to be the new alpha infected!")
 
     private var targetName: String? = null
     private var prevTargetName: String? = null
