@@ -121,7 +121,7 @@ object RenderGlobalHook {
                     }
                 }
             }
-            
+
             mc.renderManager.setRenderOutlines(false)
             RenderHelper.enableStandardItemLighting()
             depthMask(false)
