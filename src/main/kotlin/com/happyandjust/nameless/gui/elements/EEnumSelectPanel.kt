@@ -25,7 +25,7 @@ import com.happyandjust.nameless.gui.Rectangle
 
 class EEnumSelectPanel<E : Enum<*>>(
     rectangle: Rectangle,
-    private var currentEnumType: E,
+    var currentEnumType: E,
     private val allEnums: List<E>
 ) : EPanel(rectangle) {
 
@@ -78,14 +78,14 @@ class EEnumSelectPanel<E : Enum<*>>(
         val buttonWidth = rectangle.width / 5
 
         previousButton.rectangle = Rectangle.fromWidthHeight(
-            rectangle.left - buttonWidth,
+            rectangle.left,
             rectangle.top,
             buttonWidth,
             rectangle.height
         )
 
         nextButton.rectangle = Rectangle.fromWidthHeight(
-            rectangle.right,
+            rectangle.right - buttonWidth,
             rectangle.top,
             buttonWidth,
             rectangle.height

@@ -21,11 +21,16 @@ package com.happyandjust.nameless.features.property
 import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.gui.Rectangle
-import com.happyandjust.nameless.gui.elements.EChromaColorSlider
+import com.happyandjust.nameless.gui.elements.EOpenColorPicker
+import com.happyandjust.nameless.gui.elements.EPanelStacks
 
-class ChromaColorProperty(featureParameter: FeatureParameter<ChromaColor>) : Property<ChromaColor>(
-    featureParameter, EChromaColorSlider(
-        Rectangle.fromWidthHeight(0, 0, 200, 8),
-        featureParameter.value,
-    ) { featureParameter.value = it }
-)
+class ChromaColorProperty(featureParameter: FeatureParameter<ChromaColor>, panelStacks: EPanelStacks) :
+    Property<ChromaColor>(
+        featureParameter, EOpenColorPicker(
+            Rectangle.fromWidthHeight(0, 0, 32, 32),
+            featureParameter.value,
+            { featureParameter.value = it },
+            { panelStacks.push(it) },
+            panelStacks.rectangle
+        )
+    )

@@ -16,19 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.mixins.accessors;
+package com.happyandjust.nameless.hypixel.skyblock
 
-import com.google.common.collect.Ordering;
-import net.minecraft.client.gui.GuiPlayerTabOverlay;
-import net.minecraft.client.network.NetworkPlayerInfo;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import java.awt.Color
 
-@Mixin(GuiPlayerTabOverlay.class)
-public interface AccessorGuiPlayerTabOverlay {
+enum class Gemstone(val color: Int, val metadata: Int, val readableName: String) {
 
-    @Accessor("field_175252_a")
-    static Ordering<NetworkPlayerInfo> field_175252_a() {
-        return null;
-    }
+    RUBY(Color(255, 0, 0, 40).rgb, 14, "Ruby"),
+    AMETHYST(Color(128, 0, 128, 40).rgb, 10, "Amethyst"),
+    JADE(Color(0, 255, 0, 40).rgb, 5, "Jade"),
+    SAPPHIRE(Color(0, 255, 255, 40).rgb, 3, "Sapphire"),
+    AMBER(Color(255, 128, 0, 40).rgb, 1, "Amber"),
+    TOPAZ(Color(255, 255, 0, 40).rgb, 4, "Topaz"),
+    JASPER(Color(255, 0, 255, 40).rgb, 2, "Jasper")
 }

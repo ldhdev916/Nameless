@@ -16,16 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.mixins.accessors;
+package com.happyandjust.nameless.features
 
-import net.minecraft.client.gui.GuiIngame;
-import net.minecraft.client.gui.GuiPlayerTabOverlay;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
-
-@Mixin(GuiIngame.class)
-public interface AccessorGuiIngame {
-
-    @Accessor
-    void setOverlayPlayerList(GuiPlayerTabOverlay tab);
-}
+open class SettingFeature(key: String, title: String, desc: String) : SimpleFeature(
+    Category.SETTINGS,
+    key,
+    title,
+    "$desc\nThis is only for setting, whether this feature is enabled or not does not matter"
+)

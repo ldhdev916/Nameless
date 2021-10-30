@@ -18,10 +18,9 @@
 
 package com.happyandjust.nameless.features
 
-import com.happyandjust.nameless.config.ConfigHandler
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.features.listener.RenderOverlayListener
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.COverlay
 import com.happyandjust.nameless.textureoverlay.ERelocatablePanel
 import com.happyandjust.nameless.textureoverlay.ERelocateGui
 import com.happyandjust.nameless.textureoverlay.Overlay
@@ -34,15 +33,13 @@ abstract class OverlayFeature(
     enabled_: Boolean = false
 ) : SimpleFeature(category, key, title, desc, enabled_), RenderOverlayListener {
 
-    private val cOverlay = TypeRegistry.getConverterByClass(Overlay::class)
     abstract val overlayPoint: ConfigValue<Overlay>
 
     fun getOverlayConfig(category: String, key: String, defaultOverlay: Overlay) = ConfigValue(
         category,
         key,
         defaultOverlay,
-        { s, k, v -> ConfigHandler.get(s, k, v, cOverlay) },
-        { s, k, v -> ConfigHandler.write(s, k, v, cOverlay) }
+        COverlay
     )
 
     fun getRelocateGui() = ERelocateGui(getRelocatablePanel()) { overlayPoint.value = it }

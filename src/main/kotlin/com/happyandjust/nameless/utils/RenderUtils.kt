@@ -24,13 +24,124 @@ import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.entity.Entity
-import net.minecraft.util.AxisAlignedBB
-import net.minecraft.util.BlockPos
-import net.minecraft.util.MathHelper
-import net.minecraft.util.Vec3
+import net.minecraft.util.*
 import org.lwjgl.opengl.GL11
+import kotlin.math.cos
+import kotlin.math.sin
+
 
 object RenderUtils {
+
+    private val beaconBeam = ResourceLocation("textures/entity/beacon_beam.png")
+
+    /**
+     * Taken from NotEnoughUpdates under Creative Commons Attribution-NonCommercial 3.0
+     *
+     * https://github.com/Moulberry/NotEnoughUpdates/blob/master/LICENSE
+     *
+     * Modified
+     *
+     * @author Moulberry
+     */
+    fun renderBeaconBeam(pos: Vec3, rgb: Int, alphaMultiplier: Float, partialTicks: Float) {
+
+        val render = mc.renderViewEntity ?: return
+
+        val x = pos.xCoord - render.getRenderPosX(partialTicks)
+        val y = pos.yCoord - render.getRenderPosY(partialTicks)
+        val z = pos.zCoord - render.getRenderPosZ(partialTicks)
+
+        val height = 300
+        val bottomOffset = 0
+        val topOffset = bottomOffset + height
+
+        val worldrenderer = tessellator.worldRenderer
+
+        mc.textureManager.bindTexture(beaconBeam)
+        GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, 10497.0f)
+        GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, 10497.0f)
+
+        disableLighting()
+        enableCull()
+        enableTexture2D()
+        tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ONE, GL11.GL_ZERO)
+        enableBlend()
+        tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO)
+
+        val time = mc.theWorld.totalWorldTime + partialTicks.toDouble()
+
+        val d1 = MathHelper.func_181162_h(-time * 0.2 - MathHelper.floor_double(-time * 0.1).toDouble())
+
+        val r = rgb.getRedFloat()
+        val g = rgb.getGreenFloat()
+        val b = rgb.getBlueFloat()
+
+        val d2 = time * 0.025 * -1.5
+        val d4 = 0.5 + cos(d2 + 2.356194490192345) * 0.2
+        val d5 = 0.5 + sin(d2 + 2.356194490192345) * 0.2
+        val d6 = 0.5 + cos(d2 + Math.PI / 4.0) * 0.2
+        val d7 = 0.5 + sin(d2 + Math.PI / 4.0) * 0.2
+        val d8 = 0.5 + cos(d2 + 3.9269908169872414) * 0.2
+        val d9 = 0.5 + sin(d2 + 3.9269908169872414) * 0.2
+        val d10 = 0.5 + cos(d2 + 5.497787143782138) * 0.2
+        val d11 = 0.5 + sin(d2 + 5.497787143782138) * 0.2
+        val d14 = -1.0 + d1
+        val d15 = height * 2.5 + d14
+
+        worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR)
+
+        worldrenderer.pos(x + d4, y + topOffset, z + d5).tex(1.0, d15).color(r, g, b, alphaMultiplier).endVertex()
+        worldrenderer.pos(x + d4, y + bottomOffset, z + d5).tex(1.0, d14).color(r, g, b, 1.0f).endVertex()
+        worldrenderer.pos(x + d6, y + bottomOffset, z + d7).tex(0.0, d14).color(r, g, b, 1.0f).endVertex()
+        worldrenderer.pos(x + d6, y + topOffset, z + d7).tex(0.0, d15).color(r, g, b, alphaMultiplier).endVertex()
+        worldrenderer.pos(x + d10, y + topOffset, z + d11).tex(1.0, d15).color(r, g, b, alphaMultiplier).endVertex()
+        worldrenderer.pos(x + d10, y + bottomOffset, z + d11).tex(1.0, d14).color(r, g, b, 1.0f).endVertex()
+        worldrenderer.pos(x + d8, y + bottomOffset, z + d9).tex(0.0, d14).color(r, g, b, 1.0f).endVertex()
+        worldrenderer.pos(x + d8, y + topOffset, z + d9).tex(0.0, d15).color(r, g, b, alphaMultiplier).endVertex()
+        worldrenderer.pos(x + d6, y + topOffset, z + d7).tex(1.0, d15).color(r, g, b, alphaMultiplier).endVertex()
+        worldrenderer.pos(x + d6, y + bottomOffset, z + d7).tex(1.0, d14).color(r, g, b, 1.0f).endVertex()
+        worldrenderer.pos(x + d10, y + bottomOffset, z + d11).tex(0.0, d14).color(r, g, b, 1.0f).endVertex()
+        worldrenderer.pos(x + d10, y + topOffset, z + d11).tex(0.0, d15).color(r, g, b, alphaMultiplier).endVertex()
+        worldrenderer.pos(x + d8, y + topOffset, z + d9).tex(1.0, d15).color(r, g, b, alphaMultiplier).endVertex()
+        worldrenderer.pos(x + d8, y + bottomOffset, z + d9).tex(1.0, d14).color(r, g, b, 1.0f).endVertex()
+        worldrenderer.pos(x + d4, y + bottomOffset, z + d5).tex(0.0, d14).color(r, g, b, 1.0f).endVertex()
+        worldrenderer.pos(x + d4, y + topOffset, z + d5).tex(0.0, d15).color(r, g, b, alphaMultiplier).endVertex()
+
+        tessellator.draw()
+
+        disableCull()
+
+        val d12 = -1.0 + d1
+        val d13 = height + d12
+
+        worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR)
+        worldrenderer.pos(x + 0.2, y + topOffset, z + 0.2).tex(1.0, d13).color(r, g, b, 0.25f * alphaMultiplier)
+            .endVertex()
+        worldrenderer.pos(x + 0.2, y + bottomOffset, z + 0.2).tex(1.0, d12).color(r, g, b, 0.25f).endVertex()
+        worldrenderer.pos(x + 0.8, y + bottomOffset, z + 0.2).tex(0.0, d12).color(r, g, b, 0.25f).endVertex()
+        worldrenderer.pos(x + 0.8, y + topOffset, z + 0.2).tex(0.0, d13).color(r, g, b, 0.25f * alphaMultiplier)
+            .endVertex()
+        worldrenderer.pos(x + 0.8, y + topOffset, z + 0.8).tex(1.0, d13).color(r, g, b, 0.25f * alphaMultiplier)
+            .endVertex()
+        worldrenderer.pos(x + 0.8, y + bottomOffset, z + 0.8).tex(1.0, d12).color(r, g, b, 0.25f).endVertex()
+        worldrenderer.pos(x + 0.2, y + bottomOffset, z + 0.8).tex(0.0, d12).color(r, g, b, 0.25f).endVertex()
+        worldrenderer.pos(x + 0.2, y + topOffset, z + 0.8).tex(0.0, d13).color(r, g, b, 0.25f * alphaMultiplier)
+            .endVertex()
+        worldrenderer.pos(x + 0.8, y + topOffset, z + 0.2).tex(1.0, d13).color(r, g, b, 0.25f * alphaMultiplier)
+            .endVertex()
+        worldrenderer.pos(x + 0.8, y + bottomOffset, z + 0.2).tex(1.0, d12).color(r, g, b, 0.25f).endVertex()
+        worldrenderer.pos(x + 0.8, y + bottomOffset, z + 0.8).tex(0.0, d12).color(r, g, b, 0.25f).endVertex()
+        worldrenderer.pos(x + 0.8, y + topOffset, z + 0.8).tex(0.0, d13).color(r, g, b, 0.25f * alphaMultiplier)
+            .endVertex()
+        worldrenderer.pos(x + 0.2, y + topOffset, z + 0.8).tex(1.0, d13).color(r, g, b, 0.25f * alphaMultiplier)
+            .endVertex()
+        worldrenderer.pos(x + 0.2, y + bottomOffset, z + 0.8).tex(1.0, d12).color(r, g, b, 0.25f).endVertex()
+        worldrenderer.pos(x + 0.2, y + bottomOffset, z + 0.2).tex(0.0, d12).color(r, g, b, 0.25f).endVertex()
+        worldrenderer.pos(x + 0.2, y + topOffset, z + 0.2).tex(0.0, d13).color(r, g, b, 0.25f * alphaMultiplier)
+            .endVertex()
+
+        tessellator.draw()
+    }
 
     fun drawOutlinedBox(axisAlignedBB: AxisAlignedBB, color: Int, partialTicks: Float) {
         val render = mc.renderViewEntity ?: return

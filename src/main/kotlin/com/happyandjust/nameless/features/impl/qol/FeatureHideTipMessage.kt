@@ -25,7 +25,7 @@ import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ChatListener
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 
-class FeatureHideTipMessage : SimpleFeature(
+object FeatureHideTipMessage : SimpleFeature(
     Category.QOL,
     "hidetipmessage",
     "Hide Tip Message",

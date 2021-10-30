@@ -29,30 +29,36 @@ import com.happyandjust.nameless.devqol.getMD5
 import com.happyandjust.nameless.devqol.sendClientMessage
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.ServerChangeListener
+import com.happyandjust.nameless.features.listener.ClientTickListener
+import com.happyandjust.nameless.features.listener.WorldLoadListener
 import com.happyandjust.nameless.network.Request
 import net.minecraft.event.ClickEvent
 import net.minecraft.util.ChatComponentText
+import net.minecraft.util.IChatComponent
+import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion
 
-class FeatureUpdateChecker : SimpleFeature(
+object FeatureUpdateChecker : SimpleFeature(
     Category.MISCELLANEOUS,
     "updatechecker",
     "Auto Update Checker",
     "automatically checks if currently loaded mod version is latest version",
     true
-), ServerChangeListener {
+), WorldLoadListener, ClientTickListener {
 
     private var checkedVersion = false
     var needUpdate = false
+    private var scheduledMessage: IChatComponent? = null
 
-    override fun onServerChange(server: String) {
+
+    override fun onWorldLoad(e: WorldEvent.Load) {
         if (checkedVersion || !enabled) return
         checkedVersion = true
         threadPool.execute {
             val s = try {
                 Request.get("https://api.github.com/repos/HappyAndJust/Nameless/releases/latest")
             } catch (e: Exception) {
+                scheduledMessage = ChatComponentText("§c[Nameless] Unable to check latest version.")
                 LOGGER.error(e)
                 return@execute
             }
@@ -105,16 +111,24 @@ class FeatureUpdateChecker : SimpleFeature(
                         .appendText(" ")
                         .appendSibling(auto_download)
 
-                sendClientMessage(chat)
+                scheduledMessage = chat
 
             } else if (currentVersion > latestVersion) { // pre
-                sendClientMessage(
+                scheduledMessage = ChatComponentText(
                     """
                         §9§lYou're in Pre-Version of $MOD_NAME
                         §9§lCurrent Mod Version: $VERSION Latest Version: $latestTag
                     """.trimIndent()
                 )
             }
+        }
+    }
+
+    override fun tick() {
+        scheduledMessage?.let {
+            sendClientMessage(it)
+            scheduledMessage = null
+            return
         }
     }
 }

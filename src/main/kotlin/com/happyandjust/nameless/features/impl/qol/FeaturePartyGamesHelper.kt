@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.Point
 import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.events.PartyGameChangeEvent
@@ -31,20 +30,19 @@ import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.processor.partygames.*
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CBoolean
+import com.happyandjust.nameless.serialization.converters.CChromaColor
+import com.happyandjust.nameless.serialization.converters.COverlay
 import com.happyandjust.nameless.textureoverlay.ERelocateGui
 import com.happyandjust.nameless.textureoverlay.Overlay
 import com.happyandjust.nameless.textureoverlay.impl.ELabEscapeOverlay
 import net.minecraftforge.common.MinecraftForge
 import java.awt.Color
 
-class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", "Party Games Helper", ""),
+object FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", "Party Games Helper", ""),
     ClientTickListener {
 
     init {
-        val cBoolean = TypeRegistry.getConverterByClass(Boolean::class)
-        val cChromaColor = TypeRegistry.getConverterByClass(ChromaColor::class)
-
         parameters["jigsaw"] =
             FeatureParameter(
                 0,
@@ -53,7 +51,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
                 "Jigsaw Rush",
                 "Render which key to press on your canvas",
                 true,
-                cBoolean
+                CBoolean
             )
         parameters["rpg16"] = FeatureParameter(
             0,
@@ -62,7 +60,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
             "RPG 16",
             "Glow player who is at 1 hearts",
             true,
-            cBoolean
+            CBoolean
         ).also {
             it.parameters["color"] = FeatureParameter(
                 0,
@@ -71,7 +69,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
                 "Player Color",
                 "",
                 Color.red.toChromaColor(),
-                cChromaColor
+                CChromaColor
             )
         }
         parameters["avalanche"] = FeatureParameter(
@@ -81,7 +79,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
             "Avalanche",
             "Render Box under the slabs",
             true,
-            cBoolean
+            CBoolean
         ).also {
             it.parameters["color"] = FeatureParameter(
                 0,
@@ -90,7 +88,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
                 "Box Color",
                 "",
                 Color.magenta.toChromaColor(),
-                cChromaColor
+                CChromaColor
             )
         }
         parameters["animal"] = FeatureParameter(
@@ -100,7 +98,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
             "Animal Slaughter",
             "Glow -50% entity so you don't hit them",
             true,
-            cBoolean
+            CBoolean
         ).also {
             it.parameters["color"] = FeatureParameter(
                 0,
@@ -109,7 +107,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
                 "-50% Entity Color",
                 "",
                 Color.red.toChromaColor(),
-                cChromaColor
+                CChromaColor
             )
         }
         parameters["anvil"] = FeatureParameter(
@@ -119,7 +117,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
             "Anvil Spleef",
             "Render box on where the anvils will land on",
             true,
-            cBoolean
+            CBoolean
         ).also {
             it.parameters["color"] = FeatureParameter(
                 0,
@@ -128,7 +126,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
                 "Box Color",
                 "",
                 Color.red.toChromaColor(),
-                cChromaColor
+                CChromaColor
             )
         }
         parameters["maze"] = FeatureParameter(
@@ -138,7 +136,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
             "Spider Maze",
             "Nothing to explain, maze solver",
             true,
-            cBoolean
+            CBoolean
         )
         parameters["dive"] = FeatureParameter(
             0,
@@ -147,7 +145,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
             "Dive",
             "Render 'Exact Box' on where you'll land on, color will be red if you'll collide with block when you land",
             true,
-            cBoolean
+            CBoolean
         ).also {
             it.parameters["color"] = FeatureParameter(
                 0,
@@ -156,7 +154,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
                 "Box Color",
                 "",
                 Color.blue.toChromaColor(),
-                cChromaColor
+                CChromaColor
             )
         }
         parameters["labescape"] = FeatureParameter(
@@ -166,7 +164,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
             "Lab Escape",
             "Render what key you have to press on your screen",
             true,
-            cBoolean
+            CBoolean
         ).also {
             it.parameters["overlay"] = FeatureParameter(
                 0,
@@ -175,7 +173,7 @@ class FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", 
                 "Relocate Overlay",
                 "",
                 Overlay(Point(0, 0), 1.0),
-                TypeRegistry.getConverterByClass(Overlay::class)
+                COverlay
             ).also { overlayParameter ->
                 val labEscapeOverlay = ELabEscapeOverlay(overlayParameter.value)
 

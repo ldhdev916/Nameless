@@ -20,6 +20,8 @@ package com.happyandjust.nameless.devqol
 
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.IChatComponent
+import net.minecraftforge.client.event.ClientChatReceivedEvent
+import net.minecraftforge.common.MinecraftForge
 
 fun sendClientMessage(o: Any?) {
     sendClientMessage(ChatComponentText(o?.toString() ?: "null"))
@@ -30,5 +32,9 @@ fun sendClientMessage(chatComponent: IChatComponent?) {
         sendClientMessage("null")
         return
     }
-    mc.thePlayer?.addChatMessage(chatComponent) ?: LOGGER.info("[CHAT] ${chatComponent.formattedText}")
+    mc.thePlayer?.run {
+        if (!MinecraftForge.EVENT_BUS.post(ClientChatReceivedEvent(1, chatComponent))) {
+            addChatMessage(chatComponent)
+        }
+    } ?: LOGGER.info("[CHAT] ${chatComponent.formattedText}")
 }

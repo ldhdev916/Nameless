@@ -33,7 +33,7 @@ import com.happyandjust.nameless.features.listener.PacketListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiChat
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.textureoverlay.Overlay
 import com.happyandjust.nameless.textureoverlay.impl.EGTBOverlay
 import net.minecraft.client.gui.inventory.GuiChest
@@ -45,7 +45,7 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent
 import java.awt.Color
 import java.util.regex.Pattern
 
-class FeatureGTBHelper : OverlayFeature(
+object FeatureGTBHelper : OverlayFeature(
     Category.QOL,
     "gtbhelper",
     "Guess the Build Helper",
@@ -68,8 +68,6 @@ class FeatureGTBHelper : OverlayFeature(
     init {
         // for korean users like me
 
-        val cBoolean = TypeRegistry.getConverterByClass(Boolean::class)
-
         parameters["translate"] = FeatureParameter(
             0,
             "gtbhelper",
@@ -77,7 +75,7 @@ class FeatureGTBHelper : OverlayFeature(
             "Translate Words",
             "Translate all words, themes from english to korean for korean users like me.",
             false,
-            cBoolean
+            CBoolean
         )
         parameters["clipboard"] = FeatureParameter(
             1,
@@ -86,7 +84,7 @@ class FeatureGTBHelper : OverlayFeature(
             "Copy to Clipboard",
             "When there's only 1 word that matches, copy it to your clipboard",
             false,
-            cBoolean
+            CBoolean
         )
     }
 

@@ -18,20 +18,23 @@
 
 package com.happyandjust.nameless.config
 
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.Converter
+import com.happyandjust.nameless.serialization.converters.CBoolean
+import com.happyandjust.nameless.serialization.converters.CDouble
+import com.happyandjust.nameless.serialization.converters.CInt
+import com.happyandjust.nameless.serialization.converters.CString
 
 open class ConfigValue<T>(
     private val category: String,
     private val key: String,
     defaultValue: T,
-    configMethod: (String, String, T) -> T,
-    private val saveMethod: (String, String, T) -> Unit
+    private val converter: Converter<T>
 ) {
 
-    var value: T = configMethod(category, key, defaultValue)
+    var value: T = ConfigHandler.get(category, key, defaultValue, converter)
         set(value) {
             value?.let {
-                saveMethod(category, key, it)
+                ConfigHandler.write(category, key, it, converter)
                 field = it
             }
         }
@@ -41,31 +44,27 @@ open class ConfigValue<T>(
         category,
         key,
         defaultValue,
-        { s, k, v -> ConfigHandler.get(s, k, v, TypeRegistry.getConverterByClass(Boolean::class)) },
-        ConfigHandler::write
+        CBoolean
     )
 
     class DoubleConfigValue(category: String, key: String, defaultValue: Double) : ConfigValue<Double>(
         category,
         key,
         defaultValue,
-        { s, k, v -> ConfigHandler.get(s, k, v, TypeRegistry.getConverterByClass(Double::class)) },
-        ConfigHandler::write
+        CDouble
     )
 
     class IntConfigValue(category: String, key: String, defaultValue: Int) : ConfigValue<Int>(
         category,
         key,
         defaultValue,
-        { s, k, v -> ConfigHandler.get(s, k, v, TypeRegistry.getConverterByClass(Int::class)) },
-        ConfigHandler::write
+        CInt
     )
 
     class StringConfigValue(category: String, key: String, defaultValue: String) : ConfigValue<String>(
         category,
         key,
         defaultValue,
-        { s, k, v -> ConfigHandler.get(s, k, v, TypeRegistry.getConverterByClass(String::class)) },
-        ConfigHandler::write
+        CString
     )
 }

@@ -20,116 +20,229 @@ package com.happyandjust.nameless.features.impl.skyblock
 
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JSONHandler
-import com.happyandjust.nameless.devqol.sendClientMessage
+import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.hypixel.auction.AuctionInfo
+import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.network.Request
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CBoolean
+import com.happyandjust.nameless.serialization.converters.CItemRarity
+import com.happyandjust.nameless.serialization.converters.CString
 import com.happyandjust.nameless.utils.SkyblockUtils
 import net.minecraft.event.ClickEvent
 import net.minecraft.event.HoverEvent
-import net.minecraft.nbt.CompressedStreamTools
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.ChatStyle
 import net.minecraft.util.IChatComponent
-import net.minecraftforge.common.util.Constants
-import java.io.ByteArrayInputStream
 import java.util.*
+import kotlin.math.abs
 
-class FeatureTrackAuction : SimpleFeature(
+object FeatureTrackAuction : SimpleFeature(
     Category.SKYBLOCK,
     "trackauction",
     "Track Auction",
-    "Mod will keep tracking all auctions\nAnd if there's a one whose price(bin) is lower than the one you set before, mods will notify you"
+    "Mod will keep tracking all auctions\n§lThis may make your internet speed low and inconsistent"
 ), ClientTickListener {
 
-    private val tracks = hashMapOf<String, Int>()
-    private var prevTotalAuctions = -1
-    private var lastScanAuction = -1L
+    @Volatile
+    private var scanningAuction = false
+
+    @Volatile
+    private var startTime = 0L
+    private val notifyInfos = hashSetOf<NotifyInfo>()
+    private var prevTotalAuctions = 0
+
+    private val filteredSkyBlockItems = hashSetOf<String>()
 
     init {
-        val cBoolean = TypeRegistry.getConverterByClass(Boolean::class)
-        val cString = TypeRegistry.getConverterByClass(String::class)
+        parameters["margin"] = FeatureParameter(
+            0,
+            "trackauction",
+            "margin",
+            "Min Margin",
+            "Min price between 1st lowest bin of an item and 2nd lowest bin of an item",
+            "3000000",
+            CString
+        ).also {
+            it.maxStringWidth = Int.MAX_VALUE.toString().length
+            it.validator = { s -> s.matches("\\d*".toRegex()) }
+        }
+        parameters["current"] = FeatureParameter(
+            1,
+            "trackauction",
+            "currentmoney",
+            "Current Money",
+            "If this is set, mod won't show the item which is higher than your current money",
+            "",
+            CString
+        ).also {
+            it.maxStringWidth = Int.MAX_VALUE.toString().length
+            it.validator = { s -> s.matches("\\d*".toRegex()) }
+        }
+        parameters["rarity"] = FeatureParameter(
+            2,
+            "trackauction",
+            "minrarity",
+            "Minimum Rarity",
+            "",
+            ItemRarity.COMMON,
+            CItemRarity
+        ).also {
+            it.allEnumList = ItemRarity.values().toList()
+        }
+        parameters["filtername"] = FeatureParameter(
+            3,
+            "trackauction",
+            "filtername",
+            "Filter Item Name",
+            "Prevent certain item from being searched if its name contains value you set\nSplit with comma(,)",
+            "",
+            CString
+        )
+    }
 
-        for (skyBlockItem in SkyblockUtils.allItems.values) {
-            val id = skyBlockItem.id.lowercase()
+    fun updateItemData() {
+        parameters["filter"] = FeatureParameter(
+            3,
+            "trackauction",
+            "filter",
+            "Filter Certain SkyBlock Item",
+            "Prevent certain item from being searched",
+            false,
+            CBoolean
+        ).also {
+            for (skyBlockItem in SkyblockUtils.allItems.values) {
+                val id = skyBlockItem.id.lowercase()
 
-            parameters[id] = FeatureParameter(
-                0,
-                "trackauction",
-                id,
-                skyBlockItem.name,
-                "SkyBlock ID: ${skyBlockItem.id}",
-                false,
-                cBoolean
-            ).also {
-                it.parameters["price"] = FeatureParameter(
+                it.parameters[id] = FeatureParameter(
                     0,
-                    "trackauction",
-                    "${id}_price",
-                    "Lowest Price of ${skyBlockItem.name}",
-                    "",
-                    "1",
-                    cString
-                ).also { parameter ->
-                    parameter.maxStringWidth = 10
-                    parameter.validator = { text -> text.matches("\\d*".toRegex()) }
+                    "trackauctionfilter",
+                    id,
+                    skyBlockItem.name,
+                    "SkyBlock ID: ${skyBlockItem.id}",
+                    false,
+                    CBoolean
+                ).also { featureParameter ->
+                    featureParameter.onToggleClick = { b ->
+                        if (b) {
+                            filteredSkyBlockItems.add(skyBlockItem.id)
+                        } else {
+                            filteredSkyBlockItems.remove(skyBlockItem.id)
+                        }
+                    }
+
+                    if (skyBlockItem.id.contains("THE_FISH")) featureParameter.value = true
+
+                    if (featureParameter.value) filteredSkyBlockItems.add(skyBlockItem.id)
                 }
             }
         }
     }
+
+    private fun getTotalAuction() =
+        JSONHandler(Request.get("https://api.hypixel.net/skyblock/auctions")).read(JsonObject())["totalAuctions"].asInt
 
     override fun tick() {
         if (!enabled) return
+        if (scanningAuction) return
+        scanningAuction = true
 
         threadPool.execute {
 
-            if (lastScanAuction + 60000 > System.currentTimeMillis()) return@execute
+            val totalAuctions = getTotalAuction()
 
-            tracks.clear()
-
-            for (enabledItem in parameters.values.filter { it.value as Boolean }) {
-                tracks[enabledItem.title] = enabledItem.getParameterValue<String>("price").toInt()
+            if (prevTotalAuctions == totalAuctions) {
+                scanningAuction = false
+                return@execute
             }
+            prevTotalAuctions = totalAuctions
 
-            if (tracks.isEmpty()) return@execute // do we rly need to get all auction data even if you don't need it smh
-
-            lastScanAuction = System.currentTimeMillis()
-
-            repeat(getMaxAuctionPage()) {
-                for (auctionInfo in SkyblockUtils.getAuctionDataInPage(it)
-                    .filter { data -> data.bin && data.bids.size() == 0 }) {
-
-                    if (!isMatchingPair(auctionInfo)) continue
-
-                    sendClientMessage(getChatTextForAuctionInfo(auctionInfo))
-                }
-            }
+            startTime = System.currentTimeMillis()
+            scanAuction(::doTask)
         }
     }
 
-    fun getMaxAuctionPage(): Int {
-        val s = Request.get("https://api.hypixel.net/skyblock/auctions")
+    private fun doTask(allAuctions: List<AuctionInfo>) {
 
-        val json = JSONHandler(s).read(JsonObject())
+        val sec = ((System.currentTimeMillis() - startTime) / 1000.0).transformToPrecision(3).formatDouble()
 
-        if (!json["success"].asBoolean) return 0
+        sendClientMessage("§aDone Scanning Auctions Time Since Start: $sec")
 
-        val totalAuctions = json["totalAuctions"].asInt
+        try {
+            val margin = getParameterValue<String>("margin").toIntOrNull() ?: return
+            val currentMoney = getParameterValue<String>("current").toIntOrNull() ?: Int.MAX_VALUE
+            val minRarity = getParameterValue<ItemRarity>("rarity")
 
-        if (totalAuctions == prevTotalAuctions) return 0
-        prevTotalAuctions = totalAuctions
+            val shouldFilter = getParameterValue<Boolean>("filter")
+            val shouldFilterNames = getParameterValue<String>("filtername").split(",")
 
-        return json["totalPages"].asInt
+            val containsOneOf: (String) -> Boolean = f@{
+                for (filterNames in shouldFilterNames) {
+                    if (it.contains(filterNames, true)) return@f true
+                }
+                false
+            }
+
+
+            val binAuctionInfos = hashMapOf<String, PriorityQueue<AuctionInfo>>()
+
+            val compare = compareBy<AuctionInfo> { it.price }
+
+            for (auctionInfo in allAuctions) {
+                if (auctionInfo.skyBlockId.isEmpty()) continue
+                if (!auctionInfo.isBuyableBinAuction()) continue
+                if (shouldFilter && filteredSkyBlockItems.contains(auctionInfo.skyBlockId)) continue
+                if (containsOneOf(auctionInfo.item_name)) continue
+
+                val existing = binAuctionInfos[auctionInfo.skyBlockId] ?: PriorityQueue(compare)
+
+                existing.add(auctionInfo)
+
+                binAuctionInfos[auctionInfo.skyBlockId] = existing
+            }
+
+            for ((_, auctionInfos) in binAuctionInfos) {
+                if (auctionInfos.size < 2) continue
+
+                val first = auctionInfos.poll()
+
+                if (first.price > currentMoney) continue
+                if (first.rarity < minRarity) continue
+
+                val second = auctionInfos.poll()
+
+                if (second.price - first.price >= margin) {
+
+                    val isRarityDiff = first.rarity != second.rarity
+
+                    val chat = getChatTextForAuctionInfo(first).appendText(
+                        " §6${first.price.insertCommaEvery3Character()} -> ${second.price.insertCommaEvery3Character()}"
+                    )
+                    if (isRarityDiff) {
+                        chat.appendText(
+                            "\n§4Rarity is different ${first.rarity.colorCode}${first.rarity} §4-> ${second.rarity.colorCode}${second.rarity}"
+                        )
+                    }
+
+                    if (notifyInfos.add(NotifyInfo(first, System.currentTimeMillis()))) {
+                        sendClientMessage(chat.appendText("\n"))
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.notifyException()
+        }
+
+        scanningAuction = false
     }
 
     fun getChatTextForAuctionInfo(auctionInfo: AuctionInfo): IChatComponent {
-        try {
+        return try {
             val textComponent =
-                ChatComponentText("§aFound §6${auctionInfo.item_name} §awith Price §6${auctionInfo.price}\n")
+                ChatComponentText("§aFound ${auctionInfo.rarity.colorCode}${auctionInfo.item_name} §awith Price §6${auctionInfo.price.insertCommaEvery3Character()}\n")
 
             val openAuction = ChatComponentText("§a[VIEW AUCTION] ").also {
                 it.chatStyle = ChatStyle().setChatClickEvent(
@@ -140,11 +253,7 @@ class FeatureTrackAuction : SimpleFeature(
                 )
             }
 
-            val inputStream = ByteArrayInputStream(Base64.getDecoder().decode(auctionInfo.item_bytes)).buffered()
-
-            val nbt = CompressedStreamTools.readCompressed(inputStream)
-
-            val itemStackCompound = nbt.getTagList("i", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0)
+            val itemStackCompound = SkyblockUtils.readNBTFromItemBytes(auctionInfo.item_bytes)
 
             val viewItem = ChatComponentText("§e[VIEW ITEM]").also {
                 it.chatStyle = ChatStyle().setChatHoverEvent(
@@ -157,22 +266,29 @@ class FeatureTrackAuction : SimpleFeature(
 
             textComponent.appendSibling(openAuction).appendSibling(viewItem)
 
-            return textComponent
+            textComponent
         } catch (e: Exception) {
-            return ChatComponentText("§cERROR ${e.javaClass.name} ${e.message}")
+            ChatComponentText("§cERROR ${e.javaClass.name} ${e.message}")
         }
     }
 
-    private fun isMatchingPair(auctionInfo: AuctionInfo): Boolean {
+    class NotifyInfo(val auctionInfo: AuctionInfo, val time: Long) {
 
-        val name = auctionInfo.item_name
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
 
-        for (track in tracks) {
-            if (name.contains(track.key, true) && auctionInfo.price <= track.value) {
-                return true
-            }
+            other as NotifyInfo
+
+            if (auctionInfo != other.auctionInfo) return false
+
+            if (abs(time - other.time) > 10 * 60 * 1000L) return false
+
+            return true
         }
 
-        return false
+        override fun hashCode(): Int {
+            return auctionInfo.hashCode()
+        }
     }
 }

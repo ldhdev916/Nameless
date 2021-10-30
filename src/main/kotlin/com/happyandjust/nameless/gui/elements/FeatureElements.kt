@@ -50,7 +50,12 @@ class ECategory(rectangle: Rectangle, val category: Category) : EPanel(rectangle
     }
 }
 
-class EFeature(rectangle: Rectangle, val feature: SimpleFeature, val onClick: (EFeature) -> Unit) :
+class EFeature(
+    rectangle: Rectangle,
+    val feature: SimpleFeature,
+    private val panelStacks: EPanelStacks,
+    private val parentRectangle: Rectangle
+) :
     EPanel(rectangle) {
 
     private val titlePanel = ELabel(
@@ -109,7 +114,9 @@ class EFeature(rectangle: Rectangle, val feature: SimpleFeature, val onClick: (E
                 ), "Setting", true
             ).also {
                 it.onClick = {
-                    onClick(this)
+                    panelStacks.push(
+                        EFeatureSettingPanel(parentRectangle, feature, panelStacks)
+                    )
                 }
                 lastLeft = it.rectangle.left
 
@@ -172,7 +179,12 @@ class EFeature(rectangle: Rectangle, val feature: SimpleFeature, val onClick: (E
     }
 }
 
-class EParameter(rectangle: Rectangle, val parameter: FeatureParameter<*>, val onClick: (EParameter) -> Unit) :
+class EParameter(
+    rectangle: Rectangle,
+    val parameter: FeatureParameter<*>,
+    private val panelStacks: EPanelStacks,
+    private val parentRectangle: Rectangle
+) :
     EPanel(rectangle) {
 
     private val titlePanel = ELabel(
@@ -207,7 +219,7 @@ class EParameter(rectangle: Rectangle, val parameter: FeatureParameter<*>, val o
             is Double -> DoubleProperty(parameter as FeatureParameter<Double>)
             is Boolean -> BooleanProperty(parameter as FeatureParameter<Boolean>)
             is String -> StringProperty(parameter as FeatureParameter<String>)
-            is ChromaColor -> ChromaColorProperty(parameter as FeatureParameter<ChromaColor>)
+            is ChromaColor -> ChromaColorProperty(parameter as FeatureParameter<ChromaColor>, panelStacks)
             is Overlay -> OverlayProperty(parameter as FeatureParameter<Overlay>)
             is Enum<*> -> EnumProperty(parameter as FeatureParameter<Enum<*>>)
             else -> throw IllegalArgumentException("Unsupported Property")
@@ -241,7 +253,7 @@ class EParameter(rectangle: Rectangle, val parameter: FeatureParameter<*>, val o
                 ), "Setting", true
             ).also {
                 it.onClick = {
-                    onClick(this)
+                    panelStacks.push(EParameterSettingPanel(parentRectangle, parameter, panelStacks))
                 }
                 lastLeft = it.rectangle.left
 

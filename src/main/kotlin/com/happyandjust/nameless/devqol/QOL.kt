@@ -21,6 +21,8 @@ package com.happyandjust.nameless.devqol
 import com.happyandjust.nameless.config.ConfigMap
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.auction.AuctionInfo
+import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockMonster
 import com.happyandjust.nameless.mixins.accessors.AccessorNBTTagList
 import com.happyandjust.nameless.utils.SkyblockUtils
@@ -31,7 +33,6 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.item.ItemStack
-import net.minecraft.launchwrapper.Launch
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
@@ -51,14 +52,50 @@ import java.security.MessageDigest
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
+import java.util.concurrent.Executors
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import kotlin.math.floor
 import kotlin.math.pow
+import kotlin.math.round
+import kotlin.math.roundToInt
 
+
+private val RARITY_PATTERN = Pattern.compile("(§[0-9a-f]§l§ka§r )?([§0-9a-fk-or]+)(?<rarity>[A-Z]+)")
 private val hsbCache = hashMapOf<Int, FloatArray>()
 val md = MessageDigest.getInstance("MD5")
 private val md5Cache = ConfigMap.StringConfigMap("md5")
+private val auctionThreadPool = Executors.newFixedThreadPool(6)
+
+/**
+ * Taken from SkyblockAddons under MIT License
+ *
+ * Modified
+ *
+ * https://github.com/BiscuitDevelopment/SkyblockAddons/blob/master/LICENSE
+ * @author Biscuit
+ */
+fun ItemStack?.getSkyBlockRarity(): ItemRarity? {
+    this ?: return null
+    if (!hasTagCompound()) return null
+
+    val display = getSubCompound("display", false) ?: return null
+    if (!display.hasKey("Lore")) return null
+    val lore = display.getTagList("Lore", Constants.NBT.TAG_STRING)
+
+    for (i in 0 until lore.tagCount()) {
+        val currentLine = lore.getStringTagAt(i)
+
+        val matcher = RARITY_PATTERN.matcher(currentLine)
+        if (matcher.find()) {
+            val rarity = matcher.group("rarity")
+
+            for (itemRarity in ItemRarity.values()) {
+                return if (rarity.startsWith(itemRarity.loreName)) itemRarity else continue
+            }
+        }
+    }
+    return null
+}
 
 fun String.getMD5(): String = md5Cache[this] ?: run {
     val bytes = md.also { it.update(toByteArray(StandardCharsets.UTF_8)) }.digest()
@@ -129,11 +166,13 @@ fun EntityArmorStand.isFairySoul(): Boolean {
 
 fun ItemStack?.getSkyBlockID(): String {
     this ?: return ""
-    if (Hypixel.currentGame != GameType.SKYBLOCK) return ""
     val tagCompound = getSubCompound("ExtraAttributes", false) ?: return ""
 
     return tagCompound.let { if (it.hasKey("id")) it.getString("id") else "" }
 }
+
+fun NBTTagCompound.getSkyBlockID(): String =
+    getCompoundTag("tag").getCompoundTag("ExtraAttributes").let { if (it.hasKey("id")) it.getString("id") else "" }
 
 fun String.stripControlCodes(): String = StringUtils.stripControlCodes(this)
 
@@ -160,6 +199,19 @@ fun Int.getBlueFloat() = getBlueInt() / 255f
 fun Int.getAlphaFloat() = getAlphaInt() / 255f
 
 fun Int.pow(n: Int) = toDouble().pow(n).toInt()
+
+fun Int.insertCommaEvery3Character(): String {
+    val builder = StringBuilder()
+
+    for ((index, char) in toString().reversed().withIndex()) {
+        builder.append(char)
+        if ((index + 1) % 3 == 0 && index + 1 != toString().length) {
+            builder.append(",")
+        }
+    }
+
+    return builder.reversed().toString()
+}
 
 fun <T : Comparable<T>> T.compress(min: T = this, max: T = this) =
     if (this < min) min else if (this > max) max else this
@@ -212,8 +264,9 @@ fun mid(value1: Double, value2: Double) = (value1 + value2) / 2.0
 
 fun mid(value1: Float, value2: Float) = (value1 + value2) / 2F
 
-val deobfuscated: Boolean
-    get() = Launch.blackboard["fml.deobfuscatedEnvironment"] as Boolean
+fun Throwable.notifyException() {
+    sendClientMessage("§cException Occurred ${javaClass.name} $message")
+}
 
 
 fun Array<out String>.toBlockPos(indexes: IntRange) = BlockPos(
@@ -236,44 +289,38 @@ fun ItemStack.getSkullOwner(): String {
     return ""
 }
 
-fun Entity.rayTraceEntity(
-    reachDistance: Double,
-    partialTicks: Float,
-    calcEntities: List<Entity> = mc.theWorld.loadedEntityList.also { it.removeIf { e -> e == this } }
-): List<Entity> {
-    val list = arrayListOf<Entity>()
-    val eyes = getPositionEyes(partialTicks) // current vector
-    val lookVec = getLook(partialTicks) * reachDistance
+fun <T, R> Collection<T>.transformToList(transform: (T) -> R): List<R> {
+    val list = arrayListOf<R>()
 
-    val rayTraceDist = rayTrace(reachDistance, partialTicks)?.hitVec?.distanceTo(eyes) ?: reachDistance
-
-    for (entity in calcEntities) {
-        val size = entity.collisionBorderSize.toDouble()
-        val collisionBox = entity.entityBoundingBox.expand(size, size, size)
-
-        val movingObjectPosition = collisionBox.calculateIntercept(eyes, eyes.add(lookVec))
-        if (collisionBox.isVecInside(eyes)) {
-            if (rayTraceDist >= 0.0) {
-                list.add(entity)
-                continue
-            }
-        }
-
-        movingObjectPosition?.let {
-            val d3 = eyes.distanceTo(it.hitVec)
-            if (d3 < rayTraceDist || rayTraceDist == 0.0) {
-                if (entity == ridingEntity && !canRiderInteract()) {
-                    if (rayTraceDist == 0.0) {
-                        list.add(entity)
-                    }
-                } else {
-                    list.add(entity)
-                }
-            }
-        }
+    for (value in this) {
+        list.add(transform(value))
     }
 
     return list
+}
+
+fun scanAuction(task: (List<AuctionInfo>) -> Unit) {
+    val allAuctions = arrayListOf<AuctionInfo>()
+
+    val maxPage = SkyblockUtils.getMaxAuctionPage()
+    var addedPage = 0
+
+    repeat(maxPage) {
+        auctionThreadPool.execute {
+
+            try {
+                allAuctions.addAll(SkyblockUtils.getAuctionDataInPage(it))
+            } catch (e: Exception) {
+                e.notifyException()
+            }
+
+            addedPage++
+
+            if (maxPage == addedPage) {
+                task(allAuctions)
+            }
+        }
+    }
 }
 
 fun EntityPlayerSP?.inHypixel() = this?.clientBrand?.startsWith("Hypixel BungeeCord") == true
@@ -285,11 +332,11 @@ inline fun Pattern.findMatcher(s: String, block: (Matcher) -> Unit) = matcher(s)
 fun Entity.toVec3() = Vec3(posX, posY, posZ)
 
 fun Double.transformToPrecision(precision: Int): Double {
-    if (precision == 0) return toInt().toDouble()
+    if (precision == 0) return roundToInt().toDouble()
 
     val pow = 10.pow(precision)
 
-    return floor(this * pow) / pow
+    return round(this * pow) / pow
 }
 
 val fontRendererNotNull: Boolean
@@ -308,8 +355,8 @@ fun <T> Collection<T>.convertToStringList(transform: (T) -> String): List<String
 fun URL.downloadToFile(target: File) {
     val inputStream = openStream().buffered()
 
-    val outputStream = target.outputStream().buffered()
-
-    outputStream.write(inputStream.readBytes())
-    outputStream.flush()
+    target.outputStream().buffered().use {
+        it.write(inputStream.readBytes())
+        it.flush()
+    }
 }

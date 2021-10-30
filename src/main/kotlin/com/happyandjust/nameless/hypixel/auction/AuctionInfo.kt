@@ -47,6 +47,50 @@ class AuctionInfo {
 
     var rarity = ItemRarity.COMMON
 
+    var skyBlockId = ""
+
     @SerializedName("item_lore")
     var lore = ""
+
+    @SerializedName("claimed")
+    var claimed = false
+
+
+    fun isBuyableBinAuction() = bin && bids.size() == 0 && !claimed
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as AuctionInfo
+
+        if (auctionId != other.auctionId) return false
+        if (item_name != other.item_name) return false
+        if (price != other.price) return false
+        if (item_bytes != other.item_bytes) return false
+        if (bin != other.bin) return false
+        if (tier_string != other.tier_string) return false
+        if (rarity != other.rarity) return false
+        if (skyBlockId != other.skyBlockId) return false
+        if (lore != other.lore) return false
+        if (claimed != other.claimed) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = auctionId.hashCode()
+        result = 31 * result + item_name.hashCode()
+        result = 31 * result + price
+        result = 31 * result + item_bytes.hashCode()
+        result = 31 * result + bin.hashCode()
+        result = 31 * result + tier_string.hashCode()
+        result = 31 * result + rarity.hashCode()
+        result = 31 * result + skyBlockId.hashCode()
+        result = 31 * result + lore.hashCode()
+        result = 31 * result + claimed.hashCode()
+        return result
+    }
+
+
 }

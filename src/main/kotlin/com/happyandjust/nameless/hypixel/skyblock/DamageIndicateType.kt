@@ -20,5 +20,5 @@ package com.happyandjust.nameless.hypixel.skyblock
 
 enum class DamageIndicateType {
 
-    K, M, B
+    K, M, B, SMART
 }

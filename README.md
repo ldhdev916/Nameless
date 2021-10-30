@@ -14,8 +14,9 @@
 </p>
 
 # Nameless
-1.8.9 Minecraft Mod. adding lots of Hypixel Quality of Life Features<br>
-Discord: https://discord.gg/UBxMXWN4bK<br>
+1.8.9 Minecraft Mod. adding lots of Hypixel Quality of Life Features. Requires the latest forge version(.2318)<br>
+Discord: https://discord.gg/UBxMXWN4bK <br>
+Instruction Video: https://www.youtube.com/watch?v=bVb9K2GyXc4 <br>
 If you're using Optifine, Please turn off Fast Render, Shaders, Antialiasing<br>
 Unless, You can't use rendering outline on entity
 
@@ -32,6 +33,7 @@ Unless, You can't use rendering outline on entity
   - Hide NPC in Lobby
   - Bedwars Ray Trace Bed
   - Display Better Armor in SkyWars
+  - Remove Certain Mod ID Sent to Server
 </details>
 <details>
   <summary>Quality of Life</summary>
@@ -58,6 +60,7 @@ Unless, You can't use rendering outline on entity
   - AFK Mode
   - Hide Tip Message
   - Cancel Certain Block Rendering
+  - Pixel Party Helper
 </details>
 <details>
   <summary>SkyBlock</summary>
@@ -69,6 +72,12 @@ Unless, You can't use rendering outline on entity
   - Render Pointing Arrow to Wither/Blood Key
   - Blaze Solver
   - Track Auction
+  - Jerry Workshop Gift ESP
+  - Gemstone ESP
+  - Glow Dropped Item
+  - Livid Dagger Backstep Notifier
+  - Glow Bats in Dungeons
+  - Glow Dungeons Teammates
 </details>
 <details>
  <summary>Miscellaneous</summary>
@@ -78,6 +87,10 @@ Unless, You can't use rendering outline on entity
  - Stop Log Spamming
  - Change Nickname Color
  - Texture Overlay
+ - Hide Other Player's Fish Hook
+ - Change Fishing Particle Color
+ - Disguise Nickname
+ - Change Leather Armor Color
 </details>
 <details>
   <summary>KeyBindings</summary>
@@ -95,8 +108,9 @@ Unless, You can't use rendering outline on entity
 
  - /currentdata - prints current game of hypixel
  - /reloadtexture - Reload Texture Overlay's texture
- - /fairysoulprofile - handle FairySoul data based on pre-generated profiles
  - /searchbin - Search bins of specific item
  - /selectoutline - Select Outline Mode
- - /fixfarm - Print in Chat/Render Text what problems your farm currently has
+ - /name - gets name history of player
+ - /reparty, /rp, /rparty - Reparty
+ - /waypoint - Show paths to given coordinate
 </details>

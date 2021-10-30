@@ -25,11 +25,11 @@ import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.FeatureStateListener
 import com.happyandjust.nameless.features.listener.PlaySoundListener
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CInt
 import net.minecraftforge.client.event.sound.PlaySoundEvent
 import net.minecraftforge.event.entity.PlaySoundAtEntityEvent
 
-class FeatureAFKMode :
+object FeatureAFKMode :
     SimpleFeature(
         Category.QOL,
         "afkmode",
@@ -46,7 +46,7 @@ class FeatureAFKMode :
             "Limit FPS",
             "",
             15,
-            TypeRegistry.getConverterByClass(Int::class)
+            CInt
         ).also {
             it.minValue = 5.0
             it.maxValue = 100.0

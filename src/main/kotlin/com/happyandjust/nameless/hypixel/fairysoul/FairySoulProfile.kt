@@ -19,12 +19,10 @@
 package com.happyandjust.nameless.hypixel.fairysoul
 
 import com.happyandjust.nameless.config.ConfigHandler
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CFairySoulProfile
 import net.minecraft.util.BlockPos
 
 class FairySoulProfile(val name: String, val foundFairySouls: HashMap<String, List<FairySoul>>) {
-
-    private val cFairySoulProfile = TypeRegistry.getConverterByClass(FairySoulProfile::class)
 
     fun addFoundFairySoul(island: String, fairySoulPosition: BlockPos) {
 
@@ -40,6 +38,6 @@ class FairySoulProfile(val name: String, val foundFairySouls: HashMap<String, Li
 
         foundFairySouls[island] = existing
 
-        ConfigHandler.write("profiles", name, this, cFairySoulProfile)
+        ConfigHandler.write("profiles", name, this, CFairySoulProfile)
     }
 }

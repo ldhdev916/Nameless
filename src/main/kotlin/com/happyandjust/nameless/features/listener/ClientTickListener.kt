@@ -24,4 +24,8 @@ interface ClientTickListener {
      * Only captures [net.minecraftforge.fml.common.gameevent.TickEvent.Phase.END] and when Player and World is not null
      */
     fun tick()
+
+    fun tickWorldNull() {
+
+    }
 }

@@ -28,7 +28,7 @@ import net.minecraft.client.multiplayer.GuiConnecting
 import net.minecraft.client.multiplayer.ServerData
 import net.minecraftforge.client.event.GuiScreenEvent
 
-class FeatureHypixelButton : SimpleFeature(
+object FeatureHypixelButton : SimpleFeature(
     Category.QOL,
     "hypixelbutton",
     "Add Join Hypixel Button",

@@ -28,7 +28,7 @@ import com.happyandjust.nameless.features.listener.KeyInputListener
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.mixinhooks.EntityRendererHook
 
-class FeaturePerspective : SimpleFeature(Category.QOL, "perspective", "Perspective", ""), FeatureStateListener,
+object FeaturePerspective : SimpleFeature(Category.QOL, "perspective", "Perspective", ""), FeatureStateListener,
     KeyInputListener {
 
     private var lastThirdPersonView = 0

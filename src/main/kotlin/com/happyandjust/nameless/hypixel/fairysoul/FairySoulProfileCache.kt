@@ -18,58 +18,39 @@
 
 package com.happyandjust.nameless.hypixel.fairysoul
 
-import com.happyandjust.nameless.config.ConfigHandler
 import com.happyandjust.nameless.config.ConfigMap
 import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.serialization.converters.CFairySoulProfile
 
 object FairySoulProfileCache {
 
-    private val cFairySoulProfile = CFairySoulProfile
+    private val defaultProfile = FairySoulProfile("default", hashMapOf())
     private val generatedFairySoulProfiles = ConfigMap(
         "profiles",
-        { s, k -> ConfigHandler.get(s, k, defaultProfile, cFairySoulProfile) }) { s, k, v ->
-        ConfigHandler.write(
-            s,
-            k,
-            v,
-            cFairySoulProfile
-        )
-    }
-    private val defaultProfile = FairySoulProfile("default", hashMapOf())
+        defaultProfile,
+        CFairySoulProfile
+    )
     private val currentlyLoadedProfileConfig =
         ConfigValue(
             "fairysoul",
             "currentprofile",
             defaultProfile,
-            { s, k, v -> ConfigHandler.get(s, k, v, cFairySoulProfile) },
-            { s, k, v ->
-                ConfigHandler.write(
-                    s, k, v,
-                    cFairySoulProfile
-                )
-            })
+            CFairySoulProfile
+        )
     var currentlyLoadedProfile: FairySoulProfile = currentlyLoadedProfileConfig.value
         set(value) {
             field = value
             currentlyLoadedProfileConfig.value = value
         }
 
-    init {
-        if (!generatedFairySoulProfiles.containsValue(defaultProfile)) {
-            generatedFairySoulProfiles["default"] = defaultProfile
+    fun changeToProfileAndIfNotExistThenCreate(profileName: String) {
+        val uuid = mc.session.playerID
+
+        val name = "$uuid-$profileName"
+
+        currentlyLoadedProfile = generatedFairySoulProfiles[name] ?: FairySoulProfile(name, hashMapOf()).also {
+            generatedFairySoulProfiles[name] = it
         }
-    }
-
-
-    fun getProfiles() = generatedFairySoulProfiles.values
-
-    fun getProfileByName(name: String) =
-        generatedFairySoulProfiles[name] ?: throw RuntimeException("No Such Profile Name: $name")
-
-    fun createProfile(name: String) {
-        if (generatedFairySoulProfiles.containsKey(name)) throw RuntimeException("Already Existing Profile Name: $name")
-        val profile = FairySoulProfile(name, hashMapOf())
-        generatedFairySoulProfiles[name] = profile
     }
 }

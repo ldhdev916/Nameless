@@ -19,7 +19,6 @@
 package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.devqol.QOLKt;
-import com.happyandjust.nameless.features.FeatureRegistry;
 import com.happyandjust.nameless.features.impl.skyblock.FeatureChangeItemName;
 import com.happyandjust.nameless.hypixel.GameType;
 import com.happyandjust.nameless.hypixel.Hypixel;
@@ -44,7 +43,7 @@ public abstract class MixinItemStack {
     @Inject(method = "getDisplayName", at = @At("HEAD"), cancellable = true)
     public void changeItemName(CallbackInfoReturnable<String> cir) {
         if (Hypixel.INSTANCE.getCurrentGame() != GameType.SKYBLOCK) return;
-        FeatureChangeItemName feature = FeatureRegistry.INSTANCE.getCHANGE_ITEM_NAME();
+        FeatureChangeItemName feature = FeatureChangeItemName.INSTANCE;
         if (!feature.getEnabled()) return;
 
         String skyblockId = QOLKt.getSkyBlockID($this);

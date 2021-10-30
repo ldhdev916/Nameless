@@ -18,31 +18,41 @@
 
 package com.happyandjust.nameless
 
+import com.google.gson.JsonObject
 import com.happyandjust.nameless.commands.*
-import com.happyandjust.nameless.config.ConfigHandler
 import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.core.JSONHandler
 import com.happyandjust.nameless.core.OutlineMode
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.features.FeatureRegistry
+import com.happyandjust.nameless.features.impl.qol.FeatureGTBHelper
+import com.happyandjust.nameless.features.impl.qol.FeatureMurdererFinder
+import com.happyandjust.nameless.features.impl.qol.FeaturePlayTabComplete
+import com.happyandjust.nameless.features.impl.skyblock.FeatureChangeItemName
+import com.happyandjust.nameless.features.impl.skyblock.FeatureTrackAuction
+import com.happyandjust.nameless.gui.GuiError
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.keybinding.NamelessKeyBinding
-import com.happyandjust.nameless.listener.BasicListener
-import com.happyandjust.nameless.listener.FeatureListener
-import com.happyandjust.nameless.listener.LocrawListener
-import com.happyandjust.nameless.listener.OutlineHandleListener
+import com.happyandjust.nameless.listener.*
 import com.happyandjust.nameless.mixins.accessors.AccessorMinecraft
-import com.happyandjust.nameless.serialization.TypeRegistry
-import com.happyandjust.nameless.textureoverlay.OverlayResourcePack
+import com.happyandjust.nameless.network.Request
+import com.happyandjust.nameless.resourcepack.OverlayResourcePack
+import com.happyandjust.nameless.resourcepack.SkinResourcePack
+import com.happyandjust.nameless.serialization.converters.COutlineMode
 import com.happyandjust.nameless.utils.SkyblockUtils
+import net.minecraft.client.gui.GuiMainMenu
 import net.minecraft.command.CommandBase
 import net.minecraftforge.client.ClientCommandHandler
+import net.minecraftforge.client.event.GuiOpenEvent
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.ProgressManager
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import org.apache.logging.log4j.LogManager
 import java.io.File
+import java.util.concurrent.Executors
 
 @Mod(modid = MOD_ID, name = MOD_NAME, version = VERSION)
 class Nameless {
@@ -62,8 +72,7 @@ class Nameless {
         "outline",
         "selected",
         OutlineMode.OUTLINE,
-        { s, k, v -> ConfigHandler.get(s, k, v, TypeRegistry.getConverterByClass(OutlineMode::class)) },
-        { s, k, v -> ConfigHandler.write(s, k, v, TypeRegistry.getConverterByClass(OutlineMode::class)) }
+        COutlineMode
     )
     var selectedOutlineMode = OutlineMode.OUTLINE
         get() = selectedOutlineModeConfig.value
@@ -73,49 +82,91 @@ class Nameless {
             selectedOutlineModeConfig.value = value
         }
     lateinit var modFile: File
+    var isErrored = false
+    private var shownErrorScreen = false
+    private lateinit var reason: String
+
+    @SubscribeEvent
+    fun onGuiOpen(e: GuiOpenEvent) {
+        if (!isErrored) return
+        if (shownErrorScreen) return
+        shownErrorScreen = true
+        val gui = e.gui
+
+        if (gui is GuiMainMenu) {
+            e.gui = GuiError(gui, reason)
+        }
+    }
 
     @Mod.EventHandler
     fun preInit(e: FMLPreInitializationEvent) {
         modFile = e.sourceFile
+
+        val errorVersions =
+            JSONHandler(Request.get("https://raw.githubusercontent.com/HappyAndJust/Nameless/master/errorModVersions.json")).read(
+                JsonObject()
+            )
+
+        for ((errorVersion, reason) in errorVersions.entrySet()) {
+            if (errorVersion == VERSION) {
+
+                isErrored = true
+                this.reason = reason.asString
+
+                LogManager.getLogger().fatal("[Nameless] Current Mod Version $VERSION is errored")
+
+                break
+            }
+        }
     }
 
     @Mod.EventHandler
     fun init(e: FMLInitializationEvent) {
+        if (isErrored) {
+            MinecraftForge.EVENT_BUS.register(this)
+            return
+        }
 
-        val progressBar = ProgressManager.push("Nameless", 3)
+        val threadPool = Executors.newFixedThreadPool(2)
 
         if (!mc.framebuffer.isStencilEnabled) {
             mc.framebuffer.enableStencil()
         }
 
-        progressBar.step("Fetching Requiring Data...")
+        FeatureRegistry
 
-        FeatureRegistry.MURDERER_FINDER.fetchAssassinData()
+        threadPool.execute {
+            FeatureMurdererFinder.fetchAssassinData()
 
-        FeatureRegistry.GTB_HELPER.fetchWordsData()
+            FeatureGTBHelper.fetchWordsData()
 
-        SkyblockUtils.fetchSkyBlockData()
+            FeaturePlayTabComplete.fetchGameDataList()
+        }
 
-        progressBar.step("Adding Custom Resource Pack...")
+        threadPool.execute {
+            SkyblockUtils.fetchSkyBlockData()
 
-        (mc as AccessorMinecraft).defaultResourcePacks.add(OverlayResourcePack())
+            FeatureChangeItemName.updateItemData()
+            FeatureTrackAuction.updateItemData()
+        }
+
+
+        (mc as AccessorMinecraft).defaultResourcePacks.add(OverlayResourcePack)
+        (mc as AccessorMinecraft).defaultResourcePacks.add(SkinResourcePack)
         mc.refreshResources()
-
-        progressBar.step("Registering Command & Events...")
 
         registerCommands(
             DevCommand,
             HypixelCommand,
             TextureCommand,
-            FairySoulProfileCommand,
             SearchBinCommand,
             OutlineModeSelectCommand,
-            FixFarmCommand,
-            ShutDownCommand
+            ShutDownCommand,
+            NameHistoryCommand,
+            RepartyCommand,
+            WaypointCommand
         )
-        registerListeners(FeatureListener, BasicListener, OutlineHandleListener, LocrawListener)
-
-        ProgressManager.pop(progressBar)
+        registerListeners(FeatureListener, BasicListener, OutlineHandleListener, LocrawListener, WaypointListener)
     }
 
 
@@ -135,4 +186,4 @@ class Nameless {
 
 const val MOD_ID = "nameless"
 const val MOD_NAME = "Nameless"
-const val VERSION = "1.0.1"
+const val VERSION = "1.0.2"

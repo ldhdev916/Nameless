@@ -37,13 +37,28 @@ object EntityHook {
     private val critDamageColor = arrayOf("§f", "§f", "§e", "§6", "§c", "§c")
     private var prevIndicateType: DamageIndicateType? = null
     private var prevPrecision: Int? = null
+    private val smartTransform = { damage: Int ->
+        when (damage) {
+            in 0 until 1000 -> damage.toDouble() to ""
+            in 1000 until 100_0000 -> damage / 1000.0 to "K"
+            in 100_0000 until 10_0000_0000 -> damage / 100_0000.0 to "M"
+            else -> damage / 10_0000_0000.0 to "B"
+        }
+    }
 
     private fun transformDamage(damage: Int, type: DamageIndicateType, precision: Int): String {
+
+        val name = when (type) {
+            DamageIndicateType.SMART -> smartTransform(damage).second
+            else -> type.name
+        }
+
         return when (type) {
-            DamageIndicateType.K -> (damage / 1000.0).transformToPrecision(precision)
-            DamageIndicateType.M -> (damage / 100_0000.0).transformToPrecision(precision)
-            DamageIndicateType.B -> (damage / 10_0000_0000.0).transformToPrecision(precision)
-        }.formatDouble() + type.name
+            DamageIndicateType.K -> (damage / 1000.0)
+            DamageIndicateType.M -> (damage / 100_0000.0)
+            DamageIndicateType.B -> (damage / 10_0000_0000.0)
+            DamageIndicateType.SMART -> smartTransform(damage).first
+        }.transformToPrecision(precision).formatDouble() + name
     }
 
     fun getCustomDamageName(origin: ChatComponentText): ChatComponentText {
@@ -85,7 +100,8 @@ object EntityHook {
 
                 ChatComponentText(builder.toString())
             } else {
-                ChatComponentText("§7$damageText")
+                val colorCode = origin.formattedText[1]
+                ChatComponentText("§$colorCode$damageText")
             }
 
             transformedDamageCache[unformattedText] = chatComponentText

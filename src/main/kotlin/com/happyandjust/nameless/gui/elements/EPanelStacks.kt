@@ -23,20 +23,20 @@ import com.happyandjust.nameless.gui.EPanel
 import com.happyandjust.nameless.gui.Rectangle
 import java.util.*
 
-class EScrollPanelStacks(rectangle: Rectangle) : EPanel(rectangle) {
+class EPanelStacks(rectangle: Rectangle) : EPanel(rectangle) {
 
-    private val scrollStack = LinkedList<EScrollPanel>()
+    private val panelStack = LinkedList<EPanel>()
     private val goBackButton = EButton(Rectangle.ORIGIN, "Go Back", true).also {
         it.onClick = { pop() }
     }
     var onStateChange = {}
 
-    fun push(scrollPanel: EScrollPanel) {
+    fun push(panel: EPanel) {
 
-        if (scrollStack.isNotEmpty()) {
-            removeChild(scrollStack.peek())
+        if (panelStack.isNotEmpty()) {
+            removeChild(panelStack.peek())
 
-            scrollPanel.rectangle = scrollPanel.rectangle.copy(top = rectangle.top + (rectangle.height) / 9)
+            panel.rectangle = panel.rectangle.copy(top = rectangle.top + (rectangle.height) / 9)
 
             if (!childPanels.contains(goBackButton)) {
 
@@ -45,7 +45,7 @@ class EScrollPanelStacks(rectangle: Rectangle) : EPanel(rectangle) {
 
                 goBackButton.rectangle = Rectangle.fromWidthHeight(
                     mid(rectangle.left, rectangle.right) - (w / 2),
-                    mid(rectangle.top, scrollPanel.rectangle.top) - (h / 2),
+                    mid(rectangle.top, panel.rectangle.top) - (h / 2),
                     w,
                     h
                 )
@@ -54,33 +54,33 @@ class EScrollPanelStacks(rectangle: Rectangle) : EPanel(rectangle) {
 
         }
 
-        addChild(scrollPanel)
-        scrollStack.push(scrollPanel)
+        addChild(panel)
+        panelStack.push(panel)
 
         onStateChange()
     }
 
     private fun pop() {
-        if (scrollStack.isNotEmpty()) {
-            scrollStack.pop().also { removeChild(it) }
+        if (panelStack.isNotEmpty()) {
+            panelStack.pop().also { removeChild(it) }
 
-            if (scrollStack.size <= 1) {
+            if (panelStack.size <= 1) {
                 removeChild(goBackButton)
             }
         }
 
-        if (scrollStack.isNotEmpty()) {
-            addChild(scrollStack.peek())
+        if (panelStack.isNotEmpty()) {
+            addChild(panelStack.peek())
         }
 
         onStateChange()
     }
 
     fun clear() {
-        if (scrollStack.isNotEmpty()) {
-            removeChild(scrollStack.peek())
+        if (panelStack.isNotEmpty()) {
+            removeChild(panelStack.peek())
 
-            scrollStack.clear()
+            panelStack.clear()
 
             removeChild(goBackButton)
         }
@@ -88,7 +88,7 @@ class EScrollPanelStacks(rectangle: Rectangle) : EPanel(rectangle) {
         onStateChange()
     }
 
-    fun peek(): EScrollPanel? = scrollStack.peek()
+    fun peek(): EPanel? = panelStack.peek()
 
     override fun draw(mouseX: Int, mouseY: Int, scale: Int) {
 

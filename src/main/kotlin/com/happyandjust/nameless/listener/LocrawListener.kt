@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.listener
 
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import com.happyandjust.nameless.devqol.inHypixel
 import com.happyandjust.nameless.devqol.matchesMatcher
 import com.happyandjust.nameless.devqol.mc
@@ -70,17 +71,24 @@ object LocrawListener {
 
     @SubscribeEvent(receiveCanceled = true)
     fun onChatReceived(e: ClientChatReceivedEvent) {
-        if (!sentCommand) return
 
         val msg = e.message.unformattedText
         JSON.matchesMatcher(msg) {
             Hypixel.apply {
-                e.isCanceled = true
-                locrawInfo = gson.fromJson(msg, LocrawInfo::class.java)
+                if (sentCommand) {
+                    e.isCanceled = true
+                }
+                try {
+                    locrawInfo = gson.fromJson(msg, LocrawInfo::class.java)
 
-                updateGame()
+                    updateGame()
+                } catch (ignored: JsonSyntaxException) {
 
-                sentCommand = false
+                }
+
+                if (sentCommand) {
+                    sentCommand = false
+                }
             }
         }
     }

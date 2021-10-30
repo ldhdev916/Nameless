@@ -18,13 +18,6 @@
 
 package com.happyandjust.nameless.serialization.converters
 
-import com.google.gson.JsonElement
-import com.google.gson.JsonPrimitive
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
-import com.happyandjust.nameless.serialization.Converter
 
-object CDamageIndicateType : Converter<DamageIndicateType> {
-    override fun serialize(t: DamageIndicateType) = JsonPrimitive(t.name)
-
-    override fun deserialize(jsonElement: JsonElement) = DamageIndicateType.valueOf(jsonElement.asString)
-}
+object CDamageIndicateType : CEnum<DamageIndicateType>(DamageIndicateType::valueOf)

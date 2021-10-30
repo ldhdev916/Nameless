@@ -52,7 +52,7 @@ abstract class ERelocatablePanel(rectangle: Rectangle, var scale: Double) : EPan
                 Color.lightGray.rgb,
                 true
             )
-            GL11.glDisable(GL11.GL_SCISSOR_TEST)
+            GL11.glEnable(GL11.GL_SCISSOR_TEST)
         }
     }
 

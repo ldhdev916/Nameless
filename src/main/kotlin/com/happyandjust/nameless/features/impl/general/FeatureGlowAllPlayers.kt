@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.features.impl.general
 
-import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.features.Category
@@ -26,13 +25,13 @@ import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.StencilListener
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.utils.Utils
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 import java.awt.Color
 
-class FeatureGlowAllPlayers : SimpleFeature(
+object FeatureGlowAllPlayers : SimpleFeature(
     Category.GENERAL,
     "glowallplayers",
     "Glow All Players",
@@ -47,7 +46,7 @@ class FeatureGlowAllPlayers : SimpleFeature(
             "Glowing Color",
             "",
             Color.red.toChromaColor(),
-            TypeRegistry.getConverterByClass(ChromaColor::class)
+            CChromaColor
         )
     }
 

@@ -24,5 +24,6 @@ enum class Category(val displayName: String) {
     MISCELLANEOUS("Miscellaneous"),
     SKYBLOCK("SkyBlock"),
     QOL("Quality of Life"),
+    SETTINGS("Settings")
 
 }

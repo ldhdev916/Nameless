@@ -23,7 +23,7 @@ import com.happyandjust.nameless.core.ClientCommandBase
 import com.happyandjust.nameless.devqol.downloadToFile
 import com.happyandjust.nameless.devqol.getMD5
 import com.happyandjust.nameless.devqol.sendClientMessage
-import com.happyandjust.nameless.features.FeatureRegistry
+import com.happyandjust.nameless.features.impl.misc.FeatureUpdateChecker
 import com.happyandjust.nameless.utils.Utils
 import net.minecraft.command.ICommandSender
 import net.minecraftforge.fml.common.FMLCommonHandler
@@ -47,7 +47,7 @@ object ShutDownCommand : ClientCommandBase("autoupdateshutdown") {
             return
         }
 
-        if (!FeatureRegistry.UPDATE_CHECKER.needUpdate) {
+        if (!FeatureUpdateChecker.needUpdate) {
             sendClientMessage("§cYou don't need update")
             return
         }

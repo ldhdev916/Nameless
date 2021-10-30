@@ -40,6 +40,20 @@ class ChromaColor(val originRGB: Int) : Color(originRGB) {
             HSBtoRGB(ff, 1f, 1f)
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        return super.equals(other) && other is ChromaColor && other.chromaEnabled == chromaEnabled
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + originRGB
+        result = 31 * result + chromaSpeed
+        result = 31 * result + chromaEnabled.hashCode()
+        return result
+    }
 }
 
-fun Color.toChromaColor() = ChromaColor(rgb)
+fun Color.toChromaColor(chromaEnabled: Boolean = false) = ChromaColor(rgb).also {
+    it.chromaEnabled = chromaEnabled
+}

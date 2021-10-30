@@ -20,11 +20,11 @@ package com.happyandjust.nameless.commands
 
 import com.happyandjust.nameless.core.ClientCommandBase
 import com.happyandjust.nameless.devqol.convertToStringList
+import com.happyandjust.nameless.devqol.scanAuction
 import com.happyandjust.nameless.devqol.sendClientMessage
-import com.happyandjust.nameless.features.FeatureRegistry
+import com.happyandjust.nameless.features.impl.skyblock.FeatureTrackAuction
 import com.happyandjust.nameless.hypixel.auction.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
-import com.happyandjust.nameless.utils.SkyblockUtils
 import net.minecraft.command.ICommandSender
 import net.minecraft.util.BlockPos
 import java.util.*
@@ -50,39 +50,34 @@ object SearchBinCommand : ClientCommandBase("searchbin") {
         val name = args.toList().subList(2, args.size).joinToString(" ")
 
         sendClientMessage("§aSearching $name...")
-        sendClientMessage("§aThis may take up like 1 minute")
-
-        val feature = FeatureRegistry.TRACK_AUCTION
 
         thread {
-
             val priorityQueue = PriorityQueue<AuctionInfo>(compareBy { auctionInfo -> auctionInfo.price })
 
-            repeat(feature.getMaxAuctionPage()) {
-                for (auctionInfo in SkyblockUtils.getAuctionDataInPage(it)
-                    .filter { data -> data.bin && data.bids.size() == 0 }) {
+            scanAuction {
+                for (auctionInfo in it.filter { auctionInfo -> auctionInfo.isBuyableBinAuction() }) {
                     if (!auctionInfo.item_name.contains(name, true)) continue
                     if (auctionInfo.rarity != rarity) continue
 
                     priorityQueue.add(auctionInfo)
                 }
-            }
 
-            if (priorityQueue.isEmpty()) {
-                sendClientMessage("§cNo Bin Found for Item $name")
-                return@thread
-            }
+                if (priorityQueue.isEmpty()) {
+                    sendClientMessage("§cNo Bin Found for Item $name")
+                    return@scanAuction
+                }
 
-            when (method) {
-                "all" -> {
-                    while (priorityQueue.isNotEmpty()) {
-                        sendClientMessage(feature.getChatTextForAuctionInfo(priorityQueue.poll()))
+                when (method) {
+                    "all" -> {
+                        while (priorityQueue.isNotEmpty()) {
+                            sendClientMessage(FeatureTrackAuction.getChatTextForAuctionInfo(priorityQueue.poll()))
+                        }
                     }
+                    "lowest" -> {
+                        sendClientMessage(FeatureTrackAuction.getChatTextForAuctionInfo(priorityQueue.peek()))
+                    }
+                    else -> sendClientMessage("No Such Method $method")
                 }
-                "lowest" -> {
-                    sendClientMessage(feature.getChatTextForAuctionInfo(priorityQueue.peek()))
-                }
-                else -> sendClientMessage("No Such Method $method")
             }
         }
     }

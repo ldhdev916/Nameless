@@ -23,6 +23,7 @@ import com.happyandjust.nameless.core.OutlineMode
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoulProfile
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
+import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.serialization.converters.*
 import com.happyandjust.nameless.textureoverlay.Overlay
 import kotlin.reflect.KClass
@@ -40,7 +41,8 @@ object TypeRegistry {
         Overlay::class to COverlay,
         FairySoulProfile::class to CFairySoulProfile,
         DamageIndicateType::class to CDamageIndicateType,
-        OutlineMode::class to COutlineMode
+        OutlineMode::class to COutlineMode,
+        ItemRarity::class to CItemRarity
     )
 
     fun <T : Any> getConverterByClass(clazz: KClass<T>) = registeredConverters[clazz] as Converter<T>

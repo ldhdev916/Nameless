@@ -22,7 +22,6 @@ import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.InventorySlotInfo
 import com.happyandjust.nameless.devqol.getBlockAtPos
 import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.mixins.accessors.AccessorGuiPlayerTabOverlay
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.BlockPos
 import org.lwjgl.input.Keyboard
@@ -67,7 +66,7 @@ object Utils {
     fun getPlayersInTab(): List<EntityPlayer> {
         val players = arrayListOf<EntityPlayer>()
 
-        for (info in AccessorGuiPlayerTabOverlay.field_175252_a().sortedCopy(mc.netHandler.playerInfoMap)) {
+        for (info in mc.netHandler.playerInfoMap) {
             val name = info.gameProfile.name ?: continue
 
             players.add(mc.theWorld.getPlayerEntityByName(name) ?: continue)

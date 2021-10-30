@@ -16,21 +16,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.impl.general
+package com.happyandjust.nameless.features.impl.settings
 
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.devqol.getBlockAtPos
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.events.PacketEvent
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.features.SimpleFeature
+import com.happyandjust.nameless.features.SettingFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.PacketListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CBoolean
+import com.happyandjust.nameless.serialization.converters.CInt
+import net.minecraft.block.BlockChest
+import net.minecraft.block.BlockLever
+import net.minecraft.block.BlockSkull
 import net.minecraft.block.state.IBlockState
 import net.minecraft.init.Blocks
 import net.minecraft.network.play.server.S22PacketMultiBlockChange
@@ -38,10 +42,9 @@ import net.minecraft.network.play.server.S23PacketBlockChange
 import net.minecraft.util.BlockPos
 import net.minecraft.util.MovingObjectPosition
 
-class FeatureGhostBlock : SimpleFeature(
-    Category.GENERAL,
+object FeatureGhostBlock : SettingFeature(
     "ghostblock",
-    "Enable Ghost Block",
+    "Ghost Block",
     "Make client-side air where you are looking at"
 ), ClientTickListener, PacketListener {
 
@@ -53,13 +56,22 @@ class FeatureGhostBlock : SimpleFeature(
             "ghostblock",
             "restore",
             "Restore Seconds",
-            "after the seconds you selected, block you made client-side air will be restored back. -1 for not restoring back",
+            "after the seconds you selected, block you made client-side air will be restored back\n-1 for not restoring back",
             10,
-            TypeRegistry.getConverterByClass(Int::class)
+            CInt
         ).also {
             it.minValue = -1.0
             it.maxValue = 60.0
         }
+        parameters["ignore"] = FeatureParameter(
+            1,
+            "ghostblock",
+            "ignoresecret",
+            "Ignore Dungeons Secrets",
+            "Prevent making skyblock dungeons secrets ghost-block",
+            true,
+            CBoolean
+        )
     }
 
     override fun tick() {
@@ -95,13 +107,18 @@ class FeatureGhostBlock : SimpleFeature(
     }
 
     private fun makeGhostBlock(pos: BlockPos) {
-        if (Hypixel.currentGame == GameType.BEDWARS && mc.theWorld.getBlockAtPos(pos) == Blocks.bed) return
+        if (Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty(PropertyKey.DUNGEON) && getParameterValue("ignore")) {
+            val block = mc.theWorld.getBlockAtPos(pos)
+            if (block is BlockChest || block is BlockLever || block is BlockSkull) {
+                return
+            }
+        }
 
         ghostBlocks[pos] = BlockInfo(mc.theWorld.getBlockState(pos))
         mc.theWorld.setBlockState(pos, Blocks.air.defaultState)
     }
 
-    inner class BlockInfo(var blockState: IBlockState) {
+    class BlockInfo(var blockState: IBlockState) {
         var tick = getParameterValue<Int>("restore") * 20
     }
 
@@ -118,14 +135,14 @@ class FeatureGhostBlock : SimpleFeature(
                 for (data in msg.changedBlocks) {
                     val blockInfo = ghostBlocks[data.pos] ?: continue
 
-                    blockInfo.blockState = data.blockState
+                    blockInfo.blockState = data.blockState ?: continue
                     return
                 }
             }
             is S23PacketBlockChange -> {
                 val blockInfo = ghostBlocks[msg.blockPosition] ?: return
 
-                blockInfo.blockState = msg.blockState
+                blockInfo.blockState = msg.blockState ?: return
             }
         }
     }

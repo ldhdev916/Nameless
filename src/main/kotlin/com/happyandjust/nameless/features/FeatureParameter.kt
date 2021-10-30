@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.features
 
-import com.happyandjust.nameless.config.ConfigHandler
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.serialization.Converter
 import com.happyandjust.nameless.textureoverlay.ERelocateGui
@@ -37,22 +36,42 @@ class FeatureParameter<T>(
 ) {
 
     val parameters = hashMapOf<String, FeatureParameter<*>>()
+    var inCategory = ""
+
+    /**
+     * [com.happyandjust.nameless.features.property.OverlayProperty]
+     */
     var relocateGui: () -> ERelocateGui? = { null }
+
+    /**
+     * [com.happyandjust.nameless.features.property.BooleanProperty]
+     */
     var onToggleClick: (Boolean) -> Unit = {}
+
+    /**
+     * [com.happyandjust.nameless.features.property.EnumProperty]
+     */
     var allEnumList = emptyList<Enum<*>>()
+
+    /**
+     * [com.happyandjust.nameless.features.property.StringProperty]
+     */
     var maxStringWidth = 100
     var validator: (String) -> Boolean = { true }
-    var inCategory = ""
+
+    /**
+     * [com.happyandjust.nameless.features.property.DoubleProperty]
+     *
+     * [com.happyandjust.nameless.features.property.IntProperty]
+     */
     var minValue: Double = 0.0
     var maxValue: Double = 0.0
-    private var valueConfig =
-        ConfigValue(category, key, defaultValue, { s, k, v -> ConfigHandler.get(s, k, v, converter) }) { s, k, v ->
 
-            ConfigHandler.write(s, k, converter.serialize(v))
-        }
-    var value: T
-        get() = valueConfig.value
+    private var valueConfig =
+        ConfigValue(category, key, defaultValue, converter)
+    var value = valueConfig.value
         set(value) {
+            field = value
             valueConfig.value = value
         }
 

@@ -35,8 +35,9 @@ abstract class EPanel(rectangle_: Rectangle) {
 
     val childPanels = CopyOnWriteArrayList<EPanel>()
 
-    fun addChild(childPanel: EPanel) {
+    fun <T : EPanel> addChild(childPanel: T): T {
         childPanels.add(childPanel)
+        return childPanel
     }
 
     fun removeChild(childPanel: EPanel) {

@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.devqol.stripControlCodes
@@ -32,13 +31,13 @@ import com.happyandjust.nameless.features.listener.ServerChangeListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.util.Vec3
 import java.awt.Color
 
-class FeatureDungeonsDoorKey : SimpleFeature(
+object FeatureDungeonsDoorKey : SimpleFeature(
     Category.SKYBLOCK,
     "dungeonsdoorkey",
     "Render Pointing Arrow to Blood/Wither Key",
@@ -56,7 +55,7 @@ class FeatureDungeonsDoorKey : SimpleFeature(
             "Direction Arrow Color",
             "",
             Color.red.toChromaColor(),
-            TypeRegistry.getConverterByClass(ChromaColor::class)
+            CChromaColor
         )
     }
 

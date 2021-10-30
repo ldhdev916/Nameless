@@ -29,3 +29,9 @@ fun SimpleFeature.inCategory(
         parameters[pair.first] = pair.second.also { it.inCategory = inCategory }
     }
 }
+
+fun <T : SimpleFeature> T.setInCategory(inCategory: String): T {
+    this.inCategory = inCategory
+
+    return this
+}

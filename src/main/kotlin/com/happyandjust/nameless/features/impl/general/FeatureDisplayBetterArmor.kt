@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.features.impl.general
 
-import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.devqol.compress
 import com.happyandjust.nameless.devqol.drawOnSlot
@@ -32,7 +31,8 @@ import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.mixins.accessors.AccessorNBTTagList
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CChromaColor
+import com.happyandjust.nameless.serialization.converters.CDouble
 import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.inventory.Slot
@@ -43,7 +43,7 @@ import net.minecraft.util.MathHelper
 import net.minecraftforge.client.event.GuiScreenEvent
 import java.awt.Color
 
-class FeatureDisplayBetterArmor : SimpleFeature(
+object FeatureDisplayBetterArmor : SimpleFeature(
     Category.GENERAL,
     "displaybetterarmor",
     "Display Better Armor",
@@ -58,7 +58,7 @@ class FeatureDisplayBetterArmor : SimpleFeature(
             "Inventory Box Color",
             "",
             Color.green.toChromaColor(),
-            TypeRegistry.getConverterByClass(ChromaColor::class)
+            CChromaColor
         )
         parameters["scale"] = FeatureParameter(
             0,
@@ -67,7 +67,7 @@ class FeatureDisplayBetterArmor : SimpleFeature(
             "Dropped Item Scale",
             "",
             3.0,
-            TypeRegistry.getConverterByClass(Double::class)
+            CDouble
         ).also {
             it.minValue = 1.5
             it.maxValue = 7.0

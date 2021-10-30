@@ -25,7 +25,7 @@ import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.RenderOverlayListener
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.COverlay
 import com.happyandjust.nameless.textureoverlay.ERelocateGui
 import com.happyandjust.nameless.textureoverlay.Overlay
 import com.happyandjust.nameless.textureoverlay.impl.ETextureOverlay
@@ -34,7 +34,7 @@ import net.minecraft.util.ResourceLocation
 import java.io.File
 import javax.imageio.ImageIO
 
-class FeatureTextureOverlay : SimpleFeature(
+object FeatureTextureOverlay : SimpleFeature(
     Category.MISCELLANEOUS,
     "textureoverlay",
     "Texture Overlay",
@@ -54,8 +54,6 @@ class FeatureTextureOverlay : SimpleFeature(
 
         val dir = File("config/NamelessTextureOverlay/")
 
-        val cOverlay = TypeRegistry.getConverterByClass(Overlay::class)
-
         for (file in dir.listFiles() ?: emptyArray()) {
             val name = file.name
 
@@ -67,7 +65,7 @@ class FeatureTextureOverlay : SimpleFeature(
                     name,
                     "",
                     Overlay(Point(0, 0), 1.0),
-                    cOverlay
+                    COverlay
                 ).also {
                     it.relocateGui = {
                         val textureOverlay = ETextureOverlay(it.value, textureCache[name]!!)

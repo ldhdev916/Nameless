@@ -24,7 +24,7 @@ import com.happyandjust.nameless.features.listener.RenderPlayerListener
 import com.happyandjust.nameless.hypixel.Hypixel
 import net.minecraftforge.client.event.RenderPlayerEvent
 
-class FeatureHideNPC :
+object FeatureHideNPC :
     SimpleFeature(Category.GENERAL, "hidenpc", "Hide NPC in Lobby", "hide npcs in tab, and stop rendering"),
     RenderPlayerListener {
 

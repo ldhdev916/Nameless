@@ -19,7 +19,6 @@
 package com.happyandjust.nameless.mixins;
 
 import com.google.common.collect.Collections2;
-import com.happyandjust.nameless.features.FeatureRegistry;
 import com.happyandjust.nameless.features.impl.qol.FeatureHideNPC;
 import com.happyandjust.nameless.mixinhooks.GuiPlayerTabOverlayHook;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
@@ -37,7 +36,6 @@ import java.util.Collection;
 public class MixinGuiPlayerTabOverlay {
 
     private final GuiPlayerTabOverlayHook hook = GuiPlayerTabOverlayHook.INSTANCE;
-    private final FeatureHideNPC feature = FeatureRegistry.INSTANCE.getHIDE_NPC();
 
     @Inject(method = "drawPing", at = @At("HEAD"), cancellable = true)
     public void drawCustomPing(int p_175245_1_, int p_175245_2_, int p_175245_3_, NetworkPlayerInfo networkPlayerInfoIn, CallbackInfo ci) {
@@ -48,6 +46,6 @@ public class MixinGuiPlayerTabOverlay {
     public Collection<NetworkPlayerInfo> filterNPC(NetHandlerPlayClient netHandlerPlayClient) {
         Collection<NetworkPlayerInfo> map = netHandlerPlayClient.getPlayerInfoMap();
 
-        return feature.getEnabled() ? Collections2.filter(map, player -> player != null && player.getGameProfile().getId().version() != 2) : map;
+        return FeatureHideNPC.INSTANCE.getEnabled() ? Collections2.filter(map, player -> player != null && player.getGameProfile().getId().version() != 2) : map;
     }
 }

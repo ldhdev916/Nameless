@@ -24,7 +24,7 @@ import com.happyandjust.nameless.gui.elements.EEnumSelectPanel
 
 class EnumProperty(featureParameter: FeatureParameter<Enum<*>>) : Property<Enum<*>>(
     featureParameter, EEnumSelectPanel(
-        Rectangle.fromWidthHeight(0, 0, 50, 14),
+        Rectangle.fromWidthHeight(0, 0, 80, 14),
         featureParameter.value,
         featureParameter.allEnumList
     ).also {

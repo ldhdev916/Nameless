@@ -47,7 +47,7 @@ import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
-class FeatureBedwarsRayTraceBed : OverlayFeature(
+object FeatureBedwarsRayTraceBed : OverlayFeature(
     Category.GENERAL,
     "raytracebed",
     "Bedwars Ray Trace Bed",

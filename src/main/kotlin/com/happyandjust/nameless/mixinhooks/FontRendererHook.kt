@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.mixinhooks
 
 import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.features.FeatureRegistry
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -38,6 +39,9 @@ object FontRendererHook {
     fun getMatchInfos(text: String?): List<MatchInfo> {
         var text = text ?: return emptyList()
         val nickname = getCurrentSessionNickname()
+
+        if (nickname.isBlank()) return emptyList()
+
         val list = arrayListOf(MatchInfo(-1, -1, 0))
 
         val session = getCurrentSessionNickname()
@@ -61,7 +65,11 @@ object FontRendererHook {
         return list
     }
 
-    private fun getCurrentSessionNickname() = mc.session.username ?: ""
+    private fun getCurrentSessionNickname(): String {
+        val feature = FeatureRegistry.DISGUISE_NICKNAME
+
+        return if (feature.enabled) feature.getNickname() else mc.session.username ?: ""
+    }
 
 
     data class MatchInfo(val start: Int, val end: Int, val addNext: Int) {

@@ -28,14 +28,14 @@ import com.happyandjust.nameless.features.listener.ServerChangeListener
 import com.happyandjust.nameless.features.listener.StencilListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.utils.Utils
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemArmor
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 
-class FeatureBedwarsESP : SimpleFeature(
+object FeatureBedwarsESP : SimpleFeature(
     Category.GENERAL,
     "bedwarsesp",
     "Bedwars ESP",
@@ -54,7 +54,7 @@ class FeatureBedwarsESP : SimpleFeature(
             "Glow Invisible Players",
             "If you turn this on, invisibility on players will be removed",
             true,
-            TypeRegistry.getConverterByClass(Boolean::class)
+            CBoolean
         )
     }
 

@@ -18,17 +18,21 @@
 
 package com.happyandjust.nameless.config
 
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.Converter
+import com.happyandjust.nameless.serialization.converters.CBoolean
+import com.happyandjust.nameless.serialization.converters.CDouble
+import com.happyandjust.nameless.serialization.converters.CInt
+import com.happyandjust.nameless.serialization.converters.CString
 
 open class ConfigMap<V>(
     private val category: String,
-    configMethod: (String, String) -> V,
-    private val saveMethod: (String, String, V) -> Unit
+    defaultValue: V,
+    private val converter: Converter<V>
 ) : HashMap<String, V>() {
 
     init {
         for (key in ConfigHandler.getKeys(category)) {
-            super.put(key, configMethod(category, key))
+            super.put(key, ConfigHandler.get(category, key, defaultValue, converter))
         }
     }
 
@@ -43,7 +47,7 @@ open class ConfigMap<V>(
     }
 
     override fun put(key: String, value: V): V? {
-        saveMethod(category, key, value)
+        ConfigHandler.write(category, key, value, converter)
         return super.put(key, value)
     }
 
@@ -65,29 +69,29 @@ open class ConfigMap<V>(
     class DoubleConfigMap(category: String) :
         ConfigMap<Double>(
             category,
-            { s, k -> ConfigHandler.get(s, k, 0.0, TypeRegistry.getConverterByClass(Double::class)) },
-            ConfigHandler::write
+            0.0,
+            CDouble
         )
 
     class IntConfigMap(category: String) :
         ConfigMap<Int>(
             category,
-            { s, k -> ConfigHandler.get(s, k, 0, TypeRegistry.getConverterByClass(Int::class)) },
-            ConfigHandler::write
+            0,
+            CInt
         )
 
 
     class BooleanConfigMap(category: String) :
         ConfigMap<Boolean>(
             category,
-            { s, k -> ConfigHandler.get(s, k, false, TypeRegistry.getConverterByClass(Boolean::class)) },
-            ConfigHandler::write
+            false,
+            CBoolean
         )
 
     class StringConfigMap(category: String) :
         ConfigMap<String>(
             category,
-            { c, key -> ConfigHandler.get(c, key, "", TypeRegistry.getConverterByClass(String::class)) },
-            ConfigHandler::write
+            "",
+            CString
         )
 }

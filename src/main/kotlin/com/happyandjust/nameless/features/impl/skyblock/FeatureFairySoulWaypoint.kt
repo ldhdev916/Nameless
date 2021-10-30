@@ -19,9 +19,7 @@
 package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.devqol.getAxisAlignedBB
-import com.happyandjust.nameless.devqol.isFairySoul
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
@@ -34,20 +32,25 @@ import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoulProfileCache
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.pathfinding.ModPathFinding
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.utils.RenderUtils
 import com.happyandjust.nameless.utils.SkyblockUtils
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.network.play.client.C02PacketUseEntity
 import net.minecraft.util.BlockPos
+import net.minecraftforge.client.event.ClientChatReceivedEvent
 import java.awt.Color
+import java.util.regex.Pattern
 
-class FeatureFairySoulWaypoint : SimpleFeature(
+object FeatureFairySoulWaypoint : SimpleFeature(
     Category.SKYBLOCK,
     "fairysoulwaypoint",
     "FairySoul Waypoint",
-    "Renders outline box on fairysoul except the ones you've already found\nTo collect found fairysouls data, we need your profile type /fairysoulprofile for help\nas a default, we pre-created profile named 'default'"
-), WorldRenderListener, ServerChangeListener, ClientTickListener, KeyInputListener, PacketListener {
+    "Renders outline box on fairysoul except the ones you've already found"
+), WorldRenderListener, ServerChangeListener, ClientTickListener, KeyInputListener, PacketListener, ChatListener {
+
+    private val PROFILE = Pattern.compile("You are playing on profile: (?<profile>\\w+).*")
+    private val PROFILE_CHANGE = Pattern.compile("Your profile was changed to: (?<profile>\\w+).*")
 
     var currentSkyblockIsland: String? = null
     private var fairySoulPaths = listOf<BlockPos>()
@@ -59,6 +62,13 @@ class FeatureFairySoulWaypoint : SimpleFeature(
     private var pathTick = 0
     private var foundFairySoulsInThisProfile = emptyList<FairySoul>()
     private var dungeonFairySoulScanTick = 0
+    private var currentSkyBlockProfile = "Unknown"
+        set(value) {
+            if (field != value) {
+                field = value
+                FairySoulProfileCache.changeToProfileAndIfNotExistThenCreate(value)
+            }
+        }
 
     init {
         parameters["path"] = FeatureParameter(
@@ -68,7 +78,7 @@ class FeatureFairySoulWaypoint : SimpleFeature(
             "Fairy Soul Path Finding",
             "Show path to nearest fairysoul",
             true,
-            TypeRegistry.getConverterByClass(Boolean::class)
+            CBoolean
         )
     }
 
@@ -133,6 +143,8 @@ class FeatureFairySoulWaypoint : SimpleFeature(
 
     override fun onServerChange(server: String) {
         currentSkyblockIsland = null
+
+        currentSkyBlockProfile = "Unknown"
     }
 
     override fun onKeyInput() {
@@ -159,6 +171,21 @@ class FeatureFairySoulWaypoint : SimpleFeature(
     }
 
     override fun onReceivedPacket(e: PacketEvent.Received) {
+    }
+
+    override fun onChatReceived(e: ClientChatReceivedEvent) {
+
+        if (Hypixel.currentGame != GameType.SKYBLOCK) return
+
+        val msg = e.message.unformattedText.stripControlCodes().trim()
+
+        PROFILE.matchesMatcher(msg) {
+            currentSkyBlockProfile = it.group("profile")
+            return
+        }
+        PROFILE_CHANGE.matchesMatcher(msg) {
+            currentSkyBlockProfile = it.group("profile")
+        }
     }
 
 }

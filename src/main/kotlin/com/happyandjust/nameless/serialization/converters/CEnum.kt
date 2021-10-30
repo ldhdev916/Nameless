@@ -16,17 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.mixins.accessors;
+package com.happyandjust.nameless.serialization.converters
 
-import net.minecraft.block.BlockFarmland;
-import net.minecraft.util.BlockPos;
-import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Invoker;
+import com.google.gson.JsonElement
+import com.google.gson.JsonPrimitive
+import com.happyandjust.nameless.serialization.Converter
 
-@Mixin(BlockFarmland.class)
-public interface AccessorBlockFarmland {
+abstract class CEnum<E : Enum<*>>(private val valueOf: (String) -> E) : Converter<E> {
 
-    @Invoker
-    boolean invokeHasCrops(World worldIn, BlockPos pos);
+    override fun serialize(t: E) = JsonPrimitive(t.name)
+
+    override fun deserialize(jsonElement: JsonElement) = valueOf(jsonElement.asString)
 }

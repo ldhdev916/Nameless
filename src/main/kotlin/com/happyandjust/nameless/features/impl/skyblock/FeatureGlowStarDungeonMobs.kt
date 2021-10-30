@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.devqol.mc
@@ -31,7 +30,8 @@ import com.happyandjust.nameless.features.listener.StencilListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CBoolean
+import com.happyandjust.nameless.serialization.converters.CChromaColor
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.entity.item.EntityItem
@@ -42,7 +42,7 @@ import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.pow
 
-class FeatureGlowStarDungeonMobs : SimpleFeature(
+object FeatureGlowStarDungeonMobs : SimpleFeature(
     Category.SKYBLOCK,
     "stardungeonmobs",
     "Glow Star Dungeon Mobs",
@@ -57,7 +57,7 @@ class FeatureGlowStarDungeonMobs : SimpleFeature(
             "Outline Color",
             "",
             Color.yellow.toChromaColor(),
-            TypeRegistry.getConverterByClass(ChromaColor::class)
+            CChromaColor
         )
         parameters["fel"] = FeatureParameter(
             1,
@@ -66,13 +66,13 @@ class FeatureGlowStarDungeonMobs : SimpleFeature(
             "Show Fel",
             "Make fel visible",
             false,
-            TypeRegistry.getConverterByClass(Boolean::class)
+            CBoolean
         )
     }
 
     val checkedDungeonMobs = hashMapOf<EntityArmorStand, Entity>()
     private val ignoreMobs: (Entity) -> Boolean =
-        { it is EntityArmorStand || it is EntityItem || it is EntityItemFrame || it is EntityXPOrb || it is EntityFishHook }
+        { it is EntityArmorStand || it is EntityItem || it is EntityItemFrame || it is EntityXPOrb || it is EntityFishHook || it == mc.thePlayer }
     private var checkTick = 0
     private var validTick = 0
 

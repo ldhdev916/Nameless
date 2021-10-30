@@ -28,5 +28,6 @@ enum class KeyBindingCategory(val desc: String, val key: Int) {
     GHOST_BLOCK("Ghost Block", Keyboard.KEY_X),
     AUTO_WDR("Auto Send WatchDog Report to Nearest Player", Keyboard.KEY_H),
     ACCEPT_PARTY("Accept Party", Keyboard.KEY_Y),
-    DENY_PARTY("Deny Party", Keyboard.KEY_N)
+    DENY_PARTY("Deny Party", Keyboard.KEY_N),
+    FREEZE_WAYPOINT_PATH("Freeze Waypoint Paths", Keyboard.KEY_NONE)
 }

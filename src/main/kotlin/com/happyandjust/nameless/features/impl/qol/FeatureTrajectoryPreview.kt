@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.devqol.inCategory
@@ -29,7 +28,8 @@ import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.StencilListener
 import com.happyandjust.nameless.features.listener.WorldRenderListener
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CBoolean
+import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.trajectory.ArrowTrajectoryPreview
 import com.happyandjust.nameless.trajectory.FishHookTrajectory
 import com.happyandjust.nameless.trajectory.ThrowableTrajectoryPreview
@@ -40,7 +40,7 @@ import net.minecraft.init.Items
 import net.minecraft.item.ItemPotion
 import java.awt.Color
 
-class FeatureTrajectoryPreview : SimpleFeature(
+object FeatureTrajectoryPreview : SimpleFeature(
     Category.QOL,
     "trajectorypreview",
     "Trajectory Preview",
@@ -48,10 +48,6 @@ class FeatureTrajectoryPreview : SimpleFeature(
 ), ClientTickListener, WorldRenderListener, StencilListener {
 
     init {
-
-        val cChromaColor = TypeRegistry.getConverterByClass(ChromaColor::class)
-        val cBoolean = TypeRegistry.getConverterByClass(Boolean::class)
-
         inCategory(
             "Rendering",
             "showtrace" to FeatureParameter(
@@ -61,7 +57,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 "Enable Showing Trace of Trajectory",
                 "",
                 false,
-                cBoolean
+                CBoolean
             ).also {
                 it.parameters["tracecolor"] = FeatureParameter(
                     0,
@@ -70,7 +66,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                     "Trace Color",
                     "",
                     Color.red.toChromaColor(),
-                    cChromaColor
+                    CChromaColor
                 )
             },
             "endcolor" to FeatureParameter(
@@ -80,7 +76,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 "End Point Color",
                 "",
                 Color.green.toChromaColor(),
-                cChromaColor
+                CChromaColor
             ),
             "targetcolor" to FeatureParameter(
                 2,
@@ -89,7 +85,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 "Target Point Color",
                 "Color when end point of trajectory HITS entity",
                 Color.blue.toChromaColor(),
-                cChromaColor
+                CChromaColor
             ),
             "glowtarget" to FeatureParameter(
                 3,
@@ -98,7 +94,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 "Glow Trajectory Target",
                 "Glow entity which is hit by end point of trajectory",
                 false,
-                cBoolean
+                CBoolean
             ).also {
                 it.parameters["glowcolor"] = FeatureParameter(
                     0,
@@ -107,7 +103,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                     "Glow Color",
                     "",
                     Color(120, 5, 121).toChromaColor(),
-                    cChromaColor
+                    CChromaColor
                 )
             },
         )
@@ -121,7 +117,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 "Enable Trajectory for Bow",
                 "",
                 true,
-                cBoolean
+                CBoolean
             ),
             "enderpearl" to FeatureParameter(
                 0,
@@ -130,7 +126,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 "Enable Trajectory for Ender Pearl",
                 "",
                 true,
-                cBoolean
+                CBoolean
             ),
             "egg" to FeatureParameter(
                 0,
@@ -139,7 +135,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 "Enable Trajectory for Egg",
                 "",
                 true,
-                cBoolean
+                CBoolean
             ),
             "snowball" to FeatureParameter(
                 0,
@@ -148,7 +144,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 "Enable Trajectory for Snowball",
                 "",
                 true,
-                cBoolean
+                CBoolean
             ),
             "potion" to FeatureParameter(
                 0,
@@ -157,7 +153,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 "Enable Trajectory for Potion",
                 "",
                 false,
-                cBoolean
+                CBoolean
             ),
             "expbottle" to FeatureParameter(
                 0,
@@ -166,7 +162,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 "Enable Trajectory for Exp Bottle",
                 "",
                 false,
-                cBoolean
+                CBoolean
             ),
             "fishingrod" to FeatureParameter(
                 0,
@@ -175,7 +171,7 @@ class FeatureTrajectoryPreview : SimpleFeature(
                 "Enable Trajectory for Fishing Rod",
                 "",
                 false,
-                cBoolean
+                CBoolean
             )
         )
 

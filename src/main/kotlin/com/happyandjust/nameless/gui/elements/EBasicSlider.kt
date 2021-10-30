@@ -40,7 +40,11 @@ open class EBasicSlider(
     protected var sliderValue = (currentValue - minValue) / (maxValue - minValue)
         set(value) {
             field = value.compress(0.0, 1.0)
-            storeValue(getValue())
+
+            val actualValue = getValue().transformToPrecision(precision)
+
+            storeValue(actualValue)
+            field = (actualValue - minValue) / (maxValue - minValue)
         }
 
     private val textColor = 0xFF969696.toInt()

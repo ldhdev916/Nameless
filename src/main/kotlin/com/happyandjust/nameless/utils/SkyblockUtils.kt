@@ -22,6 +22,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.devqol.getSkyBlockID
 import com.happyandjust.nameless.devqol.isFairySoul
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.devqol.stripControlCodes
@@ -30,12 +31,17 @@ import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
 import com.happyandjust.nameless.network.Request
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CFairySoul
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityArmorStand
+import net.minecraft.nbt.CompressedStreamTools
+import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
 import net.minecraft.util.ResourceLocation
+import net.minecraftforge.common.util.Constants
+import java.io.ByteArrayInputStream
+import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.math.pow
@@ -43,7 +49,29 @@ import kotlin.math.pow
 object SkyblockUtils {
     private val fairySoulMap = hashMapOf<String, List<FairySoul>>()
     private val gson = Gson()
-    val allItems = hashMapOf<String, SkyBlockItem>().also {
+    val allItems = hashMapOf<String, SkyBlockItem>()
+
+    fun getItemFromId(id: String) = allItems[id.uppercase()]
+
+    fun fetchSkyBlockData() {
+        val handler = JSONHandler(ResourceLocation("nameless", "fairysouls.json"))
+
+        val souls = handler.read(JsonObject())
+
+        for ((island, fairySouls) in souls.entrySet()) {
+            if (fairySouls is JsonArray) {
+                val list = arrayListOf<FairySoul>()
+
+                for (coord in fairySouls) {
+                    if (coord is JsonObject) {
+                        // in json they don't have island property
+                        list.add(CFairySoul.deserialize(coord.apply { addProperty("island", island) }))
+                    }
+                }
+                fairySoulMap[island] = list
+            }
+        }
+
         val s = Request.get("https://api.hypixel.net/resources/skyblock/items")
 
         val json = JSONHandler(s).read(JsonObject())
@@ -54,30 +82,7 @@ object SkyblockUtils {
             val skyBlockItem = gson.fromJson(item, SkyBlockItem::class.java)
 
             skyBlockItem.rarity = ItemRarity.fromString(skyBlockItem.stringRarity)
-            it[skyBlockItem.id] = skyBlockItem
-        }
-    }
-
-    fun getItemFromId(id: String) = allItems[id.uppercase()]!!
-
-    fun fetchSkyBlockData() {
-        val handler = JSONHandler(ResourceLocation("nameless", "fairysouls.json"))
-
-        val souls = handler.read(JsonObject())
-        val fairySoulDeserializer = TypeRegistry.getConverterByClass(FairySoul::class)
-
-        for ((island, fairySouls) in souls.entrySet()) {
-            if (fairySouls is JsonArray) {
-                val list = arrayListOf<FairySoul>()
-
-                for (coord in fairySouls) {
-                    if (coord is JsonObject) {
-                        // in json they don't have island property
-                        list.add(fairySoulDeserializer.deserialize(coord.apply { addProperty("island", island) }))
-                    }
-                }
-                fairySoulMap[island] = list
-            }
+            allItems[skyBlockItem.id] = skyBlockItem
         }
     }
 
@@ -90,6 +95,14 @@ object SkyblockUtils {
                 add(FairySoul(pos.x, pos.y, pos.z, island))
             }
         }
+    }
+
+    fun readNBTFromItemBytes(itemBytes: String): NBTTagCompound {
+        val inputStream = ByteArrayInputStream(Base64.getDecoder().decode(itemBytes)).buffered()
+
+        val nbt = CompressedStreamTools.readCompressed(inputStream)
+
+        return nbt.getTagList("i", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0)
     }
 
     fun getMobNamePattern(level: Int, name: String): Pattern =
@@ -151,9 +164,20 @@ object SkyblockUtils {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
+                it.skyBlockId = readNBTFromItemBytes(it.item_bytes).getSkyBlockID()
             })
         }
 
         return list
+    }
+
+    fun getMaxAuctionPage(): Int {
+        val s = Request.get("https://api.hypixel.net/skyblock/auctions")
+
+        val json = JSONHandler(s).read(JsonObject())
+
+        if (!json["success"].asBoolean) return 0
+
+        return json["totalPages"].asInt
     }
 }

@@ -33,7 +33,7 @@ class EGui : GuiScreen() {
     lateinit var searchButton: ESearchButton
     lateinit var categoryPanel: ECategoryPanel
     lateinit var featurePanel: EFeaturePanel
-    lateinit var scrollPanelStacks: EScrollPanelStacks
+    lateinit var panelStacks: EPanelStacks
     lateinit var window: EWindow
 
     /**
@@ -98,7 +98,7 @@ class EGui : GuiScreen() {
             1.3
         ).also { searchButton = it })
 
-        scrollPanelStacks = EScrollPanelStacks(
+        panelStacks = EPanelStacks(
             Rectangle.fromWidthHeight(
                 categoryPanel.rectangle.right,
                 categoryPanel.rectangle.top,
@@ -107,15 +107,15 @@ class EGui : GuiScreen() {
             )
         )
 
-        window.addChild(scrollPanelStacks)
+        window.addChild(panelStacks)
 
         //
         featurePanel = EFeaturePanel(
-            scrollPanelStacks.rectangle,
-            scrollPanelStacks
+            panelStacks.rectangle,
+            panelStacks
         )
 
-        scrollPanelStacks.push(featurePanel)
+        panelStacks.push(featurePanel)
         //
 
         //
@@ -123,35 +123,35 @@ class EGui : GuiScreen() {
             it as ECategory
             featurePanel.filter { feature -> feature.category == it.category }
 
-            scrollPanelStacks.clear()
-            scrollPanelStacks.push(featurePanel)
+            panelStacks.clear()
+            panelStacks.push(featurePanel)
         }
         //
 
         //
         searchButton.onTextFieldStateChange = {
             if (it) {
-                when (val scrollPanel = scrollPanelStacks.peek()) {
-                    is EFeaturePanel -> scrollPanel.filter { true }
-                    is EFeatureSettingPanel -> scrollPanel.filter { true }
-                    is EParameterSettingPanel -> scrollPanel.filter { true }
+                when (val panel = panelStacks.peek()) {
+                    is EFeaturePanel -> panel.filter { true }
+                    is EFeatureSettingPanel -> panel.filter { true }
+                    is EParameterSettingPanel -> panel.filter { true }
                 }
             }
         }
 
         searchButton.onTextFieldKeyTyped = {
-            when (val scrollPanel = scrollPanelStacks.peek()) {
-                is EFeaturePanel -> scrollPanel.filter { feature ->
+            when (val panel = panelStacks.peek()) {
+                is EFeaturePanel -> panel.filter { feature ->
                     it.isEmpty() ||
                             feature.title.contains(it, true) ||
                             feature.desc.contains(it, true)
                 }
-                is EFeatureSettingPanel -> scrollPanel.filter { parameter ->
+                is EFeatureSettingPanel -> panel.filter { parameter ->
                     it.isEmpty() ||
                             parameter.title.contains(it, true) ||
                             parameter.desc.contains(it, true)
                 }
-                is EParameterSettingPanel -> scrollPanel.filter { parameter ->
+                is EParameterSettingPanel -> panel.filter { parameter ->
                     it.isEmpty() ||
                             parameter.title.contains(it, true) ||
                             parameter.desc.contains(it, true)
@@ -162,7 +162,7 @@ class EGui : GuiScreen() {
         searchButton.textFieldShouldNotBeFocusedByKeyType = { checkForFocusedTextFields(window) }
         //
 
-        scrollPanelStacks.onStateChange = {
+        panelStacks.onStateChange = {
             searchButton.textField.text = ""
         }
 

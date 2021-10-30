@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.FeatureRegistry;
 import com.happyandjust.nameless.features.impl.general.FeatureBedwarsESP;
 import com.happyandjust.nameless.features.impl.skyblock.FeatureGlowStarDungeonMobs;
 import com.happyandjust.nameless.mixinhooks.EntityHook;
@@ -37,15 +36,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MixinEntity {
 
     @Unique
-    private final FeatureBedwarsESP bedwarsESP = FeatureRegistry.INSTANCE.getBEDWARS_ESP();
-    @Unique
-    private final FeatureGlowStarDungeonMobs glowStarDungeonMobs = FeatureRegistry.INSTANCE.getGLOW_STAR_DUNGEON_MOBS();
-    @Unique
     private final EntityHook hook = EntityHook.INSTANCE;
     private final Entity $this = (Entity) (Object) this;
 
     @Inject(method = "isInvisible", at = @At("HEAD"), cancellable = true)
     public void setInvisible(CallbackInfoReturnable<Boolean> cir) {
+        FeatureBedwarsESP bedwarsESP = FeatureBedwarsESP.INSTANCE;
+        FeatureGlowStarDungeonMobs glowStarDungeonMobs = FeatureGlowStarDungeonMobs.INSTANCE;
         if (bedwarsESP.getTeamColorCache().containsKey(this) && bedwarsESP.getEnabled() && (boolean) bedwarsESP.getParameterValue("invisible")) {
             cir.setReturnValue(false);
             return;

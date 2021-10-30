@@ -20,6 +20,7 @@ package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.features.FeatureRegistry;
 import com.happyandjust.nameless.features.impl.qol.FeatureAFKMode;
+import com.happyandjust.nameless.features.impl.qol.FeaturePerspective;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
 import org.objectweb.asm.Opcodes;
@@ -46,7 +47,7 @@ public class MixinMinecraft {
 
     @Redirect(method = "runTick", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lnet/minecraft/client/settings/GameSettings;thirdPersonView:I"))
     public void blockPerspective(GameSettings gameSettings, int value) {
-        if (FeatureRegistry.INSTANCE.getPERSPECTIVE().getEnabled()) {
+        if (FeaturePerspective.INSTANCE.getEnabled()) {
             gameSettings.thirdPersonView = 1;
         } else {
             gameSettings.thirdPersonView = value;

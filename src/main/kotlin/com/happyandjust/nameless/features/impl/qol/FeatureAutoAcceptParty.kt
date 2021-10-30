@@ -28,7 +28,7 @@ import com.happyandjust.nameless.features.listener.ChatListener
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.KeyInputListener
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.textureoverlay.Overlay
 import com.happyandjust.nameless.textureoverlay.impl.EAutoPartyOverlay
 import net.minecraft.client.gui.Gui
@@ -38,12 +38,10 @@ import java.awt.Color
 import java.util.regex.Pattern
 import kotlin.math.max
 
-class FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", "Auto Accept Party", ""), ChatListener,
+object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", "Auto Accept Party", ""), ChatListener,
     KeyInputListener, ClientTickListener {
 
     init {
-        val cBoolean = TypeRegistry.getConverterByClass(Boolean::class)
-
         parameters["hide"] = FeatureParameter(
             0,
             "party",
@@ -51,7 +49,7 @@ class FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", "
             "Hide Party Request Message",
             "",
             true,
-            cBoolean
+            CBoolean
         )
         parameters["press"] = FeatureParameter(
             0,
@@ -60,7 +58,7 @@ class FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", "
             "Press to Join",
             "Disable automatically join party and instead, Press Y/N to accept/deny party request\nYou can change the key in ESC -> Settings -> Controls",
             false,
-            cBoolean
+            CBoolean
         )
     }
 

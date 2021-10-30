@@ -23,16 +23,20 @@ import com.happyandjust.nameless.core.Direction;
 import com.happyandjust.nameless.devqol.QOLKt;
 import com.happyandjust.nameless.devqol.RenderingQOLKt;
 import com.happyandjust.nameless.features.FeatureRegistry;
+import com.happyandjust.nameless.features.impl.misc.FeatureDisguiseNickname;
 import com.happyandjust.nameless.gui.Rectangle;
 import com.happyandjust.nameless.mixinhooks.FontRendererHook;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.opengl.GL11;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.*;
@@ -105,6 +109,14 @@ public abstract class MixinFontRenderer {
                 ci.cancel();
             }
         }
+
+    }
+
+    @ModifyVariable(method = "renderString", at = @At(value = "LOAD", opcode = Opcodes.ALOAD, ordinal = 0))
+    public String disguiseNickname(String text) {
+        FeatureDisguiseNickname feature = FeatureDisguiseNickname.INSTANCE;
+
+        return feature.getEnabled() ? text.replaceAll("(?i)" + Minecraft.getMinecraft().getSession().getUsername(), feature.getNickname()) : text;
     }
 
     @Unique

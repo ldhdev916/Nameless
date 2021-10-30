@@ -25,6 +25,7 @@ enum class GameType(val displayName: String, vararg val modeReqs: String) {
     BEDWARS("BEDWARS"),
     GUESS_THE_BUILD("BUILD_BATTLE", "BUILD_BATTLE_GUESS_THE_BUILD"),
     PARTY_GAMES("ARCADE", "PARTY"),
-    SKYWARS("SKYWARS")
+    SKYWARS("SKYWARS"),
+    PIXEL_PARTY("PROTOTYPE", "PIXEL_PARTY")
 
 }

@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.devqol.getBlockAtPos
@@ -35,14 +34,14 @@ import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.hypixel.skyblock.DungeonFloor
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockMonster
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CChromaColor
 import net.minecraft.entity.Entity
 import net.minecraft.entity.monster.EntityBlaze
 import net.minecraft.init.Blocks
 import net.minecraft.util.BlockPos
 import java.awt.Color
 
-class FeatureBlazeSolver : SimpleFeature(
+object FeatureBlazeSolver : SimpleFeature(
     Category.SKYBLOCK,
     "blazesolver",
     "Blaze Solver",
@@ -50,8 +49,6 @@ class FeatureBlazeSolver : SimpleFeature(
 ), ClientTickListener, StencilListener, ServerChangeListener {
 
     init {
-        val cChromaColor = TypeRegistry.getConverterByClass(ChromaColor::class)
-
         parameters["outlinecolor"] = FeatureParameter(
             0,
             "blazesolver",
@@ -59,7 +56,7 @@ class FeatureBlazeSolver : SimpleFeature(
             "Outline Color",
             "",
             Color.white.toChromaColor(),
-            cChromaColor
+            CChromaColor
         )
 
         parameters["firstcolor"] = FeatureParameter(
@@ -69,7 +66,7 @@ class FeatureBlazeSolver : SimpleFeature(
             "First Blaze's Color",
             "",
             Color(3, 86, 0).toChromaColor(),
-            cChromaColor
+            CChromaColor
         )
 
         parameters["secondcolor"] = FeatureParameter(
@@ -79,7 +76,7 @@ class FeatureBlazeSolver : SimpleFeature(
             "Second Blaze's Color",
             "",
             Color.green.toChromaColor(),
-            cChromaColor
+            CChromaColor
         )
     }
 

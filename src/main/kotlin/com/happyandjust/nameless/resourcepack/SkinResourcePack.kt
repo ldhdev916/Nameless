@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.textureoverlay
+package com.happyandjust.nameless.resourcepack
 
 import net.minecraft.client.resources.IResourcePack
 import net.minecraft.client.resources.data.IMetadataSection
@@ -26,28 +26,23 @@ import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
 
-class OverlayResourcePack : IResourcePack {
+object SkinResourcePack : IResourcePack {
 
-    private val dir = File("config/NamelessTextureOverlay").also { it.mkdirs() }
+    val dir = File("config/NamelessSkinTextures").also { it.mkdirs() }
 
-    override fun getInputStream(location: ResourceLocation): InputStream {
-        return File(dir, location.resourcePath).inputStream().buffered()
-    }
+    override fun getInputStream(location: ResourceLocation): InputStream =
+        File(dir, location.resourcePath).inputStream().buffered()
 
-    override fun resourceExists(location: ResourceLocation): Boolean {
-        return File(dir, location.resourcePath).isFile
-    }
+    override fun resourceExists(location: ResourceLocation) = File(dir, location.resourcePath).isFile
 
-    override fun getResourceDomains(): MutableSet<String> = hashSetOf("namelesstextureoverlay")
+    override fun getResourceDomains() = mutableSetOf("namelessskin")
 
     override fun <T : IMetadataSection?> getPackMetadata(
         metadataSerializer: IMetadataSerializer?,
         metadataSectionName: String?
-    ): T? {
-        return null
-    }
+    ): T? = null
 
-    override fun getPackImage(): BufferedImage = BufferedImage(512, 512, BufferedImage.TYPE_INT_RGB)
+    override fun getPackImage() = BufferedImage(512, 512, BufferedImage.TYPE_INT_RGB)
 
-    override fun getPackName() = "NamelessTextureOverlay"
+    override fun getPackName() = "NamelessSkinTextures"
 }

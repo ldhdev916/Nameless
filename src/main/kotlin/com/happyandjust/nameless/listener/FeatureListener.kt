@@ -26,10 +26,12 @@ import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.events.PartyGameChangeEvent
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.listener.*
+import net.minecraft.entity.EntityLivingBase
 import net.minecraftforge.client.event.*
 import net.minecraftforge.client.event.sound.PlaySoundEvent
 import net.minecraftforge.event.entity.PlaySoundAtEntityEvent
 import net.minecraftforge.event.entity.player.ItemTooltipEvent
+import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.eventhandler.EventPriority
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.InputEvent
@@ -58,7 +60,10 @@ object FeatureListener {
     @SubscribeEvent
     fun onClientTick(e: TickEvent.ClientTickEvent) {
         if (e.phase == TickEvent.Phase.START) return
-        if (mc.theWorld == null || mc.thePlayer == null) return
+        if (mc.theWorld == null || mc.thePlayer == null) {
+            invoke<ClientTickListener> { tickWorldNull() }
+            return
+        }
         invoke<ClientTickListener> { tick() }
     }
 
@@ -158,6 +163,21 @@ object FeatureListener {
     @SubscribeEvent
     fun playSoundAtEntity(e: PlaySoundAtEntityEvent) {
         invoke<PlaySoundListener> { onPlaySoundAtEntity(e) }
+    }
+
+    @SubscribeEvent
+    fun worldLoad(e: WorldEvent.Load) {
+        invoke<WorldLoadListener> { onWorldLoad(e) }
+    }
+
+    @SubscribeEvent
+    fun renderLivingPre(e: RenderLivingEvent.Pre<EntityLivingBase>) {
+        invoke<RenderLivingListener> { onRenderLivingPre(e) }
+    }
+
+    @SubscribeEvent
+    fun renderLivingPost(e: RenderLivingEvent.Post<EntityLivingBase>) {
+        invoke<RenderLivingListener> { onRenderLivingPost(e) }
     }
 
 }

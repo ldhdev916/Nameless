@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.core
+package com.happyandjust.nameless.serialization.converters
 
-import net.minecraft.util.BlockPos
+import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 
-data class FarmFixData(val pos: BlockPos, val text: String, val howToFix: () -> Boolean)
+object CItemRarity : CEnum<ItemRarity>(ItemRarity::valueOf)

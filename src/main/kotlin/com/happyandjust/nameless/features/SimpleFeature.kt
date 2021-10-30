@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.processor.Processor
@@ -46,7 +47,7 @@ open class SimpleFeature(
     fun <T> getParameterValue(key: String) = getParameter<T>(key).value
 
     var enabled: Boolean
-        get() = enabledConfig.value
+        get() = enabledConfig.value && !Nameless.INSTANCE.isErrored
         set(value) {
             val event = FeatureStateChangeEvent.Pre(this, value)
             if (!MinecraftForge.EVENT_BUS.post(event)) {

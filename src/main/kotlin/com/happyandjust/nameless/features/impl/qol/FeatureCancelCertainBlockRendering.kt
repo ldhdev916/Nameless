@@ -22,16 +22,14 @@ import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CBoolean
 import net.minecraft.block.Block
 import net.minecraft.item.ItemStack
 
-class FeatureCancelCertainBlockRendering :
+object FeatureCancelCertainBlockRendering :
     SimpleFeature(Category.QOL, "cancelblockrendering", "Cancel Certain Block Rendering") {
 
     init {
-        val cBoolean = TypeRegistry.getConverterByClass(Boolean::class)
-
         for (block in Block.blockRegistry) {
             val displayName = try {
                 ItemStack(block).displayName
@@ -46,7 +44,7 @@ class FeatureCancelCertainBlockRendering :
                 displayName,
                 "",
                 false,
-                cBoolean
+                CBoolean
             ).also {
                 it.onToggleClick = {
                     if (enabled) {

@@ -19,32 +19,26 @@
 package com.happyandjust.nameless.listener
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.commands.FixFarmCommand
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.devqol.LOGGER
+import com.happyandjust.nameless.devqol.inHypixel
+import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.devqol.sendClientMessage
 import com.happyandjust.nameless.events.CurrentPlayerJoinWorldEvent
 import com.happyandjust.nameless.gui.EGui
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
-import com.happyandjust.nameless.utils.RenderUtils
 import com.happyandjust.nameless.utils.Utils
-import net.minecraft.util.Vec3
-import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.entity.EntityJoinWorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.InputEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.common.network.FMLNetworkEvent
-import java.awt.Color
 
 object BasicListener {
-
-    private var tick = 0
 
     @SubscribeEvent
     fun onWorldJoin(e: EntityJoinWorldEvent) {
         if (e.entity == mc.thePlayer) {
-            val event = CurrentPlayerJoinWorldEvent(e.world)
-            MinecraftForge.EVENT_BUS.post(event)
+            MinecraftForge.EVENT_BUS.post(CurrentPlayerJoinWorldEvent(e.world))
         }
     }
 
@@ -73,41 +67,5 @@ object BasicListener {
     fun onClientConnectedToServer(e: FMLNetworkEvent.ClientConnectedToServerEvent) {
         e.manager.channel().pipeline().addBefore("packet_handler", "namelees_packet_handler", PacketHandler())
         LOGGER.info("Added Packet Handler")
-    }
-
-    @SubscribeEvent
-    fun onClientTick(e: TickEvent.ClientTickEvent) {
-        if (e.phase == TickEvent.Phase.START) return
-
-        tick = (tick + 1) % 20
-
-        if (tick == 0) {
-            with(FixFarmCommand.problemBlocks) {
-                val iterator = iterator()
-
-                for ((_, _, howToFix) in iterator) {
-                    if (howToFix()) {
-                        iterator.remove()
-                    }
-                }
-            }
-        }
-
-    }
-
-    @SubscribeEvent
-    fun onWorldRender(e: RenderWorldLastEvent) {
-        with(FixFarmCommand.problemBlocks) {
-            for ((pos, text) in this) {
-                RenderUtils.drawBox(pos.getAxisAlignedBB(), 0x40FF0000, e.partialTicks)
-                RenderUtils.draw3DString(
-                    text,
-                    Vec3(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5),
-                    0.4,
-                    Color.red.rgb,
-                    e.partialTicks
-                )
-            }
-        }
     }
 }

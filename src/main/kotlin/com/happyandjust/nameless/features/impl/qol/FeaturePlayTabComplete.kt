@@ -33,7 +33,7 @@ import net.minecraft.network.play.client.C01PacketChatMessage
 import net.minecraft.network.play.server.S3APacketTabComplete
 import java.util.regex.Pattern
 
-class FeaturePlayTabComplete : SimpleFeature(
+object FeaturePlayTabComplete : SimpleFeature(
     Category.QOL,
     "playtabcomplete",
     "/play Auto Tab Complete",
@@ -41,18 +41,23 @@ class FeaturePlayTabComplete : SimpleFeature(
     true
 ), PacketListener {
 
-    private val gameMap = hashMapOf<String, String>().apply {
-        val handler =
-            JSONHandler(Request.get("https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw"))
+    private val gameMap = hashMapOf<String, String>()
+    private val games = arrayListOf<String>()
 
-        for ((s, element) in handler.read(JsonObject()).entrySet()) {
-            this[s] = element.asString
-        }
-    }
-    private val games = arrayListOf<String>().apply {
-        for ((key, value) in gameMap) {
-            add(key)
-            add(value)
+    /**
+     * Thanks asbyth
+     */
+    fun fetchGameDataList() {
+        val json =
+            JSONHandler(Request.get("https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw")).read(
+                JsonObject()
+            )
+
+        for ((s, element) in json.entrySet()) {
+            gameMap[s] = element.asString
+
+            games.add(s)
+            games.add(element.asString)
         }
     }
 

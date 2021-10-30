@@ -20,22 +20,22 @@ package com.happyandjust.nameless.mixinhooks
 
 import com.happyandjust.nameless.devqol.compress
 import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.features.FeatureRegistry
+import com.happyandjust.nameless.features.impl.qol.FeaturePerspective
 import org.lwjgl.opengl.Display
 
 object EntityRendererHook {
 
     var cameraYaw = 0F
-        get() = if (FeatureRegistry.PERSPECTIVE.enabled) field else mc.thePlayer.rotationYaw
+        get() = if (FeaturePerspective.enabled) field else mc.thePlayer.rotationYaw
     var cameraPitch = 0F
-        get() = if (FeatureRegistry.PERSPECTIVE.enabled) field else mc.thePlayer.rotationPitch
+        get() = if (FeaturePerspective.enabled) field else mc.thePlayer.rotationPitch
         set(value) {
             field = value.compress(-90F, 90F)
         }
 
     fun overrideMouse(): Boolean {
         if (mc.inGameHasFocus && Display.isActive()) {
-            if (!FeatureRegistry.PERSPECTIVE.enabled) return true
+            if (!FeaturePerspective.enabled) return true
 
             mc.mouseHelper.mouseXYChange()
 

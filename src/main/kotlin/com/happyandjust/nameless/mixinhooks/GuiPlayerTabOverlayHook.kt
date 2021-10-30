@@ -19,14 +19,12 @@
 package com.happyandjust.nameless.mixinhooks
 
 import com.happyandjust.nameless.devqol.*
-import com.happyandjust.nameless.features.FeatureRegistry
+import com.happyandjust.nameless.features.impl.qol.FeatureShowPingInTab
 import net.minecraft.client.network.NetworkPlayerInfo
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 import java.awt.Color
 
 object GuiPlayerTabOverlayHook {
-
-    private val feature = FeatureRegistry.SHOW_PING_NUMBER_IN_TAB
 
     fun drawCustomPing(
         p_175245_1_: Int,
@@ -35,7 +33,7 @@ object GuiPlayerTabOverlayHook {
         networkPlayerInfoIn: NetworkPlayerInfo,
         ci: CallbackInfo
     ) {
-        if (feature.enabled) {
+        if (FeatureShowPingInTab.enabled) {
             val x = p_175245_2_ + p_175245_1_ - 13
             val y: Int = p_175245_3_ + mc.fontRendererObj.FONT_HEIGHT / 2
 
@@ -47,7 +45,7 @@ object GuiPlayerTabOverlayHook {
                     networkPlayerInfoIn.responseTime.toString(),
                     0f,
                     -(mc.fontRendererObj.FONT_HEIGHT / 2f),
-                    feature.getParameter<Color>("color").value.rgb
+                    FeatureShowPingInTab.getParameter<Color>("color").value.rgb
                 )
                 scale(1f, 1f, 1f)
                 enableDepth()

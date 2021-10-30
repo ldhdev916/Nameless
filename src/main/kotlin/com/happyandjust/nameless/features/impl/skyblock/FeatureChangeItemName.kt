@@ -21,10 +21,11 @@ package com.happyandjust.nameless.features.impl.skyblock
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CBoolean
+import com.happyandjust.nameless.serialization.converters.CString
 import com.happyandjust.nameless.utils.SkyblockUtils
 
-class FeatureChangeItemName :
+object FeatureChangeItemName :
     SimpleFeature(Category.SKYBLOCK, "changeitemname", "Change Item Name", "Auto converts & into §") {
 
     fun changeItemName(skyblockId: String, originName: String): String {
@@ -66,10 +67,7 @@ class FeatureChangeItemName :
 
     fun isChangedItem(skyblockId: String) = parameters[skyblockId.lowercase()]?.value as? Boolean == true
 
-    init {
-        val cBoolean = TypeRegistry.getConverterByClass(Boolean::class)
-        val cString = TypeRegistry.getConverterByClass(String::class)
-
+    fun updateItemData() {
         for (skyBlockItem in SkyblockUtils.allItems.values) {
 
             val id = skyBlockItem.id.lowercase()
@@ -81,7 +79,7 @@ class FeatureChangeItemName :
                 skyBlockItem.name,
                 "SkyBlock ID: ${skyBlockItem.id}",
                 false,
-                cBoolean
+                CBoolean
             ).also {
                 it.parameters["overwrite"] = FeatureParameter(
                     0,
@@ -90,7 +88,7 @@ class FeatureChangeItemName :
                     "Custom Name of ${skyBlockItem.name}",
                     "This will ignore all prefix, suffix, replaces and just overwrites whole item's name, remain empty to disable",
                     "",
-                    cString
+                    CString
                 )
 
                 it.parameters["prefix"] = FeatureParameter(
@@ -100,7 +98,7 @@ class FeatureChangeItemName :
                     "Custom Prefix of ${skyBlockItem.name}",
                     "Remain empty to disable",
                     "",
-                    cString
+                    CString
                 )
 
                 it.parameters["suffix"] = FeatureParameter(
@@ -110,7 +108,7 @@ class FeatureChangeItemName :
                     "Custom Suffix of ${skyBlockItem.name}",
                     "Remain empty to disable",
                     "",
-                    cString
+                    CString
                 )
 
                 it.parameters["replace"] = FeatureParameter(
@@ -120,7 +118,7 @@ class FeatureChangeItemName :
                     "Custom Replacement of ${skyBlockItem.name}",
                     "This will replace certain words of item's displayName Usage: from|to and split with comma\nExample:Aspect|NoAspect,Hyperion|Hype\nremain empty to disable",
                     "",
-                    cString
+                    CString
                 )
             }
         }

@@ -18,18 +18,20 @@
 
 package com.happyandjust.nameless.hypixel.skyblock
 
-enum class ItemRarity(val webName: String) {
+import java.awt.Color
+
+enum class ItemRarity(val webName: String, val color: Int, val loreName: String, val colorCode: String) {
 
 
-    COMMON("COMMON"),
-    UNCOMMON("UNCOMMON"),
-    RARE("RARE"),
-    EPIC("EPIC"),
-    LEGENDARY("LEGENDARY"),
-    MYTHIC("MYTHIC"),
-    SUPREME("SUPREME"),
-    SPECIAL("SPECIAL"),
-    VERY_SPECIAL("VERY_SPECIAL");
+    COMMON("COMMON", Color(0xFFFFFF).rgb, "COMMON", "§f"),
+    UNCOMMON("UNCOMMON", Color(0x55FF55).rgb, "UNCOMMON", "§a"),
+    RARE("RARE", Color(0x5555FF).rgb, "RARE", "§9"),
+    EPIC("EPIC", Color(0xAA00AA).rgb, "EPIC", "§5"),
+    LEGENDARY("LEGENDARY", Color(0xFFAA00).rgb, "LEGENDARY", "§6"),
+    MYTHIC("MYTHIC", Color(0xFF55FF).rgb, "MYTHIC", "§d"),
+    SUPREME("SUPREME", Color(0xAA0000).rgb, "SUPREME", "§4"),
+    SPECIAL("SPECIAL", Color(0xFF5555).rgb, "SPECIAL", "§c"),
+    VERY_SPECIAL("VERY_SPECIAL", Color(0xFF5555).rgb, "VERY SPECIAL", "§c");
 
     companion object {
 

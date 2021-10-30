@@ -31,7 +31,8 @@ import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.MurdererMode
 import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.pathfinding.ModPathFinding
-import com.happyandjust.nameless.serialization.TypeRegistry
+import com.happyandjust.nameless.serialization.converters.CBoolean
+import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityItem
@@ -49,7 +50,7 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent
 import java.awt.Color
 import java.util.regex.Pattern
 
-class FeatureMurdererFinder : SimpleFeature(
+object FeatureMurdererFinder : SimpleFeature(
     Category.QOL,
     "murdererfinder",
     "Murderer Finder",
@@ -121,10 +122,6 @@ class FeatureMurdererFinder : SimpleFeature(
     }
 
     init {
-
-        val cBoolean = TypeRegistry.getConverterByClass(Boolean::class)
-        val cChromaColor = TypeRegistry.getConverterByClass(ChromaColor::class)
-
         parameters["gold"] = FeatureParameter(
             0,
             "murderer",
@@ -132,7 +129,7 @@ class FeatureMurdererFinder : SimpleFeature(
             "Glow Gold Ingot",
             "Glow gold ingot when you are in murder mystery",
             false,
-            cBoolean
+            CBoolean
         ).also {
             it.parameters["goldcolor"] = FeatureParameter(
                 0,
@@ -141,7 +138,7 @@ class FeatureMurdererFinder : SimpleFeature(
                 "Gold Ingot Color",
                 "",
                 Color(255, 128, 0).toChromaColor(),
-                cChromaColor
+                CChromaColor
             )
         }
         parameters["murderercolor"] = FeatureParameter(
@@ -151,7 +148,7 @@ class FeatureMurdererFinder : SimpleFeature(
             "Murderer Color",
             "",
             Color.blue.toChromaColor(),
-            cChromaColor
+            CChromaColor
         )
 
         inCategory(
@@ -163,7 +160,7 @@ class FeatureMurdererFinder : SimpleFeature(
                 "Glow Survivor",
                 "Glow survivor in hypixel murderer INFECTION",
                 true,
-                cBoolean
+                CBoolean
             ).also {
                 it.parameters["survivorcolor"] = FeatureParameter(
                     0,
@@ -172,7 +169,7 @@ class FeatureMurdererFinder : SimpleFeature(
                     "Survivor Color",
                     "",
                     Color.green.toChromaColor(),
-                    cChromaColor
+                    CChromaColor
                 )
             },
             "alphacolor" to FeatureParameter(
@@ -182,7 +179,7 @@ class FeatureMurdererFinder : SimpleFeature(
                 "Alpha Color",
                 "",
                 Color(128, 0, 128).toChromaColor(),
-                cChromaColor
+                CChromaColor
             ),
         )
 
@@ -195,7 +192,7 @@ class FeatureMurdererFinder : SimpleFeature(
                 "Target Color",
                 "Target glow color in hypixel murderer ASSASSIN",
                 Color.red.toChromaColor(),
-                cChromaColor
+                CChromaColor
             ),
             "targetarrow" to FeatureParameter(
                 1,
@@ -204,7 +201,7 @@ class FeatureMurdererFinder : SimpleFeature(
                 "Render Direction Arrow to Target",
                 "Render arrow shape on your screen which is pointing the target",
                 true,
-                cBoolean
+                CBoolean
             ),
             "targetpath" to FeatureParameter(
                 2,
@@ -213,7 +210,7 @@ class FeatureMurdererFinder : SimpleFeature(
                 "Show Paths to Target",
                 "",
                 false,
-                cBoolean
+                CBoolean
             )
         )
 
