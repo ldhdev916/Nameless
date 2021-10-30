@@ -98,10 +98,16 @@ object FeatureMurdererFinder : SimpleFeature(
     private var pathsToTarget = emptyList<BlockPos>()
     private var pathTick = 0
 
-    private val murderers = hashSetOf<String>()
+    private val murderers = MurdererSet()
     private val survivors = hashSetOf<String>()
 
     private var alpha: String? = null
+        set(value) {
+            if (field != value && value != null && value != mc.thePlayer.name) {
+                sendPrefixMessage("§aAlpha: $value")
+            }
+            field = value
+        }
     private val ALPHA_FOUND = Pattern.compile("The alpha, (?<alpha>\\w+), has been revealed by \\w+!")
     private val INFECTED = Pattern.compile("\\w+(\\s\\w+)? infected (?<infected>\\w+)")
     private val ENVIRONMENT_INFECTED = Pattern.compile("(?<infected>\\w+) was infected by the environment!")
@@ -447,5 +453,19 @@ object FeatureMurdererFinder : SimpleFeature(
         }
 
         return points
+    }
+
+    class MurdererSet : HashSet<String>() {
+
+        override fun add(element: String): Boolean {
+            return super.add(element).also {
+                if (it && Hypixel.currentGame == GameType.MURDER_MYSTERY && Hypixel.getProperty<MurdererMode>(
+                        PropertyKey.MURDERER_TYPE
+                    ) == MurdererMode.CLASSIC && element != mc.thePlayer.name
+                ) {
+                    sendPrefixMessage("§cMurderer: $element")
+                }
+            }
+        }
     }
 }

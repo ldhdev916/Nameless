@@ -23,6 +23,14 @@ import net.minecraft.util.IChatComponent
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.common.MinecraftForge
 
+fun sendPrefixMessage(o: Any?) {
+    sendPrefixMessage(ChatComponentText(o?.toString() ?: "null"))
+}
+
+fun sendPrefixMessage(chatComponent: IChatComponent?) {
+    sendClientMessage(ChatComponentText("§6[§3Nameless§6] ").appendSibling(chatComponent))
+}
+
 fun sendClientMessage(o: Any?) {
     sendClientMessage(ChatComponentText(o?.toString() ?: "null"))
 }

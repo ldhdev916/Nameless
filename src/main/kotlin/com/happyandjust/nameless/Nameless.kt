@@ -163,7 +163,6 @@ class Nameless {
             OutlineModeSelectCommand,
             ShutDownCommand,
             NameHistoryCommand,
-            RepartyCommand,
             WaypointCommand
         )
         registerListeners(FeatureListener, BasicListener, OutlineHandleListener, LocrawListener, WaypointListener)

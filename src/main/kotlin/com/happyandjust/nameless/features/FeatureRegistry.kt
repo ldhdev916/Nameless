@@ -29,7 +29,6 @@ import com.happyandjust.nameless.features.impl.misc.FeatureTextureOverlay
 import com.happyandjust.nameless.features.impl.misc.FeatureUpdateChecker
 import com.happyandjust.nameless.features.impl.qol.*
 import com.happyandjust.nameless.features.impl.settings.FeatureGhostBlock
-import com.happyandjust.nameless.features.impl.settings.FeatureReparty
 import com.happyandjust.nameless.features.impl.skyblock.*
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
 import com.happyandjust.nameless.serialization.converters.CBoolean
@@ -289,7 +288,6 @@ object FeatureRegistry {
 
     //SETTINGS
     val GHOST_BLOCK = register(FeatureGhostBlock.setInCategory("Settings"))
-    val REPARTY = register(FeatureReparty.setInCategory("Settings"))
 
 
 }

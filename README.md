@@ -111,6 +111,5 @@ Unless, You can't use rendering outline on entity
  - /searchbin - Search bins of specific item
  - /selectoutline - Select Outline Mode
  - /name - gets name history of player
- - /reparty, /rp, /rparty - Reparty
  - /waypoint - Show paths to given coordinate
 </details>
