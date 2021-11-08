@@ -215,6 +215,32 @@ object FeatureRegistry {
             }
         }
     )
+    val NO_HURTCAM = register(
+        SimpleFeature(
+            Category.MISCELLANEOUS,
+            "nohurtcam",
+            "No HurtCam",
+            "Remove the hurt animation when being hit"
+        ).setInCategory("Damage")
+    )
+    val CHANGE_DAMAGED_ENTITY_COLOR =
+        register(
+            SimpleFeature(
+                Category.MISCELLANEOUS,
+                "changedamagedentitycolor",
+                "Change Damaged Entity Color",
+                ""
+            ).setInCategory("Damage").also {
+                it.parameters["color"] = FeatureParameter(
+                    0,
+                    "damagedentity",
+                    "color",
+                    "Damaged Entity Color",
+                    "",
+                    Color.red.toChromaColor(),
+                    CChromaColor
+                )
+            })
 
     //QOL
     val JOIN_HYPIXEL_BUTTON = register(FeatureHypixelButton.setInCategory("Button"))

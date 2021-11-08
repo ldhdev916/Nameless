@@ -26,8 +26,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.MovingObjectPosition;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EntityRenderer.class)
 public class MixinEntityRenderer {
@@ -64,5 +66,10 @@ public class MixinEntityRenderer {
     @Redirect(method = "updateCameraAndRender", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;inGameHasFocus:Z"))
     public boolean overrideMouse(Minecraft mc) {
         return EntityRendererHook.INSTANCE.overrideMouse();
+    }
+
+    @Inject(method = "hurtCameraEffect", at = @At("HEAD"), cancellable = true)
+    public void noHurtCam(float entitylivingbase, CallbackInfo ci) {
+        if (FeatureRegistry.INSTANCE.getNO_HURTCAM().getEnabled()) ci.cancel();
     }
 }

@@ -89,6 +89,8 @@ Unless, You can't use rendering outline on entity
  - Change Fishing Particle Color
  - Disguise Nickname
  - Change Leather Armor Color
+ - No HurtCam
+ - Change Damaged Entity Color
 </details>
 <details>
   <summary>KeyBindings</summary>

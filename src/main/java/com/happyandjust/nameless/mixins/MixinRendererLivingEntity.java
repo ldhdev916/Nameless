@@ -18,6 +18,8 @@
 
 package com.happyandjust.nameless.mixins;
 
+import com.happyandjust.nameless.features.FeatureRegistry;
+import com.happyandjust.nameless.features.SimpleFeature;
 import com.happyandjust.nameless.mixinhooks.RenderGlobalHook;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -26,8 +28,12 @@ import net.minecraft.entity.EntityLivingBase;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.awt.*;
 
 @Mixin(RendererLivingEntity.class)
 public class MixinRendererLivingEntity<T extends EntityLivingBase> {
@@ -49,5 +55,31 @@ public class MixinRendererLivingEntity<T extends EntityLivingBase> {
         GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
         GlStateManager.disableTexture2D();
         GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+    }
+
+    @ModifyConstant(method = "setBrightness", constant = @Constant(floatValue = 1f, ordinal = 0))
+    public float changeRed(float constant) {
+
+        Color color = getColor();
+        return color == null ? constant : color.getRed();
+    }
+
+    @ModifyConstant(method = "setBrightness", constant = @Constant(floatValue = 0f, ordinal = 0))
+    public float changeGreen(float constant) {
+        Color color = getColor();
+        return color == null ? constant : color.getGreen();
+    }
+
+    @ModifyConstant(method = "setBrightness", constant = @Constant(floatValue = 0f, ordinal = 1))
+    public float changeBlue(float constant) {
+        Color color = getColor();
+        return color == null ? constant : color.getBlue();
+    }
+
+    @Unique
+    private Color getColor() {
+        SimpleFeature feature = FeatureRegistry.INSTANCE.getCHANGE_DAMAGED_ENTITY_COLOR();
+
+        return feature.getEnabled() ? feature.getParameterValue("color") : null;
     }
 }
