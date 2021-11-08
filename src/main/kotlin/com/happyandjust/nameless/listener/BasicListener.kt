@@ -24,7 +24,7 @@ import com.happyandjust.nameless.devqol.inHypixel
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.devqol.sendClientMessage
 import com.happyandjust.nameless.events.CurrentPlayerJoinWorldEvent
-import com.happyandjust.nameless.gui.EGui
+import com.happyandjust.nameless.gui.feature.FeatureGui
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.utils.Utils
 import net.minecraftforge.common.MinecraftForge
@@ -45,7 +45,7 @@ object BasicListener {
     @SubscribeEvent
     fun onKeyInput(e: InputEvent.KeyInputEvent) {
         if (Nameless.INSTANCE.keyBindings[KeyBindingCategory.OPEN_GUI]!!.isKeyDown) {
-            mc.displayGuiScreen(EGui())
+            mc.displayGuiScreen(FeatureGui())
         }
         if (Nameless.INSTANCE.keyBindings[KeyBindingCategory.AUTO_WDR]!!.isKeyDown && mc.thePlayer.inHypixel()) {
 

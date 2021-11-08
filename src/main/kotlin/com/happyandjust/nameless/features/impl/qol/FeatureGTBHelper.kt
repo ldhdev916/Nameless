@@ -20,22 +20,34 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.JSONHandler
-import com.happyandjust.nameless.core.Point
+import com.happyandjust.nameless.core.Overlay
 import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.features.OverlayFeature
+import com.happyandjust.nameless.features.IRelocateAble
+import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ChatListener
 import com.happyandjust.nameless.features.listener.ItemTooltipListener
 import com.happyandjust.nameless.features.listener.PacketListener
+import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiChat
 import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.textureoverlay.Overlay
-import com.happyandjust.nameless.textureoverlay.impl.EGTBOverlay
+import com.happyandjust.nameless.serialization.converters.COverlay
+import gg.essential.elementa.UIComponent
+import gg.essential.elementa.components.UIContainer
+import gg.essential.elementa.components.UIText
+import gg.essential.elementa.constraints.ChildBasedMaxSizeConstraint
+import gg.essential.elementa.constraints.ChildBasedSizeConstraint
+import gg.essential.elementa.constraints.SiblingConstraint
+import gg.essential.elementa.dsl.childOf
+import gg.essential.elementa.dsl.constrain
+import gg.essential.elementa.dsl.constraint
+import gg.essential.elementa.dsl.pixels
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.init.Items
 import net.minecraft.network.play.server.S3APacketTabComplete
@@ -45,12 +57,12 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent
 import java.awt.Color
 import java.util.regex.Pattern
 
-object FeatureGTBHelper : OverlayFeature(
+object FeatureGTBHelper : SimpleFeature(
     Category.QOL,
     "gtbhelper",
     "Guess the Build Helper",
     "Shows possible matching words in screen, also you can press tab to auto complete"
-), ItemTooltipListener, ChatListener, PacketListener {
+), ItemTooltipListener, ChatListener, PacketListener, IRelocateAble {
 
     // english, korean
     private val words = hashMapOf<String, String>()
@@ -91,7 +103,7 @@ object FeatureGTBHelper : OverlayFeature(
     private val THEME = Pattern.compile("The theme is (?<word>.+)")
     private val matches = arrayListOf<String>()
     private var prevWord: String? = null
-    override val overlayPoint = getOverlayConfig("gtboverlay", "overlay", Overlay(Point(0, 0), 1.0))
+    override val overlayPoint = ConfigValue("gtboverlay", "overlay", Overlay.DEFAULT, COverlay)
 
     override fun onChatReceived(e: ClientChatReceivedEvent) {
         if (!checkForEnabledAndGuessTheBuild()) return
@@ -127,7 +139,29 @@ object FeatureGTBHelper : OverlayFeature(
         }
     }
 
-    override fun getRelocatablePanel() = EGTBOverlay(overlayPoint.value)
+    override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
+
+        val container = UIContainer().constrain {
+            width = ChildBasedMaxSizeConstraint()
+            height = ChildBasedSizeConstraint()
+        }
+
+        repeat(8) {
+            UIText("Something Something").constrain {
+                y = SiblingConstraint()
+
+                textScale = relocateComponent.currentScale.pixels()
+
+                relocateComponent.onScaleChange {
+                    textScale = it.pixels()
+                }
+
+                color = Color.red.constraint
+            } childOf container
+        }
+
+        return container
+    }
 
     override fun renderOverlay(partialTicks: Float) {
         if (!checkForEnabledAndGuessTheBuild()) return

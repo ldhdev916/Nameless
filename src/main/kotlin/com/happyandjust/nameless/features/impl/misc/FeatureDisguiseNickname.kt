@@ -23,7 +23,7 @@ import com.happyandjust.nameless.devqol.sendClientMessage
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.gui.EGui
+import com.happyandjust.nameless.gui.feature.FeatureGui
 import com.happyandjust.nameless.resourcepack.SkinResourcePack
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CString
@@ -55,7 +55,7 @@ object FeatureDisguiseNickname : SimpleFeature(
             "",
             CString
         ).also {
-            it.validator = { s -> s.matches("\\w*".toRegex()) }
+            it.validator = { s -> s.toString().matches("\\w".toRegex()) }
         }
         parameters["skin"] = FeatureParameter(
             1,
@@ -75,7 +75,7 @@ object FeatureDisguiseNickname : SimpleFeature(
     fun getNickname() = getParameterValue<String>("nick")
 
     fun checkAndDownloadSkin(username: String) {
-        if (mc.currentScreen is EGui) return // in case you're writing username but mod stupidly gets all username u write
+        if (mc.currentScreen is FeatureGui) return // in case you're writing username but mod stupidly gets all username u write
         if (downloadingSkinUsernames.contains(username)) return
         if (invalidUsernames.contains(username)) return
         threadPool.execute {

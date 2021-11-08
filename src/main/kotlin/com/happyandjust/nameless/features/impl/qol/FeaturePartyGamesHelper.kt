@@ -18,13 +18,16 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.core.Point
+import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.core.Overlay
 import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.events.PartyGameChangeEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
+import com.happyandjust.nameless.features.OverlayParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
+import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PartyGamesType
@@ -33,9 +36,16 @@ import com.happyandjust.nameless.processor.partygames.*
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.serialization.converters.COverlay
-import com.happyandjust.nameless.textureoverlay.ERelocateGui
-import com.happyandjust.nameless.textureoverlay.Overlay
-import com.happyandjust.nameless.textureoverlay.impl.ELabEscapeOverlay
+import gg.essential.elementa.UIComponent
+import gg.essential.elementa.components.UIContainer
+import gg.essential.elementa.components.UIText
+import gg.essential.elementa.constraints.ChildBasedMaxSizeConstraint
+import gg.essential.elementa.constraints.ChildBasedSizeConstraint
+import gg.essential.elementa.constraints.SiblingConstraint
+import gg.essential.elementa.dsl.childOf
+import gg.essential.elementa.dsl.constrain
+import gg.essential.elementa.dsl.constraint
+import gg.essential.elementa.dsl.pixels
 import net.minecraftforge.common.MinecraftForge
 import java.awt.Color
 
@@ -157,7 +167,7 @@ object FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper",
                 CChromaColor
             )
         }
-        parameters["labescape"] = FeatureParameter(
+        parameters["labescape"] = object : OverlayParameter<Boolean>(
             0,
             "partygames",
             "labescape",
@@ -165,21 +175,36 @@ object FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper",
             "Render what key you have to press on your screen",
             true,
             CBoolean
-        ).also {
-            it.parameters["overlay"] = FeatureParameter(
-                0,
-                "partygames",
-                "labescapeoverlay",
-                "Relocate Overlay",
-                "",
-                Overlay(Point(0, 0), 1.0),
-                COverlay
-            ).also { overlayParameter ->
-                val labEscapeOverlay = ELabEscapeOverlay(overlayParameter.value)
+        ) {
+            override val overlayPoint = ConfigValue("partygames", "labescapeoverlay", Overlay.DEFAULT, COverlay)
 
-                overlayParameter.relocateGui =
-                    { ERelocateGui(labEscapeOverlay) { overlay -> overlayParameter.value = overlay } }
+            override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
+                val container = UIContainer().constrain {
+                    width = ChildBasedMaxSizeConstraint()
+                    height = ChildBasedSizeConstraint()
+                }
+
+                for (text in arrayOf("1", "1", "2", "3", "2")) {
+                    UIText(text).constrain {
+                        y = SiblingConstraint()
+
+                        textScale = relocateComponent.currentScale.pixels()
+
+                        relocateComponent.onScaleChange {
+                            textScale = it.pixels()
+                        }
+
+                        color = Color.red.constraint
+                    } childOf container
+                }
+
+                return container
             }
+
+            override fun renderOverlay(partialTicks: Float) {
+                // see LabEscapeProcessor
+            }
+
         }
 
         processors[AnimalSlaughterProcessor.also {
@@ -208,7 +233,7 @@ object FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper",
 
         processors[SpiderMazeProcessor] = { partyGameType == PartyGamesType.SPIDER_MAZE && getParameterValue("maze") }
         processors[LabEscapeProcessor.also {
-            it.overlay = { getParameter<Boolean>("labescape").getParameterValue("overlay") }
+            it.overlay = { (getParameter<Boolean>("labescape") as OverlayParameter).overlayPoint.value }
         }] = { partyGameType == PartyGamesType.LAB_ESCAPE && getParameterValue("labescape") }
     }
 

@@ -22,17 +22,20 @@ import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.devqol.getAxisAlignedBB
 import com.happyandjust.nameless.devqol.getBlockAtPos
 import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.devqol.toVec3
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.RenderOverlayListener
+import com.happyandjust.nameless.features.listener.ServerChangeListener
 import com.happyandjust.nameless.features.listener.WorldRenderListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.utils.RenderUtils
+import net.minecraft.block.BlockAir
 import net.minecraft.block.BlockBeacon
 import net.minecraft.init.Blocks
 import net.minecraft.item.Item
@@ -40,9 +43,12 @@ import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
 import net.minecraft.util.Vec3
 import java.awt.Color
+import java.util.*
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper", "Pixel Party Helper", ""),
-    ClientTickListener, WorldRenderListener, RenderOverlayListener {
+    ClientTickListener, WorldRenderListener, RenderOverlayListener, ServerChangeListener {
 
     init {
         parameters["boxcolor"] = FeatureParameter(
@@ -72,6 +78,15 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
             true,
             CBoolean
         )
+        parameters["safe"] = FeatureParameter(
+            3,
+            "pixelparty",
+            "findsafe",
+            "Find Safe Position",
+            "Find position where distance to all kinds of blocks are nearly same\nSo you can go anywhere fast",
+            false,
+            CBoolean
+        )
     }
 
     private var scanTick = 0
@@ -79,12 +94,14 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
     private val to = BlockPos(31, 0, -32)
     private var sameBlocks = emptySet<AxisAlignedBB>()
     private var beaconPosition: Vec3? = null
+    private var safePosition: BlockPos? = null
+    private var shouldScanAgain = false
 
     private fun checkForRequirement() = enabled && Hypixel.currentGame == GameType.PIXEL_PARTY
 
     override fun tick() {
         if (!checkForRequirement()) return
-        scanTick = (scanTick + 1) % 15
+        scanTick = (scanTick + 1) % 7
 
         if (scanTick != 0) return
 
@@ -92,6 +109,9 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
 
         mc.thePlayer.inventory.getStackInSlot(8)
             ?.takeIf { it.item == Item.getItemFromBlock(Blocks.stained_hardened_clay) }?.let {
+                shouldScanAgain = true
+                safePosition = null
+
                 val meta = it.metadata
 
                 for (pos in BlockPos.getAllInBox(from, to)) {
@@ -102,7 +122,74 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
                         set.add(pos.getAxisAlignedBB())
                     }
                 }
+            } ?: run {
+            if (!shouldScanAgain || !getParameterValue<Boolean>("safe")) return@run
+
+
+            val allInBox = BlockPos.getAllInBox(from, to)
+            val blockStates = allInBox.map { it to mc.theWorld.getBlockState(it) }
+            val blockByMetadata = hashMapOf<Int, ArrayList<BlockPos>>()
+
+            if (allInBox.map { mc.theWorld.getBlockAtPos(it) }.filterIsInstance<BlockAir>().isEmpty()) {
+
+                shouldScanAgain = false
+
+                threadPool.execute {
+                    for ((pos, blockState) in blockStates) {
+                        val block = blockState.block
+                        val metadata = block.getMetaFromState(blockState)
+
+                        val existing = blockByMetadata[metadata] ?: arrayListOf()
+                        existing.add(pos)
+                        blockByMetadata[metadata] = existing
+                    }
+
+                    val getSortedByDistance: (BlockPos) -> List<BlockPos> = {
+                        val list = arrayListOf<BlockPos>()
+
+                        for ((_, blockPosList) in blockByMetadata) {
+                            blockPosList.sortBy { pos -> it.distanceSq(pos) }
+                            list.add(blockPosList[0])
+                        }
+
+                        list
+                    }
+                    val current = BlockPos(mc.thePlayer)
+
+                    val priorityQueue = PriorityQueue<Pair<BlockPos, DistanceResult>>(
+                        compareBy({ it.second.standardDeviation },
+                            { it.second.averageDist }, { current.distanceSq(it.first) })
+                    )
+
+                    val scanBlocks = hashMapOf<Pair<Int, Int>, BlockPos>()
+
+                    for (pos in allInBox.shuffled()) {
+                        scanBlocks[pos.x / 3 to pos.z / 3] = pos
+                    }
+
+                    for (pos in scanBlocks.values) {
+
+                        val sortedList = getSortedByDistance(pos)
+
+                        val sortedDistanceList = sortedList.map { pos.distanceSq(it) }
+
+                        val averageDist = sortedDistanceList.average()
+
+                        var deviation = 0.0
+
+                        for (dist in sortedDistanceList) {
+                            deviation += (dist - averageDist).pow(2)
+                        }
+                        val variance = deviation / sortedDistanceList.size
+
+                        priorityQueue.add(pos to DistanceResult(sortedList, averageDist, sqrt(variance)))
+
+                    }
+
+                    safePosition = priorityQueue.peek().first
+                }
             }
+        }
         sameBlocks = set
         beaconPosition = null
 
@@ -120,6 +207,11 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
 
         for (sameBlock in sameBlocks) {
             RenderUtils.drawBox(sameBlock, boxColor, partialTicks)
+        }
+
+        safePosition?.let {
+            RenderUtils.drawBox(it.getAxisAlignedBB(), 0x4000FF00, partialTicks)
+            RenderUtils.renderBeaconBeam(it.toVec3(), Color.green.rgb, 0.7F, partialTicks)
         }
 
         beaconPosition?.let {
@@ -140,5 +232,11 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
                 RenderUtils.drawDirectionArrow(it, Color.red.rgb)
             }
         }
+    }
+
+    data class DistanceResult(val posList: List<BlockPos>, val averageDist: Double, val standardDeviation: Double)
+
+    override fun onServerChange(server: String) {
+        shouldScanAgain = true
     }
 }

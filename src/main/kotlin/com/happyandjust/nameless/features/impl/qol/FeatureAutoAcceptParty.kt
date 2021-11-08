@@ -19,18 +19,33 @@
 package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.core.Point
+import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.core.Overlay
 import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.features.OverlayFeature
+import com.happyandjust.nameless.features.IRelocateAble
+import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ChatListener
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.KeyInputListener
+import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.textureoverlay.Overlay
-import com.happyandjust.nameless.textureoverlay.impl.EAutoPartyOverlay
+import com.happyandjust.nameless.serialization.converters.COverlay
+import gg.essential.elementa.UIComponent
+import gg.essential.elementa.components.UIBlock
+import gg.essential.elementa.components.UIContainer
+import gg.essential.elementa.components.UIText
+import gg.essential.elementa.constraints.CenterConstraint
+import gg.essential.elementa.constraints.ChildBasedMaxSizeConstraint
+import gg.essential.elementa.constraints.ChildBasedSizeConstraint
+import gg.essential.elementa.constraints.SiblingConstraint
+import gg.essential.elementa.dsl.childOf
+import gg.essential.elementa.dsl.constrain
+import gg.essential.elementa.dsl.pixels
+import gg.essential.elementa.dsl.times
+import gg.essential.elementa.utils.withAlpha
 import net.minecraft.client.gui.Gui
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import org.lwjgl.input.Keyboard
@@ -38,8 +53,8 @@ import java.awt.Color
 import java.util.regex.Pattern
 import kotlin.math.max
 
-object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", "Auto Accept Party", ""), ChatListener,
-    KeyInputListener, ClientTickListener {
+object FeatureAutoAcceptParty : SimpleFeature(Category.QOL, "autoacceptparty", "Auto Accept Party", ""), ChatListener,
+    KeyInputListener, ClientTickListener, IRelocateAble {
 
     init {
         parameters["hide"] = FeatureParameter(
@@ -71,7 +86,7 @@ object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", 
         """.trimIndent()
     )
     private var currentPartyInfo: PartyInfo? = null
-    override val overlayPoint = getOverlayConfig("party", "overlay", Overlay(Point(0, 0), 1.2))
+    override val overlayPoint = ConfigValue("party", "overlay", Overlay.DEFAULT, COverlay)
 
 
     override fun onChatReceived(e: ClientChatReceivedEvent) {
@@ -117,8 +132,6 @@ object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", 
         }
     }
 
-    override fun getRelocatablePanel() = EAutoPartyOverlay(overlayPoint.value)
-
     override fun renderOverlay(partialTicks: Float) {
         currentPartyInfo?.let {
             val keyBindings = Nameless.INSTANCE.keyBindings
@@ -160,5 +173,48 @@ object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", 
                 )
             }
         }
+    }
+
+    override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
+        val block = UIBlock(Color.white.withAlpha(0.4f)).constrain {
+            width = ChildBasedSizeConstraint()
+            height = ChildBasedSizeConstraint() * 2
+        }
+
+        val container = UIContainer().constrain {
+
+            x = CenterConstraint()
+            y = CenterConstraint()
+
+            width = ChildBasedMaxSizeConstraint()
+            height = ChildBasedSizeConstraint()
+        } childOf block
+
+        val keyBindings = Nameless.INSTANCE.keyBindings
+
+        val texts = arrayOf(
+            "§6Party Request From §aSomeone",
+            "§6Press [§a${Keyboard.getKeyName(keyBindings[KeyBindingCategory.ACCEPT_PARTY]!!.keyCode)}§6] to Accept [§c${
+                Keyboard.getKeyName(
+                    keyBindings[KeyBindingCategory.DENY_PARTY]!!.keyCode
+                )
+            }§6] to Deny"
+        )
+
+        for (text in texts) {
+            UIText(text).constrain {
+                x = CenterConstraint()
+                y = SiblingConstraint()
+
+                textScale = relocateComponent.currentScale.pixels()
+
+                relocateComponent.onScaleChange {
+                    textScale = it.pixels()
+                }
+
+            } childOf container
+        }
+
+        return block
     }
 }

@@ -68,10 +68,8 @@ Unless, You can't use rendering outline on entity
   - Fairy Soul Waypoint
   - Glow Star Dungeon Mobs
   - Damage Indicator
-  - Change Item Name
   - Render Pointing Arrow to Wither/Blood Key
   - Blaze Solver
-  - Track Auction
   - Jerry Workshop Gift ESP
   - Gemstone ESP
   - Glow Dropped Item
@@ -109,7 +107,6 @@ Unless, You can't use rendering outline on entity
  - /currentdata - prints current game of hypixel
  - /reloadtexture - Reload Texture Overlay's texture
  - /searchbin - Search bins of specific item
- - /selectoutline - Select Outline Mode
  - /name - gets name history of player
  - /waypoint - Show paths to given coordinate
 </details>

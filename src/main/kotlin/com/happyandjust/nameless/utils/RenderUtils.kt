@@ -514,7 +514,7 @@ object RenderUtils {
 
             val percent = dist / 40
 
-            val scale = (maxScale - (maxScale - minScale) * percent).compress(minScale, maxScale)
+            val scale = (maxScale - (maxScale - minScale) * percent).coerceIn(minScale, maxScale)
 
             rotate(diffYaw, 0f, 0f, 1f)
 

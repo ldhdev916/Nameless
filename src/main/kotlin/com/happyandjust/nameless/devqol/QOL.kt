@@ -45,8 +45,6 @@ import org.apache.logging.log4j.Logger
 import java.awt.Color
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
-import java.io.File
-import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.text.DecimalFormat
@@ -133,20 +131,6 @@ fun <T : EntityLivingBase> T.toSkyBlockMonster(): SkyBlockMonster<T>? {
 fun String.copyToClipboard() =
     Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(this), null)
 
-fun EntityPlayerSP.setYawPitch(yaw: Float, pitch: Float) = setPositionAndRotation(posX, posY, posZ, yaw, pitch)
-
-fun BlockPos.getSurroundings(): List<BlockPos> {
-    val list = arrayListOf<BlockPos>()
-
-    for (x in -1..1) {
-        for (z in -1..1) {
-            list.add(add(x, 0, z).takeUnless { it == this } ?: continue)
-        }
-    }
-
-    return list
-}
-
 fun Double.formatDouble() =
     DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)).also { it.maximumFractionDigits = 640 }
         .format(this)
@@ -213,9 +197,6 @@ fun Int.insertCommaEvery3Character(): String {
     return builder.reversed().toString()
 }
 
-fun <T : Comparable<T>> T.compress(min: T = this, max: T = this) =
-    if (this < min) min else if (this > max) max else this
-
 fun Int.getHue() = hsbCache[this]?.get(0) ?: run {
     val hsb = Color.RGBtoHSB(getRedInt(), getGreenInt(), getBlueInt(), null)
 
@@ -255,6 +236,8 @@ val mc: Minecraft = Minecraft.getMinecraft()
 
 fun World.getBlockAtPos(pos: BlockPos) = getBlockState(pos).block
 
+fun BlockPos.toVec3() = Vec3(x.toDouble(), y.toDouble(), z.toDouble())
+
 inline val LOGGER: Logger
     get() = LogManager.getLogger()
 
@@ -287,16 +270,6 @@ fun ItemStack.getSkullOwner(): String {
     }
 
     return ""
-}
-
-fun <T, R> Collection<T>.transformToList(transform: (T) -> R): List<R> {
-    val list = arrayListOf<R>()
-
-    for (value in this) {
-        list.add(transform(value))
-    }
-
-    return list
 }
 
 fun scanAuction(task: (List<AuctionInfo>) -> Unit) {
@@ -341,22 +314,3 @@ fun Double.transformToPrecision(precision: Int): Double {
 
 val fontRendererNotNull: Boolean
     get() = mc.fontRendererObj != null
-
-fun <T> Collection<T>.convertToStringList(transform: (T) -> String): List<String> {
-    val list = arrayListOf<String>()
-
-    for (element in this) {
-        list.add(transform(element))
-    }
-
-    return list
-}
-
-fun URL.downloadToFile(target: File) {
-    val inputStream = openStream().buffered()
-
-    target.outputStream().buffered().use {
-        it.write(inputStream.readBytes())
-        it.flush()
-    }
-}

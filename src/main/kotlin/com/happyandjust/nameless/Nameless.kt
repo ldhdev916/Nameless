@@ -24,12 +24,10 @@ import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.JSONHandler
 import com.happyandjust.nameless.core.OutlineMode
 import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.features.FeatureRegistry
+import com.happyandjust.nameless.features.impl.misc.FeatureUpdateChecker
 import com.happyandjust.nameless.features.impl.qol.FeatureGTBHelper
 import com.happyandjust.nameless.features.impl.qol.FeatureMurdererFinder
 import com.happyandjust.nameless.features.impl.qol.FeaturePlayTabComplete
-import com.happyandjust.nameless.features.impl.skyblock.FeatureChangeItemName
-import com.happyandjust.nameless.features.impl.skyblock.FeatureTrackAuction
 import com.happyandjust.nameless.gui.GuiError
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.keybinding.NamelessKeyBinding
@@ -49,6 +47,7 @@ import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraftforge.fml.common.eventhandler.EventPriority
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import org.apache.logging.log4j.LogManager
 import java.io.File
@@ -58,7 +57,7 @@ import java.util.concurrent.Executors
 class Nameless {
 
     companion object {
-        @Mod.Instance
+        @Mod.Instance(MOD_ID)
         lateinit var INSTANCE: Nameless
     }
 
@@ -86,7 +85,7 @@ class Nameless {
     private var shownErrorScreen = false
     private lateinit var reason: String
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     fun onGuiOpen(e: GuiOpenEvent) {
         if (!isErrored) return
         if (shownErrorScreen) return
@@ -118,6 +117,10 @@ class Nameless {
                 break
             }
         }
+
+        if (!isErrored) {
+            FeatureUpdateChecker.checkForUpdate()
+        }
     }
 
     @Mod.EventHandler
@@ -133,7 +136,6 @@ class Nameless {
             mc.framebuffer.enableStencil()
         }
 
-        FeatureRegistry
 
         threadPool.execute {
             FeatureMurdererFinder.fetchAssassinData()
@@ -145,9 +147,6 @@ class Nameless {
 
         threadPool.execute {
             SkyblockUtils.fetchSkyBlockData()
-
-            FeatureChangeItemName.updateItemData()
-            FeatureTrackAuction.updateItemData()
         }
 
 
@@ -160,8 +159,6 @@ class Nameless {
             HypixelCommand,
             TextureCommand,
             SearchBinCommand,
-            OutlineModeSelectCommand,
-            ShutDownCommand,
             NameHistoryCommand,
             WaypointCommand
         )
@@ -185,4 +182,4 @@ class Nameless {
 
 const val MOD_ID = "nameless"
 const val MOD_NAME = "Nameless"
-const val VERSION = "1.0.2"
+const val VERSION = "1.0.3"

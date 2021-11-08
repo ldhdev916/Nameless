@@ -26,7 +26,6 @@
     "MixinEntity",
     "MixinEntityLivingBase",
     "MixinItemArmor",
-    "MixinItemStack",
     "MixinModList",
     "MixinUtil",
     "accessors.AccessorItemAxe",

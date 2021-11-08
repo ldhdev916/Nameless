@@ -18,117 +18,85 @@
 
 package com.happyandjust.nameless.features.impl.misc
 
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.MOD_NAME
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.VERSION
-import com.happyandjust.nameless.commands.ShutDownCommand
 import com.happyandjust.nameless.core.JSONHandler
-import com.happyandjust.nameless.devqol.LOGGER
-import com.happyandjust.nameless.devqol.getMD5
-import com.happyandjust.nameless.devqol.sendClientMessage
+import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.WorldLoadListener
+import com.happyandjust.nameless.features.listener.ScreenOpenListener
+import com.happyandjust.nameless.gui.UpdateGui
 import com.happyandjust.nameless.network.Request
-import net.minecraft.event.ClickEvent
-import net.minecraft.util.ChatComponentText
-import net.minecraft.util.IChatComponent
-import net.minecraftforge.event.world.WorldEvent
+import net.minecraft.client.gui.GuiMainMenu
+import net.minecraftforge.client.event.GuiOpenEvent
 import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion
+import java.io.File
+import java.net.URI
+import java.net.URL
 
 object FeatureUpdateChecker : SimpleFeature(
     Category.MISCELLANEOUS,
     "updatechecker",
     "Auto Update Checker",
-    "automatically checks if currently loaded mod version is latest version",
+    "Automatically checks if currently loaded mod version is latest version",
     true
-), WorldLoadListener, ClientTickListener {
+), ScreenOpenListener, ClientTickListener {
 
-    private var checkedVersion = false
-    var needUpdate = false
-    private var scheduledMessage: IChatComponent? = null
+    private var updateGui: () -> UpdateGui? = { null }
+    private var shown = false
+    private var needUpdate = false
+    private var shouldShow = false
 
-
-    override fun onWorldLoad(e: WorldEvent.Load) {
-        if (checkedVersion || !enabled) return
-        checkedVersion = true
+    fun checkForUpdate() {
+        if (!enabled) return
         threadPool.execute {
-            val s = try {
-                Request.get("https://api.github.com/repos/HappyAndJust/Nameless/releases/latest")
-            } catch (e: Exception) {
-                scheduledMessage = ChatComponentText("§c[Nameless] Unable to check latest version.")
-                LOGGER.error(e)
-                return@execute
-            }
-            val jsonObject = JSONHandler(s).read(JsonObject())
+            val s = Request.get("https://api.github.com/repos/HappyAndJust/Nameless/releases/latest")
 
-            val latestTag = jsonObject["tag_name"].asString.substring(1) // v1.0.0
-            val html_url = jsonObject["html_url"].asString
+            val json = JSONHandler(s).read(JsonObject())
 
-            val asset = (jsonObject["assets"] as JsonArray)[0].asJsonObject
-
-            val download_url = asset["browser_download_url"].asString
-
-            ShutDownCommand.downloadURL = download_url
-            ShutDownCommand.jarName = asset["name"].asString
+            val latestTag = json["tag_name"].asString.substring(1)
 
             val currentVersion = DefaultArtifactVersion(VERSION)
             val latestVersion = DefaultArtifactVersion(latestTag)
 
-            if (currentVersion < latestVersion) { // do update
+            if (currentVersion < latestVersion) {
+                val html_url = json["html_url"].asString
+                val assets = json["assets"].asJsonArray[0].asJsonObject
 
+                val download_url = assets["browser_download_url"].asString
+                val body = json["body"].asString
+
+                updateGui = {
+                    UpdateGui(body).also {
+                        it.htmlURL = URI(html_url)
+                        it.downloadURL = URL(download_url)
+                        it.jarFile = File(Nameless.INSTANCE.modFile.parentFile, assets["name"].asString)
+                    }
+                }
                 needUpdate = true
-
-                val openGithub = ChatComponentText("§a§l[Open Github]").apply {
-                    chatStyle =
-                        chatStyle.setChatClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, html_url))
-                }
-                val download = ChatComponentText("§a§l[Download]").apply {
-                    chatStyle = chatStyle.setChatClickEvent(
-                        ClickEvent(
-                            ClickEvent.Action.OPEN_URL,
-                            download_url
-                        )
-                    )
-                }
-
-                val auto_download = ChatComponentText("§6§l[Auto Update]").apply {
-                    chatStyle = chatStyle.setChatClickEvent(
-                        ClickEvent(
-                            ClickEvent.Action.RUN_COMMAND,
-                            "autoupdateshutdown ${"auto-update".getMD5()}"
-                        )
-                    )
-                }
-
-                val chat =
-                    ChatComponentText("§c§l$MOD_NAME is outdated. Please update to $latestTag.\n")
-                        .appendSibling(openGithub)
-                        .appendText(" ")
-                        .appendSibling(download)
-                        .appendText(" ")
-                        .appendSibling(auto_download)
-
-                scheduledMessage = chat
-
-            } else if (currentVersion > latestVersion) { // pre
-                scheduledMessage = ChatComponentText(
-                    """
-                        §9§lYou're in Pre-Version of $MOD_NAME
-                        §9§lCurrent Mod Version: $VERSION Latest Version: $latestTag
-                    """.trimIndent()
-                )
             }
         }
     }
 
-    override fun tick() {
-        scheduledMessage?.let {
-            sendClientMessage(it)
-            scheduledMessage = null
-            return
+    override fun onGuiOpen(e: GuiOpenEvent) {
+        if (e.gui is GuiMainMenu && enabled && needUpdate && !shown) {
+            shouldShow = true
         }
     }
+
+    override fun tick() {
+
+    }
+
+    override fun tickWorldNull() {
+        if (shouldShow && !shown && enabled) {
+            shown = true
+            shouldShow = false
+
+            mc.displayGuiScreen(updateGui())
+        }
+    }
+
 }

@@ -16,15 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features
+package com.happyandjust.nameless.features.impl.settings
 
+import com.happyandjust.nameless.Nameless
+import com.happyandjust.nameless.core.OutlineMode
+import com.happyandjust.nameless.features.SettingFeature
 import com.happyandjust.nameless.gui.feature.ComponentType
+import com.happyandjust.nameless.gui.feature.PropertyData
+import kotlin.reflect.KMutableProperty0
 
-open class SettingFeature(key: String, title: String, desc: String) : SimpleFeature(
-    Category.SETTINGS,
-    key,
-    title,
-    desc
-) {
-    override fun getComponentType(): ComponentType? = null
+object FeatureOutlineMode : SettingFeature("outlinemode", "Outline Mode", "BOX, OUTLINE") {
+
+    override fun getProperty(): KMutableProperty0<*> = Nameless.INSTANCE::selectedOutlineMode
+
+    override fun getComponentType() = ComponentType.SELECTOR
+
+    override fun toPropertyData(): PropertyData<out Any?> {
+        return super.toPropertyData().also {
+            it.allEnumList = OutlineMode.values().toList()
+        }
+    }
 }

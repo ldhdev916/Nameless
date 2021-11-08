@@ -21,10 +21,13 @@ package com.happyandjust.nameless.features
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
+import com.happyandjust.nameless.gui.feature.ComponentType
+import com.happyandjust.nameless.gui.feature.PropertyData
 import com.happyandjust.nameless.processor.Processor
 import net.minecraftforge.common.MinecraftForge
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.reflect.KMutableProperty0
 
 open class SimpleFeature(
     val category: Category,
@@ -32,7 +35,7 @@ open class SimpleFeature(
     val title: String,
     val desc: String = "",
     enabled_: Boolean = false
-) {
+) : IHasComponentType {
 
     var inCategory = ""
     private val enabledConfig = ConfigValue.BooleanConfigValue("features", key, enabled_)
@@ -59,6 +62,22 @@ open class SimpleFeature(
 
     fun invertEnableState() {
         enabled = !enabled
+    }
+
+    override fun getProperty(): KMutableProperty0<*> = ::enabled
+
+    override fun getComponentType(): ComponentType? = ComponentType.SWITCH
+
+    override fun toPropertyData(): PropertyData<*> = PropertyData(
+        getProperty(),
+        title,
+        desc,
+        getComponentType(),
+    ).also {
+        it.settings = parameters.values.map { featureParameter -> featureParameter.toPropertyData() }
+        it.inCategory = inCategory
+
+        it.relocateAble = this as? IRelocateAble
     }
 
 }

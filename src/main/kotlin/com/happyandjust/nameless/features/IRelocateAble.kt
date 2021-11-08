@@ -16,24 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.serialization.converters
+package com.happyandjust.nameless.features
 
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
+import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.core.Point
-import com.happyandjust.nameless.serialization.Converter
+import com.happyandjust.nameless.features.listener.RenderOverlayListener
+import com.happyandjust.nameless.gui.relocate.RelocateComponent
+import com.happyandjust.nameless.gui.relocate.RelocateGui
+import gg.essential.elementa.UIComponent
 
-object COverlay : Converter<Overlay> {
-    override fun serialize(t: Overlay): JsonElement = JsonObject().also {
-        it.addProperty("x", t.point.x)
-        it.addProperty("y", t.point.y)
-        it.addProperty("scale", t.scale)
-    }
+interface IRelocateAble : RenderOverlayListener {
 
-    override fun deserialize(jsonElement: JsonElement): Overlay {
-        val jsonObject = jsonElement.asJsonObject
+    val overlayPoint: ConfigValue<Overlay>
 
-        return Overlay(Point(jsonObject["x"].asInt, jsonObject["y"].asInt), jsonObject["scale"].asDouble)
-    }
+    fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent
+
+    fun getRelocateGui() = RelocateGui(this)
+
+    fun getWheelSensitive() = 7
 }

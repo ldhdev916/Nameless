@@ -24,7 +24,6 @@ import com.happyandjust.nameless.devqol.QOLKt;
 import com.happyandjust.nameless.devqol.RenderingQOLKt;
 import com.happyandjust.nameless.features.FeatureRegistry;
 import com.happyandjust.nameless.features.impl.misc.FeatureDisguiseNickname;
-import com.happyandjust.nameless.gui.Rectangle;
 import com.happyandjust.nameless.mixinhooks.FontRendererHook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -39,6 +38,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.awt.*;
+import java.util.List;
 import java.util.*;
 
 @Mixin(FontRenderer.class)
@@ -114,9 +115,20 @@ public abstract class MixinFontRenderer {
 
     @ModifyVariable(method = "renderString", at = @At(value = "LOAD", opcode = Opcodes.ALOAD, ordinal = 0))
     public String disguiseNickname(String text) {
+        return replaceDisguisedNickname(text);
+    }
+
+    @ModifyVariable(method = "getStringWidth", at = @At(value = "LOAD", opcode = Opcodes.ALOAD, ordinal = 0))
+    public String changeDisguisedNickname(String text) {
+        return replaceDisguisedNickname(text);
+    }
+
+    @Unique
+    private String replaceDisguisedNickname(String text) {
         FeatureDisguiseNickname feature = FeatureDisguiseNickname.INSTANCE;
 
         return feature.getEnabled() ? text.replaceAll("(?i)" + Minecraft.getMinecraft().getSession().getUsername(), feature.getNickname()) : text;
+
     }
 
     @Unique
@@ -227,7 +239,7 @@ public abstract class MixinFontRenderer {
         GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP);
         GL11.glStencilFunc(GL11.GL_EQUAL, 1, 0xFF);
 
-        Rectangle rectangle = new Rectangle(left, posY, posX, posY + FONT_HEIGHT);
+        Rectangle rectangle = new Rectangle((int) left, (int) posY, (int) (posX - left), FONT_HEIGHT);
 
         RenderingQOLKt.drawChromaRect(rectangle, Direction.RIGHT, (System.currentTimeMillis() % 2000 + (posX * 10L - posY * 10L)) / 2000F);
 
@@ -330,6 +342,8 @@ public abstract class MixinFontRenderer {
 
     @Unique
     private List<FontRendererHook.MatchInfo> getMatchInfoForString(String text) {
+        if (text == null) return new ArrayList<>();
+
         List<FontRendererHook.MatchInfo> matchInfos = hook.getCache().get(text);
 
         if (matchInfos != null) return matchInfos;

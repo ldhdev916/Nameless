@@ -18,31 +18,36 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.core.Point
+import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.core.Overlay
 import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.OverlayFeature
+import com.happyandjust.nameless.features.IRelocateAble
+import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
+import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.textureoverlay.Overlay
-import com.happyandjust.nameless.textureoverlay.impl.EDaggerBackstepOverlay
+import com.happyandjust.nameless.serialization.converters.COverlay
+import gg.essential.elementa.UIComponent
+import gg.essential.elementa.components.UIText
+import gg.essential.elementa.dsl.constrain
+import gg.essential.elementa.dsl.constraint
+import gg.essential.elementa.dsl.pixels
 import net.minecraft.entity.Entity
 import net.minecraft.util.MovingObjectPosition
 import java.awt.Color
 
-object FeatureLividDaggerBackstep : OverlayFeature(
+object FeatureLividDaggerBackstep : SimpleFeature(
     Category.SKYBLOCK,
     "lividdaggerbackstep",
     "Livid Dagger Backstep Notifier",
-    "Draw HUD on screen when you hold livid dagger\nWhether you'll backstep monster you're looking at or not\nThis could be inaccurate"
-), ClientTickListener {
-    override val overlayPoint = getOverlayConfig("lividdagger", "overlay", Overlay(Point(0, 0), 1.0))
+    "Draw HUD on screen when you hold livid dagger. Whether you'll backstep monster you're looking at or not. This could be inaccurate"
+), ClientTickListener, IRelocateAble {
+    override val overlayPoint = ConfigValue("lividdagger", "overlay", Overlay.DEFAULT, COverlay)
     private var text: String? = null
         get() = field.takeIf { checkForRequirement() }
     private var checkTick = 0
-
-    override fun getRelocatablePanel() = EDaggerBackstepOverlay(overlayPoint.value)
 
     override fun renderOverlay(partialTicks: Float) {
         if (!checkForRequirement()) return
@@ -69,6 +74,18 @@ object FeatureLividDaggerBackstep : OverlayFeature(
         text = if (objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY) {
             if (detectBackstep(objectMouseOver.entityHit)) "Backstep!" else null
         } else null
+    }
+
+    override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
+        return UIText("Backstep!").constrain {
+            color = Color.green.constraint
+
+            textScale = relocateComponent.currentScale.pixels()
+
+            relocateComponent.onScaleChange {
+                textScale = it.pixels()
+            }
+        }
     }
 
     private fun detectBackstep(lookingAt: Entity): Boolean {

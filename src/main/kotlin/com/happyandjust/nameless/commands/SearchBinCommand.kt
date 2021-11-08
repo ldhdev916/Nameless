@@ -19,14 +19,19 @@
 package com.happyandjust.nameless.commands
 
 import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.devqol.convertToStringList
+import com.happyandjust.nameless.devqol.insertCommaEvery3Character
 import com.happyandjust.nameless.devqol.scanAuction
 import com.happyandjust.nameless.devqol.sendClientMessage
-import com.happyandjust.nameless.features.impl.skyblock.FeatureTrackAuction
 import com.happyandjust.nameless.hypixel.auction.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
+import com.happyandjust.nameless.utils.SkyblockUtils
 import net.minecraft.command.ICommandSender
+import net.minecraft.event.ClickEvent
+import net.minecraft.event.HoverEvent
 import net.minecraft.util.BlockPos
+import net.minecraft.util.ChatComponentText
+import net.minecraft.util.ChatStyle
+import net.minecraft.util.IChatComponent
 import java.util.*
 import kotlin.concurrent.thread
 
@@ -70,15 +75,48 @@ object SearchBinCommand : ClientCommandBase("searchbin") {
                 when (method) {
                     "all" -> {
                         while (priorityQueue.isNotEmpty()) {
-                            sendClientMessage(FeatureTrackAuction.getChatTextForAuctionInfo(priorityQueue.poll()))
+                            sendClientMessage(getChatTextForAuctionInfo(priorityQueue.poll()))
                         }
                     }
                     "lowest" -> {
-                        sendClientMessage(FeatureTrackAuction.getChatTextForAuctionInfo(priorityQueue.peek()))
+                        sendClientMessage(getChatTextForAuctionInfo(priorityQueue.peek()))
                     }
                     else -> sendClientMessage("No Such Method $method")
                 }
             }
+        }
+    }
+
+    private fun getChatTextForAuctionInfo(auctionInfo: AuctionInfo): IChatComponent {
+        return try {
+            val textComponent =
+                ChatComponentText("§aFound ${auctionInfo.rarity.colorCode}${auctionInfo.item_name} §awith Price §6${auctionInfo.price.insertCommaEvery3Character()}\n")
+
+            val openAuction = ChatComponentText("§a[VIEW AUCTION] ").also {
+                it.chatStyle = ChatStyle().setChatClickEvent(
+                    ClickEvent(
+                        ClickEvent.Action.RUN_COMMAND,
+                        "/viewauction ${auctionInfo.auctionId}"
+                    )
+                )
+            }
+
+            val itemStackCompound = SkyblockUtils.readNBTFromItemBytes(auctionInfo.item_bytes)
+
+            val viewItem = ChatComponentText("§e[VIEW ITEM]").also {
+                it.chatStyle = ChatStyle().setChatHoverEvent(
+                    HoverEvent(
+                        HoverEvent.Action.SHOW_ITEM,
+                        ChatComponentText(itemStackCompound.toString())
+                    )
+                )
+            }
+
+            textComponent.appendSibling(openAuction).appendSibling(viewItem)
+
+            textComponent
+        } catch (e: Exception) {
+            ChatComponentText("§cERROR ${e.javaClass.name} ${e.message}")
         }
     }
 
@@ -92,7 +130,7 @@ object SearchBinCommand : ClientCommandBase("searchbin") {
             1 -> listOf("all", "lowest").filter { it.startsWith(args[0], true) }.toMutableList()
             2 -> {
                 ItemRarity.values().filter { it.webName.startsWith(args[1], true) }
-                    .convertToStringList { it.webName }.toMutableList()
+                    .map { it.webName }.toMutableList()
             }
             else -> mutableListOf()
         }

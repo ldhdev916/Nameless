@@ -20,12 +20,12 @@ package com.happyandjust.nameless.serialization
 
 import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.OutlineMode
+import com.happyandjust.nameless.core.Overlay
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoulProfile
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.serialization.converters.*
-import com.happyandjust.nameless.textureoverlay.Overlay
 import kotlin.reflect.KClass
 
 object TypeRegistry {

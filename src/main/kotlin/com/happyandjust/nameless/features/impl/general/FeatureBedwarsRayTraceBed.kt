@@ -18,21 +18,33 @@
 
 package com.happyandjust.nameless.features.impl.general
 
-import com.happyandjust.nameless.core.Point
+import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.core.Overlay
 import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.OverlayFeature
+import com.happyandjust.nameless.features.IRelocateAble
+import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.ServerChangeListener
 import com.happyandjust.nameless.features.listener.WorldRenderListener
+import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.mixins.accessors.AccessorItemAxe
 import com.happyandjust.nameless.mixins.accessors.AccessorItemPickaxe
-import com.happyandjust.nameless.textureoverlay.Overlay
-import com.happyandjust.nameless.textureoverlay.impl.EBedwarsRayTraceOverlay
+import com.happyandjust.nameless.serialization.converters.COverlay
 import com.happyandjust.nameless.utils.RenderUtils
 import com.happyandjust.nameless.utils.Utils
+import gg.essential.elementa.UIComponent
+import gg.essential.elementa.components.UIContainer
+import gg.essential.elementa.components.UIText
+import gg.essential.elementa.constraints.ChildBasedMaxSizeConstraint
+import gg.essential.elementa.constraints.ChildBasedSizeConstraint
+import gg.essential.elementa.constraints.SiblingConstraint
+import gg.essential.elementa.dsl.childOf
+import gg.essential.elementa.dsl.constrain
+import gg.essential.elementa.dsl.constraint
+import gg.essential.elementa.dsl.pixels
 import net.minecraft.block.Block
 import net.minecraft.init.Blocks
 import net.minecraft.item.Item
@@ -44,15 +56,18 @@ import net.minecraft.util.MovingObjectPosition
 import net.minecraft.util.Vec3
 import java.awt.Color
 import java.util.*
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 import kotlin.math.max
 import kotlin.math.min
 
-object FeatureBedwarsRayTraceBed : OverlayFeature(
+object FeatureBedwarsRayTraceBed : SimpleFeature(
     Category.GENERAL,
     "raytracebed",
     "Bedwars Ray Trace Bed",
-    "Ray trace up to your reach(3 blocks) and if there's a bed in your ray trace\nShow all keys you should press and break blocks to get bed"
-), ClientTickListener, ServerChangeListener, WorldRenderListener {
+    "Ray trace up to your reach(3 blocks) and if there's a bed in your ray trace, Show all keys you should press and break blocks to get bed"
+), ClientTickListener, ServerChangeListener, WorldRenderListener, IRelocateAble {
 
     private val blackListBlock = hashSetOf(
         Blocks.air,
@@ -69,7 +84,7 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
     private var rayTraceTick = 0
     private val beds = hashSetOf<BlockPos>()
     private var currentRayTraceInfo: RayTraceInfo? = null
-    override val overlayPoint = getOverlayConfig("bedwarsoverlay", "overlay", Overlay(Point(0, 0), 1.0))
+    override val overlayPoint = ConfigValue("bedwarsoverlay", "overlay", Overlay.DEFAULT, COverlay)
 
     override fun tick() {
         if (!enabled) return
@@ -236,8 +251,6 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
         }
     }
 
-    override fun getRelocatablePanel() = EBedwarsRayTraceOverlay(overlayPoint.value)
-
     private fun storeBlockToKeyName(list: Iterable<Block>) {
         blockToKeyName.clear()
         val map = Utils.getKeyBindingNameInEverySlot()
@@ -283,6 +296,29 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
                 }
             }
         }
+    }
+
+    override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
+        val container = UIContainer().constrain {
+            width = ChildBasedMaxSizeConstraint()
+            height = ChildBasedSizeConstraint()
+        }
+
+        repeat(5) {
+            UIText((it + 1).toString()).constrain {
+                y = SiblingConstraint()
+
+                textScale = relocateComponent.currentScale.pixels()
+
+                relocateComponent.onScaleChange { scale ->
+                    textScale = scale.pixels()
+                }
+
+                color = Color.red.constraint
+            } childOf container
+        }
+
+        return container
     }
 
 }

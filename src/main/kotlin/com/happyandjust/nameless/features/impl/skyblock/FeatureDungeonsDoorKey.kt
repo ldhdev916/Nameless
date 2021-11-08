@@ -41,7 +41,7 @@ object FeatureDungeonsDoorKey : SimpleFeature(
     Category.SKYBLOCK,
     "dungeonsdoorkey",
     "Render Pointing Arrow to Blood/Wither Key",
-    "Renders an arrow on your screen which is pointing to wither/blood key in hypixel skyblock dungeons\nSo you can find those keys easily"
+    "Renders an arrow on your screen which is pointing to wither/blood key in hypixel skyblock dungeons. So you can find those keys easily"
 ), RenderOverlayListener, ClientTickListener, ServerChangeListener {
 
     private var keyPosition: Vec3? = null

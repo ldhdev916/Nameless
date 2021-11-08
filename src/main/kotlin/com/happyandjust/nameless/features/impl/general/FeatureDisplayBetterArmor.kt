@@ -19,7 +19,6 @@
 package com.happyandjust.nameless.features.impl.general
 
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.devqol.compress
 import com.happyandjust.nameless.devqol.drawOnSlot
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.devqol.pow
@@ -47,7 +46,7 @@ object FeatureDisplayBetterArmor : SimpleFeature(
     Category.GENERAL,
     "displaybetterarmor",
     "Display Better Armor",
-    "In SkyWars, if there's a better armor than a one you're equipping\nDraw box on item if it's in your inventory, make bigger if it's in ground\nIf mutltiple, only show the highest"
+    "In SkyWars, if there's a better armor than a one you're equipping, Draw box on item if it's in your inventory, make bigger if it's in ground. If mutltiple, only show the highest"
 ), ClientTickListener, BackgroundDrawnListener {
 
     init {
@@ -116,12 +115,12 @@ object FeatureDisplayBetterArmor : SimpleFeature(
         if (protectionLevel == 0) return testDamage
 
         // enchantment
-        val modifier = MathHelper.floor_float(((6 + protectionLevel.pow(2)) / 3F) * 0.75F).compress(0, 25)
+        val modifier = MathHelper.floor_float(((6 + protectionLevel.pow(2)) / 3F) * 0.75F).coerceIn(0, 25)
 
         // wtf minecraft uses random here
         var k = (modifier + 1 shr 1) + (((modifier shr 1) + 1) / 2)
 
-        k = k.compress(max = 20)
+        k = k.coerceAtMost(20)
 
         if (k > 0) {
             val l = 25 - k

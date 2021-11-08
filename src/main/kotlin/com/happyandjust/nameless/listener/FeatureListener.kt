@@ -130,7 +130,7 @@ object FeatureListener {
         invoke<PacketListener> { onReceivedPacket(e) }
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
     fun onChat(e: ClientChatReceivedEvent) {
         invoke<ChatListener> { onChatReceived(e) }
     }
@@ -178,6 +178,11 @@ object FeatureListener {
     @SubscribeEvent
     fun renderLivingPost(e: RenderLivingEvent.Post<EntityLivingBase>) {
         invoke<RenderLivingListener> { onRenderLivingPost(e) }
+    }
+
+    @SubscribeEvent
+    fun guiOpen(e: GuiOpenEvent) {
+        invoke<ScreenOpenListener> { onGuiOpen(e) }
     }
 
 }

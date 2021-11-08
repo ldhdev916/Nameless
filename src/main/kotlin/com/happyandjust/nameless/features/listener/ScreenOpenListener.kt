@@ -16,24 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.serialization.converters
+package com.happyandjust.nameless.features.listener
 
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.core.Point
-import com.happyandjust.nameless.serialization.Converter
+import net.minecraftforge.client.event.GuiOpenEvent
 
-object COverlay : Converter<Overlay> {
-    override fun serialize(t: Overlay): JsonElement = JsonObject().also {
-        it.addProperty("x", t.point.x)
-        it.addProperty("y", t.point.y)
-        it.addProperty("scale", t.scale)
-    }
+interface ScreenOpenListener {
 
-    override fun deserialize(jsonElement: JsonElement): Overlay {
-        val jsonObject = jsonElement.asJsonObject
-
-        return Overlay(Point(jsonObject["x"].asInt, jsonObject["y"].asInt), jsonObject["scale"].asDouble)
-    }
+    fun onGuiOpen(e: GuiOpenEvent)
 }

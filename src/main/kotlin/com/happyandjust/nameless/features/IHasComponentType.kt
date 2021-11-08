@@ -19,12 +19,14 @@
 package com.happyandjust.nameless.features
 
 import com.happyandjust.nameless.gui.feature.ComponentType
+import com.happyandjust.nameless.gui.feature.PropertyData
+import kotlin.reflect.KMutableProperty0
 
-open class SettingFeature(key: String, title: String, desc: String) : SimpleFeature(
-    Category.SETTINGS,
-    key,
-    title,
-    desc
-) {
-    override fun getComponentType(): ComponentType? = null
+interface IHasComponentType {
+
+    fun getComponentType(): ComponentType?
+
+    fun getProperty(): KMutableProperty0<*>
+
+    fun toPropertyData(): PropertyData<*>
 }

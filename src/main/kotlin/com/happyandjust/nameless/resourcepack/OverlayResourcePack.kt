@@ -28,7 +28,7 @@ import java.io.InputStream
 
 object OverlayResourcePack : IResourcePack {
 
-    private val dir = File("config/NamelessTextureOverlay").also { it.mkdirs() }
+    val dir = File("config/NamelessTextureOverlay").also { it.mkdirs() }
 
     override fun getInputStream(location: ResourceLocation): InputStream {
         return File(dir, location.resourcePath).inputStream().buffered()

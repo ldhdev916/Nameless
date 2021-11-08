@@ -19,12 +19,9 @@
 package com.happyandjust.nameless.devqol
 
 import com.happyandjust.nameless.core.Direction
-import com.happyandjust.nameless.gui.Rectangle
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
-import com.happyandjust.nameless.utils.GLScissorStack
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.Gui
-import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
@@ -34,6 +31,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.inventory.Slot
 import org.lwjgl.opengl.GL11
 import java.awt.Color
+import java.awt.Rectangle
 import java.nio.FloatBuffer
 
 fun disableAlpha() = GlStateManager.disableAlpha()
@@ -146,18 +144,6 @@ fun Entity.getRenderPitch(partialTicks: Float) = prevRotationPitch + (rotationPi
 fun WorldRenderer.color(rgb: Int): WorldRenderer =
     color(rgb.getRedInt(), rgb.getGreenInt(), rgb.getBlueInt(), rgb.getAlphaInt())
 
-inline fun scissor(
-    rectangle: Rectangle,
-    scaleFactor: Int = ScaledResolution(mc).scaleFactor,
-    block: () -> Unit
-) {
-    GLScissorStack.push(rectangle, scaleFactor)
-
-    block()
-
-    GLScissorStack.pop(scaleFactor)
-}
-
 inline fun glEnable(vararg caps: Int, block: () -> Unit) {
     for (cap in caps) {
         GL11.glEnable(cap)
@@ -185,108 +171,6 @@ inline fun matrix(block: () -> Unit) {
     block()
 
     popMatrix()
-}
-
-fun Rectangle.drawRect(color: Int) {
-    Gui.drawRect(left, top, right, bottom, color)
-}
-
-fun Rectangle.drawGradientRect(direction: Direction, startColor: Int, endColor: Int) {
-    disableTexture2D()
-    enableBlend()
-    disableCull()
-    tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO)
-    shadeModel(GL11.GL_SMOOTH)
-
-    val wr = tessellator.worldRenderer
-    wr.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR)
-
-    when (direction) {
-        Direction.LEFT -> {
-            wr.pos(right, top, 0).color(startColor).endVertex()
-            wr.pos(right, bottom, 0).color(startColor).endVertex()
-
-            wr.pos(left, bottom, 0).color(endColor).endVertex()
-            wr.pos(left, top, 0).color(endColor).endVertex()
-        }
-        Direction.RIGHT -> {
-            wr.pos(left, top, 0).color(startColor).endVertex()
-            wr.pos(left, bottom, 0).color(startColor).endVertex()
-
-            wr.pos(right, bottom, 0).color(endColor).endVertex()
-            wr.pos(right, top, 0).color(endColor).endVertex()
-        }
-        Direction.UP -> {
-            wr.pos(left, bottom, 0).color(startColor).endVertex()
-            wr.pos(right, bottom, 0).color(startColor).endVertex()
-
-            wr.pos(right, top, 0).color(endColor).endVertex()
-            wr.pos(left, top, 0).color(endColor).endVertex()
-        }
-        Direction.DOWN -> {
-            wr.pos(left, top, 0).color(startColor).endVertex()
-            wr.pos(right, top, 0).color(startColor).endVertex()
-
-            wr.pos(right, bottom, 0).color(endColor).endVertex()
-            wr.pos(right, top, 0).color(endColor).endVertex()
-        }
-    }
-
-    tessellator.draw()
-
-    shadeModel(GL11.GL_FLAT)
-    enableCull()
-    disableBlend()
-    enableTexture2D()
-}
-
-/**
- * Draw inward outline box (actually 4 lines)
- */
-fun Rectangle.drawOutlineBox(color: Int, outlineWidth: Int = 1) {
-
-    disableTexture2D()
-    enableBlend()
-    tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0)
-    disableCull()
-    color(color)
-
-    val wr = tessellator.worldRenderer
-
-    wr.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION)
-
-    // left
-    wr.pos(left, top, 0).endVertex()
-    wr.pos(left + outlineWidth, top, 0).endVertex()
-    wr.pos(left + outlineWidth, bottom, 0).endVertex()
-    wr.pos(left, bottom, 0).endVertex()
-
-    // top
-
-    wr.pos(left, top, 0).endVertex()
-    wr.pos(right, top, 0).endVertex()
-    wr.pos(right, top + outlineWidth, 0).endVertex()
-    wr.pos(left, top + outlineWidth, 0).endVertex()
-
-    // right
-
-    wr.pos(right - outlineWidth, top, 0).endVertex()
-    wr.pos(right, top, 0).endVertex()
-    wr.pos(right, bottom, 0).endVertex()
-    wr.pos(right - outlineWidth, bottom, 0).endVertex()
-
-    // bottom
-
-    wr.pos(left, bottom - outlineWidth, 0).endVertex()
-    wr.pos(right, bottom - outlineWidth, 0).endVertex()
-    wr.pos(right, bottom, 0).endVertex()
-    wr.pos(left, bottom, 0).endVertex()
-
-    tessellator.draw()
-
-    disableBlend()
-    enableCull()
-    enableTexture2D()
 }
 
 inline fun disableEntityShadow(block: () -> Unit) {
@@ -317,6 +201,7 @@ fun Rectangle.drawChromaRect(direction: Direction, startHue: Float = 0F) {
         Direction.UP, Direction.DOWN -> height / 360.0
         Direction.RIGHT, Direction.LEFT -> width / 360.0
     }
+
     val starting = when (direction) {
         Direction.LEFT -> right
         Direction.UP -> bottom
@@ -351,3 +236,15 @@ fun Rectangle.drawChromaRect(direction: Direction, startHue: Float = 0F) {
     disableBlend()
     enableTexture2D()
 }
+
+val Rectangle.left
+    get() = x
+
+val Rectangle.top
+    get() = y
+
+val Rectangle.right
+    get() = x + width
+
+val Rectangle.bottom
+    get() = y + height

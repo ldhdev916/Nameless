@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.mixinhooks
 
-import com.happyandjust.nameless.devqol.compress
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.features.impl.qol.FeaturePerspective
 import org.lwjgl.opengl.Display
@@ -30,7 +29,7 @@ object EntityRendererHook {
     var cameraPitch = 0F
         get() = if (FeaturePerspective.enabled) field else mc.thePlayer.rotationPitch
         set(value) {
-            field = value.compress(-90F, 90F)
+            field = value.coerceIn(-90F, 90F)
         }
 
     fun overrideMouse(): Boolean {

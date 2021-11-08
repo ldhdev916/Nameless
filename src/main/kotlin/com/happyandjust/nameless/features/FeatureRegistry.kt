@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features
 
+import com.happyandjust.nameless.MOD_ID
 import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.devqol.setInCategory
 import com.happyandjust.nameless.features.impl.general.FeatureBedwarsESP
@@ -29,6 +30,8 @@ import com.happyandjust.nameless.features.impl.misc.FeatureTextureOverlay
 import com.happyandjust.nameless.features.impl.misc.FeatureUpdateChecker
 import com.happyandjust.nameless.features.impl.qol.*
 import com.happyandjust.nameless.features.impl.settings.FeatureGhostBlock
+import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
+import com.happyandjust.nameless.features.impl.settings.FeatureOutlineMode
 import com.happyandjust.nameless.features.impl.skyblock.*
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
 import com.happyandjust.nameless.serialization.converters.CBoolean
@@ -102,7 +105,7 @@ object FeatureRegistry {
                         mod.modId,
                         "${mod.name} ${mod.version}",
                         "Source File: ${mod.source.absolutePath}",
-                        false,
+                        mod.modId == MOD_ID,
                         CBoolean
                     )
                 }
@@ -242,7 +245,6 @@ object FeatureRegistry {
     //SKYBLOCK
     val FAIRY_SOUL_WAYPOINT = register(FeatureFairySoulWaypoint.setInCategory("SkyBlock"))
     val GLOW_STAR_DUNGEON_MOBS = register(FeatureGlowStarDungeonMobs.setInCategory("Dungeons"))
-    val TRACK_AUCTION = register(FeatureTrackAuction.setInCategory("SkyBlock"))
     val DAMAGE_INDICATOR = register(
         SimpleFeature(
             Category.SKYBLOCK,
@@ -255,8 +257,8 @@ object FeatureRegistry {
                 "damageindicator",
                 "type",
                 "Damage Indicate Type",
-                "K, M, B",
-                DamageIndicateType.M,
+                "K, M, B, SMART",
+                DamageIndicateType.SMART,
                 CDamageIndicateType
             ).also { featureParameter ->
                 featureParameter.allEnumList = DamageIndicateType.values().toList()
@@ -276,7 +278,6 @@ object FeatureRegistry {
             }
         }.setInCategory("SkyBlock")
     )
-    val CHANGE_ITEM_NAME = register(FeatureChangeItemName.setInCategory("SkyBlock"))
     val DUNGEON_DOOR_KEY = register(FeatureDungeonsDoorKey.setInCategory("Dungeons"))
     val BLAZE_SOLVER = register(FeatureBlazeSolver.setInCategory("Dungeons"))
     val JERRY_GIFT_ESP = register(FeatureJerryGiftESP.setInCategory("SkyBlock"))
@@ -288,6 +289,8 @@ object FeatureRegistry {
 
     //SETTINGS
     val GHOST_BLOCK = register(FeatureGhostBlock.setInCategory("Settings"))
+    val HYPIXEL_API_KEY = register(FeatureHypixelAPIKey.setInCategory("Settings"))
+    val OUTLINE_MODE = register(FeatureOutlineMode.setInCategory("Settings"))
 
 
 }

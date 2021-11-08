@@ -46,11 +46,7 @@ object FeatureCancelCertainBlockRendering :
                 false,
                 CBoolean
             ).also {
-                it.onToggleClick = {
-                    if (enabled) {
-                        mc.renderGlobal.loadRenderers()
-                    }
-                }
+                it.onValueChange = { mc.renderGlobal.loadRenderers() }
             }
         }
     }
