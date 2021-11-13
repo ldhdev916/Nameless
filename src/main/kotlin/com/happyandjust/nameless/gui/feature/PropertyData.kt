@@ -20,6 +20,7 @@ package com.happyandjust.nameless.gui.feature
 
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.features.IRelocateAble
+import com.happyandjust.nameless.gui.feature.components.Identifier
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIWrappedText
@@ -54,6 +55,8 @@ data class PropertyData<T>(
     var relocateAble: IRelocateAble? = null
 
     var allEnumList = emptyList<Enum<*>>()
+
+    var allIdentifiers = emptyList<Identifier>()
 }
 
 class DataComponent<T>(gui: FeatureGui, val data: PropertyData<T>) : Setting() {

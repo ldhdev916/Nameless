@@ -20,7 +20,6 @@ package com.happyandjust.nameless.gui.feature
 
 import com.happyandjust.nameless.MOD_NAME
 import com.happyandjust.nameless.VERSION
-import com.happyandjust.nameless.features.FeatureRegistry
 import gg.essential.elementa.components.*
 import gg.essential.elementa.components.input.UITextInput
 import gg.essential.elementa.constraints.AspectConstraint
@@ -63,7 +62,7 @@ class FeatureTitleBar(gui: FeatureGui, window: Window) : UIContainer() {
         }
     }
 
-    private val searchTextInput by UITextInput("Search...").constrain {
+    val searchTextInput by UITextInput("Search...").constrain {
         x = 0.pixel(true)
         y = CenterConstraint()
 
@@ -81,12 +80,7 @@ class FeatureTitleBar(gui: FeatureGui, window: Window) : UIContainer() {
     init {
 
         searchTextInput.onKeyType { _, _ ->
-            gui.selectCategory(FeatureRegistry.features.filter {
-                val text = searchTextInput.getText()
-                if (text.isBlank()) return@filter true
-
-                it.title.contains(text, true) || it.desc.contains(text, true)
-            })
+            gui.filterPropertyData(searchTextInput.getText())
         }
 
         searchIconContainer.onMouseEnter {

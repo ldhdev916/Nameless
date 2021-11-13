@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.gui.feature
 
+import com.happyandjust.nameless.features.FeatureRegistry
 import gg.essential.elementa.components.GradientComponent
 import gg.essential.elementa.components.ScrollComponent
 import gg.essential.elementa.components.UIBlock
@@ -26,11 +27,16 @@ import gg.essential.elementa.constraints.SiblingConstraint
 import gg.essential.elementa.dsl.*
 import gg.essential.elementa.utils.invisible
 import gg.essential.vigilance.gui.Divider
+import gg.essential.vigilance.gui.Setting
 import gg.essential.vigilance.utils.onLeftClick
 
-class CategoryFeatures(gui: FeatureGui, categoryItems: List<PropertyData<*>>) : UIContainer() {
+class CategoryFeatures(
+    private val gui: FeatureGui,
+    private val categoryItems: List<PropertyData<*>>,
+    private val isFeature: Boolean = false
+) : UIContainer() {
 
-    private val scroller by ScrollComponent(
+    val scroller by ScrollComponent(
         "No matching settings found :(",
         innerPadding = 4F,
         pixelsPerScroll = 25F,
@@ -45,8 +51,47 @@ class CategoryFeatures(gui: FeatureGui, categoryItems: List<PropertyData<*>>) : 
         width = 3.pixels()
     } childOf this
 
+    fun filter(text: String) {
+
+        var categoryItems = this.categoryItems
+
+        if (isFeature) {
+            gui.deselect()
+            categoryItems = FeatureRegistry.features.map { it.toPropertyData() }
+        }
+
+        val items = if (text.isBlank()) {
+            getItems(categoryItems)
+        } else {
+            getItems(categoryItems.filter { it.title.contains(text, true) || it.desc.contains(text, true) })
+        }
+
+        scroller.filterChildren { false }
+        items.forEach { it childOf scroller }
+    }
+
     init {
         scroller.setVerticalScrollBarComponent(scrollBar, true)
+
+        getItems(categoryItems).forEach { it childOf scroller }
+
+        GradientComponent(ColorCache.background.invisible(), ColorCache.background).constrain {
+            y = 0.pixel(alignOpposite = true)
+
+            width = 100.percent() - 10.pixels()
+            height = 50.pixels()
+        }.onLeftClick {
+            it.stopPropagation()
+            scroller.mouseClick(it.absoluteX.toDouble(), it.absoluteY.toDouble(), it.mouseButton)
+        }.onMouseScroll {
+            it.stopPropagation()
+            scroller.mouseScroll(it.delta)
+        } childOf this
+    }
+
+    private fun getItems(categoryItems: List<PropertyData<*>>): List<Setting> {
+
+        val list = arrayListOf<Setting>()
 
         val sortByInCategory = hashMapOf<String, List<PropertyData<*>>>()
 
@@ -61,26 +106,14 @@ class CategoryFeatures(gui: FeatureGui, categoryItems: List<PropertyData<*>>) : 
 
         for ((inCategory, propertyDatas) in sortedEntries) {
             if (inCategory.isNotBlank()) {
-                Divider(inCategory, null) childOf scroller
+                list.add(Divider(inCategory, null))
             }
             for (propertyData in propertyDatas) {
-                DataComponent(gui, propertyData) childOf scroller
+                list.add(DataComponent(gui, propertyData))
             }
         }
 
-        GradientComponent(ColorCache.background.invisible(), ColorCache.background).constrain {
-            y = 0.pixel(alignOpposite = true)
-
-            width = 100.percent() - 10.pixels()
-            height = 50.pixels()
-        }.onLeftClick {
-            it.stopPropagation()
-            scroller.mouseClick(it.absoluteX.toDouble(), it.absoluteY.toDouble(), it.mouseButton)
-        }.onMouseScroll {
-            it.stopPropagation()
-            scroller.mouseScroll(it.delta)
-        } childOf this
-
+        return list
     }
 
 

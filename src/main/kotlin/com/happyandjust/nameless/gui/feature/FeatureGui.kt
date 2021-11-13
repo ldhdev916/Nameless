@@ -97,12 +97,12 @@ class FeatureGui : WindowScreen(
 
             updateBackIconState()
         }
-
-        FeatureTitleBar(this, window).constrain {
-            width = 100.percent()
-            height = 30.pixels()
-        } childOf content
     }
+
+    private val featureTitleBar by FeatureTitleBar(this, window).constrain {
+        width = 100.percent()
+        height = 30.pixels()
+    } childOf content
 
     private val mainContent by UIContainer().constrain {
         y = SiblingConstraint()
@@ -183,21 +183,40 @@ class FeatureGui : WindowScreen(
 
         componentStack.clear()
 
-        selectCategory(list.map { it.toPropertyData() })
-    }
+        val categoryItems = list.map { it.toPropertyData() }
 
-    fun selectCategory(categoryItems: List<PropertyData<*>>) {
-        categoryScroller.allChildren.filterIsInstance<CategoryLabel>().firstOrNull { it.isSelected }?.deselect()
+        deselect()
 
-        addComponentToMainSettings(CategoryFeatures(this, categoryItems).constrain {
+        addComponentToMainSettings(CategoryFeatures(this, categoryItems, true).constrain {
             width = 100.percent()
             height = 100.percent()
         })
     }
 
+    fun deselect() {
+        categoryScroller.allChildren.filterIsInstance<CategoryLabel>().firstOrNull { it.isSelected }?.deselect()
+    }
+
     private val componentStack = Stack<UIComponent>()
 
+    fun filterPropertyData(text: String) {
+
+        if (componentStack.isEmpty()) {
+            selectCategory(FeatureRegistry.features)
+        }
+
+        val peek = componentStack.peek()
+
+        if (peek is CategoryFeatures) {
+            peek.filter(text)
+        }
+
+    }
+
     fun addComponentToMainSettings(component: UIComponent) {
+
+        featureTitleBar.searchTextInput.setText("")
+
         hidePeek()
 
         component childOf mainSettingsContainer

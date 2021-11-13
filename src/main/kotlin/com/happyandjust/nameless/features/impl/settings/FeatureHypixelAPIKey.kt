@@ -43,7 +43,7 @@ object FeatureHypixelAPIKey : SettingFeature("hypixelapikey", "Hypixel API Key",
 
     override fun toPropertyData(): PropertyData<out Any?> {
         return super.toPropertyData().also { propertyData ->
-            propertyData.validator = { it.code in 'a'.code..'z'.code || it.code in '0'.code..'9'.code || it == '-' }
+            propertyData.validator = { it in 'a'..'z' || it in '0'..'9' || it == '-' }
         }
     }
 

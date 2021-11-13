@@ -160,7 +160,8 @@ class Nameless {
             TextureCommand,
             SearchBinCommand,
             NameHistoryCommand,
-            WaypointCommand
+            WaypointCommand,
+            ViewStatCommand
         )
         registerListeners(FeatureListener, BasicListener, OutlineHandleListener, LocrawListener, WaypointListener)
     }

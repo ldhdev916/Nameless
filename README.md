@@ -15,7 +15,6 @@
 
 # Nameless
 1.8.9 Minecraft Mod. adding lots of Hypixel Quality of Life Features. Requires the latest forge version(.2318)<br>
-Discord: https://discord.gg/UBxMXWN4bK <br>
 Instruction Video: https://www.youtube.com/watch?v=bVb9K2GyXc4 <br>
 If you're using Optifine, Please turn off Fast Render, Shaders, Antialiasing<br>
 Unless, You can't use rendering outline on entity
@@ -61,6 +60,7 @@ Unless, You can't use rendering outline on entity
   - Hide Tip Message
   - Cancel Certain Block Rendering
   - Pixel Party Helper
+  - In Game Stat Viewer
 </details>
 <details>
   <summary>SkyBlock</summary>
@@ -111,4 +111,5 @@ Unless, You can't use rendering outline on entity
  - /searchbin - Search bins of specific item
  - /name - gets name history of player
  - /waypoint - Show paths to given coordinate
+ - /viewstat - View someone's stats
 </details>

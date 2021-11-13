@@ -22,6 +22,7 @@ import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.gui.feature.PropertyData
+import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.serialization.Converter
 
 open class FeatureParameter<T>(
@@ -47,6 +48,8 @@ open class FeatureParameter<T>(
     var minValue: Double = 0.0
     var maxValue: Double = 0.0
 
+    var allIdentifiers = emptyList<Identifier>()
+
     private var valueConfig =
         ConfigValue(category, key, defaultValue, converter)
     var value = valueConfig.value
@@ -63,15 +66,18 @@ open class FeatureParameter<T>(
 
     fun <T> getParameterValue(key: String) = getParameter<T>(key).value
 
-    override fun getComponentType() = when (defaultValue) {
-        is Int -> ComponentType.SLIDER
-        is Double -> ComponentType.SLIDER_DECIMAL
-        is Boolean -> ComponentType.SWITCH
-        is String -> ComponentType.TEXT
-        is ChromaColor -> ComponentType.COLOR
-        is Enum<*> -> ComponentType.SELECTOR
+    override fun getComponentType(): ComponentType? = when {
+        checkType<Int>() -> ComponentType.SLIDER
+        checkType<Double>() -> ComponentType.SLIDER_DECIMAL
+        checkType<Boolean>() -> ComponentType.SWITCH
+        checkType<String>() -> ComponentType.TEXT
+        checkType<ChromaColor>() -> ComponentType.COLOR
+        checkType<Enum<*>>() -> ComponentType.SELECTOR
+        checkType<List<Identifier>>() -> ComponentType.VERTIAL_MOVE
         else -> throw IllegalArgumentException("Unable to find appropriate component type for class ${defaultValue!!.javaClass.name}")
     }
+
+    private inline fun <reified E> checkType() = defaultValue is E
 
     override fun getProperty() = ::value
 
@@ -93,6 +99,8 @@ open class FeatureParameter<T>(
         it.allEnumList = allEnumList
 
         it.relocateAble = this as? IRelocateAble
+
+        it.allIdentifiers = allIdentifiers
 
         it.settings = parameters.values.map { featureParameter -> featureParameter.toPropertyData() }
     }

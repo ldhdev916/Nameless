@@ -19,6 +19,8 @@
 package com.happyandjust.nameless.gui.feature
 
 import com.happyandjust.nameless.core.ChromaColor
+import com.happyandjust.nameless.gui.feature.components.Identifier
+import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
 import com.happyandjust.nameless.gui.feature.components.toChromaColorComponent
 import com.happyandjust.nameless.gui.feature.components.toFilterTextComponent
 import gg.essential.vigilance.gui.settings.*
@@ -36,7 +38,7 @@ enum class ComponentType {
     },
     SLIDER_DECIMAL {
         override fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent = DecimalSliderComponent(
-            (propertyData.property() as Double).toFloat(),
+            propertyData.property().let { (it as Number).toFloat() },
             propertyData.minValue.toFloat(),
             propertyData.maxValue.toFloat()
         ).apply {
@@ -107,6 +109,17 @@ enum class ComponentType {
                 propertyData.allEnumList.map { it.name }).apply {
                 onValueChange {
                     propertyData.property.set(propertyData.allEnumList[it as Int] as T)
+                }
+            }
+    },
+    VERTIAL_MOVE {
+        override fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent =
+            VerticalPositionEditableComponent(
+                propertyData.allIdentifiers,
+                propertyData.property() as List<Identifier>
+            ).apply {
+                onValueChange {
+                    propertyData.property.set(it as T)
                 }
             }
     };

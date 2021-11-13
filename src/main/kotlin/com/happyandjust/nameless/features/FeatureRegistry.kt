@@ -267,6 +267,7 @@ object FeatureRegistry {
     val HIDE_TIP_MESSAGE = register(FeatureHideTipMessage.setInCategory("Hypixel"))
     val CANCEL_CERTAIN_BLOCK_RENDERING = register(FeatureCancelCertainBlockRendering.setInCategory("In Game"))
     val PIXEL_PARTY_HELPER = register(FeaturePixelPartyHelper.setInCategory("Hypixel"))
+    val IN_GAME_STAT_VIEWER = register(FeatureInGameStatViewer.setInCategory("Hypixel"))
 
     //SKYBLOCK
     val FAIRY_SOUL_WAYPOINT = register(FeatureFairySoulWaypoint.setInCategory("SkyBlock"))
