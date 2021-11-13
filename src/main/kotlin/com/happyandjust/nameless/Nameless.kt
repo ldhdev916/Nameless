@@ -32,10 +32,7 @@ import com.happyandjust.nameless.gui.GuiError
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.keybinding.NamelessKeyBinding
 import com.happyandjust.nameless.listener.*
-import com.happyandjust.nameless.mixins.accessors.AccessorMinecraft
 import com.happyandjust.nameless.network.Request
-import com.happyandjust.nameless.resourcepack.OverlayResourcePack
-import com.happyandjust.nameless.resourcepack.SkinResourcePack
 import com.happyandjust.nameless.serialization.converters.COutlineMode
 import com.happyandjust.nameless.utils.SkyblockUtils
 import net.minecraft.client.gui.GuiMainMenu
@@ -148,11 +145,6 @@ class Nameless {
         threadPool.execute {
             SkyblockUtils.fetchSkyBlockData()
         }
-
-
-        (mc as AccessorMinecraft).defaultResourcePacks.add(OverlayResourcePack)
-        (mc as AccessorMinecraft).defaultResourcePacks.add(SkinResourcePack)
-        mc.refreshResources()
 
         registerCommands(
             DevCommand,

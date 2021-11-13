@@ -27,7 +27,6 @@ import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.RenderOverlayListener
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.gui.relocate.RelocateGui
-import com.happyandjust.nameless.resourcepack.OverlayResourcePack
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.COverlay
 import gg.essential.elementa.UIComponent
@@ -36,6 +35,7 @@ import gg.essential.elementa.constraints.ImageAspectConstraint
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.pixels
 import net.minecraft.client.gui.Gui
+import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.util.ResourceLocation
 import java.io.File
 import javax.imageio.ImageIO
@@ -47,6 +47,8 @@ object FeatureTextureOverlay : SimpleFeature(
     "Render texture which is under config/NamelessTextureOverlay to your screen. If you want to remove/add texture In Game, after modifying textures type /reloadtexture"
 ), RenderOverlayListener {
 
+    private val dir = File("config/NamelessTextureOverlay").also { it.mkdirs() }
+
     init {
         reloadTexture()
     }
@@ -54,7 +56,7 @@ object FeatureTextureOverlay : SimpleFeature(
     fun reloadTexture() {
         parameters.clear()
 
-        for (file in OverlayResourcePack.dir.listFiles() ?: emptyArray()) {
+        for (file in dir.listFiles() ?: emptyArray()) {
             val name = file.name
 
             if (name.endsWith(".png") || name.endsWith(".jpg")) {
@@ -68,14 +70,15 @@ object FeatureTextureOverlay : SimpleFeature(
                     CBoolean
                 ) {
 
-                    private val resourceLocation = ResourceLocation("namelesstextureoverlay", name)
                     private val image = ImageIO.read(file)
+                    private val resourceLocation =
+                        mc.textureManager.getDynamicTextureLocation(file.name, DynamicTexture(image))
 
                     override val overlayPoint =
                         ConfigValue("textureoverlay", "${name}_position", Overlay.DEFAULT, COverlay)
 
                     override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
-                        return UIImage.ofFile(File(OverlayResourcePack.dir, name)).constrain {
+                        return UIImage.ofFile(File(dir, name)).constrain {
                             width = (image.width * relocateComponent.currentScale).pixels()
                             height = ImageAspectConstraint()
 

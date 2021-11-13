@@ -19,7 +19,6 @@
     "accessors.AccessorGuiChat",
     "accessors.AccessorGuiContainer",
     "accessors.AccessorGuiDisconnected",
-    "accessors.AccessorMinecraft",
     "accessors.AccessorRenderGlobal"
   ],
   "mixins": [

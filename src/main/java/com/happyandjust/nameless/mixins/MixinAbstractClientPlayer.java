@@ -19,7 +19,6 @@
 package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.features.impl.misc.FeatureDisguiseNickname;
-import com.happyandjust.nameless.resourcepack.SkinResourcePack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.util.ResourceLocation;
@@ -43,7 +42,7 @@ public class MixinAbstractClientPlayer {
         String nickname = feature.getNickname();
 
         ResourceLocation resourceLocation = feature.getCachedUsernameResourceLocation().get(nickname);
-        if (resourceLocation != null && SkinResourcePack.INSTANCE.resourceExists(resourceLocation)) {
+        if (resourceLocation != null) {
             cir.setReturnValue(resourceLocation);
             return;
         }

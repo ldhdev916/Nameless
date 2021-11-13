@@ -24,10 +24,10 @@ import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.gui.feature.FeatureGui
-import com.happyandjust.nameless.resourcepack.SkinResourcePack
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CString
 import com.happyandjust.nameless.utils.APIUtils
+import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.util.ResourceLocation
 import java.awt.Image
 import java.awt.geom.AffineTransform
@@ -35,6 +35,7 @@ import java.awt.image.AffineTransformOp
 import java.awt.image.BufferedImage
 import java.io.File
 import java.net.URL
+import java.util.concurrent.Callable
 import javax.imageio.ImageIO
 
 
@@ -44,6 +45,8 @@ object FeatureDisguiseNickname : SimpleFeature(
     "Disguise Nickname",
     "Change your nickname and skin if nickname is valid!"
 ) {
+
+    private val dir = File("config/NamelessSkinTextures").also { it.mkdirs() }
 
     init {
         parameters["nick"] = FeatureParameter(
@@ -62,7 +65,7 @@ object FeatureDisguiseNickname : SimpleFeature(
             "disguise",
             "chnageskin",
             "Change Skin",
-            "If nickname you set above is valid, your skin will be changed into his skin\nAs it caches skin texture by player's uuid, if player changes his skin it can show incorrect skin\nIn this case go directory ${SkinResourcePack.dir.absolutePath} and delete all png files",
+            "If nickname you set above is valid, your skin will be changed into his skin\nAs it caches skin texture by player's uuid, if player changes his skin it can show incorrect skin\nIn this case go directory ${dir.absolutePath} and delete all png files",
             false,
             CBoolean
         )
@@ -75,9 +78,10 @@ object FeatureDisguiseNickname : SimpleFeature(
     fun getNickname() = getParameterValue<String>("nick")
 
     fun checkAndDownloadSkin(username: String) {
-        if (mc.currentScreen is FeatureGui) return // in case you're writing username but mod stupidly gets all username u write
+        if (mc.currentScreen is FeatureGui) return // in case you're writing username but mod stupidly gets all text you write
         if (downloadingSkinUsernames.contains(username)) return
         if (invalidUsernames.contains(username)) return
+        if (cachedUsernameResourceLocation.contains(username)) return
         threadPool.execute {
             downloadingSkinUsernames.add(username)
             val uuid = try {
@@ -89,31 +93,40 @@ object FeatureDisguiseNickname : SimpleFeature(
                 return@execute
             }
 
-            val resourceLocation = ResourceLocation("namelessskin", "$uuid.png")
+            val file = File(dir, "$uuid.png")
 
-            if (SkinResourcePack.resourceExists(resourceLocation)) {
-                cachedUsernameResourceLocation[username] = resourceLocation
+            val getResourceLocation: () -> ResourceLocation =
+                {
+                    mc.addScheduledTask(
+                        Callable {
+                            mc.textureManager.getDynamicTextureLocation(
+                                file.name,
+                                DynamicTexture(ImageIO.read(file))
+                            )
+                        }
+                    ).get()
+                }
+            if (file.isFile) {
+                cachedUsernameResourceLocation[username] = getResourceLocation()
                 downloadingSkinUsernames.remove(username)
                 return@execute
             }
 
             try {
-                downloadSkin(APIUtils.getSkinURLFromUUID(uuid), uuid)
+                downloadSkin(uuid)
 
-                Thread.sleep(2000L)
-                cachedUsernameResourceLocation[username] = resourceLocation
-            } catch (ignored: Exception) {
+                Thread.sleep(2000L) // wait for image fully loaded
+                cachedUsernameResourceLocation[username] = getResourceLocation()
+            } finally {
+                downloadingSkinUsernames.remove(username)
             }
-
-            downloadingSkinUsernames.remove(username)
         }
     }
 
-    private fun downloadSkin(url: String, uuid: String) {
+    private fun downloadSkin(uuid: String) {
         threadPool.execute {
             try {
-
-                var image = ImageIO.read(URL(url))
+                var image = ImageIO.read(URL(APIUtils.getSkinURLFromUUID(uuid)))
 
                 if (image.width == 64 && image.height == 32) {
                     image = convertImageInto64x64(image)
@@ -124,7 +137,7 @@ object FeatureDisguiseNickname : SimpleFeature(
                     return@execute
                 }
 
-                val file = File(SkinResourcePack.dir, "$uuid.png")
+                val file = File(dir, "$uuid.png")
 
                 ImageIO.write(image, "png", file)
                 sendClientMessage("§aSuccessfully downloaded $uuid's skin")
