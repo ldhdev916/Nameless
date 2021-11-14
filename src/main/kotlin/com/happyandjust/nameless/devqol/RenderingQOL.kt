@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.devqol
 
 import com.happyandjust.nameless.core.Direction
+import com.happyandjust.nameless.core.Overlay
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.Gui
@@ -248,3 +249,8 @@ val Rectangle.right
 
 val Rectangle.bottom
     get() = y + height
+
+fun setup(overlay: Overlay) {
+    translate(overlay.point.x, overlay.point.y, 0)
+    scale(overlay.scale, overlay.scale, 1.0)
+}

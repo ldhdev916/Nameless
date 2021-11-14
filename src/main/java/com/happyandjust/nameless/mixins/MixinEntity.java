@@ -19,13 +19,16 @@
 package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.features.impl.general.FeatureBedwarsESP;
+import com.happyandjust.nameless.features.impl.general.FeatureGlowAllPlayers;
 import com.happyandjust.nameless.features.impl.skyblock.FeatureGlowStarDungeonMobs;
 import com.happyandjust.nameless.mixinhooks.EntityHook;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -33,21 +36,31 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
-public class MixinEntity {
+public abstract class MixinEntity {
 
     @Unique
     private final EntityHook hook = EntityHook.INSTANCE;
     private final Entity $this = (Entity) (Object) this;
 
+    @Shadow
+    protected abstract boolean getFlag(int flag);
+
     @Inject(method = "isInvisible", at = @At("HEAD"), cancellable = true)
     public void setInvisible(CallbackInfoReturnable<Boolean> cir) {
         FeatureBedwarsESP bedwarsESP = FeatureBedwarsESP.INSTANCE;
         FeatureGlowStarDungeonMobs glowStarDungeonMobs = FeatureGlowStarDungeonMobs.INSTANCE;
+        FeatureGlowAllPlayers glowAllPlayers = FeatureGlowAllPlayers.INSTANCE;
         if (bedwarsESP.getTeamColorCache().containsKey(this) && bedwarsESP.getEnabled() && (boolean) bedwarsESP.getParameterValue("invisible")) {
             cir.setReturnValue(false);
             return;
         }
         if ($this instanceof EntityEnderman && glowStarDungeonMobs.getEnabled() && glowStarDungeonMobs.getCheckedDungeonMobs().containsValue(this) && (boolean) glowStarDungeonMobs.getParameterValue("fel")) {
+            cir.setReturnValue(false);
+        }
+        if (glowAllPlayers.getEnabled() && glowAllPlayers.<Boolean>getParameterValue("invisible") && glowAllPlayers.getPlayersInTab().contains(this) && $this instanceof EntityPlayer) {
+            if (getFlag(5)) { // invisible
+                glowAllPlayers.getInvisiblePlayers().add((EntityPlayer) $this);
+            }
             cir.setReturnValue(false);
         }
     }

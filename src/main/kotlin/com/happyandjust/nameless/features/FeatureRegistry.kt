@@ -92,7 +92,8 @@ object FeatureRegistry {
             SimpleFeature(
                 Category.GENERAL,
                 "removemodid",
-                "Remove Certain Mod ID Sent to Server"
+                "Remove Certain Mod ID Sent to Server",
+                enabled_ = true
             ).setInCategory("Mod").also {
                 val mods = Loader::class.java.getDeclaredField("mods").also { field ->
                     field.isAccessible = true
@@ -313,6 +314,10 @@ object FeatureRegistry {
     val LIVID_DAGGER_BACKSTEP_NOTIFIER = register(FeatureLividDaggerBackstep.setInCategory("SkyBlock"))
     val GLOW_BATS = register(FeatureGlowBats.setInCategory("Dungeons"))
     val GLOW_DUNGEONS_TEAMMATES = register(FeatureGlowDungeonsTeammates.setInCategory("Dungeons"))
+    val SHOW_WITHER_SHIELD_COOLTIME = register(FeatureShowWitherShieldCoolTime.setInCategory("SkyBlock"))
+    val CLICK_OPEN_SLAYER = register(FeatureClickOpenSlayer.setInCategory("Slayer"))
+    val ENDERMAN_SLAYER_HELPER = register(FeatureEndermanSlayerHelper.setInCategory("Slayer"))
+    val DISABLE_ENDERMAN_TELEPORTATION = register(FeatureDisableEndermanTeleportation.setInCategory("SkyBlock"))
 
     //SETTINGS
     val GHOST_BLOCK = register(FeatureGhostBlock.setInCategory("Settings"))

@@ -90,14 +90,13 @@ class VerticalPositionEditableComponent(
         }
     }
 
-    private fun convertToPixels() {
+    private fun convertToPixels(requireSibling: Boolean = true) {
         val children = (notAddedContainer.children + addedContainer.children).filterIsInstance<MoveAbleComponent>()
 
-        if (children.any { it.constraints.y is SiblingConstraint }) {
+        if (!requireSibling || children.any { it.constraints.y is SiblingConstraint }) {
             for (child in children) {
-                val top = child.getTop()
                 child.constrain {
-                    y = basicYConstraint { top }
+                    y = (child.getTop() - child.parent.getTop()).pixels()
                 }
             }
         }
@@ -179,6 +178,8 @@ class VerticalPositionEditableComponent(
                         y = basicYConstraint { lastY }
                     }
                     offset = null
+
+                    convertToPixels(false)
                 }
             }
 
@@ -231,8 +232,8 @@ class VerticalPositionEditableComponent(
                 positionMap[child] = if (child === this) lastY else child.getTop()
             }
 
-            val positions = positionMap.values.sortedBy { it/*.second*/ }
-            val componentArray = positionMap.keys.sortedBy { if (it === this) y else positionMap[it]!!/*.second*/ }
+            val positions = positionMap.values.sorted()
+            val componentArray = positionMap.keys.sortedBy { if (it === this) y else positionMap[it]!! }
 
             for ((index, component) in componentArray.withIndex()) {
                 val positionY = positions[index]

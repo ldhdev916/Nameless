@@ -25,6 +25,7 @@ import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.StencilListener
+import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.utils.Utils
 import net.minecraft.entity.Entity
@@ -48,11 +49,41 @@ object FeatureGlowAllPlayers : SimpleFeature(
             Color.red.toChromaColor(),
             CChromaColor
         )
+
+        parameters["invisible"] = FeatureParameter(
+            0,
+            "glowplayers",
+            "invisible",
+            "Show Invisible Players",
+            "",
+            false,
+            CBoolean
+        ).also {
+            it.parameters["override"] = FeatureParameter(
+                0,
+                "glowplayers",
+                "invisible_override",
+                "Use Different Glowing Color on Invisible Players",
+                "",
+                false,
+                CBoolean
+            )
+            it.parameters["color"] = FeatureParameter(
+                1,
+                "glowplayers",
+                "invisible_color",
+                "Color for Invisible Players",
+                "Require 'Use Different Glowing Color on Invisible Players' to be enabled",
+                Color.green.toChromaColor(),
+                CChromaColor
+            )
+        }
     }
 
-    private var playersInTab = emptyList<EntityPlayer>()
+    var playersInTab = emptyList<EntityPlayer>()
+    val invisiblePlayers = hashSetOf<EntityPlayer>()
     private var scanTick = 0
-
+    private var invisibleTick = 0
 
     override fun getOutlineColor(entity: Entity): ColorInfo? {
         if (!enabled) return null
@@ -60,16 +91,27 @@ object FeatureGlowAllPlayers : SimpleFeature(
 
         if (!playersInTab.contains(entity)) return null
 
-        return ColorInfo(getParameterValue<Color>("color").rgb, ColorInfo.ColorPriority.LOW)
+        val parameter = getParameter<Boolean>("invisible")
+        val color = if (invisiblePlayers.contains(entity) && parameter.getParameterValue("override")) {
+            parameter.getParameterValue<Color>("color")
+        } else {
+            getParameterValue("color")
+        }.rgb
+
+        return ColorInfo(color, ColorInfo.ColorPriority.LOW)
     }
 
     override fun getEntityColor(entity: Entity): ColorInfo? = null
 
     override fun tick() {
         scanTick = (scanTick + 1) % 10
+        invisibleTick = (invisibleTick + 1) % 30
 
         if (scanTick == 0) {
             playersInTab = Utils.getPlayersInTab()
+        }
+        if (invisibleTick == 0) {
+            invisiblePlayers.clear()
         }
     }
 

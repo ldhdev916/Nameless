@@ -9,6 +9,7 @@
     "MixinEntityFX",
     "MixinEntityRenderer",
     "MixinFontRenderer",
+    "MixinGuiChat",
     "MixinGuiPlayerTabOverlay",
     "MixinMinecraft",
     "MixinRenderEntityItem",

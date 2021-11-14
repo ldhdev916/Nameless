@@ -76,6 +76,10 @@ Unless, You can't use rendering outline on entity
   - Livid Dagger Backstep Notifier
   - Glow Bats in Dungeons
   - Glow Dungeons Teammates
+  - Show Wither Shield CoolTime
+  - Click Anywhere to Open Slayer Menu
+  - Enderman Slayer Helper
+  - Disable Enderman Teleportation
 </details>
 <details>
  <summary>Miscellaneous</summary>

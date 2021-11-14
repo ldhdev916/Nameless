@@ -171,11 +171,7 @@ object FeatureInGameStatViewer :
 
         }
 
-        val stats = arrayListOf<Identifier>()
-
-        for (informationType in InformationType.values()) {
-            stats.add(InGameStatIdentifier(informationType, SupportGame.ALL))
-        }
+        val stats = InformationType.values().map { InGameStatIdentifier(it, SupportGame.ALL) }
 
         parameters["order"] = FeatureParameter(
             2,

@@ -109,7 +109,7 @@ object SkyblockUtils {
         Pattern.compile("\\[Lv$level] (Runic )?$name (?<current>\\d+)/(?<health>\\d+).")
 
     fun getDefaultPattern(): Pattern =
-        Pattern.compile("\\[Lv(?<level>\\d+)] (Runic )?(?<name>(\\w|\\s)+) (?<current>\\d+)/(?<health>\\d+).")
+        Pattern.compile("\\[Lv(?<level>\\d+)] (Runic )?(?<name>(\\w|\\s)+) (?<current>(\\d|k|M)+)/(?<health>(\\d|k|M)+).")
 
     fun matchesName(entityArmorStand: EntityArmorStand, pattern: Pattern): Matcher =
         pattern.matcher(entityArmorStand.displayName.unformattedText.stripControlCodes())

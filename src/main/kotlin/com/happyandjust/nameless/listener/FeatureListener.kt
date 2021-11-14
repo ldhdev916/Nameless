@@ -30,6 +30,7 @@ import net.minecraft.entity.EntityLivingBase
 import net.minecraftforge.client.event.*
 import net.minecraftforge.client.event.sound.PlaySoundEvent
 import net.minecraftforge.event.entity.PlaySoundAtEntityEvent
+import net.minecraftforge.event.entity.living.EnderTeleportEvent
 import net.minecraftforge.event.entity.player.ItemTooltipEvent
 import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.eventhandler.EventPriority
@@ -183,6 +184,11 @@ object FeatureListener {
     @SubscribeEvent
     fun guiOpen(e: GuiOpenEvent) {
         invoke<ScreenOpenListener> { onGuiOpen(e) }
+    }
+
+    @SubscribeEvent
+    fun enderTeleport(e: EnderTeleportEvent) {
+        invoke<EnderTeleportListener> { onEnderTeleport(e) }
     }
 
 }

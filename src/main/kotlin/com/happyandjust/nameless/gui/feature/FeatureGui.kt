@@ -178,7 +178,7 @@ class FeatureGui : WindowScreen(
     }
 
     @JvmName("selectCategoryByFeatureList")
-    fun selectCategory(list: List<SimpleFeature>) {
+    fun selectCategory(list: List<SimpleFeature>, resetText: Boolean = true) {
         hidePeek()
 
         componentStack.clear()
@@ -190,7 +190,7 @@ class FeatureGui : WindowScreen(
         addComponentToMainSettings(CategoryFeatures(this, categoryItems, true).constrain {
             width = 100.percent()
             height = 100.percent()
-        })
+        }, resetText)
     }
 
     fun deselect() {
@@ -202,7 +202,7 @@ class FeatureGui : WindowScreen(
     fun filterPropertyData(text: String) {
 
         if (componentStack.isEmpty()) {
-            selectCategory(FeatureRegistry.features)
+            selectCategory(FeatureRegistry.features, false)
         }
 
         val peek = componentStack.peek()
@@ -213,9 +213,9 @@ class FeatureGui : WindowScreen(
 
     }
 
-    fun addComponentToMainSettings(component: UIComponent) {
+    fun addComponentToMainSettings(component: UIComponent, resetText: Boolean = true) {
 
-        featureTitleBar.searchTextInput.setText("")
+        if (resetText) featureTitleBar.searchTextInput.setText("")
 
         hidePeek()
 

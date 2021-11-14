@@ -114,17 +114,24 @@ fun <T : EntityLivingBase> T.toSkyBlockMonster(): SkyBlockMonster<T>? {
 
     val matcher = SkyblockUtils.matchesName(identification, SkyblockUtils.getDefaultPattern())
 
+    val convertHealth: (String) -> Int = {
+        when {
+            it.endsWith("k") -> it.dropLast(1).toInt() * 1000
+            it.endsWith("M") -> it.dropLast(1).toInt() * 100_0000
+            else -> it.toInt()
+        }
+    }
+
     if (matcher.matches()) {
         return SkyBlockMonster(
             matcher.group("name"),
             matcher.group("level").toInt(),
-            matcher.group("current").toInt(),
-            matcher.group("health").toInt(),
+            convertHealth(matcher.group("current")),
+            convertHealth(matcher.group("health")),
             this,
             identification
         )
     }
-
     return null
 }
 
@@ -311,6 +318,8 @@ fun Double.transformToPrecision(precision: Int): Double {
 
     return round(this * pow) / pow
 }
+
+inline fun Double.transformToPrecisionString(precision: Int) = String.format("%.${precision}f", this)
 
 val fontRendererNotNull: Boolean
     get() = mc.fontRendererObj != null
