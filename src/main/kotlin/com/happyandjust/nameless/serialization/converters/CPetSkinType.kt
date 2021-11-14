@@ -16,23 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.hypixel.skyblock
+package com.happyandjust.nameless.serialization.converters
 
-import com.google.gson.annotations.SerializedName
+import com.happyandjust.nameless.hypixel.skyblock.PetSkinType
 
-class SkyBlockItem {
-
-    @SerializedName("name")
-    var name = ""
-
-    @SerializedName("id")
-    var id = ""
-
-    @SerializedName("tier")
-    var stringRarity = "COMMON"
-
-    @SerializedName("skin")
-    var skin = ""
-
-    var rarity = ItemRarity.COMMON
-}
+object CPetSkinType : CEnum<PetSkinType>(PetSkinType::valueOf)

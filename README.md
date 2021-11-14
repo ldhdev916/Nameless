@@ -80,6 +80,7 @@ Unless, You can't use rendering outline on entity
   - Click Anywhere to Open Slayer Menu
   - Enderman Slayer Helper
   - Disable Enderman Teleportation
+  - Equip Pet Skin
 </details>
 <details>
  <summary>Miscellaneous</summary>

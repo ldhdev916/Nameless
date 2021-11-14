@@ -41,6 +41,7 @@ open class FeatureParameter<T>(
     var onValueChange: (T) -> Unit = {}
 
     var allEnumList = emptyList<Enum<*>>()
+    var enumName: (Enum<*>) -> String = { it.name }
 
     var validator: (Char) -> Boolean = { true }
     var placeHolder = ""
@@ -97,6 +98,7 @@ open class FeatureParameter<T>(
         it.validator = validator
 
         it.allEnumList = allEnumList
+        it.enumName = enumName
 
         it.relocateAble = this as? IRelocateAble
 

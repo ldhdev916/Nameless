@@ -55,6 +55,7 @@ data class PropertyData<T>(
     var relocateAble: IRelocateAble? = null
 
     var allEnumList = emptyList<Enum<*>>()
+    var enumName: (Enum<*>) -> String = { it.name }
 
     var allIdentifiers = emptyList<Identifier>()
 }

@@ -28,6 +28,7 @@ import com.happyandjust.nameless.features.impl.misc.FeatureUpdateChecker
 import com.happyandjust.nameless.features.impl.qol.FeatureGTBHelper
 import com.happyandjust.nameless.features.impl.qol.FeatureMurdererFinder
 import com.happyandjust.nameless.features.impl.qol.FeaturePlayTabComplete
+import com.happyandjust.nameless.features.impl.skyblock.FeatureEquipPetSkin
 import com.happyandjust.nameless.gui.GuiError
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.keybinding.NamelessKeyBinding
@@ -140,6 +141,8 @@ class Nameless {
             FeatureGTBHelper.fetchWordsData()
 
             FeaturePlayTabComplete.fetchGameDataList()
+
+            FeatureEquipPetSkin.fetchPetSkinData()
         }
 
         threadPool.execute {

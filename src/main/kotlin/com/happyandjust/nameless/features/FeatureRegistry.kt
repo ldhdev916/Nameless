@@ -318,6 +318,7 @@ object FeatureRegistry {
     val CLICK_OPEN_SLAYER = register(FeatureClickOpenSlayer.setInCategory("Slayer"))
     val ENDERMAN_SLAYER_HELPER = register(FeatureEndermanSlayerHelper.setInCategory("Slayer"))
     val DISABLE_ENDERMAN_TELEPORTATION = register(FeatureDisableEndermanTeleportation.setInCategory("SkyBlock"))
+    val EQUIP_PET_SKIN = register(FeatureEquipPetSkin.setInCategory("SkyBlock"))
 
     //SETTINGS
     val GHOST_BLOCK = register(FeatureGhostBlock.setInCategory("Settings"))

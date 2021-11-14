@@ -34,6 +34,7 @@ import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.NBTUtil
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
 import net.minecraft.util.StringUtils
@@ -267,16 +268,22 @@ fun Array<out String>.toBlockPos(indexes: IntRange) = BlockPos(
 
 fun ItemStack.getSkullOwner(): String {
 
+    return if (tagCompound.hasKey("SkullOwner")) {
+        NBTUtil.readGameProfileFromNBT(tagCompound.getCompoundTag("SkullOwner")).properties["textures"].find { it.name == "textures" }?.value
+            ?: ""
+    } else ""
+}
+
+fun ItemStack.setSkullOwner(skullOwner: String) {
     val nbgTagList = tagCompound?.getCompoundTag("SkullOwner")?.getCompoundTag("Properties")
-        ?.getTagList("textures", Constants.NBT.TAG_COMPOUND) ?: return ""
+        ?.getTagList("textures", Constants.NBT.TAG_COMPOUND) ?: return
 
     (nbgTagList as AccessorNBTTagList).tagList.forEach {
         if (it is NBTTagCompound) {
-            return it.getString("Value")
+            it.setString("Value", skullOwner)
+            return
         }
     }
-
-    return ""
 }
 
 fun scanAuction(task: (List<AuctionInfo>) -> Unit) {
@@ -320,6 +327,8 @@ fun Double.transformToPrecision(precision: Int): Double {
 }
 
 inline fun Double.transformToPrecisionString(precision: Int) = String.format("%.${precision}f", this)
+
+fun String.decodeBase64() = Base64.getDecoder().decode(this).decodeToString()
 
 val fontRendererNotNull: Boolean
     get() = mc.fontRendererObj != null

@@ -106,7 +106,7 @@ enum class ComponentType {
         override fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent =
             SelectorComponent(
                 propertyData.allEnumList.indexOf(propertyData.property() as Enum<*>),
-                propertyData.allEnumList.map { it.name }).apply {
+                propertyData.allEnumList.map { propertyData.enumName(it) }).apply {
                 onValueChange {
                     propertyData.property.set(propertyData.allEnumList[it as Int] as T)
                 }
