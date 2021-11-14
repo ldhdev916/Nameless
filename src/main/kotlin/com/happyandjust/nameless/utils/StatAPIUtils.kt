@@ -38,8 +38,8 @@ object StatAPIUtils {
 
     private val threadPool = Executors.newFixedThreadPool(4)
 
-    private val networkExpToLevel: (Double) -> Int = { 1 + ((-8750 + sqrt(8750.0.pow(2) + 5000 * it)) / 2500).toInt() }
-    private val skyWarsExpToLevel: (Int) -> Int = {
+    val networkExpToLevel: (Double) -> Int = { 1 + ((-8750 + sqrt(8750.0.pow(2) + 5000 * it)) / 2500).toInt() }
+    val skyWarsExpToLevel: (Int) -> Int = {
         when (it) {
             in 0 until 20 -> 1
             in 20 until 70 -> 2
@@ -95,29 +95,9 @@ object StatAPIUtils {
         }
 
         return try {
-            json.getStatValueFromType(informationType)
+            informationType.getStatValue(json)
         } catch (e: Exception) {
             "§c???"
         }
-    }
-
-    fun JsonObject.getStatValueFromType(informationType: FeatureInGameStatViewer.InformationType): String {
-        return when (informationType) {
-            FeatureInGameStatViewer.InformationType.HYPIXEL_LEVEL -> {
-                networkExpToLevel(nullCatch(0.0) { this["networkExp"].asDouble })
-            }
-            FeatureInGameStatViewer.InformationType.BEDWARS_LEVEL -> {
-                nullCatch(1) { this["achievements"].asJsonObject["bedwars_level"].asInt }
-            }
-            FeatureInGameStatViewer.InformationType.SKYWARS_LEVEL -> {
-                skyWarsExpToLevel(nullCatch(0) { this["stats"].asJsonObject["SkyWars"].asJsonObject["skywars_experience"].asInt })
-            }
-        }.toString()
-    }
-
-    private fun <T> nullCatch(defaultValue: T, block: () -> T) = try {
-        block()
-    } catch (e: NullPointerException) {
-        defaultValue
     }
 }

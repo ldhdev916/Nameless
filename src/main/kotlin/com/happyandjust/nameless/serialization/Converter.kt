@@ -19,10 +19,21 @@
 package com.happyandjust.nameless.serialization
 
 import com.google.gson.JsonElement
+import com.google.gson.JsonNull
 
 interface Converter<T> {
 
     fun serialize(t: T): JsonElement
 
     fun deserialize(jsonElement: JsonElement): T
+}
+
+class DummyConverter<T>(private val dummyValue: T) : Converter<T> {
+    override fun serialize(t: T): JsonElement {
+        return JsonNull.INSTANCE
+    }
+
+    override fun deserialize(jsonElement: JsonElement): T {
+        return dummyValue
+    }
 }

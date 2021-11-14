@@ -400,9 +400,24 @@ object FeatureInGameStatViewer :
     }
 
     enum class InformationType(val statName: String) {
-        HYPIXEL_LEVEL("Hypixel Level"),
-        BEDWARS_LEVEL("BedWars Level"),
-        SKYWARS_LEVEL("SkyWars Level")
+        HYPIXEL_LEVEL("Hypixel Level") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return StatAPIUtils.networkExpToLevel(nullCatch(0.0) { jsonObject["networkExp"].asDouble }).toString()
+            }
+        },
+        BEDWARS_LEVEL("BedWars Level") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(1) { jsonObject["achievements"].asJsonObject["bedwars_level"].asInt }.toString()
+            }
+        },
+        SKYWARS_LEVEL("SkyWars Level") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return StatAPIUtils.skyWarsExpToLevel(nullCatch(0) { jsonObject["stats"].asJsonObject["SkyWars"].asJsonObject["skywars_experience"].asInt })
+                    .toString()
+            }
+        };
+
+        abstract fun getStatValue(jsonObject: JsonObject): String
     }
 
     enum class DisplayType(val lore: String) {

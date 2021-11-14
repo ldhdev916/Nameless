@@ -22,11 +22,13 @@ import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.Overlay
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.features.Category
+import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.OverlayParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.RenderOverlayListener
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.gui.relocate.RelocateGui
+import com.happyandjust.nameless.serialization.DummyConverter
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.COverlay
 import gg.essential.elementa.UIComponent
@@ -44,24 +46,40 @@ object FeatureTextureOverlay : SimpleFeature(
     Category.MISCELLANEOUS,
     "textureoverlay",
     "Texture Overlay",
-    "Render texture which is under config/NamelessTextureOverlay to your screen. If you want to remove/add texture In Game, after modifying textures type /reloadtexture"
+    "Render texture which is under config/NamelessTextureOverlay to your screen. If you want to remove/add texture In Game, after modifying textures reload textures"
 ), RenderOverlayListener {
 
     private val dir = File("config/NamelessTextureOverlay").also { it.mkdirs() }
 
     init {
+        val callback = {
+            reloadTexture()
+            mc.displayGuiScreen(null)
+        }
+        parameters["reload"] = FeatureParameter(
+            0,
+            "textureoverlay",
+            "reload",
+            "Reload Textures",
+            "",
+            callback,
+            DummyConverter(callback)
+        ).also {
+            it.placeHolder = "Reload"
+        }
+
         reloadTexture()
     }
 
     fun reloadTexture() {
-        parameters.clear()
+        parameters.entries.removeIf { it.value is OverlayParameter }
 
         for (file in dir.listFiles() ?: emptyArray()) {
             val name = file.name
 
             if (name.endsWith(".png") || name.endsWith(".jpg")) {
                 parameters[name] = object : OverlayParameter<Boolean>(
-                    0,
+                    1,
                     "textureoverlay",
                     name,
                     name,

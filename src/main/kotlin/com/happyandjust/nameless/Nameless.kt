@@ -152,7 +152,6 @@ class Nameless {
         registerCommands(
             DevCommand,
             HypixelCommand,
-            TextureCommand,
             SearchBinCommand,
             NameHistoryCommand,
             WaypointCommand,

@@ -112,7 +112,6 @@ Unless, You can't use rendering outline on entity
   <summary>Commands</summary>
 
  - /currentdata - prints current game of hypixel
- - /reloadtexture - Reload Texture Overlay's texture
  - /searchbin - Search bins of specific item
  - /name - gets name history of player
  - /waypoint - Show paths to given coordinate

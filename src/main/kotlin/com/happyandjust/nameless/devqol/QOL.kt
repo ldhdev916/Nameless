@@ -24,7 +24,6 @@ import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.auction.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockMonster
-import com.happyandjust.nameless.mixins.accessors.AccessorNBTTagList
 import com.happyandjust.nameless.utils.SkyblockUtils
 import net.minecraft.client.Minecraft
 import net.minecraft.client.entity.EntityPlayerSP
@@ -58,10 +57,9 @@ import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.roundToInt
 
-
 private val RARITY_PATTERN = Pattern.compile("(§[0-9a-f]§l§ka§r )?([§0-9a-fk-or]+)(?<rarity>[A-Z]+)")
 private val hsbCache = hashMapOf<Int, FloatArray>()
-val md = MessageDigest.getInstance("MD5")
+private val md = MessageDigest.getInstance("MD5")
 private val md5Cache = ConfigMap.StringConfigMap("md5")
 private val auctionThreadPool = Executors.newFixedThreadPool(6)
 
@@ -142,8 +140,6 @@ fun String.copyToClipboard() =
 fun Double.formatDouble() =
     DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)).also { it.maximumFractionDigits = 640 }
         .format(this)
-
-fun Random.getBetween(start: Int, end: Int) = nextInt(end - start + 1) + start
 
 fun BlockPos.getAxisAlignedBB() =
     AxisAlignedBB(x.toDouble(), y.toDouble(), z.toDouble(), x + 1.0, y + 1.0, z + 1.0)
@@ -238,8 +234,6 @@ fun Int.getBrightness() = hsbCache[this]?.get(2) ?: run {
     }
 }
 
-fun Int.toHexString() = String.format("%08x", this)
-
 val mc: Minecraft = Minecraft.getMinecraft()
 
 fun World.getBlockAtPos(pos: BlockPos) = getBlockState(pos).block
@@ -248,12 +242,6 @@ fun BlockPos.toVec3() = Vec3(x.toDouble(), y.toDouble(), z.toDouble())
 
 inline val LOGGER: Logger
     get() = LogManager.getLogger()
-
-fun mid(value1: Int, value2: Int) = (value1 + value2) / 2
-
-fun mid(value1: Double, value2: Double) = (value1 + value2) / 2.0
-
-fun mid(value1: Float, value2: Float) = (value1 + value2) / 2F
 
 fun Throwable.notifyException() {
     sendClientMessage("§cException Occurred ${javaClass.name} $message")
@@ -272,18 +260,6 @@ fun ItemStack.getSkullOwner(): String {
         NBTUtil.readGameProfileFromNBT(tagCompound.getCompoundTag("SkullOwner")).properties["textures"].find { it.name == "textures" }?.value
             ?: ""
     } else ""
-}
-
-fun ItemStack.setSkullOwner(skullOwner: String) {
-    val nbgTagList = tagCompound?.getCompoundTag("SkullOwner")?.getCompoundTag("Properties")
-        ?.getTagList("textures", Constants.NBT.TAG_COMPOUND) ?: return
-
-    (nbgTagList as AccessorNBTTagList).tagList.forEach {
-        if (it is NBTTagCompound) {
-            it.setString("Value", skullOwner)
-            return
-        }
-    }
 }
 
 fun scanAuction(task: (List<AuctionInfo>) -> Unit) {
@@ -329,6 +305,12 @@ fun Double.transformToPrecision(precision: Int): Double {
 inline fun Double.transformToPrecisionString(precision: Int) = String.format("%.${precision}f", this)
 
 fun String.decodeBase64() = Base64.getDecoder().decode(this).decodeToString()
+
+fun <T> nullCatch(defaultValue: T, block: () -> T) = try {
+    block()
+} catch (e: NullPointerException) {
+    defaultValue
+}
 
 val fontRendererNotNull: Boolean
     get() = mc.fontRendererObj != null

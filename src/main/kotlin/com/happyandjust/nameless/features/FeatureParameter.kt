@@ -75,6 +75,7 @@ open class FeatureParameter<T>(
         checkType<ChromaColor>() -> ComponentType.COLOR
         checkType<Enum<*>>() -> ComponentType.SELECTOR
         checkType<List<Identifier>>() -> ComponentType.VERTIAL_MOVE
+        checkType<() -> Unit>() -> ComponentType.BUTTON
         else -> throw IllegalArgumentException("Unable to find appropriate component type for class ${defaultValue!!.javaClass.name}")
     }
 
@@ -103,6 +104,8 @@ open class FeatureParameter<T>(
         it.relocateAble = this as? IRelocateAble
 
         it.allIdentifiers = allIdentifiers
+
+        it.placeHolder = placeHolder
 
         it.settings = parameters.values.map { featureParameter -> featureParameter.toPropertyData() }
     }

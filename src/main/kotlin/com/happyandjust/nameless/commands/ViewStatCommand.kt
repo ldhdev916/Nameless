@@ -28,7 +28,6 @@ import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
 import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.network.Request
 import com.happyandjust.nameless.utils.APIUtils
-import com.happyandjust.nameless.utils.StatAPIUtils.getStatValueFromType
 import net.minecraft.command.ICommandSender
 import kotlin.concurrent.thread
 
@@ -62,7 +61,7 @@ object ViewStatCommand : ClientCommandBase("viewstat") {
 
                 for (identifier in identifiers) {
                     builder.append("\n")
-                        .append(identifier.informationType.getFormatText(json.getStatValueFromType(identifier.informationType)))
+                        .append(identifier.informationType.getFormatText(identifier.informationType.getStatValue(json)))
                 }
 
                 sendClientMessage(builder)
