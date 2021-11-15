@@ -29,6 +29,7 @@ import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.network.Request
 import com.happyandjust.nameless.utils.APIUtils
 import net.minecraft.command.ICommandSender
+import net.minecraft.util.EnumChatFormatting
 import kotlin.concurrent.thread
 
 object ViewStatCommand : ClientCommandBase("viewstat") {
@@ -54,10 +55,10 @@ object ViewStatCommand : ClientCommandBase("viewstat") {
             try {
                 val builder = StringBuilder()
 
-                builder.append("§bStats of §e$name")
-
                 val s = Request.get("https://api.hypixel.net/player?key=${FeatureHypixelAPIKey.apiKey}&uuid=$uuid")
                 val json = JSONHandler(s).read(JsonObject())["player"].asJsonObject
+
+                builder.append("§bStats of §e${getPlayerName(json)}")
 
                 for (identifier in identifiers) {
                     builder.append("\n")
@@ -67,7 +68,46 @@ object ViewStatCommand : ClientCommandBase("viewstat") {
                 sendClientMessage(builder)
             } catch (e: Exception) {
                 sendPrefixMessage("§cError occurred while getting player's stats Reason: ${e.javaClass.name} ${e.message}")
+                e.printStackTrace()
             }
+        }
+    }
+
+    private fun getPlayerName(jsonObject: JsonObject): String {
+        val displayName = jsonObject["displayname"].asString
+
+        return "${processRank(jsonObject)} $displayName"
+    }
+
+    private fun processRank(jsonObject: JsonObject): String {
+        if (jsonObject.has("prefix")) { // WTF
+            return jsonObject["prefix"].asString
+        }
+
+        if (jsonObject.has("rank")) {
+            when (jsonObject["rank"].asString) {
+                "ADMIN" -> return "§c[ADMIN]"
+                "MODERATOR" -> return "§2[MOD]"
+                "HELPER" -> return "§9[HELPER]"
+                "YOUTUBER" -> return "§c[§fYOUTUBE§c]"
+            }
+        }
+
+        return when ((if (jsonObject.has("packageRank")) jsonObject["packageRank"] else jsonObject["newPackageRank"]).asString) {
+            "MVP_PLUS" -> {
+                val plus = if (jsonObject.has("rankPlusColor")) jsonObject["rankPlusColor"].asString else "RED"
+                val color = EnumChatFormatting.valueOf(plus)
+
+                if (jsonObject["monthlyPackageRank"].asString == "SUPERSTAR") {
+                    "§6[MVP$color++§6]"
+                } else {
+                    "§b[MVP$color+§b]"
+                }
+            }
+            "MVP" -> "§b[MVP]"
+            "VIP_PLUS" -> "§a[VIP§6+§a]"
+            "VIP" -> "§a[VIP]"
+            else -> "§7"
         }
     }
 

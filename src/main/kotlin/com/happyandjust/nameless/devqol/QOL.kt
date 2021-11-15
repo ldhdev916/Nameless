@@ -302,7 +302,7 @@ fun Double.transformToPrecision(precision: Int): Double {
     return round(this * pow) / pow
 }
 
-inline fun Double.transformToPrecisionString(precision: Int) = String.format("%.${precision}f", this)
+inline fun Double.transformToPrecisionString(precision: Int) = transformToPrecision(precision).formatDouble()
 
 fun String.decodeBase64() = Base64.getDecoder().decode(this).decodeToString()
 

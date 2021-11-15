@@ -194,7 +194,7 @@ object FeatureInGameStatViewer :
             "ingamestatviewer",
             "texts",
             "Each Stat Texts",
-            "{value} is converted to actual value(like level) when rendering and & will converted to §",
+            "{value} is converted to actual value(like level) when rendering and & will be converted to §",
             "",
             CString
         ) {
@@ -411,7 +411,7 @@ object FeatureInGameStatViewer :
         },
         BEDWARS_LEVEL("BedWars Level") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return nullCatch(1) { jsonObject["achievements"].asJsonObject["bedwars_level"].asInt }.toString()
+                return nullCatch(1) { jsonObject["achievements"].asJsonObject["bedwars_level"].asInt }.insertCommaEvery3Character()
             }
         },
         SKYWARS_LEVEL("SkyWars Level") {
@@ -419,9 +419,129 @@ object FeatureInGameStatViewer :
                 return StatAPIUtils.skyWarsExpToLevel(nullCatch(0) { jsonObject["stats"].asJsonObject["SkyWars"].asJsonObject["skywars_experience"].asInt })
                     .toString()
             }
+        },
+        ACHIEVEMENT_POINT("Achievement Point") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject["achievementPoints"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        KARMA("Karma") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject["karma"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        SKYWARS_KILLS("SkyWars Kills") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject.getGameStat("SkyWars")["kills"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        SKYWARS_DEATHS("SkyWars Deaths") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject.getGameStat("SkyWars")["deaths"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        SKYWARS_WINS("SkyWars Wins") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject.getGameStat("SkyWars")["wins"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        SKYWARS_LOSSES("SkyWars Losses") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject.getGameStat("SkyWars")["losses"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        SKYWARS_KD("SkyWars K/D") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                val kill = nullCatch(0) { jsonObject.getGameStat("SkyWars")["kills"].asInt }
+                val death = nullCatch(0) { jsonObject.getGameStat("SkyWars")["deaths"].asInt }
+
+                return (kill.toDouble() / death.coerceAtLeast(1)).transformToPrecisionString(2)
+            }
+        },
+        SKYWARS_WL("SkyWars W/L") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                val win = nullCatch(0) { jsonObject.getGameStat("SkyWars")["wins"].asInt }
+                val loss = nullCatch(0) { jsonObject.getGameStat("SkyWars")["deaths"].asInt }
+
+                return (win.toDouble() / loss.coerceAtLeast(1)).transformToPrecisionString(2)
+            }
+        },
+        SKYWARS_COINS("SkyWars Coins") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject.getGameStat("SkyWars")["coins"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        BEDWARS_COINS("BedWars Coins") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject.getGameStat("Bedwars")["coins"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        BEDWARS_WINSTREAK("BedWars Winstreak") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject.getGameStat("Bedwars")["winstreak"].asInt }.toString()
+            }
+        },
+        BEDWARS_KILLS("BedWars Kills") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject.getGameStat("Bedwars")["kills_bedwars"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        BEDWARS_DEATHS("BedWars Deaths") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject.getGameStat("Bedwars")["deaths_bedwars"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        BEDWARS_FINAL_KILLS("BedWars Final Kills") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject.getGameStat("Bedwars")["final_kills_bedwars"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        BEDWARS_FINAL_DEATHS("BedWars Final Deaths") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject.getGameStat("Bedwars")["final_deaths_bedwars"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        BEDWARS_WINS("BedWars Wins") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject.getGameStat("Bedwars")["wins_bedwars"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        BEDWARS_LOSSES("BedWars Losses") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                return nullCatch(0) { jsonObject.getGameStat("Bedwars")["losses_bedwars"].asInt }.insertCommaEvery3Character()
+            }
+        },
+        BEDWARS_KD("BedWars K/D") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                val kill = nullCatch(0) { jsonObject.getGameStat("Bedwars")["kills_bedwars"].asInt }
+                val death = nullCatch(0) { jsonObject.getGameStat("Bedwars")["deaths_bedwars"].asInt }
+
+                return (kill.toDouble() / death.coerceAtLeast(1)).transformToPrecisionString(2)
+            }
+        },
+        BEDWARS_FINAL_KD("BedWars Final K/D") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                val final_kill = nullCatch(0) { jsonObject.getGameStat("Bedwars")["final_kills_bedwars"].asInt }
+                val final_death = nullCatch(0) { jsonObject.getGameStat("Bedwars")["final_deaths_bedwars"].asInt }
+
+                return (final_kill.toDouble() / final_death.coerceAtLeast(1)).transformToPrecisionString(2)
+            }
+        },
+        BEDWARS_WL("BedWars W/L") {
+            override fun getStatValue(jsonObject: JsonObject): String {
+                val win = nullCatch(0) { jsonObject.getGameStat("Bedwars")["wins_bedwars"].asInt }
+                val loss = nullCatch(0) { jsonObject.getGameStat("Bedwars")["losses_bedwars"].asInt }
+
+                return (win.toDouble() / loss.coerceAtLeast(1)).transformToPrecisionString(2)
+            }
         };
 
+
         abstract fun getStatValue(jsonObject: JsonObject): String
+
+        companion object {
+            private fun JsonObject.getGameStat(gameName: String) = this["stats"].asJsonObject[gameName].asJsonObject
+        }
     }
 
     enum class DisplayType(val lore: String) {
