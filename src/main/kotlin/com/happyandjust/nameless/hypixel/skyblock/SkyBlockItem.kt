@@ -30,9 +30,39 @@ class SkyBlockItem {
 
     @SerializedName("tier")
     var stringRarity = "COMMON"
+        set(value) {
+            field = value
+            rarity = ItemRarity.fromString(value)
+        }
 
     @SerializedName("skin")
     var skin = ""
 
     var rarity = ItemRarity.COMMON
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as SkyBlockItem
+
+        if (name != other.name) return false
+        if (id != other.id) return false
+        if (stringRarity != other.stringRarity) return false
+        if (skin != other.skin) return false
+        if (rarity != other.rarity) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + id.hashCode()
+        result = 31 * result + stringRarity.hashCode()
+        result = 31 * result + skin.hashCode()
+        result = 31 * result + rarity.hashCode()
+        return result
+    }
+
+
 }

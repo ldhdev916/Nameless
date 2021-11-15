@@ -23,8 +23,8 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JSONHandler
 import com.happyandjust.nameless.core.NameHistory
+import com.happyandjust.nameless.devqol.decodeBase64
 import com.happyandjust.nameless.network.Request
-import java.util.*
 
 object APIUtils {
 
@@ -51,7 +51,9 @@ object APIUtils {
 
         val base64 = json["properties"].asJsonArray[0].asJsonObject["value"].asString
 
-        val decodedJson = gson.fromJson(String(Base64.getDecoder().decode(base64)), JsonObject::class.java)
-        return decodedJson["textures"].asJsonObject["SKIN"].asJsonObject["url"].asString
+        return getSkinURLFromJSON(gson.fromJson(base64.decodeBase64(), JsonObject::class.java))
     }
+
+    fun getSkinURLFromJSON(jsonObject: JsonObject) =
+        jsonObject["textures"].asJsonObject["SKIN"].asJsonObject["url"].asString!!
 }

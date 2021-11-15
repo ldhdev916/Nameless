@@ -26,7 +26,7 @@ import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.serialization.Converter
 
 open class FeatureParameter<T>(
-    val ordinal: Int,
+    var ordinal: Int,
     category: String,
     key: String,
     title: String,

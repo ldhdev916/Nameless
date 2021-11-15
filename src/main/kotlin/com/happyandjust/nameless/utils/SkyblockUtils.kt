@@ -80,8 +80,6 @@ object SkyblockUtils {
 
         for (item in items) {
             val skyBlockItem = gson.fromJson(item, SkyBlockItem::class.java)
-
-            skyBlockItem.rarity = ItemRarity.fromString(skyBlockItem.stringRarity)
             allItems[skyBlockItem.id] = skyBlockItem
         }
     }

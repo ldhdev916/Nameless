@@ -155,7 +155,8 @@ class Nameless {
             SearchBinCommand,
             NameHistoryCommand,
             WaypointCommand,
-            ViewStatCommand
+            ViewStatCommand,
+            ChangeHelmetTextureCommand
         )
         registerListeners(FeatureListener, BasicListener, OutlineHandleListener, LocrawListener, WaypointListener)
     }

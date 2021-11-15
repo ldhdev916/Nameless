@@ -81,6 +81,7 @@ Unless, You can't use rendering outline on entity
   - Enderman Slayer Helper
   - Disable Enderman Teleportation
   - Equip Pet Skin
+  - Change Helmet Texture
 </details>
 <details>
  <summary>Miscellaneous</summary>
@@ -116,4 +117,5 @@ Unless, You can't use rendering outline on entity
  - /name - gets name history of player
  - /waypoint - Show paths to given coordinate
  - /viewstat - View someone's stats
+ - /helmettexture - Select Helmet Texture
 </details>

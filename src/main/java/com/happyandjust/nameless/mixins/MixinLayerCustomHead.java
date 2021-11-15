@@ -18,11 +18,17 @@
 
 package com.happyandjust.nameless.mixins;
 
+import com.happyandjust.nameless.features.impl.skyblock.FeatureChangeHelmetTexture;
 import com.happyandjust.nameless.features.impl.skyblock.FeatureEquipPetSkin;
+import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem;
+import com.mojang.authlib.GameProfile;
+import kotlin.Pair;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.layers.LayerCustomHead;
 import net.minecraft.client.renderer.tileentity.TileEntitySkullRenderer;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.util.EnumFacing;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -34,15 +40,28 @@ public class MixinLayerCustomHead {
 
     @Inject(method = "doRenderLayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/tileentity/TileEntitySkullRenderer;renderSkull(FFFLnet/minecraft/util/EnumFacing;FILcom/mojang/authlib/GameProfile;I)V"), cancellable = true)
     public void changeSkin(EntityLivingBase entitylivingbaseIn, float p_177141_2_, float p_177141_3_, float partialTicks, float p_177141_5_, float p_177141_6_, float p_177141_7_, float scale, CallbackInfo ci) {
-        FeatureEquipPetSkin feature = FeatureEquipPetSkin.INSTANCE;
-        if (feature.getEnabled()) {
-            FeatureEquipPetSkin.PetSkinChangeInfo info = feature.getCurrentPetSkinChangeInfo();
+        FeatureEquipPetSkin featureEquipPetSkin = FeatureEquipPetSkin.INSTANCE;
+        FeatureChangeHelmetTexture featureChangeHelmetTexture = FeatureChangeHelmetTexture.INSTANCE;
+
+        GameProfile gameProfile = null;
+
+        if (featureEquipPetSkin.getEnabled() && entitylivingbaseIn instanceof EntityArmorStand) {
+            FeatureEquipPetSkin.PetSkinChangeInfo info = featureEquipPetSkin.getCurrentPetSkinChangeInfo();
 
             if (info != null && info.getItemStack().equals(entitylivingbaseIn.getCurrentArmor(3))) {
-                TileEntitySkullRenderer.instance.renderSkull(-.5f, 0, -.5f, EnumFacing.UP, 180, 3, info.getGameProfile(), -1);
-                GlStateManager.popMatrix();
-                ci.cancel();
+                gameProfile = info.getGameProfile();
             }
+        }
+        if (featureChangeHelmetTexture.getEnabled() && entitylivingbaseIn instanceof EntityPlayerSP) {
+            Pair<SkyBlockItem, GameProfile> pair = featureChangeHelmetTexture.getCurrentlyEquipedTexture();
+
+            if (pair != null) gameProfile = pair.getSecond();
+        }
+
+        if (gameProfile != null) {
+            TileEntitySkullRenderer.instance.renderSkull(-.5f, 0, -.5f, EnumFacing.UP, 180, 3, gameProfile, -1);
+            GlStateManager.popMatrix();
+            ci.cancel();
         }
     }
 }
