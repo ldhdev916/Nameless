@@ -201,7 +201,11 @@ object FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper",
                 return container
             }
 
-            override fun renderOverlay(partialTicks: Float) {
+            override fun shouldDisplayInRelocateGui(): Boolean {
+                return enabled && Hypixel.currentGame == GameType.PARTY_GAMES
+            }
+
+            override fun renderOverlay0(partialTicks: Float) {
                 // see LabEscapeProcessor
             }
 

@@ -141,7 +141,11 @@ object FeatureInGameStatViewer :
                 return container
             }
 
-            override fun renderOverlay(partialTicks: Float) {
+            override fun shouldDisplayInRelocateGui(): Boolean {
+                return enabled && value == DisplayType.OVERLAY
+            }
+
+            override fun renderOverlay0(partialTicks: Float) {
                 val identifiers = this@FeatureInGameStatViewer.getParameterValue<List<Identifier>>("order")
                     .map { it as InGameStatIdentifier }
                 val overlay = overlayPoint.value

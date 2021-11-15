@@ -27,8 +27,7 @@ import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.features.IRelocateAble
-import com.happyandjust.nameless.features.SimpleFeature
+import com.happyandjust.nameless.features.OverlayFeature
 import com.happyandjust.nameless.features.listener.ChatListener
 import com.happyandjust.nameless.features.listener.ItemTooltipListener
 import com.happyandjust.nameless.features.listener.PacketListener
@@ -57,12 +56,12 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent
 import java.awt.Color
 import java.util.regex.Pattern
 
-object FeatureGTBHelper : SimpleFeature(
+object FeatureGTBHelper : OverlayFeature(
     Category.QOL,
     "gtbhelper",
     "Guess the Build Helper",
     "Shows possible matching words in screen, also you can press tab to auto complete"
-), ItemTooltipListener, ChatListener, PacketListener, IRelocateAble {
+), ItemTooltipListener, ChatListener, PacketListener {
 
     // english, korean
     private val words = hashMapOf<String, String>()
@@ -163,7 +162,11 @@ object FeatureGTBHelper : SimpleFeature(
         return container
     }
 
-    override fun renderOverlay(partialTicks: Float) {
+    override fun shouldDisplayInRelocateGui(): Boolean {
+        return checkForEnabledAndGuessTheBuild()
+    }
+
+    override fun renderOverlay0(partialTicks: Float) {
         if (!checkForEnabledAndGuessTheBuild()) return
 
         matrix {

@@ -18,20 +18,19 @@
 
 package com.happyandjust.nameless.features
 
-import com.happyandjust.nameless.serialization.Converter
+abstract class AbstractDefaultFeature(val key: String, val title: String, val desc: String) : IHasComponentType {
+    val parameters = hashMapOf<String, FeatureParameter<*>>()
 
-abstract class OverlayParameter<T>(
-    ordinal: Int,
-    category: String,
-    key: String,
-    title: String,
-    desc: String,
-    defaultValue: T,
-    converter: Converter<T>
-) : FeatureParameter<T>(ordinal, category, key, title, desc, defaultValue, converter), IRelocateAble {
+    companion object {
+        fun getFeatureAndSubParameters(): List<AbstractDefaultFeature> {
+            val list = arrayListOf<AbstractDefaultFeature>()
+            for (feature in FeatureRegistry.features) {
+                list.add(feature)
 
-    override fun getDisplayName(): String {
-        return title
+                feature.parameters.values.forEach { list.addAll(it.digIntoParameter()) }
+            }
+
+            return list
+        }
     }
-
 }

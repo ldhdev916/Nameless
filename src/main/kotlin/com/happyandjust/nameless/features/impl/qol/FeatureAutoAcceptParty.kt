@@ -24,8 +24,7 @@ import com.happyandjust.nameless.core.Overlay
 import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.features.IRelocateAble
-import com.happyandjust.nameless.features.SimpleFeature
+import com.happyandjust.nameless.features.OverlayFeature
 import com.happyandjust.nameless.features.listener.ChatListener
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.KeyInputListener
@@ -53,8 +52,8 @@ import java.awt.Color
 import java.util.regex.Pattern
 import kotlin.math.max
 
-object FeatureAutoAcceptParty : SimpleFeature(Category.QOL, "autoacceptparty", "Auto Accept Party", ""), ChatListener,
-    KeyInputListener, ClientTickListener, IRelocateAble {
+object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", "Auto Accept Party", ""), ChatListener,
+    KeyInputListener, ClientTickListener {
 
     init {
         parameters["hide"] = FeatureParameter(
@@ -132,7 +131,11 @@ object FeatureAutoAcceptParty : SimpleFeature(Category.QOL, "autoacceptparty", "
         }
     }
 
-    override fun renderOverlay(partialTicks: Float) {
+    override fun shouldDisplayInRelocateGui(): Boolean {
+        return enabled && mc.thePlayer.inHypixel()
+    }
+
+    override fun renderOverlay0(partialTicks: Float) {
         currentPartyInfo?.let {
             val keyBindings = Nameless.INSTANCE.keyBindings
             val fontRenderer = mc.fontRendererObj

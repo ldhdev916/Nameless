@@ -25,8 +25,7 @@ import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.features.IRelocateAble
-import com.happyandjust.nameless.features.SimpleFeature
+import com.happyandjust.nameless.features.OverlayFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.ServerChangeListener
 import com.happyandjust.nameless.features.listener.WorldRenderListener
@@ -56,8 +55,8 @@ import java.awt.Color
 import kotlin.math.pow
 
 object FeatureEndermanSlayerHelper :
-    SimpleFeature(Category.SKYBLOCK, "endermanslayerhelper", "Enderman Slayer Helper", "Display Voidgloom Info"),
-    ClientTickListener, IRelocateAble, WorldRenderListener, ServerChangeListener {
+    OverlayFeature(Category.SKYBLOCK, "endermanslayerhelper", "Enderman Slayer Helper", "Display Voidgloom Info"),
+    ClientTickListener, WorldRenderListener, ServerChangeListener {
 
     private var scanTick = 0
     override val overlayPoint = ConfigValue("endermanslayer", "overlay", Overlay.DEFAULT, COverlay)
@@ -173,7 +172,11 @@ object FeatureEndermanSlayerHelper :
         return container
     }
 
-    override fun renderOverlay(partialTicks: Float) {
+    override fun shouldDisplayInRelocateGui(): Boolean {
+        return checkForRequirement()
+    }
+
+    override fun renderOverlay0(partialTicks: Float) {
         if (checkForRequirement()) {
             currentVoidgloomCache?.let {
                 matrix {

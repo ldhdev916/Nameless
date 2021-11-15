@@ -18,23 +18,42 @@
 
 package com.happyandjust.nameless.gui.relocate
 
+import com.happyandjust.nameless.features.IRelocateAble
 import com.happyandjust.nameless.gui.feature.ColorCache
 import gg.essential.elementa.components.UIBlock
+import gg.essential.elementa.components.UIText
 import gg.essential.elementa.components.Window
+import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.constraints.ChildBasedSizeConstraint
 import gg.essential.elementa.constraints.animation.Animations
 import gg.essential.elementa.dsl.*
 import gg.essential.elementa.utils.invisible
 import gg.essential.elementa.utils.withAlpha
 import gg.essential.vigilance.utils.onLeftClick
+import java.awt.Color
 
-class RelocateComponent(var currentScale: Double) : UIBlock(ColorCache.brightDivider.invisible()) {
+class RelocateComponent(window: Window, relocateAble: IRelocateAble) : UIBlock(ColorCache.brightDivider.invisible()) {
 
     private var offset: Pair<Float, Float>? = null
     private val scaleChangeListeners = arrayListOf<(Double) -> Unit>()
+    var currentScale = relocateAble.overlayPoint.value.scale
+
+    private val indicatorText = UIText(relocateAble.getDisplayName()).constrain {
+
+        y = 0.pixel(alignOutside = true) boundTo this@RelocateComponent
+        textScale = 1.5.pixels()
+
+        color = Color.red.invisible().constraint
+    } childOf window
 
     init {
         constrain {
+
+            val point = relocateAble.overlayPoint.value.point
+
+            x = point.x.pixels()
+            y = point.y.pixels()
+
             width = ChildBasedSizeConstraint()
             height = ChildBasedSizeConstraint()
         }
@@ -43,11 +62,21 @@ class RelocateComponent(var currentScale: Double) : UIBlock(ColorCache.brightDiv
             animate {
                 setColorAnimation(Animations.OUT_EXP, 1f, ColorCache.brightDivider.withAlpha(0.7f).constraint)
             }
+            indicatorText.constrain {
+                x = CenterConstraint() boundTo this@RelocateComponent
+            }
+            indicatorText.animate {
+                setColorAnimation(Animations.OUT_EXP, 1f, Color.red.constraint)
+            }
         }
 
         onMouseLeave {
             animate {
                 setColorAnimation(Animations.OUT_EXP, 1f, ColorCache.brightDivider.invisible().constraint)
+            }
+
+            indicatorText.animate {
+                setColorAnimation(Animations.OUT_EXP, 1f, Color.red.invisible().constraint)
             }
         }
 
@@ -71,6 +100,16 @@ class RelocateComponent(var currentScale: Double) : UIBlock(ColorCache.brightDiv
                 }
             }
         }
+
+        onMouseScroll {
+            val value = it.delta / relocateAble.getWheelSensitive()
+
+            changeScale(currentScale + value)
+        }
+
+        relocateAble.getRelocateComponent(this) childOf this
+        changeScale(relocateAble.overlayPoint.value.scale)
+        fitIntoWindow(window)
     }
 
     fun changeScale(newValue: Double) {

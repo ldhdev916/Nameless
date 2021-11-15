@@ -18,20 +18,13 @@
 
 package com.happyandjust.nameless.features
 
-import com.happyandjust.nameless.serialization.Converter
-
-abstract class OverlayParameter<T>(
-    ordinal: Int,
-    category: String,
+abstract class OverlayFeature(
+    category: Category,
     key: String,
     title: String,
-    desc: String,
-    defaultValue: T,
-    converter: Converter<T>
-) : FeatureParameter<T>(ordinal, category, key, title, desc, defaultValue, converter), IRelocateAble {
-
-    override fun getDisplayName(): String {
-        return title
-    }
+    desc: String = "",
+    enabled_: Boolean = false
+) : SimpleFeature(category, key, title, desc, enabled_), IRelocateAble {
+    override fun getDisplayName() = title
 
 }

@@ -29,13 +29,11 @@ open class FeatureParameter<T>(
     val ordinal: Int,
     category: String,
     key: String,
-    val title: String,
-    val desc: String,
+    title: String,
+    desc: String,
     private val defaultValue: T,
     converter: Converter<T>
-) : IHasComponentType {
-
-    val parameters = hashMapOf<String, FeatureParameter<*>>()
+) : AbstractDefaultFeature(key, title, desc) {
     var inCategory = ""
 
     var onValueChange: (T) -> Unit = {}
@@ -66,6 +64,18 @@ open class FeatureParameter<T>(
     fun <T> getParameter(key: String) = parameters[key] as FeatureParameter<T>
 
     fun <T> getParameterValue(key: String) = getParameter<T>(key).value
+
+    fun digIntoParameter(): List<FeatureParameter<*>> {
+
+        val list = arrayListOf<FeatureParameter<*>>()
+
+        list.add(this)
+        parameters.values.forEach { list.addAll(it.digIntoParameter()) }
+
+        return list
+    }
+
+    fun getParentDefaultFeature() = getFeatureAndSubParameters().first { it.parameters.containsValue(this) }
 
     override fun getComponentType(): ComponentType? = when {
         checkType<Int>() -> ComponentType.SLIDER
@@ -100,8 +110,6 @@ open class FeatureParameter<T>(
 
         it.allEnumList = allEnumList
         it.enumName = enumName
-
-        it.relocateAble = this as? IRelocateAble
 
         it.allIdentifiers = allIdentifiers
 

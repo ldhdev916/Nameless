@@ -27,7 +27,6 @@ import com.happyandjust.nameless.features.OverlayParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.RenderOverlayListener
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
-import com.happyandjust.nameless.gui.relocate.RelocateGui
 import com.happyandjust.nameless.serialization.DummyConverter
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.COverlay
@@ -106,7 +105,11 @@ object FeatureTextureOverlay : SimpleFeature(
                         }
                     }
 
-                    override fun renderOverlay(partialTicks: Float) {
+                    override fun shouldDisplayInRelocateGui(): Boolean {
+                        return enabled && value
+                    }
+
+                    override fun renderOverlay0(partialTicks: Float) {
                         val overlay = overlayPoint.value
 
                         mc.textureManager.bindTexture(resourceLocation)
@@ -135,8 +138,6 @@ object FeatureTextureOverlay : SimpleFeature(
 
     override fun renderOverlay(partialTicks: Float) {
         if (!enabled) return
-        if (mc.currentScreen is RelocateGui) return
-
         for (parameter in parameters.values.filterIsInstance<OverlayParameter<Boolean>>()) {
             if (parameter.value) {
                 parameter.renderOverlay(partialTicks)

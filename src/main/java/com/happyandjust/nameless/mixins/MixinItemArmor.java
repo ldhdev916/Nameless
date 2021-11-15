@@ -21,6 +21,8 @@ package com.happyandjust.nameless.mixins;
 import com.happyandjust.nameless.features.FeatureParameter;
 import com.happyandjust.nameless.features.FeatureRegistry;
 import com.happyandjust.nameless.features.SimpleFeature;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
@@ -53,6 +55,7 @@ public class MixinItemArmor {
 
     @Inject(method = "hasColor", at = @At("HEAD"), cancellable = true)
     public void injectHasColor(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        if (!checkForInventory(stack)) return;
         SimpleFeature feature = FeatureRegistry.INSTANCE.getCHANGE_LEATHER_ARMOR_COLOR();
 
         if (feature.getEnabled()) {
@@ -64,6 +67,7 @@ public class MixinItemArmor {
 
     @Inject(method = "getColor", at = @At("HEAD"), cancellable = true)
     public void customizeColor(ItemStack itemStack, CallbackInfoReturnable<Integer> cir) {
+        if (!checkForInventory(itemStack)) return;
         int color = getCustomColor(FeatureRegistry.INSTANCE.getCHANGE_LEATHER_ARMOR_COLOR());
 
         if (color != Integer.MAX_VALUE) {
@@ -73,10 +77,24 @@ public class MixinItemArmor {
 
     @Inject(method = "getColorFromItemStack", at = @At("HEAD"), cancellable = true)
     public void customizeArmorColor2(ItemStack stack, int renderPass, CallbackInfoReturnable<Integer> cir) {
+        if (!checkForInventory(stack)) return;
         int color = getCustomColor(FeatureRegistry.INSTANCE.getCHANGE_LEATHER_ARMOR_COLOR());
 
         if (color != Integer.MAX_VALUE) {
             cir.setReturnValue(color);
         }
+    }
+
+    private boolean checkForInventory(ItemStack stack) {
+        InventoryPlayer inventoryPlayer = Minecraft.getMinecraft().thePlayer.inventory;
+
+        for (ItemStack itemStack : inventoryPlayer.armorInventory) {
+            if (stack.equals(itemStack)) return true;
+        }
+        for (ItemStack itemStack : inventoryPlayer.mainInventory) {
+            if (stack.equals(itemStack)) return true;
+        }
+
+        return false;
     }
 }

@@ -31,16 +31,15 @@ import kotlin.reflect.KMutableProperty0
 
 open class SimpleFeature(
     val category: Category,
-    val key: String,
-    val title: String,
-    val desc: String = "",
+    key: String,
+    title: String,
+    desc: String = "",
     enabled_: Boolean = false
-) : IHasComponentType {
+) : AbstractDefaultFeature(key, title, desc) {
 
     var inCategory = ""
     private val enabledConfig = ConfigValue.BooleanConfigValue("features", key, enabled_)
     protected val threadPool: ExecutorService = Executors.newFixedThreadPool(2)
-    val parameters = hashMapOf<String, FeatureParameter<*>>()
     val processors = hashMapOf<Processor, () -> Boolean>()
 
     fun hasParameter(key: String) = parameters.contains(key)
@@ -76,8 +75,6 @@ open class SimpleFeature(
     ).also {
         it.settings = parameters.values.map { featureParameter -> featureParameter.toPropertyData() }
         it.inCategory = inCategory
-
-        it.relocateAble = this as? IRelocateAble
     }
 
 }

@@ -67,6 +67,7 @@ object StatAPIUtils {
     @SubscribeEvent
     fun onServerChange(e: HypixelServerChangeEvent) {
         playerJSONCache.clear()
+        processingRequest.clear()
     }
 
     fun getStatValue(player: EntityPlayer, informationType: FeatureInGameStatViewer.InformationType): String {

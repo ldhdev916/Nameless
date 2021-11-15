@@ -18,8 +18,6 @@
 
 package com.happyandjust.nameless.gui.feature
 
-import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.features.IRelocateAble
 import com.happyandjust.nameless.gui.feature.components.Identifier
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIContainer
@@ -51,8 +49,6 @@ data class PropertyData<T>(
 
     var minValue: Double = 0.0
     var maxValue: Double = 0.0
-
-    var relocateAble: IRelocateAble? = null
 
     var allEnumList = emptyList<Enum<*>>()
     var enumName: (Enum<*>) -> String = { it.name }
@@ -90,14 +86,6 @@ class DataComponent<T>(gui: FeatureGui, val data: PropertyData<T>) : Setting() {
                     width = 100.percent()
                     height = 100.percent()
                 })
-            }.constrain {
-                x = getXConstraint(addedButtons++)
-            } childOf boundingBox
-        }
-
-        data.relocateAble?.let {
-            ButtonComponent("Relocate") {
-                mc.displayGuiScreen(it.getRelocateGui())
             }.constrain {
                 x = getXConstraint(addedButtons++)
             } childOf boundingBox

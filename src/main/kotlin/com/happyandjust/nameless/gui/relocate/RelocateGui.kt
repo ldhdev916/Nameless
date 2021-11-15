@@ -30,25 +30,12 @@ import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.constraint
 import gg.essential.elementa.dsl.pixels
 
-class RelocateGui(private val relocateAble: IRelocateAble) : WindowScreen(drawDefaultBackground = false) {
-    private val relocateComponent = RelocateComponent(relocateAble.overlayPoint.value.scale).constrain {
-        val point = relocateAble.overlayPoint.value.point
+class RelocateGui(relocateAbleList: List<IRelocateAble>) : WindowScreen(drawDefaultBackground = false) {
 
-        x = point.x.pixels()
-        y = point.y.pixels()
-    } childOf window
+    private val map =
+        hashMapOf(*relocateAbleList.map { it to RelocateComponent(window, it).childOf(window) }.toTypedArray())
 
     init {
-
-        relocateComponent.onMouseScroll {
-            val value = it.delta / relocateAble.getWheelSensitive()
-
-            relocateComponent.changeScale(relocateComponent.currentScale + value)
-        }
-
-        relocateAble.getRelocateComponent(relocateComponent) childOf relocateComponent
-
-        relocateComponent.fitIntoWindow(window)
 
         UIText("Drag element to change position, scroll to scale Up/Down").constrain {
             x = CenterConstraint()
@@ -57,16 +44,16 @@ class RelocateGui(private val relocateAble: IRelocateAble) : WindowScreen(drawDe
             textScale = 1.2.pixels()
             color = ColorCache.brightDivider.constraint
         } childOf window
-
-        relocateComponent.changeScale(relocateAble.overlayPoint.value.scale)
     }
 
     override fun onScreenClose() {
         super.onScreenClose()
 
-        relocateAble.overlayPoint.value = Overlay(
-            Point(relocateComponent.getLeft().toInt(), relocateComponent.getTop().toInt()),
-            relocateComponent.currentScale
-        )
+        for ((relocateAble, component) in map) {
+            relocateAble.overlayPoint.value = Overlay(
+                Point(component.getLeft().toInt(), component.getTop().toInt()),
+                component.currentScale
+            )
+        }
     }
 }

@@ -24,8 +24,7 @@ import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.features.IRelocateAble
-import com.happyandjust.nameless.features.SimpleFeature
+import com.happyandjust.nameless.features.OverlayFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.PacketListener
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
@@ -42,8 +41,8 @@ import gg.essential.elementa.dsl.pixels
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
 
 object FeatureShowWitherShieldCoolTime :
-    SimpleFeature(Category.SKYBLOCK, "showwithershieldcooltime", "Show Wither Shield CoolTime", "", false),
-    IRelocateAble, PacketListener, ClientTickListener {
+    OverlayFeature(Category.SKYBLOCK, "showwithershieldcooltime", "Show Wither Shield CoolTime", "", false),
+    PacketListener, ClientTickListener {
 
     init {
         parameters["held"] = FeatureParameter(
@@ -113,7 +112,11 @@ object FeatureShowWitherShieldCoolTime :
         }
     }
 
-    override fun renderOverlay(partialTicks: Float) {
+    override fun shouldDisplayInRelocateGui(): Boolean {
+        return enabled && Hypixel.currentGame == GameType.SKYBLOCK
+    }
+
+    override fun renderOverlay0(partialTicks: Float) {
         if (enabled && Hypixel.currentGame == GameType.SKYBLOCK) {
             getText()?.let {
                 matrix {

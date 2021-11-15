@@ -20,6 +20,7 @@ package com.happyandjust.nameless.features
 
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.Overlay
+import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.features.listener.RenderOverlayListener
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.gui.relocate.RelocateGui
@@ -31,7 +32,15 @@ interface IRelocateAble : RenderOverlayListener {
 
     fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent
 
-    fun getRelocateGui() = RelocateGui(this)
-
     fun getWheelSensitive() = 7
+
+    fun getDisplayName(): String
+
+    fun shouldDisplayInRelocateGui(): Boolean
+
+    fun renderOverlay0(partialTicks: Float)
+
+    override fun renderOverlay(partialTicks: Float) {
+        if (mc.currentScreen !is RelocateGui) renderOverlay0(partialTicks)
+    }
 }

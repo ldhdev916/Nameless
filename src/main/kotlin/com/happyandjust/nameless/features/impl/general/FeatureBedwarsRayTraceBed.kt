@@ -22,8 +22,7 @@ import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.Overlay
 import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.IRelocateAble
-import com.happyandjust.nameless.features.SimpleFeature
+import com.happyandjust.nameless.features.OverlayFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.ServerChangeListener
 import com.happyandjust.nameless.features.listener.WorldRenderListener
@@ -62,12 +61,12 @@ import kotlin.collections.set
 import kotlin.math.max
 import kotlin.math.min
 
-object FeatureBedwarsRayTraceBed : SimpleFeature(
+object FeatureBedwarsRayTraceBed : OverlayFeature(
     Category.GENERAL,
     "raytracebed",
     "Bedwars Ray Trace Bed",
     "Ray trace up to your reach(3 blocks) and if there's a bed in your ray trace, Show all keys you should press and break blocks to get bed"
-), ClientTickListener, ServerChangeListener, WorldRenderListener, IRelocateAble {
+), ClientTickListener, ServerChangeListener, WorldRenderListener {
 
     private val blackListBlock = hashSetOf(
         Blocks.air,
@@ -272,8 +271,11 @@ object FeatureBedwarsRayTraceBed : SimpleFeature(
         }
     }
 
+    override fun shouldDisplayInRelocateGui(): Boolean {
+        return enabled && Hypixel.currentGame == GameType.BEDWARS
+    }
 
-    override fun renderOverlay(partialTicks: Float) {
+    override fun renderOverlay0(partialTicks: Float) {
         if (!enabled) return
         if (Hypixel.currentGame != GameType.BEDWARS) return
 

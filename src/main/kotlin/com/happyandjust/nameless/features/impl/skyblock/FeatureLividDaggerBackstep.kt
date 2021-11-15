@@ -22,8 +22,7 @@ import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.Overlay
 import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.IRelocateAble
-import com.happyandjust.nameless.features.SimpleFeature
+import com.happyandjust.nameless.features.OverlayFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
@@ -38,18 +37,22 @@ import net.minecraft.entity.Entity
 import net.minecraft.util.MovingObjectPosition
 import java.awt.Color
 
-object FeatureLividDaggerBackstep : SimpleFeature(
+object FeatureLividDaggerBackstep : OverlayFeature(
     Category.SKYBLOCK,
     "lividdaggerbackstep",
     "Livid Dagger Backstep Notifier",
     "Draw HUD on screen when you hold livid dagger. Whether you'll backstep monster you're looking at or not. This could be inaccurate"
-), ClientTickListener, IRelocateAble {
+), ClientTickListener {
     override val overlayPoint = ConfigValue("lividdagger", "overlay", Overlay.DEFAULT, COverlay)
     private var text: String? = null
         get() = field.takeIf { checkForRequirement() }
     private var checkTick = 0
 
-    override fun renderOverlay(partialTicks: Float) {
+    override fun shouldDisplayInRelocateGui(): Boolean {
+        return checkForRequirement()
+    }
+
+    override fun renderOverlay0(partialTicks: Float) {
         if (!checkForRequirement()) return
 
         text?.let {

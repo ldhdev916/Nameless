@@ -32,6 +32,7 @@ import com.happyandjust.nameless.features.impl.qol.*
 import com.happyandjust.nameless.features.impl.settings.FeatureGhostBlock
 import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
 import com.happyandjust.nameless.features.impl.settings.FeatureOutlineMode
+import com.happyandjust.nameless.features.impl.settings.FeatureRelocateGui
 import com.happyandjust.nameless.features.impl.skyblock.*
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
 import com.happyandjust.nameless.serialization.converters.CBoolean
@@ -324,6 +325,7 @@ object FeatureRegistry {
     val GHOST_BLOCK = register(FeatureGhostBlock.setInCategory("Settings"))
     val HYPIXEL_API_KEY = register(FeatureHypixelAPIKey.setInCategory("Settings"))
     val OUTLINE_MODE = register(FeatureOutlineMode.setInCategory("Settings"))
+    val RELOCATE_GUI = register(FeatureRelocateGui.setInCategory("Settings"))
 
 
 }
