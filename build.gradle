@@ -47,7 +47,9 @@ shadowJar {
 
         include(dependency("gg.essential:elementa-1.8.9-forge:391"))
         include(dependency("gg.essential:universalcraft-1.8.9-forge:169"))
-        include(dependency("gg.essentil:vigilance-1.8.9-forge:185"))
+        include(dependency("gg.essential:vigilance-1.8.9-forge:185"))
+
+        include(dependency("org.dom4j:dom4j:2.1.1"))
 
         include(dependency("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"))
         include(dependency("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlin_version"))
@@ -60,7 +62,9 @@ shadowJar {
     exclude(
             "dummyThing",
             "LICENSE.txt",
-            "META-INF/versions/"
+            "META-INF/versions/",
+            "fabric.mod.json",
+            "README.md"
     )
 
     manifest.attributes(

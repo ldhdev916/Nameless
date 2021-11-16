@@ -30,8 +30,6 @@ fun SimpleFeature.inCategory(
     }
 }
 
-fun <T : SimpleFeature> T.setInCategory(inCategory: String): T {
+fun <T : SimpleFeature> T.setInCategory(inCategory: String) = apply {
     this.inCategory = inCategory
-
-    return this
 }

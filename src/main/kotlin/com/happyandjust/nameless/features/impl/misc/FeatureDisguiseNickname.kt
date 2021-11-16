@@ -58,7 +58,7 @@ object FeatureDisguiseNickname : SimpleFeature(
             "",
             CString
         ).also {
-            it.validator = { s -> s.toString().matches("\\w".toRegex()) }
+            it.validator = { char -> char.isLetterOrDigit() }
         }
         parameters["skin"] = FeatureParameter(
             1,

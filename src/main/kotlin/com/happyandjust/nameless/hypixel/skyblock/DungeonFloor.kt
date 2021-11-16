@@ -30,13 +30,7 @@ enum class DungeonFloor(val scoreboardName: String, val floorInt: Int) {
 
         private val values = values()
 
-        fun getByScoreboardName(s: String): DungeonFloor? {
-            for (value in values) {
-                if (s == value.scoreboardName) return value
-            }
-
-            return null
-        }
+        fun getByScoreboardName(s: String) = values.find { it.scoreboardName == s }
 
     }
 }

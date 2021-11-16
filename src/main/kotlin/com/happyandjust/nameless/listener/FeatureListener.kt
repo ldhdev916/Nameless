@@ -43,11 +43,13 @@ object FeatureListener {
     private inline fun <reified T> invoke(block: T.() -> Unit) {
         for (feature in FeatureRegistry.features) {
             if (feature is T) {
-                block(feature)
+                feature.block()
             }
-            for ((processor, shouldExecute) in feature.processors) {
-                if (processor is T && shouldExecute()) {
-                    block(processor)
+            if (feature.enabled) {
+                for ((processor, shouldExecute) in feature.processors) {
+                    if (processor is T && shouldExecute()) {
+                        processor.block()
+                    }
                 }
             }
         }

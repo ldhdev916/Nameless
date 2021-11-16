@@ -66,14 +66,9 @@ object Hypixel {
 
         val type = locraw.gameType
 
-        for (gameType in GameType.values()) {
-            if (gameType.displayName == type) {
-                val modeReqs = gameType.modeReqs
-
-                if (modeReqs.isEmpty() || modeReqs.contains(locraw.mode)) {
-                    currentGame = gameType
-                }
-                break
+        currentGame = GameType.values().find {
+            it.displayName == type && it.modeReqs.let { modeReqs ->
+                modeReqs.isEmpty() || modeReqs.contains(locraw.mode)
             }
         }
 
@@ -90,7 +85,7 @@ object Hypixel {
                 currentProperty[PropertyKey.DUNGEON] = locraw.mode == "dungeon"
                 currentProperty[PropertyKey.ISLAND] = locraw.mode
 
-                detect@ for (scoreboard in ScoreboardUtils.getSidebarLines(true)) {
+                for (scoreboard in ScoreboardUtils.getSidebarLines(true)) {
                     DUNGEONS_FLOOR_PATTERN.matchesMatcher(scoreboard.trim()) {
                         currentProperty[PropertyKey.DUNGEON_FLOOR] =
                             DungeonFloor.getByScoreboardName(it.group("name")) ?: return@matchesMatcher
@@ -98,20 +93,17 @@ object Hypixel {
                 }
             }
             GameType.PARTY_GAMES -> {
-                detect@ for (scoreboard in ScoreboardUtils.getSidebarLines(true)) {
-                    for (partyGameType in PartyGamesType.values()) {
-                        if (scoreboard.contains(partyGameType.scoreboardName ?: continue, true)) {
-                            currentProperty[PropertyKey.PARTY_GAME_TYPE] = partyGameType
-                            break@detect
-                        }
-                    }
+                val partyGames =
+                    (PartyGamesType.values().toList() - PartyGamesType.NOTHING).map { it to it.scoreboardName!! }
+                for (scoreboard in ScoreboardUtils.getSidebarLines(true)) {
+                    currentProperty[PropertyKey.PARTY_GAME_TYPE] =
+                        partyGames.find { scoreboard.contains(it.second) }?.first ?: continue
                 }
             }
         }
 
         if (serverChanged) {
             MinecraftForge.EVENT_BUS.post(HypixelServerChangeEvent(server))
-            // to notify game changes at the end, we post event
         }
 
     }

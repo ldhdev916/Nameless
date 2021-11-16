@@ -39,17 +39,16 @@ object Utils {
     }
 
     fun getKeyBindingNameInEverySlot(): Map<Int, InventorySlotInfo> {
-
-        val map = hashMapOf<Int, InventorySlotInfo>()
-
         val inventory = mc.thePlayer.inventory
 
-        for (keyBinding in mc.gameSettings.keyBindsHotbar) {
-            val slot = keyBinding.keyDescription.split("key.hotbar.")[1].toInt() - 1
-            map[slot] = InventorySlotInfo(slot, Keyboard.getKeyName(keyBinding.keyCode), inventory.getStackInSlot(slot))
-        }
+        return hashMapOf(
+            *mc.gameSettings.keyBindsHotbar
+                .map {
+                    val slot = it.keyDescription.last().digitToInt()
 
-        return map
+                    slot to InventorySlotInfo(slot, Keyboard.getKeyName(it.keyCode), inventory.getStackInSlot(slot))
+                }.toTypedArray()
+        )
     }
 
     fun getHighestGround(pos: BlockPos, shouldBeValid: Boolean): BlockPos {
@@ -64,15 +63,9 @@ object Utils {
     }
 
     fun getPlayersInTab(): List<EntityPlayer> {
-        val players = arrayListOf<EntityPlayer>()
-
-        for (info in mc.netHandler.playerInfoMap) {
-            val name = info.gameProfile.name ?: continue
-
-            players.add(mc.theWorld.getPlayerEntityByName(name) ?: continue)
-        }
-
-        return players
+        return mc.netHandler.playerInfoMap
+            .filter { it.gameProfile.name != null }
+            .mapNotNull { mc.theWorld.getPlayerEntityByName(it.gameProfile.name) }
     }
 
     /**

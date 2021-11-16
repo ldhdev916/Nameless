@@ -31,7 +31,7 @@ class ChromaColor(val originRGB: Int) : Color(originRGB) {
     val chromaSpeed = 2000
     var chromaEnabled = false
 
-    constructor(red: Int, green: Int, blue: Int, alpha: Int) : this(Color(red, green, blue, alpha).rgb)
+    constructor(red: Int, green: Int, blue: Int, alpha: Int = 255) : this(Color(red, green, blue, alpha).rgb)
 
     override fun getRGB(): Int {
         return if (!chromaEnabled) super.getRGB() else run {

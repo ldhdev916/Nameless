@@ -19,7 +19,10 @@
 package com.happyandjust.nameless.features.impl.qol
 
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.*
+import com.happyandjust.nameless.core.ColorInfo
+import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.checkAndReplace
+import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.devqol.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
@@ -48,6 +51,7 @@ import net.minecraft.util.BlockPos
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import java.awt.Color
+import java.awt.Point
 import java.util.regex.Pattern
 
 object FeatureMurdererFinder : SimpleFeature(
@@ -93,7 +97,9 @@ object FeatureMurdererFinder : SimpleFeature(
         Item.getItemFromBlock(Blocks.double_plant),
         Item.getItemFromBlock(Blocks.deadbush),
         Items.quartz,
-        Items.dye
+        Items.dye,
+        Items.netherbrick,
+        Items.book
     )
     private var pathsToTarget = emptyList<BlockPos>()
     private var pathTick = 0

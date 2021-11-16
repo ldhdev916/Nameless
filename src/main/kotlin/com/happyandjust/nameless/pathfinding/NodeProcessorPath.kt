@@ -31,6 +31,8 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.MathHelper
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.pathfinder.NodeProcessor
+import java.util.*
+import kotlin.concurrent.timerTask
 
 class NodeProcessorPath(val canFly: Boolean) : NodeProcessor() {
 
@@ -38,11 +40,17 @@ class NodeProcessorPath(val canFly: Boolean) : NodeProcessor() {
         private val facings = EnumFacing.values()
     }
 
-    private var forceEnd = 0L
+    private var shouldEnd = false
 
     override fun initProcessor(iblockaccessIn: IBlockAccess?, entityIn: Entity?) {
         super.initProcessor(iblockaccessIn, entityIn)
-        forceEnd = System.currentTimeMillis() + 800
+        shouldEnd = false
+        Timer().schedule(
+            timerTask {
+                shouldEnd = true
+            },
+            800
+        )
     }
 
     private fun jumpCheck(pos: BlockPos): Boolean {
@@ -81,7 +89,7 @@ class NodeProcessorPath(val canFly: Boolean) : NodeProcessor() {
         maxDistance: Float
     ): Int {
 
-        if (forceEnd < System.currentTimeMillis()) {
+        if (shouldEnd) {
             return 0
         }
 

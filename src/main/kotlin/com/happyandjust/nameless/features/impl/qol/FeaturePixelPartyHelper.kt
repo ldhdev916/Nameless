@@ -127,32 +127,18 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
 
 
             val allInBox = BlockPos.getAllInBox(from, to)
-            val blockStates = allInBox.map { it to mc.theWorld.getBlockState(it) }
-            val blockByMetadata = hashMapOf<Int, ArrayList<BlockPos>>()
-
             if (allInBox.map { mc.theWorld.getBlockAtPos(it) }.filterIsInstance<BlockAir>().isEmpty()) {
 
                 shouldScanAgain = false
 
                 threadPool.execute {
-                    for ((pos, blockState) in blockStates) {
-                        val block = blockState.block
-                        val metadata = block.getMetaFromState(blockState)
-
-                        val existing = blockByMetadata[metadata] ?: arrayListOf()
-                        existing.add(pos)
-                        blockByMetadata[metadata] = existing
+                    val blockByMetadata = allInBox.groupBy {
+                        val blockState = mc.theWorld.getBlockState(it)
+                        blockState.block.getMetaFromState(blockState)
                     }
 
                     val getSortedByDistance: (BlockPos) -> List<BlockPos> = {
-                        val list = arrayListOf<BlockPos>()
-
-                        for ((_, blockPosList) in blockByMetadata) {
-                            blockPosList.sortBy { pos -> it.distanceSq(pos) }
-                            list.add(blockPosList[0])
-                        }
-
-                        list
+                        blockByMetadata.values.map { list -> list.sortedBy { pos -> it.distanceSq(pos) }[0] }
                     }
                     val current = BlockPos(mc.thePlayer)
 
@@ -175,11 +161,8 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
 
                         val averageDist = sortedDistanceList.average()
 
-                        var deviation = 0.0
+                        val deviation = sortedDistanceList.sumOf { (it - averageDist).pow(2) }
 
-                        for (dist in sortedDistanceList) {
-                            deviation += (dist - averageDist).pow(2)
-                        }
                         val variance = deviation / sortedDistanceList.size
 
                         priorityQueue.add(pos to DistanceResult(sortedList, averageDist, sqrt(variance)))
@@ -191,13 +174,9 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
             }
         }
         sameBlocks = set
-        beaconPosition = null
-
-        for (posUp in BlockPos.getAllInBox(from.up(), to.up())) {
-            if (mc.theWorld.getBlockAtPos(posUp) is BlockBeacon) {
-                beaconPosition = Vec3(posUp)
-            }
-        }
+        beaconPosition =
+            BlockPos.getAllInBox(from.up(), to.up()).filter { mc.theWorld.getBlockAtPos(it) is BlockBeacon }
+                .firstOrNull()?.toVec3()
     }
 
     override fun renderWorld(partialTicks: Float) {

@@ -24,7 +24,6 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
-import java.nio.charset.StandardCharsets
 
 object Request {
 
@@ -52,16 +51,12 @@ object Request {
                 connection.setRequestProperty(key, value)
             }
 
-            val builder = StringBuilder()
-
-            for ((key, value) in params.entries) {
-                builder.append("&${key}=${value}")
-            }
+            val paramString = params.entries.joinToString("") { "&${it.key}=${it.value}" }
 
             connection.doOutput = true
 
             DataOutputStream(connection.outputStream).use {
-                it.write(builder.substring(1).toByteArray(StandardCharsets.UTF_8))
+                it.write(paramString.substring(1).toByteArray())
                 it.flush()
             }
 
@@ -84,13 +79,7 @@ object Request {
 
     private fun readBody(body: InputStream): String {
         return try {
-            val bufferedReader = body.bufferedReader(StandardCharsets.UTF_8)
-            val stringBuilder = StringBuilder()
-
-            for (line in bufferedReader.readLines()) {
-                stringBuilder.append("$line\n")
-            }
-            stringBuilder.toString()
+            body.bufferedReader().readLines().joinToString("\n")
         } catch (e: IOException) {
             throw RuntimeException(e)
         }

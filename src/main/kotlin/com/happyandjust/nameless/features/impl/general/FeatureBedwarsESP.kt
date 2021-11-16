@@ -22,7 +22,6 @@ import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.ChatListener
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.ServerChangeListener
 import com.happyandjust.nameless.features.listener.StencilListener
@@ -33,14 +32,13 @@ import com.happyandjust.nameless.utils.Utils
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemArmor
-import net.minecraftforge.client.event.ClientChatReceivedEvent
 
 object FeatureBedwarsESP : SimpleFeature(
     Category.GENERAL,
     "bedwarsesp",
     "Bedwars ESP",
     "Glow all players in your game according to their team color."
-), ClientTickListener, StencilListener, ServerChangeListener, ChatListener {
+), ClientTickListener, StencilListener, ServerChangeListener {
 
     private fun checkForEnabledAndBedwars() = enabled && Hypixel.currentGame == GameType.BEDWARS
     val teamColorCache = hashMapOf<EntityPlayer, Int>()
@@ -93,10 +91,6 @@ object FeatureBedwarsESP : SimpleFeature(
 
     override fun onServerChange(server: String) {
         teamColorCache.clear()
-    }
-
-    override fun onChatReceived(e: ClientChatReceivedEvent) {
-
     }
 
 }

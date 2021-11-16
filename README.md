@@ -82,6 +82,7 @@ Unless, You can't use rendering outline on entity
   - Disable Enderman Teleportation
   - Equip Pet Skin
   - Change Helmet Texture
+  - Experimentation Table Helper
 </details>
 <details>
  <summary>Miscellaneous</summary>
@@ -107,7 +108,6 @@ Unless, You can't use rendering outline on entity
   - Ghost Block
   - Accept Party
   - Deny Party
-  - Auto Send WatchDog Report to Nearest Player
 </details>
 <details>
   <summary>Commands</summary>

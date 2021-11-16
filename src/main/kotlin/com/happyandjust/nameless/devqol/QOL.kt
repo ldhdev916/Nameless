@@ -21,7 +21,7 @@ package com.happyandjust.nameless.devqol
 import com.happyandjust.nameless.config.ConfigMap
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.hypixel.auction.AuctionInfo
+import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockMonster
 import com.happyandjust.nameless.utils.SkyblockUtils
@@ -32,7 +32,6 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTUtil
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
@@ -42,10 +41,8 @@ import net.minecraft.world.World
 import net.minecraftforge.common.util.Constants
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import java.awt.Color
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
-import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -58,7 +55,6 @@ import kotlin.math.round
 import kotlin.math.roundToInt
 
 private val RARITY_PATTERN = Pattern.compile("(§[0-9a-f]§l§ka§r )?([§0-9a-fk-or]+)(?<rarity>[A-Z]+)")
-private val hsbCache = hashMapOf<Int, FloatArray>()
 private val md = MessageDigest.getInstance("MD5")
 private val md5Cache = ConfigMap.StringConfigMap("md5")
 private val auctionThreadPool = Executors.newFixedThreadPool(6)
@@ -79,33 +75,23 @@ fun ItemStack?.getSkyBlockRarity(): ItemRarity? {
     if (!display.hasKey("Lore")) return null
     val lore = display.getTagList("Lore", Constants.NBT.TAG_STRING)
 
-    for (i in 0 until lore.tagCount()) {
-        val currentLine = lore.getStringTagAt(i)
+    for (currentLine in (0 until lore.tagCount()).map { lore.getStringTagAt(it) }) {
+        RARITY_PATTERN.findMatcher(currentLine) {
+            val rarity = it.group("rarity")
 
-        val matcher = RARITY_PATTERN.matcher(currentLine)
-        if (matcher.find()) {
-            val rarity = matcher.group("rarity")
 
-            for (itemRarity in ItemRarity.values()) {
-                return if (rarity.startsWith(itemRarity.loreName)) itemRarity else continue
-            }
+            return ItemRarity.values().find { itemRarity -> rarity.startsWith(itemRarity.loreName) }
+                ?: return@findMatcher
         }
     }
     return null
 }
 
 fun String.getMD5(): String = md5Cache[this] ?: run {
-    val bytes = md.also { it.update(toByteArray(StandardCharsets.UTF_8)) }.digest()
+    val bytes = md.digest(toByteArray())
 
-    val builder = StringBuilder()
-
-    for (byte in bytes) {
-        builder.append(String.format("%02x", byte))
-    }
-
-    builder.toString().also {
-        md5Cache[this] = it
-    }
+    md5Cache[this] = bytes.joinToString("") { String.format("%02x", it) }
+    md5Cache[this]!!
 }
 
 fun <T : EntityLivingBase> T.toSkyBlockMonster(): SkyBlockMonster<T>? {
@@ -156,11 +142,8 @@ fun ItemStack?.getSkyBlockID(): String {
     this ?: return ""
     val tagCompound = getSubCompound("ExtraAttributes", false) ?: return ""
 
-    return tagCompound.let { if (it.hasKey("id")) it.getString("id") else "" }
+    return tagCompound.getString("id")
 }
-
-fun NBTTagCompound.getSkyBlockID(): String =
-    getCompoundTag("tag").getCompoundTag("ExtraAttributes").let { if (it.hasKey("id")) it.getString("id") else "" }
 
 fun String.stripControlCodes(): String = StringUtils.stripControlCodes(this)
 
@@ -201,39 +184,6 @@ fun Int.insertCommaEvery3Character(): String {
     return builder.reversed().toString()
 }
 
-fun Int.getHue() = hsbCache[this]?.get(0) ?: run {
-    val hsb = Color.RGBtoHSB(getRedInt(), getGreenInt(), getBlueInt(), null)
-
-    return@run hsb.let {
-
-        hsbCache[this] = hsb
-
-        it[0]
-    }
-}
-
-fun Int.getSaturation() = hsbCache[this]?.get(1) ?: run {
-    val hsb = Color.RGBtoHSB(getRedInt(), getGreenInt(), getBlueInt(), null)
-
-    return@run hsb.let {
-
-        hsbCache[this] = hsb
-
-        it[1]
-    }
-}
-
-fun Int.getBrightness() = hsbCache[this]?.get(2) ?: run {
-    val hsb = Color.RGBtoHSB(getRedInt(), getGreenInt(), getBlueInt(), null)
-
-    return@run hsb.let {
-
-        hsbCache[this] = hsb
-
-        it[2]
-    }
-}
-
 val mc: Minecraft = Minecraft.getMinecraft()
 
 fun World.getBlockAtPos(pos: BlockPos) = getBlockState(pos).block
@@ -256,7 +206,7 @@ fun Array<out String>.toBlockPos(indexes: IntRange) = BlockPos(
 
 fun ItemStack.getSkullOwner(): String {
 
-    return if (tagCompound.hasKey("SkullOwner")) {
+    return if (hasTagCompound() && tagCompound.hasKey("SkullOwner")) {
         NBTUtil.readGameProfileFromNBT(tagCompound.getCompoundTag("SkullOwner")).properties["textures"].find { it.name == "textures" }?.value
             ?: ""
     } else ""
@@ -288,9 +238,10 @@ fun scanAuction(task: (List<AuctionInfo>) -> Unit) {
 
 fun EntityPlayerSP?.inHypixel() = this?.clientBrand?.startsWith("Hypixel BungeeCord") == true
 
-inline fun Pattern.matchesMatcher(s: String, block: (Matcher) -> Unit) = matcher(s).takeIf { it.matches() }?.also(block)
+inline fun <T> Pattern.matchesMatcher(s: String, block: (Matcher) -> T) =
+    matcher(s).takeIf { it.matches() }?.let(block)
 
-inline fun Pattern.findMatcher(s: String, block: (Matcher) -> Unit) = matcher(s).takeIf { it.find() }?.also(block)
+inline fun <T> Pattern.findMatcher(s: String, block: (Matcher) -> T) = matcher(s).takeIf { it.find() }?.let(block)
 
 fun Entity.toVec3() = Vec3(posX, posY, posZ)
 
@@ -311,6 +262,3 @@ fun <T> nullCatch(defaultValue: T, block: () -> T) = try {
 } catch (e: NullPointerException) {
     defaultValue
 }
-
-val fontRendererNotNull: Boolean
-    get() = mc.fontRendererObj != null

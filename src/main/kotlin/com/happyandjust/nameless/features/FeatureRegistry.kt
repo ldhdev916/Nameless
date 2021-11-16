@@ -321,6 +321,7 @@ object FeatureRegistry {
     val DISABLE_ENDERMAN_TELEPORTATION = register(FeatureDisableEndermanTeleportation.setInCategory("SkyBlock"))
     val EQUIP_PET_SKIN = register(FeatureEquipPetSkin.setInCategory("SkyBlock"))
     val CHANGE_HELMET_TEXTURE = register(FeatureChangeHelmetTexture.setInCategory("SkyBlock"))
+    val EXPERIMENTAL_TABLE_HELPER = register(FeatureExperimentationTableHelper.setInCategory("SkyBlock"))
 
     //SETTINGS
     val GHOST_BLOCK = register(FeatureGhostBlock.setInCategory("Settings"))

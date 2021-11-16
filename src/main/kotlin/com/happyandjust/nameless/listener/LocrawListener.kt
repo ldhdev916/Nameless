@@ -29,7 +29,6 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
-import java.util.concurrent.Executors
 import java.util.regex.Pattern
 
 object LocrawListener {
@@ -38,7 +37,6 @@ object LocrawListener {
     private val JSON = Pattern.compile("\\{.+}")
     private val gson = Gson()
     private var updateTick = 0
-    private val threadPool = Executors.newFixedThreadPool(2)
     private var locrawTick = 0
 
     @SubscribeEvent
@@ -55,11 +53,7 @@ object LocrawListener {
         updateTick = (updateTick + 1) % 40
 
         if (updateTick == 0) {
-            if (entityPlayerSP.inHypixel()) {
-                threadPool.execute { Hypixel.updateGame() }
-            } else {
-                if (Hypixel.currentGame != null) Hypixel.updateGame()
-            }
+            Hypixel.updateGame()
         }
     }
 

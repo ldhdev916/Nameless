@@ -19,7 +19,6 @@
 package com.happyandjust.nameless.gui.relocate
 
 import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.core.Point
 import com.happyandjust.nameless.features.IRelocateAble
 import com.happyandjust.nameless.gui.feature.ColorCache
 import gg.essential.elementa.WindowScreen
@@ -29,6 +28,7 @@ import gg.essential.elementa.dsl.childOf
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.constraint
 import gg.essential.elementa.dsl.pixels
+import java.awt.Point
 
 class RelocateGui(relocateAbleList: List<IRelocateAble>) : WindowScreen(drawDefaultBackground = false) {
 

@@ -22,12 +22,11 @@ import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JSONHandler
-import com.happyandjust.nameless.devqol.getSkyBlockID
 import com.happyandjust.nameless.devqol.isFairySoul
 import com.happyandjust.nameless.devqol.mc
 import com.happyandjust.nameless.devqol.stripControlCodes
-import com.happyandjust.nameless.hypixel.auction.AuctionInfo
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
+import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
 import com.happyandjust.nameless.network.Request
@@ -85,14 +84,11 @@ object SkyblockUtils {
     }
 
     fun getAllFairySoulsByEntity(island: String): List<FairySoul> {
-        val fairySouls = mc.theWorld.loadedEntityList.filter { it is EntityArmorStand && it.isFairySoul() }
-
-        return arrayListOf<FairySoul>().apply {
-            for (fairySoul in fairySouls) {
-                val pos = BlockPos(fairySoul).add(0, 2, 0)
-                add(FairySoul(pos.x, pos.y, pos.z, island))
+        return mc.theWorld.loadedEntityList.filter { it is EntityArmorStand && it.isFairySoul() }
+            .map {
+                val pos = BlockPos(it).up(2)
+                FairySoul(pos.x, pos.y, pos.z, island)
             }
-        }
     }
 
     fun readNBTFromItemBytes(itemBytes: String): NBTTagCompound {
@@ -162,7 +158,9 @@ object SkyblockUtils {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
-                it.skyBlockId = readNBTFromItemBytes(it.item_bytes).getSkyBlockID()
+                it.skyBlockId =
+                    readNBTFromItemBytes(it.item_bytes).getCompoundTag("tag").getCompoundTag("ExtraAttributes")
+                        .getString("id")
             })
         }
 

@@ -129,7 +129,7 @@ object FeatureTextureOverlay : SimpleFeature(
                         )
                     }
 
-                    override fun getWheelSensitive() = 40
+                    override fun getWheelSensitive() = 200
 
                 }
             }

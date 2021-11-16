@@ -22,7 +22,7 @@ import com.happyandjust.nameless.core.ClientCommandBase
 import com.happyandjust.nameless.devqol.insertCommaEvery3Character
 import com.happyandjust.nameless.devqol.scanAuction
 import com.happyandjust.nameless.devqol.sendClientMessage
-import com.happyandjust.nameless.hypixel.auction.AuctionInfo
+import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.utils.SkyblockUtils
 import net.minecraft.command.ICommandSender

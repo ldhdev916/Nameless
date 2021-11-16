@@ -20,11 +20,11 @@ package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.core.ChromaColor;
 import com.happyandjust.nameless.core.Direction;
-import com.happyandjust.nameless.devqol.QOLKt;
 import com.happyandjust.nameless.devqol.RenderingQOLKt;
 import com.happyandjust.nameless.features.FeatureRegistry;
 import com.happyandjust.nameless.features.impl.misc.FeatureDisguiseNickname;
 import com.happyandjust.nameless.mixinhooks.FontRendererHook;
+import com.happyandjust.nameless.mixinhooks.RenderGlobalHook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -94,14 +94,14 @@ public abstract class MixinFontRenderer {
     @Inject(method = "renderStringAtPos", at = @At("HEAD"), cancellable = true)
     private void renderString(String text, boolean shadow, CallbackInfo ci) {
 
-        if (QOLKt.getFontRendererNotNull() && FeatureRegistry.INSTANCE.getCHANGE_NICKNAME_COLOR().getEnabled()) {
+        if (Minecraft.getMinecraft().fontRendererObj != null && FeatureRegistry.INSTANCE.getCHANGE_NICKNAME_COLOR().getEnabled()) {
 
             List<FontRendererHook.MatchInfo> matchInfos = getMatchInfoForString(text);
 
             if (!matchInfos.isEmpty() && !shadow) {
-                ChromaColor color = ((ChromaColor) FeatureRegistry.INSTANCE.getCHANGE_NICKNAME_COLOR().getParameter("color").getValue());
+                ChromaColor color = FeatureRegistry.INSTANCE.getCHANGE_NICKNAME_COLOR().<ChromaColor>getParameter("color").getValue();
 
-                if (color.getChromaEnabled()) {
+                if (color.getChromaEnabled() && RenderGlobalHook.INSTANCE.canDisplayOutline()) {
                     drawChromaString(text, matchInfos);
                 } else {
                     drawCustomString(text, matchInfos, color.getRGB());
@@ -113,12 +113,12 @@ public abstract class MixinFontRenderer {
 
     }
 
-    @ModifyVariable(method = "renderString", at = @At(value = "LOAD", opcode = Opcodes.ALOAD, ordinal = 0))
+    @ModifyVariable(method = "renderString", at = @At(value = "LOAD", opcode = Opcodes.ALOAD, ordinal = 0), argsOnly = true)
     public String disguiseNickname(String text) {
         return replaceDisguisedNickname(text);
     }
 
-    @ModifyVariable(method = "getStringWidth", at = @At(value = "LOAD", opcode = Opcodes.ALOAD, ordinal = 0))
+    @ModifyVariable(method = "getStringWidth", at = @At(value = "LOAD", opcode = Opcodes.ALOAD, ordinal = 0), argsOnly = true)
     public String changeDisguisedNickname(String text) {
         return replaceDisguisedNickname(text);
     }

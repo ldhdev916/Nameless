@@ -18,6 +18,8 @@
 
 package com.happyandjust.nameless.core
 
+import java.awt.Point
+
 data class Overlay(val point: Point, val scale: Double) {
     companion object {
         val DEFAULT = Overlay(Point(0, 0), 1.0)

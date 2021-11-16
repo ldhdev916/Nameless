@@ -19,13 +19,10 @@
 package com.happyandjust.nameless.listener
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.core.ChromaColor
 import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.OutlineMode
 import com.happyandjust.nameless.core.checkAndReplace
 import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.devqol.sendClientMessage
-import com.happyandjust.nameless.events.CurrentPlayerJoinWorldEvent
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.listener.StencilListener
 import com.happyandjust.nameless.mixinhooks.RenderGlobalHook
@@ -42,7 +39,6 @@ object OutlineHandleListener {
     var manualRendering = false
     private val outlineEntityCache = hashMapOf<Entity, Int>()
     private val changeColorEntityCache = hashMapOf<Entity, Int>()
-    private var notifiedCannotRenderOutline = false
 
     @SubscribeEvent
     fun onClientTick(e: TickEvent.ClientTickEvent) {
@@ -52,30 +48,26 @@ object OutlineHandleListener {
         outlineEntityCache.clear()
         changeColorEntityCache.clear()
 
+        val stencilFeatures = FeatureRegistry.features.filterIsInstance<StencilListener>()
+        val stencilProcessers = FeatureRegistry.features
+            .asSequence()
+            .filter { it.enabled }
+            .map { it.processors.filter { entry -> entry.value() } }
+            .map { it.keys }
+            .flatten()
+            .filterIsInstance<StencilListener>().toList()
+        val stencilListeners = stencilFeatures + stencilProcessers
+
         for (entity in mc.theWorld.loadedEntityList) {
             var outlineColorInfo: ColorInfo? = null
             var entityColorInfo: ColorInfo? = null
 
-            for (feature in FeatureRegistry.features) {
-
-                if (feature is StencilListener) {
-                    feature.getOutlineColor(entity)?.let {
-                        outlineColorInfo = outlineColorInfo.checkAndReplace(it)
-                    }
-                    feature.getEntityColor(entity)?.let {
-                        entityColorInfo = entityColorInfo.checkAndReplace(it)
-                    }
+            for (stencilListener in stencilListeners) {
+                stencilListener.getOutlineColor(entity)?.let {
+                    outlineColorInfo = outlineColorInfo.checkAndReplace(it)
                 }
-
-                for ((processor, shouldExecute) in feature.processors) {
-                    if (shouldExecute() && processor is StencilListener) {
-                        processor.getOutlineColor(entity)?.let {
-                            outlineColorInfo = outlineColorInfo.checkAndReplace(it)
-                        }
-                        processor.getEntityColor(entity)?.let {
-                            entityColorInfo = entityColorInfo.checkAndReplace(it)
-                        }
-                    }
+                stencilListener.getEntityColor(entity)?.let {
+                    entityColorInfo = entityColorInfo.checkAndReplace(it)
                 }
             }
 
@@ -108,21 +100,6 @@ object OutlineHandleListener {
                 }
             }
 
-        }
-    }
-
-    @SubscribeEvent
-    fun onWorldJoin(e: CurrentPlayerJoinWorldEvent) {
-        if (!RenderGlobalHook.canDisplayOutline() && !notifiedCannotRenderOutline) {
-            sendClientMessage(
-                """
-                §c[Nameless] Mod found that one of these things on optifine is enabled.
-                §cFast Render, Shaders, Antialiasing.
-                §cThus, You can't use Chroma Nickname, All outlines will be replaced with rendering box.
-            """.trimIndent()
-            )
-            notifiedCannotRenderOutline = true
-            FeatureRegistry.CHANGE_NICKNAME_COLOR.getParameter<ChromaColor>("color").value.chromaEnabled = false
         }
     }
 

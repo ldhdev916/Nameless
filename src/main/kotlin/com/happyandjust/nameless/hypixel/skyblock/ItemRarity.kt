@@ -37,12 +37,6 @@ enum class ItemRarity(val webName: String, val color: Int, val loreName: String,
 
         private val values = values()
 
-        fun fromString(name: String): ItemRarity {
-            for (rarity in values) {
-                if (rarity.webName == name) return rarity
-            }
-
-            throw IllegalArgumentException("No Such ItemRarity: $name")
-        }
+        fun fromString(name: String) = values.first { it.webName == name }
     }
 }

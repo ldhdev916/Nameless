@@ -31,11 +31,10 @@ object FeatureRelocateGui : SettingFeature("relocategui", "Relocate Gui", "Edit 
     private var action = {
         mc.displayGuiScreen(
             RelocateGui(
-                getFeatureAndSubParameters().filterIsInstance<IRelocateAble>()
+                allDefaultFeatures.filterIsInstance<IRelocateAble>()
                     .filter { it.shouldDisplayInRelocateGui() })
         )
     }
-
 
     override fun getProperty(): KMutableProperty0<*> {
         return ::action

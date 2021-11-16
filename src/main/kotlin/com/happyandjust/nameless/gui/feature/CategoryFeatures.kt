@@ -93,14 +93,8 @@ class CategoryFeatures(
 
         val list = arrayListOf<Setting>()
 
-        val sortByInCategory = hashMapOf<String, List<PropertyData<*>>>()
-
-        for (propertyData in categoryItems.sortedWith(compareBy({ it.ordinal }, { it.title }))) {
-            val existing = (sortByInCategory[propertyData.inCategory] ?: emptyList()).toMutableList()
-            existing.add(propertyData)
-
-            sortByInCategory[propertyData.inCategory] = existing
-        }
+        val sortByInCategory =
+            categoryItems.sortedWith(compareBy({ it.ordinal }, { it.title })).groupBy { it.inCategory }
 
         val sortedEntries = sortByInCategory.entries.sortedBy { it.key }
 

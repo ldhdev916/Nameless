@@ -22,7 +22,6 @@ import com.happyandjust.nameless.features.FeatureParameter;
 import com.happyandjust.nameless.features.FeatureRegistry;
 import com.happyandjust.nameless.features.SimpleFeature;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
@@ -86,15 +85,9 @@ public class MixinItemArmor {
     }
 
     private boolean checkForInventory(ItemStack stack) {
-        InventoryPlayer inventoryPlayer = Minecraft.getMinecraft().thePlayer.inventory;
-
-        for (ItemStack itemStack : inventoryPlayer.armorInventory) {
+        for (ItemStack itemStack : Minecraft.getMinecraft().thePlayer.inventory.armorInventory) {
             if (stack.equals(itemStack)) return true;
         }
-        for (ItemStack itemStack : inventoryPlayer.mainInventory) {
-            if (stack.equals(itemStack)) return true;
-        }
-
         return false;
     }
 }

@@ -24,7 +24,6 @@ import net.minecraftforge.fml.common.eventhandler.Event
 
 abstract class FeatureStateChangeEvent(val feature: SimpleFeature, var enabledAfter: Boolean) : Event() {
 
-
     @Cancelable
     class Pre(feature: SimpleFeature, enabledAfter: Boolean) : FeatureStateChangeEvent(feature, enabledAfter)
 

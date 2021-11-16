@@ -21,6 +21,8 @@ package com.happyandjust.nameless.features.impl.skyblock
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
+import com.happyandjust.nameless.hypixel.GameType
+import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
 import com.happyandjust.nameless.serialization.converters.CSkyBlockItem
 import com.mojang.authlib.GameProfile
@@ -36,6 +38,7 @@ object FeatureChangeHelmetTexture : SimpleFeature(
 
     private val currentlyEquipedTextureConfig = ConfigValue("helmettexture", "current", SkyBlockItem(), CSkyBlockItem)
     var currentlyEquipedTexture: Pair<SkyBlockItem, GameProfile>? = null
+        get() = if (Hypixel.currentGame != GameType.SKYBLOCK) null else field
         set(value) {
             field = value
 

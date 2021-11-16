@@ -16,11 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.hypixel.auction
+package com.happyandjust.nameless.hypixel.skyblock
 
 import com.google.gson.JsonArray
 import com.google.gson.annotations.SerializedName
-import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 
 class AuctionInfo {
 

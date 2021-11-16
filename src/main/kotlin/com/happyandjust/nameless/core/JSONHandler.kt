@@ -26,25 +26,18 @@ import com.happyandjust.nameless.devqol.mc
 import net.minecraft.util.ResourceLocation
 import java.io.File
 import java.io.InputStream
+import java.io.OutputStream
 
-class JSONHandler(inputStream: InputStream? = null) {
+class JSONHandler(inputStream: InputStream? = null, val outputStream: () -> OutputStream? = { null }) {
     private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
     private val parser = JsonParser()
     private var jsonData: JsonElement? = null
-
-    /**
-     * If I call file.outputStream in init, file will be reset
-     * So only call file.outputStream when writing
-     */
-    private var file: File? = null
 
     constructor(resourceLocation: ResourceLocation) : this(
         mc.mcDefaultResourcePack.getInputStream(resourceLocation).buffered()
     )
 
-    constructor(file: File) : this(if (file.isFile) file.inputStream().buffered() else null) {
-        this.file = file
-    }
+    constructor(file: File) : this(if (file.isFile) file.inputStream().buffered() else null, { file.outputStream() })
 
     constructor(jsonString: String) : this() {
         jsonData = try {
@@ -76,7 +69,7 @@ class JSONHandler(inputStream: InputStream? = null) {
 
     fun write(write: JsonElement): JSONHandler {
 
-        file?.bufferedWriter()?.use {
+        outputStream()?.bufferedWriter()?.use {
             gson.toJson(write, it)
             it.flush()
         }

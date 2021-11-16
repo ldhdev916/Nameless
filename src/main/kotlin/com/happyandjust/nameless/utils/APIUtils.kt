@@ -30,19 +30,16 @@ object APIUtils {
 
     private val gson = Gson()
 
+    fun getUsernameFromUUID(uuid: String): String =
+        JSONHandler(Request.get("https://sessionserver.mojang.com/session/minecraft/profile/$uuid")).read(JsonObject())["name"].asString
+
     fun getUUIDFromUsername(username: String): String =
         JSONHandler(Request.get("https://api.mojang.com/users/profiles/minecraft/$username")).read(JsonObject())["id"].asString
 
     fun getNameHistoryFromUUID(uuid: String): List<NameHistory> {
-        val list = arrayListOf<NameHistory>()
-
         val json = JSONHandler(Request.get("https://api.mojang.com/user/profiles/$uuid/names")).read(JsonArray())
 
-        for (nameHistory in json) {
-            list.add(gson.fromJson(nameHistory, NameHistory::class.java))
-        }
-
-        return list
+        return json.map { gson.fromJson(it, NameHistory::class.java) }
     }
 
     fun getSkinURLFromUUID(uuid: String): String {

@@ -25,6 +25,7 @@ import com.happyandjust.nameless.core.JSONHandler
 import com.happyandjust.nameless.devqol.getMD5
 import com.happyandjust.nameless.devqol.getSkullOwner
 import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.devqol.stripControlCodes
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
@@ -36,7 +37,9 @@ import com.happyandjust.nameless.serialization.converters.CPetSkinType
 import com.happyandjust.nameless.utils.SkyblockUtils
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
+import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.entity.item.EntityArmorStand
+import net.minecraft.inventory.ContainerChest
 import net.minecraft.item.ItemSkull
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
@@ -85,16 +88,7 @@ object FeatureEquipPetSkin : SimpleFeature(
                 .map { it.key to it.value.asString }.toTypedArray()
         )
 
-        val petSkinsByPetName = hashMapOf<String, List<PetSkinType>>()
-
-        for (petSkinType in PetSkinType.values().toList() - PetSkinType.DEFAULT) {
-            val petName = petSkins[petSkinType.name]!!
-            val existing = (petSkinsByPetName[petName] ?: listOf()).toMutableList()
-
-            existing.add(petSkinType)
-
-            petSkinsByPetName[petName] = existing
-        }
+        val petSkinsByPetName = (PetSkinType.values().toList() - PetSkinType.DEFAULT).groupBy { petSkins[it.name]!! }
 
         for ((petName, petSkinTypes) in petSkinsByPetName) {
             parameters[petName.lowercase()] = FeatureParameter(
@@ -149,9 +143,43 @@ object FeatureEquipPetSkin : SimpleFeature(
             EntityArmorStand::class.java,
             mc.thePlayer.entityBoundingBox.expand(10.0, 3.0, 10.0)
         )
+            .asSequence()
             .filter { it.getPetItem()?.item is ItemSkull }
             .filter { pets.contains(it.getPetItem().getSkullOwner().getMD5()) }
             .minByOrNull { it.getDistanceSqToEntity(mc.thePlayer) }
+    }
+
+    fun checkIfPetIsInInventory(itemStack: ItemStack): GameProfile? {
+        if (Hypixel.currentGame != GameType.SKYBLOCK) return null
+        val gui = mc.currentScreen
+        val stacks =
+            if (gui is GuiContainer) {
+                val container = gui.inventorySlots
+                if (container is ContainerChest && container.lowerChestInventory.displayName.unformattedText.stripControlCodes()
+                        .startsWith("Auctions")
+                ) {
+                    mc.thePlayer.inventory.let { it.armorInventory + it.mainInventory }.toList()
+                } else {
+                    gui.inventorySlots.inventory
+                }
+            } else {
+                mc.thePlayer.inventory.let { it.armorInventory + it.mainInventory }.toList()
+            }
+
+        if (!stacks.contains(itemStack)) return null
+
+        val petInfo = pets[itemStack.getSkullOwner().getMD5()] ?: return null
+
+        val petSkinType = getParameterValue<PetSkinType>(petInfo.petName.lowercase())
+
+        return if (petSkinType == PetSkinType.DEFAULT) {
+            null
+        } else {
+            val skin = SkyblockUtils.getItemFromId(petSkinType.name)?.skin ?: return null
+            GameProfile(UUID.randomUUID(), "ChangePetSkinInv").also {
+                it.properties.put("textures", Property("textures", skin, null))
+            }
+        }
     }
 
     class PetInfo {

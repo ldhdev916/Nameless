@@ -91,9 +91,13 @@ class FeatureGui : WindowScreen(
         }.onLeftClick {
             USound.playButtonPress()
 
-            componentStack.pop().hide()
+            if (componentStack.isNotEmpty()) {
+                componentStack.pop().hide()
+            }
 
-            componentStack.peek().unhide()
+            if (componentStack.isNotEmpty()) {
+                componentStack.peek().unhide()
+            }
 
             updateBackIconState()
         }

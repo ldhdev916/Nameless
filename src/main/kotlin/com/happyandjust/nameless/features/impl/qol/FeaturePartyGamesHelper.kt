@@ -246,7 +246,7 @@ object FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper",
     override fun tick() {
 
         val type: PartyGamesType? =
-            if (enabled && Hypixel.currentGame == GameType.PARTY_GAMES) Hypixel.getProperty(PropertyKey.PARTY_GAME_TYPE) else null
+            if (Hypixel.currentGame == GameType.PARTY_GAMES) Hypixel.getProperty(PropertyKey.PARTY_GAME_TYPE) else null
 
         if (type != partyGameType) {
             MinecraftForge.EVENT_BUS.post(PartyGameChangeEvent(partyGameType, type))

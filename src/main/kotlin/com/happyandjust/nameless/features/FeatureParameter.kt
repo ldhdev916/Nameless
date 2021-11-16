@@ -65,18 +65,6 @@ open class FeatureParameter<T>(
 
     fun <T> getParameterValue(key: String) = getParameter<T>(key).value
 
-    fun digIntoParameter(): List<FeatureParameter<*>> {
-
-        val list = arrayListOf<FeatureParameter<*>>()
-
-        list.add(this)
-        parameters.values.forEach { list.addAll(it.digIntoParameter()) }
-
-        return list
-    }
-
-    fun getParentDefaultFeature() = getFeatureAndSubParameters().first { it.parameters.containsValue(this) }
-
     override fun getComponentType(): ComponentType? = when {
         checkType<Int>() -> ComponentType.SLIDER
         checkType<Double>() -> ComponentType.SLIDER_DECIMAL

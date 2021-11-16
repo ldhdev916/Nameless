@@ -18,7 +18,12 @@
 
 package com.happyandjust.nameless.mixins;
 
+import com.happyandjust.nameless.features.impl.skyblock.FeatureChangeHelmetTexture;
 import com.happyandjust.nameless.features.impl.skyblock.FeatureEquipPetSkin;
+import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem;
+import com.mojang.authlib.GameProfile;
+import kotlin.Pair;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySkullRenderer;
@@ -35,15 +40,30 @@ public class MixinTileEntityItemStackRenderer {
     @Inject(method = "renderByItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/tileentity/TileEntitySkullRenderer;renderSkull(FFFLnet/minecraft/util/EnumFacing;FILcom/mojang/authlib/GameProfile;I)V"), cancellable = true)
     public void changeSkin(ItemStack itemStack, CallbackInfo ci) {
         FeatureEquipPetSkin feature = FeatureEquipPetSkin.INSTANCE;
+        FeatureChangeHelmetTexture featureChangeHelmetTexture = FeatureChangeHelmetTexture.INSTANCE;
+        GameProfile gameProfile = null;
         if (feature.getEnabled()) {
-            FeatureEquipPetSkin.PetSkinChangeInfo info = feature.getCurrentPetSkinChangeInfo();
 
+            FeatureEquipPetSkin.PetSkinChangeInfo info = feature.getCurrentPetSkinChangeInfo();
             if (info != null && info.getItemStack().equals(itemStack)) {
-                TileEntitySkullRenderer.instance.renderSkull(0, 0, 0, EnumFacing.UP, 0, 3, info.getGameProfile(), -1);
-                GlStateManager.enableCull();
-                GlStateManager.popMatrix();
-                ci.cancel();
+                gameProfile = info.getGameProfile();
             }
+            if (gameProfile == null) {
+                gameProfile = feature.checkIfPetIsInInventory(itemStack);
+            }
+        }
+
+        if (featureChangeHelmetTexture.getEnabled() && itemStack.equals(Minecraft.getMinecraft().thePlayer.getEquipmentInSlot(4))) {
+            Pair<SkyBlockItem, GameProfile> pair = featureChangeHelmetTexture.getCurrentlyEquipedTexture();
+
+            if (pair != null) gameProfile = pair.getSecond();
+        }
+
+        if (gameProfile != null) {
+            TileEntitySkullRenderer.instance.renderSkull(0, 0, 0, EnumFacing.UP, 0, 3, gameProfile, -1);
+            GlStateManager.enableCull();
+            GlStateManager.popMatrix();
+            ci.cancel();
         }
     }
 }

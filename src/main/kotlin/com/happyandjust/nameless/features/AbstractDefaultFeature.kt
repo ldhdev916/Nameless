@@ -21,16 +21,11 @@ package com.happyandjust.nameless.features
 abstract class AbstractDefaultFeature(val key: String, val title: String, val desc: String) : IHasComponentType {
     val parameters = hashMapOf<String, FeatureParameter<*>>()
 
+    init {
+        allDefaultFeatures.add(this)
+    }
+
     companion object {
-        fun getFeatureAndSubParameters(): List<AbstractDefaultFeature> {
-            val list = arrayListOf<AbstractDefaultFeature>()
-            for (feature in FeatureRegistry.features) {
-                list.add(feature)
-
-                feature.parameters.values.forEach { list.addAll(it.digIntoParameter()) }
-            }
-
-            return list
-        }
+        val allDefaultFeatures = arrayListOf<AbstractDefaultFeature>()
     }
 }
