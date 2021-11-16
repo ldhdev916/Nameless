@@ -34,6 +34,7 @@ import org.lwjgl.opengl.GL11
 import java.awt.Color
 import java.awt.Rectangle
 import java.nio.FloatBuffer
+import kotlin.math.max
 
 fun disableAlpha() = GlStateManager.disableAlpha()
 fun enableAlpha() = GlStateManager.enableAlpha()
@@ -254,3 +255,5 @@ fun setup(overlay: Overlay) {
     translate(overlay.point.x, overlay.point.y, 0)
     scale(overlay.scale, overlay.scale, 1.0)
 }
+
+fun wrapScaleTo1Block(text: String) = max(mc.fontRendererObj.getStringWidth(text), mc.fontRendererObj.FONT_HEIGHT)

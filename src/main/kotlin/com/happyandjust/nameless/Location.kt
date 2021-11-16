@@ -21,6 +21,7 @@ package com.happyandjust.nameless
 import com.happyandjust.nameless.devqol.toVec3
 import net.minecraft.entity.Entity
 import net.minecraft.util.Vec3
+import kotlin.math.PI
 import kotlin.math.atan
 import kotlin.math.atan2
 import kotlin.math.sqrt
@@ -34,7 +35,7 @@ data class Location(val vec3: Vec3) {
         pitch = source.rotationPitch
     }
 
-    fun lookAt(location: Location) {
+    fun lookAt(location: Location) = apply {
         setDirection((location - this).vec3)
     }
 
@@ -57,7 +58,7 @@ data class Location(val vec3: Vec3) {
         } else {
             val theta = atan2(-x, z)
 
-            yaw = Math.toDegrees((theta + Math.PI * 2) % (Math.PI * 2)).toFloat()
+            yaw = Math.toDegrees((theta + PI * 2) % (PI * 2)).toFloat()
 
             val x2 = x * x
             val z2 = z * z

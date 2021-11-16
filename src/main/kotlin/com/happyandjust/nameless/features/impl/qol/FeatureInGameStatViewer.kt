@@ -48,7 +48,6 @@ import gg.essential.elementa.dsl.*
 import gg.essential.vigilance.gui.settings.SelectorComponent
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.MovingObjectPosition
-import org.lwjgl.opengl.GL11
 import java.awt.Color
 
 object FeatureInGameStatViewer :
@@ -249,9 +248,9 @@ object FeatureInGameStatViewer :
         if (enabled) {
             val parameter = getParameter<DisplayType>("type")
             if (parameter.value == DisplayType.HEAD) {
-                val identifiers = getParameterValue<List<Identifier>>("order").map { it as InGameStatIdentifier }
+                val identifiers = getParameterValue<List<InGameStatIdentifier>>("order")
                 val yOffset = parameter.getParameterValue<Double>("y")
-                val scale = parameter.getParameterValue<Double>("scale") / mc.fontRendererObj.FONT_HEIGHT / 4
+                val scale = parameter.getParameterValue<Double>("scale")
 
                 val render = mc.renderViewEntity
 
@@ -267,28 +266,28 @@ object FeatureInGameStatViewer :
                             player.posY + player.getEyeHeight() + yOffset - renderY,
                             player.posZ - renderZ
                         )
-                        enableBlend()
-                        tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO)
-                        scale(-scale, -scale, -scale)
                         rotate(-mc.renderManager.playerViewY, 0f, 1f, 0f)
                         rotate(mc.renderManager.playerViewX, 1f, 0f, 0f)
 
-                        var y = -mc.fontRendererObj.FONT_HEIGHT
+                        val fontHeight = mc.fontRendererObj.FONT_HEIGHT.toFloat()
 
                         for (identifier in identifiers.filter { it.supportGame.shouldDisplay() }.reversed()) {
-                            translate(0, y, 0) {
-                                mc.fontRendererObj.drawCenteredString(
-                                    identifier.informationType.getFormatText(player),
-                                    Color.white.rgb,
-                                    true
+                            val text = identifier.informationType.getFormatText(player)
+
+                            val fixedScale = scale / wrapScaleTo1Block(text)
+
+                            matrix {
+                                scale(-fixedScale, -fixedScale, -fixedScale)
+                                mc.fontRendererObj.drawStringWithShadow(
+                                    text,
+                                    -(mc.fontRendererObj.getStringWidth(text) / 2f),
+                                    -fontHeight,
+                                    Color.white.rgb
                                 )
                             }
-                            y -= mc.fontRendererObj.FONT_HEIGHT
 
+                            translate(0.0, (fontHeight * fixedScale), 0.0)
                         }
-                        disableBlend()
-                        scale(1, 1, 1)
-
                     }
                 }
             }

@@ -399,7 +399,7 @@ object RenderUtils {
         val y = vec3.yCoord - render.getRenderPosY(partialTicks)
         val z = vec3.zCoord - render.getRenderPosZ(partialTicks)
 
-        val scale = scale / (mc.fontRendererObj.FONT_HEIGHT)
+        val scale = scale / wrapScaleTo1Block(text)
 
         matrix {
             translate(x, y, z)
@@ -413,10 +413,8 @@ object RenderUtils {
             scale(-scale, -scale, -scale)
             // text are first inverted
 
-            mc.fontRendererObj.drawString(
+            mc.fontRendererObj.drawCenteredString(
                 text,
-                -(mc.fontRendererObj.getStringWidth(text) / 2),
-                -(mc.fontRendererObj.FONT_HEIGHT / 2),
                 color
             )
 
@@ -500,7 +498,7 @@ object RenderUtils {
         val sr = ScaledResolution(mc)
 
         val diffYaw =
-            MathHelper.wrapAngleTo180_float(Location(mc.thePlayer).also { it.lookAt(Location(target)) }.yaw) - MathHelper.wrapAngleTo180_float(
+            MathHelper.wrapAngleTo180_float(Location(mc.thePlayer).lookAt(Location(target)).yaw) - MathHelper.wrapAngleTo180_float(
                 mc.thePlayer.rotationYaw
             )
 
