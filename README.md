@@ -98,6 +98,7 @@ Unless, You can't use rendering outline on entity
  - Change Leather Armor Color
  - No HurtCam
  - Change Damaged Entity Color
+ - Click Copy Chat
 </details>
 <details>
   <summary>KeyBindings</summary>

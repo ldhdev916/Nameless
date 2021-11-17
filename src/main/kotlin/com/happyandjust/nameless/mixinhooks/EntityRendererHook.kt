@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixinhooks
 
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.impl.qol.FeaturePerspective
 import org.lwjgl.opengl.Display
 

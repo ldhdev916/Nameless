@@ -18,9 +18,9 @@
 
 package com.happyandjust.nameless.hypixel
 
-import com.happyandjust.nameless.devqol.inHypixel
-import com.happyandjust.nameless.devqol.matchesMatcher
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.inHypixel
+import com.happyandjust.nameless.dsl.matchesMatcher
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.hypixel.skyblock.DungeonFloor
 import com.happyandjust.nameless.utils.ScoreboardUtils

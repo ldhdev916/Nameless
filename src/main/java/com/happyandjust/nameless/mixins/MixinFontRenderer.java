@@ -20,7 +20,7 @@ package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.core.ChromaColor;
 import com.happyandjust.nameless.core.Direction;
-import com.happyandjust.nameless.devqol.RenderingQOLKt;
+import com.happyandjust.nameless.dsl.RenderingExtensionsKt;
 import com.happyandjust.nameless.features.FeatureRegistry;
 import com.happyandjust.nameless.features.impl.misc.FeatureDisguiseNickname;
 import com.happyandjust.nameless.mixinhooks.FontRendererHook;
@@ -241,7 +241,7 @@ public abstract class MixinFontRenderer {
 
         Rectangle rectangle = new Rectangle((int) left, (int) posY, (int) (posX - left), FONT_HEIGHT);
 
-        RenderingQOLKt.drawChromaRect(rectangle, Direction.RIGHT, (System.currentTimeMillis() % 2000 + (posX * 10L - posY * 10L)) / 2000F);
+        RenderingExtensionsKt.drawChromaRect(rectangle, Direction.RIGHT, (System.currentTimeMillis() % 2000 + (posX * 10L - posY * 10L)) / 2000F);
 
         GL11.glDisable(GL11.GL_STENCIL_TEST);
     }

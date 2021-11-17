@@ -37,6 +37,6 @@ enum class ItemRarity(val webName: String, val color: Int, val loreName: String,
 
         private val values = values()
 
-        fun fromString(name: String) = values.first { it.webName == name }
+        fun fromString(name: String) = values.single { it.webName == name }
     }
 }

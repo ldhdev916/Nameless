@@ -21,7 +21,7 @@ package com.happyandjust.nameless.features.impl.qol
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.OverlayFeature
@@ -132,7 +132,7 @@ object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", 
     }
 
     override fun shouldDisplayInRelocateGui(): Boolean {
-        return enabled && mc.thePlayer.inHypixel()
+        return enabled && mc.thePlayer.inHypixel() && getParameterValue("press")
     }
 
     override fun renderOverlay0(partialTicks: Float) {

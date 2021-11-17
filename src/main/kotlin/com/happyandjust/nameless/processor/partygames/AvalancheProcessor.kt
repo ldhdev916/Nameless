@@ -18,9 +18,9 @@
 
 package com.happyandjust.nameless.processor.partygames
 
-import com.happyandjust.nameless.devqol.getBlockAtPos
-import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.devqol.stripControlCodes
+import com.happyandjust.nameless.dsl.getBlockAtPos
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.stripControlCodes
 import com.happyandjust.nameless.features.listener.ChatListener
 import com.happyandjust.nameless.features.listener.PartyGameChangeListener
 import com.happyandjust.nameless.features.listener.WorldRenderListener
@@ -32,14 +32,12 @@ import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import java.util.*
-import java.util.regex.Pattern
 import kotlin.concurrent.timerTask
 
 object AvalancheProcessor : Processor(), ChatListener, PartyGameChangeListener, WorldRenderListener {
 
     var boxColor = { -1 }
-    private val ROUND_CHANGE =
-        Pattern.compile("Wave \\d+ will begin in \\d+ seconds with \\d+ safe point(s)?! Find cover!")
+    private val ROUND_CHANGE = "Wave \\d+ will begin in \\d+ seconds with \\d+ safe point(s)?! Find cover!".toRegex()
     private val slabs = arrayListOf<AxisAlignedBB>()
     private val timer = Timer()
 
@@ -47,7 +45,7 @@ object AvalancheProcessor : Processor(), ChatListener, PartyGameChangeListener, 
     private val maxPos = BlockPos(-2380, 49, -1867)
 
     override fun onChatReceived(e: ClientChatReceivedEvent) {
-        if (e.message.unformattedText.stripControlCodes().matches(ROUND_CHANGE.toRegex())) {
+        if (e.message.unformattedText.stripControlCodes().matches(ROUND_CHANGE)) {
             slabs.clear()
             // slabs aren't generated instantly
             timer.schedule(timerTask { findSlabs() }, 700L)

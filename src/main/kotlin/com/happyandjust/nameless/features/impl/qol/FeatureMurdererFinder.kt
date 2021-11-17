@@ -23,7 +23,7 @@ import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.JSONHandler
 import com.happyandjust.nameless.core.checkAndReplace
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
@@ -126,11 +126,8 @@ object FeatureMurdererFinder : SimpleFeature(
     private val assassinMapHash = hashMapOf<String, String>()
 
     fun fetchAssassinData() {
-        val handler = JSONHandler(ResourceLocation("nameless", "assassins.json"))
-
-        for ((md5, nickname) in handler.read(JsonObject()).entrySet()) {
-            assassinMapHash[md5] = nickname.asString
-        }
+        val json = JSONHandler(ResourceLocation("nameless", "assassins.json")).read(JsonObject())
+        assassinMapHash.putAll(json.entrySet().map { it.key to it.value.asString })
     }
 
     init {
@@ -236,7 +233,7 @@ object FeatureMurdererFinder : SimpleFeature(
         if (mode == MurdererMode.ASSASSIN) {
             if (targetName == null) {
                 // Kill Contract is updated a bit later
-                targetName = getTargetName(assassinMapHash)?.takeIf { it != prevTargetName }?.also {
+                targetName = getTargetName()?.takeIf { it != prevTargetName }?.also {
                     sendClientMessage("§eYour new target is §c$it")
                 }
             } else {
@@ -299,6 +296,7 @@ object FeatureMurdererFinder : SimpleFeature(
                     targetName = null // reset
                 }
             }
+            else -> {}
         }
     }
 
@@ -332,6 +330,7 @@ object FeatureMurdererFinder : SimpleFeature(
         heldItem ?: return
 
         val mode = Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)
+        val playerName = entityPlayer.name
 
         if (mode == MurdererMode.ASSASSIN) return
 
@@ -339,29 +338,28 @@ object FeatureMurdererFinder : SimpleFeature(
 
         if (sword_list.contains(heldItem.item)) { // found
             if (isInfection && entityPlayer.getEquipmentInSlot(3)?.item == Items.iron_chestplate) {
-                alpha = entityPlayer.name
+                alpha = playerName
             } else {
-                murderers.add(entityPlayer.name)
+                murderers.add(playerName)
 
                 if (isInfection) {
-                    survivors.remove(entityPlayer.name)
+                    survivors.remove(playerName)
                 }
             }
-        } else {
-            if (isInfection) {
-                when (heldItem.item) {
-                    Items.bow -> {
-                        if (heldItem.displayName.contains("§c")) { // fake bow
-                            alpha = entityPlayer.name
-                        } else if (heldItem.displayName.contains("§a")) {
-                            survivors.add(entityPlayer.name)
-                        }
-                    }
-                    Items.arrow -> { // there's no FAKE ARROW
-                        survivors.add(entityPlayer.name)
+        } else if (isInfection) {
+            when (heldItem.item) {
+                Items.bow -> {
+                    if (heldItem.displayName.contains("§c")) { // fake bow
+                        alpha = playerName
+                    } else if (heldItem.displayName.contains("§a")) {
+                        survivors.add(playerName)
                     }
                 }
+                Items.arrow -> { // there's no FAKE ARROW
+                    survivors.add(playerName)
+                }
             }
+
         }
     }
 
@@ -422,23 +420,22 @@ object FeatureMurdererFinder : SimpleFeature(
     }
 
     //from here, assassins
-    private fun getTargetName(mapHash: Map<String, String>): String? {
+    private fun getTargetName(): String? {
         val itemStack = mc.thePlayer.inventory.getStackInSlot(3) ?: return null // map which contains your target data
         val map = itemStack.item
         if (map !is ItemMap || !itemStack.displayName.contains("§c")) return null // is there a KILL CONTRACT?
 
-        return mapHash[getNamePoints(map.getMapData(itemStack, mc.theWorld).colors).joinToString("").getMD5()]
+        return assassinMapHash[getNamePoints(
+            map.getMapData(
+                itemStack,
+                mc.theWorld
+            ).colors
+        ).joinToString("") { it.toMapString() }.getMD5()]
     }
 
     private fun getPlayerByName(name: String?): EntityPlayer? {
-
-        name ?: return null
-
-        for (player in mc.theWorld.playerEntities) {
-            if (player.name.trim() == name) return player
-        }
-
-        return null
+        name ?: return null // we don't need to scan if name is null
+        return mc.theWorld.playerEntities.singleOrNull { it.name.trim() == name }
     }
 
     /**
@@ -474,4 +471,6 @@ object FeatureMurdererFinder : SimpleFeature(
             }
         }
     }
+
+    fun Point.toMapString() = "($x,$y)"
 }

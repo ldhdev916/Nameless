@@ -19,8 +19,8 @@
 package com.happyandjust.nameless.features.impl.settings
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.devqol.getBlockAtPos
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.getBlockAtPos
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SettingFeature
@@ -132,12 +132,9 @@ object FeatureGhostBlock : SettingFeature(
 
         when (val msg = e.packet) {
             is S22PacketMultiBlockChange -> {
-                for (data in msg.changedBlocks) {
-                    val blockInfo = ghostBlocks[data.pos] ?: continue
-
-                    blockInfo.blockState = data.blockState ?: continue
-                    return
-                }
+                val data =
+                    msg.changedBlocks.firstOrNull { ghostBlocks.contains(it.pos) && it.blockState != null } ?: return
+                ghostBlocks[data.pos]?.blockState = data.blockState
             }
             is S23PacketBlockChange -> {
                 val blockInfo = ghostBlocks[msg.blockPosition] ?: return

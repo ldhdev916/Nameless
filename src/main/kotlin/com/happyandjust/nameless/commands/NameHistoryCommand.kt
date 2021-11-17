@@ -20,8 +20,9 @@ package com.happyandjust.nameless.commands
 
 import com.happyandjust.nameless.core.ClientCommandBase
 import com.happyandjust.nameless.core.NameHistory
-import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.devqol.sendClientMessage
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.sendClientMessage
+import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.utils.APIUtils
 import net.minecraft.command.ICommandSender
 import java.util.*
@@ -55,7 +56,7 @@ object NameHistoryCommand : ClientCommandBase("name") {
     override fun processCommand(sender: ICommandSender, args: Array<out String>) {
         thread {
             if (args.size != 1) {
-                sendClientMessage("§cUsage: /name [Player Name]")
+                sendPrefixMessage("§cUsage: /name [Player Name]")
                 return@thread
             }
 
@@ -64,41 +65,30 @@ object NameHistoryCommand : ClientCommandBase("name") {
             val uuid = try {
                 APIUtils.getUUIDFromUsername(name)
             } catch (e: RuntimeException) {
-                sendClientMessage("§cFailed to get $name's uuid")
+                sendPrefixMessage("§cFailed to get $name's uuid")
                 return@thread
             }
 
             val nameHistoryList = try {
                 APIUtils.getNameHistoryFromUUID(uuid)
             } catch (e: RuntimeException) {
-                sendClientMessage("§cFailed to get $name's Name History")
+                sendPrefixMessage("§cFailed to get $name's Name History")
                 return@thread
             }
-
-            val nameHistoryStrings = StringBuilder()
-            val priorityQueue = PriorityQueue<Int>(compareByDescending { it })
 
             val fontRenderer = mc.fontRendererObj
 
-            nameHistoryList.forEachIndexed { index, nameHistory ->
-                nameHistoryStrings.append(transformNameHistoryToString(nameHistory).also {
-                    priorityQueue.add(fontRenderer.getStringWidth(it))
-                })
+            val nameHistoryTexts = nameHistoryList.map(transformNameHistoryToString)
 
-                if (index != nameHistoryList.lastIndex) {
-                    nameHistoryStrings.append("\n")
-                }
-            }
-
-            if (priorityQueue.isEmpty()) {
-                sendClientMessage("§cSomething went wrong! Try again")
+            if (nameHistoryTexts.isEmpty()) {
+                sendPrefixMessage("§cSomething went wrong! Try again")
                 return@thread
             }
 
-            val dash = "§6${getDashAsLongestString(priorityQueue.peek())}"
+            val dash = "§6${getDashAsLongestString(nameHistoryTexts.maxOf { fontRenderer.getStringWidth(it) })}"
 
             sendClientMessage(dash)
-            sendClientMessage(nameHistoryStrings)
+            sendClientMessage(nameHistoryTexts.joinToString("\n"))
             sendClientMessage(dash)
         }
     }

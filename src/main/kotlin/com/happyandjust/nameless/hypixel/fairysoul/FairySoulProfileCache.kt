@@ -20,7 +20,7 @@ package com.happyandjust.nameless.hypixel.fairysoul
 
 import com.happyandjust.nameless.config.ConfigMap
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.serialization.converters.CFairySoulProfile
 
 object FairySoulProfileCache {
@@ -48,9 +48,6 @@ object FairySoulProfileCache {
         val uuid = mc.session.playerID
 
         val name = "$uuid-$profileName"
-
-        currentlyLoadedProfile = generatedFairySoulProfiles[name] ?: FairySoulProfile(name, hashMapOf()).also {
-            generatedFairySoulProfiles[name] = it
-        }
+        currentlyLoadedProfile = generatedFairySoulProfiles.getOrPut(name) { FairySoulProfile(name, hashMapOf()) }
     }
 }

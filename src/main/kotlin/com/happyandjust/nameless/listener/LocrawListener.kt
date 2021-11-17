@@ -20,9 +20,9 @@ package com.happyandjust.nameless.listener
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
-import com.happyandjust.nameless.devqol.inHypixel
-import com.happyandjust.nameless.devqol.matchesMatcher
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.inHypixel
+import com.happyandjust.nameless.dsl.matchesMatcher
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.LocrawInfo
 import net.minecraftforge.client.event.ClientChatReceivedEvent

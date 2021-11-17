@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.processor.partygames
 
-import com.happyandjust.nameless.devqol.getAxisAlignedBB
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.getAxisAlignedBB
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.PartyGameChangeListener
 import com.happyandjust.nameless.features.listener.WorldRenderListener
@@ -37,9 +37,11 @@ object AnvilSpleefProcessor : Processor(), ClientTickListener, WorldRenderListen
 
     override fun tick() {
         renderingSet.clear()
-        for (anvil in mc.theWorld.loadedEntityList.filter { it is EntityFallingBlock && it.posY > 1 && it.block.block == Blocks.anvil }) {
-            renderingSet.add(anvil as EntityFallingBlock)
-        }
+        renderingSet.addAll(
+            mc.theWorld.loadedEntityList
+                .filterIsInstance<EntityFallingBlock>()
+                .filter { it.posY > 1 && it.block.block == Blocks.anvil }
+        )
     }
 
     override fun renderWorld(partialTicks: Float) {

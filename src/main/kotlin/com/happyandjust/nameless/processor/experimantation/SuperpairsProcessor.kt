@@ -18,9 +18,9 @@
 
 package com.happyandjust.nameless.processor.experimantation
 
-import com.happyandjust.nameless.devqol.drawOnSlot
-import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.devqol.stripControlCodes
+import com.happyandjust.nameless.dsl.drawOnSlot
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.stripControlCodes
 import com.happyandjust.nameless.features.listener.BackgroundDrawnListener
 import com.happyandjust.nameless.features.listener.ItemTooltipListener
 import com.happyandjust.nameless.processor.Processor

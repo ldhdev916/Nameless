@@ -21,9 +21,9 @@ package com.happyandjust.nameless.commands
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.devqol.decodeBase64
-import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.devqol.sendPrefixMessage
+import com.happyandjust.nameless.dsl.decodeBase64
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.features.impl.skyblock.FeatureChangeHelmetTexture
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
 import com.happyandjust.nameless.utils.APIUtils

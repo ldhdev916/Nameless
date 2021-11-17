@@ -20,11 +20,12 @@ package com.happyandjust.nameless.features
 
 import com.happyandjust.nameless.MOD_ID
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.devqol.setInCategory
+import com.happyandjust.nameless.dsl.setInCategory
 import com.happyandjust.nameless.features.impl.general.FeatureBedwarsESP
 import com.happyandjust.nameless.features.impl.general.FeatureBedwarsRayTraceBed
 import com.happyandjust.nameless.features.impl.general.FeatureDisplayBetterArmor
 import com.happyandjust.nameless.features.impl.general.FeatureGlowAllPlayers
+import com.happyandjust.nameless.features.impl.misc.FeatureClickCopyChat
 import com.happyandjust.nameless.features.impl.misc.FeatureDisguiseNickname
 import com.happyandjust.nameless.features.impl.misc.FeatureTextureOverlay
 import com.happyandjust.nameless.features.impl.misc.FeatureUpdateChecker
@@ -243,6 +244,7 @@ object FeatureRegistry {
                     CChromaColor
                 )
             })
+    val CLICK_COPY_CHAT = register(FeatureClickCopyChat.setInCategory("Miscellaneous"))
 
     //QOL
     val JOIN_HYPIXEL_BUTTON = register(FeatureHypixelButton.setInCategory("Button"))

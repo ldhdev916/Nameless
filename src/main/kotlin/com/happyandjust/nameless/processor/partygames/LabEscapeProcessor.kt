@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.processor.partygames
 
 import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.RenderOverlayListener
 import com.happyandjust.nameless.processor.Processor

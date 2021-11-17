@@ -132,7 +132,7 @@ class FeatureGui : WindowScreen(
             x = SiblingConstraint()
 
             width = 1.pixel()
-            height = 100.percent() + .5F.percent()
+            height = 100.percent() + .5F.pixels()
         } childOf mainContent
 
         for (category in Category.values()) {

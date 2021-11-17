@@ -20,9 +20,9 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JSONHandler
-import com.happyandjust.nameless.devqol.inHypixel
-import com.happyandjust.nameless.devqol.matchesMatcher
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.inHypixel
+import com.happyandjust.nameless.dsl.matchesMatcher
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
@@ -53,12 +53,8 @@ object FeaturePlayTabComplete : SimpleFeature(
                 JsonObject()
             )
 
-        for ((s, element) in json.entrySet()) {
-            gameMap[s] = element.asString
-
-            games.add(s)
-            games.add(element.asString)
-        }
+        gameMap.putAll(json.entrySet().map { it.key to it.value.asString })
+        games.addAll(gameMap.keys + gameMap.values)
     }
 
     private val PLAY = Pattern.compile("/play (?<msg>.*)")

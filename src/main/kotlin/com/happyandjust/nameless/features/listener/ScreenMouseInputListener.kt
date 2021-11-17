@@ -16,21 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.commands
+package com.happyandjust.nameless.features.listener
 
-import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.dsl.sendPrefixMessage
-import com.happyandjust.nameless.hypixel.Hypixel
-import net.minecraft.command.ICommandSender
+import net.minecraftforge.client.event.GuiScreenEvent
 
-object HypixelCommand : ClientCommandBase("currentdata") {
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
+interface ScreenMouseInputListener {
 
-        sendPrefixMessage("Current Hypixel Game: ${Hypixel.currentGame}\n")
+    fun onMouseInputPre(e: GuiScreenEvent.MouseInputEvent.Pre)
 
-        Hypixel.currentProperty.map { "Property key: ${it.key} Value: ${it.value}" }.forEach(::sendPrefixMessage)
-
-        sendPrefixMessage("\n${Hypixel.locrawInfo}")
-
-    }
+    fun onMouseInputPost(e: GuiScreenEvent.MouseInputEvent.Post)
 }

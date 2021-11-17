@@ -20,8 +20,8 @@ package com.happyandjust.nameless.utils
 
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.InventorySlotInfo
-import com.happyandjust.nameless.devqol.getBlockAtPos
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.getBlockAtPos
+import com.happyandjust.nameless.dsl.mc
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.BlockPos
 import org.lwjgl.input.Keyboard
@@ -41,14 +41,12 @@ object Utils {
     fun getKeyBindingNameInEverySlot(): Map<Int, InventorySlotInfo> {
         val inventory = mc.thePlayer.inventory
 
-        return hashMapOf(
-            *mc.gameSettings.keyBindsHotbar
-                .map {
-                    val slot = it.keyDescription.last().digitToInt()
+        return mc.gameSettings.keyBindsHotbar
+            .associate {
+                val slot = it.keyDescription.last().digitToInt() - 1
 
-                    slot to InventorySlotInfo(slot, Keyboard.getKeyName(it.keyCode), inventory.getStackInSlot(slot))
-                }.toTypedArray()
-        )
+                slot to InventorySlotInfo(slot, Keyboard.getKeyName(it.keyCode), inventory.getStackInSlot(slot))
+            }
     }
 
     fun getHighestGround(pos: BlockPos, shouldBeValid: Boolean): BlockPos {

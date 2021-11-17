@@ -19,8 +19,8 @@
 package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.core.ColorInfo
-import com.happyandjust.nameless.devqol.getSkyBlockRarity
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.getSkyBlockRarity
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
@@ -75,17 +75,11 @@ object FeatureGlowDroppedItem : SimpleFeature(
 
     private fun isShopShowcaseItem(entityItem: EntityItem): Boolean {
         val list = entityItem.worldObj.getEntitiesWithinAABB(EntityArmorStand::class.java, entityItem.entityBoundingBox)
-            .takeIf { it.size > 0 } ?: return false
+        if (list.isEmpty()) return false
 
         val flag: (EntityArmorStand) -> Boolean = {
-            !it.isInvisible || it.getEquipmentInSlot(4) == null || it.getEquipmentInSlot(4).item != Item.getItemFromBlock(
-                Blocks.glass
-            )
+            !it.isInvisible || it.getEquipmentInSlot(4)?.item != Item.getItemFromBlock(Blocks.glass)
         }
-
-        for (entityArmorStand in list) {
-            if (!flag(entityArmorStand)) return true
-        }
-        return false
+        return list.any { !flag(it) }
     }
 }

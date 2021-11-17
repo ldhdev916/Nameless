@@ -31,9 +31,7 @@ object Request {
         val connection = connect(url)
         try {
             connection.requestMethod = "GET"
-            for ((key, value) in headers) {
-                connection.setRequestProperty(key, value)
-            }
+            headers.forEach(connection::setRequestProperty)
             return readBody(connection.inputStream)
         } catch (e: Exception) {
             throw RuntimeException(e)
@@ -46,10 +44,7 @@ object Request {
         val connection = connect(url)
         try {
             connection.requestMethod = "POST"
-
-            for ((key, value) in requestHeaders.entries) {
-                connection.setRequestProperty(key, value)
-            }
+            requestHeaders.forEach(connection::setRequestProperty)
 
             val paramString = params.entries.joinToString("") { "&${it.key}=${it.value}" }
 

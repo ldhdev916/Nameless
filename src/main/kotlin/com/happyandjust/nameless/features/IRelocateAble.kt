@@ -20,7 +20,8 @@ package com.happyandjust.nameless.features
 
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.color
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.listener.RenderOverlayListener
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.gui.relocate.RelocateGui
@@ -42,5 +43,6 @@ interface IRelocateAble : RenderOverlayListener {
 
     override fun renderOverlay(partialTicks: Float) {
         if (mc.currentScreen !is RelocateGui) renderOverlay0(partialTicks)
+        color(1f, 1f, 1f, 1f)
     }
 }

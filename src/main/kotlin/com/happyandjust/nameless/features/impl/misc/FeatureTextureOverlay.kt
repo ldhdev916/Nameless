@@ -20,7 +20,7 @@ package com.happyandjust.nameless.features.impl.misc
 
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.OverlayParameter
@@ -70,68 +70,67 @@ object FeatureTextureOverlay : SimpleFeature(
         reloadTexture()
     }
 
-    fun reloadTexture() {
+    private fun reloadTexture() {
         parameters.entries.removeIf { it.value is OverlayParameter }
 
-        for (file in dir.listFiles() ?: emptyArray()) {
+        for (file in (dir.listFiles() ?: emptyArray()).filter {
+            arrayOf(".png", ".jpg").any { s -> it.name.endsWith(s) }
+        }) {
             val name = file.name
+            parameters[name] = object : OverlayParameter<Boolean>(
+                1,
+                "textureoverlay",
+                name,
+                name,
+                "",
+                false,
+                CBoolean
+            ) {
 
-            if (name.endsWith(".png") || name.endsWith(".jpg")) {
-                parameters[name] = object : OverlayParameter<Boolean>(
-                    1,
-                    "textureoverlay",
-                    name,
-                    name,
-                    "",
-                    false,
-                    CBoolean
-                ) {
+                private val image = ImageIO.read(file)
+                private val resourceLocation =
+                    mc.textureManager.getDynamicTextureLocation(file.name, DynamicTexture(image))
 
-                    private val image = ImageIO.read(file)
-                    private val resourceLocation =
-                        mc.textureManager.getDynamicTextureLocation(file.name, DynamicTexture(image))
+                override val overlayPoint =
+                    ConfigValue("textureoverlay", "${name}_position", Overlay.DEFAULT, COverlay)
 
-                    override val overlayPoint =
-                        ConfigValue("textureoverlay", "${name}_position", Overlay.DEFAULT, COverlay)
+                override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
+                    return UIImage.ofFile(File(dir, name)).constrain {
+                        width = (image.width * relocateComponent.currentScale).pixels()
+                        height = ImageAspectConstraint()
 
-                    override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
-                        return UIImage.ofFile(File(dir, name)).constrain {
-                            width = (image.width * relocateComponent.currentScale).pixels()
-                            height = ImageAspectConstraint()
-
-                            relocateComponent.onScaleChange {
-                                width = (image.width * it).pixels()
-                            }
+                        relocateComponent.onScaleChange {
+                            width = (image.width * it).pixels()
                         }
                     }
-
-                    override fun shouldDisplayInRelocateGui(): Boolean {
-                        return enabled && value
-                    }
-
-                    override fun renderOverlay0(partialTicks: Float) {
-                        val overlay = overlayPoint.value
-
-                        mc.textureManager.bindTexture(resourceLocation)
-
-                        val width = (image.width * overlay.scale).toInt()
-                        val height = (image.height * overlay.scale).toInt()
-
-                        Gui.drawModalRectWithCustomSizedTexture(
-                            overlay.point.x,
-                            overlay.point.y,
-                            0f,
-                            0f,
-                            width,
-                            height,
-                            width.toFloat(),
-                            height.toFloat()
-                        )
-                    }
-
-                    override fun getWheelSensitive() = 200
-
                 }
+
+                override fun shouldDisplayInRelocateGui(): Boolean {
+                    return enabled && value
+                }
+
+                override fun renderOverlay0(partialTicks: Float) {
+                    val overlay = overlayPoint.value
+
+                    mc.textureManager.bindTexture(resourceLocation)
+
+                    val width = (image.width * overlay.scale).toInt()
+                    val height = (image.height * overlay.scale).toInt()
+
+                    Gui.drawModalRectWithCustomSizedTexture(
+                        overlay.point.x,
+                        overlay.point.y,
+                        0f,
+                        0f,
+                        width,
+                        height,
+                        width.toFloat(),
+                        height.toFloat()
+                    )
+                }
+
+                override fun getWheelSensitive() = 200
+
             }
         }
     }

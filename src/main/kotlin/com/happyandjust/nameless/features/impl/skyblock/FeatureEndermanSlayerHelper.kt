@@ -21,8 +21,9 @@ package com.happyandjust.nameless.features.impl.skyblock
 import com.google.gson.JsonElement
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.Overlay
+import com.happyandjust.nameless.core.VOIDGLOOM_SKULL
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.OverlayFeature
@@ -215,7 +216,9 @@ object FeatureEndermanSlayerHelper :
         currentVoidgloomCache =
             if (ScoreboardUtils.getSidebarLines(true).any { it.contains("Slay the boss!") }) {
                 val cache = hashMapOf<EntityEnderman, EntityArmorStand?>()
-                val enderman = mc.theWorld.loadedEntityList.filterIsInstance<EntityEnderman>()
+                val enderman = mc.theWorld.loadedEntityList
+                    .asSequence()
+                    .filterIsInstance<EntityEnderman>()
                     .filter { it.getDistanceToEntity(mc.thePlayer) <= 10 }
                     .sortedBy { it.getDistanceToEntity(mc.thePlayer) }
                     .firstOrNull {
@@ -270,7 +273,7 @@ object FeatureEndermanSlayerHelper :
                 val list = mc.theWorld.loadedEntityList.filterIsInstance<EntityArmorStand>()
                     .filter { it.getDistanceToEntity(enderman) <= 12 }
                     .filter {
-                        it.getEquipmentInSlot(4)?.getSkullOwner()?.getMD5() == "159dcb0174e3282cc7d63afa022fb379"
+                        it.getEquipmentInSlot(4)?.getSkullOwner()?.getMD5() == VOIDGLOOM_SKULL
                     }
 
                 list

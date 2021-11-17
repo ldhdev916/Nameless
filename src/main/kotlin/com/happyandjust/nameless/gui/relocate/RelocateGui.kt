@@ -32,8 +32,7 @@ import java.awt.Point
 
 class RelocateGui(relocateAbleList: List<IRelocateAble>) : WindowScreen(drawDefaultBackground = false) {
 
-    private val map =
-        hashMapOf(*relocateAbleList.map { it to RelocateComponent(window, it).childOf(window) }.toTypedArray())
+    private val map = relocateAbleList.associateWith { RelocateComponent(window, it).childOf(window) }
 
     init {
 

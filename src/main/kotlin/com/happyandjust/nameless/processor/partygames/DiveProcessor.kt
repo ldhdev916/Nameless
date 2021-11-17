@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.processor.partygames
 
-import com.happyandjust.nameless.devqol.getBlockAtPos
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.getBlockAtPos
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.WorldRenderListener
 import com.happyandjust.nameless.processor.Processor

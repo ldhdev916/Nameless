@@ -18,7 +18,8 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.nullCatch
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
@@ -31,11 +32,7 @@ object FeatureCancelCertainBlockRendering :
 
     init {
         for (block in Block.blockRegistry) {
-            val displayName = try {
-                ItemStack(block).displayName
-            } catch (e: NullPointerException) {
-                block.registryName.split(":")[1]
-            }
+            val displayName = nullCatch(block.registryName.split(":")[1]) { ItemStack(block).displayName }
 
             parameters[block.registryName] = FeatureParameter(
                 0,

@@ -19,9 +19,9 @@
 package com.happyandjust.nameless.features.impl.general
 
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.devqol.drawOnSlot
-import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.devqol.pow
+import com.happyandjust.nameless.dsl.drawOnSlot
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.pow
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
@@ -93,16 +93,10 @@ object FeatureDisplayBetterArmor : SimpleFeature(
     private fun getProtectionLevel(itemStack: ItemStack): Int {
         val enchantments = itemStack.enchantmentTagList ?: return 0
 
-        for (enchantment in (enchantments as AccessorNBTTagList).tagList) {
-            if (enchantment is NBTTagCompound) {
-                val id = enchantment.getInteger("id")
-                if (id == 0) {
-                    return enchantment.getInteger("lvl")
-                }
-            }
-        }
-
-        return 0
+        return (enchantments as AccessorNBTTagList).tagList
+            .filterIsInstance<NBTTagCompound>()
+            .firstOrNull { it.getInteger("id") == 0 }
+            ?.getInteger("lvl") ?: 0
     }
 
     private fun calcDamage(itemArmor: ItemArmor, protectionLevel: Int): Double {
@@ -153,10 +147,8 @@ object FeatureDisplayBetterArmor : SimpleFeature(
         val armorItems =
             mc.theWorld.loadedEntityList.filterIsInstance<EntityItem>().filter { it.entityItem.item is ItemArmor }
 
-        for (armor in armorInventory) {
-            armor ?: continue
-
-            val armorType = (armor.item as? ItemArmor)?.armorType ?: continue
+        for (armor in armorInventory.filter { it?.item is ItemArmor }) {
+            val armorType = (armor.item as ItemArmor).armorType
 
             var bestEntityItem: EntityItem? = null
             var bestArmor: ItemStack? = null
@@ -192,26 +184,17 @@ object FeatureDisplayBetterArmor : SimpleFeature(
         val container = gui.inventorySlots
         val slots = container.inventorySlots
 
-
         val inventory = mc.thePlayer.inventory
         val armorInventory = inventory.armorInventory
 
-
-        for (armor in armorInventory) {
-            armor ?: continue
-
+        for (armor in armorInventory.filter { it?.item is ItemArmor }) {
             val armorType = (armor.item as ItemArmor).armorType
 
             var bestSlot: Slot? = null
             var bestArmor: ItemStack? = null
 
-            for (slot in slots) {
-
-                if (slot.inventory != inventory) continue
-
-                if (slot.slotIndex in 36 until 40) continue
-
-                val itemStack = slot.stack ?: continue
+            for (slot in slots.filter { it.inventory == inventory && it.slotIndex !in 36 until 40 && it.hasStack }) {
+                val itemStack = slot.stack
                 val item = itemStack.item
 
                 if (item is ItemArmor && item.armorType == armorType) {

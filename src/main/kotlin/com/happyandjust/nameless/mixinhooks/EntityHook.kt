@@ -18,10 +18,10 @@
 
 package com.happyandjust.nameless.mixinhooks
 
-import com.happyandjust.nameless.devqol.formatDouble
-import com.happyandjust.nameless.devqol.matchesMatcher
-import com.happyandjust.nameless.devqol.stripControlCodes
-import com.happyandjust.nameless.devqol.transformToPrecision
+import com.happyandjust.nameless.dsl.formatDouble
+import com.happyandjust.nameless.dsl.matchesMatcher
+import com.happyandjust.nameless.dsl.stripControlCodes
+import com.happyandjust.nameless.dsl.transformToPrecision
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel

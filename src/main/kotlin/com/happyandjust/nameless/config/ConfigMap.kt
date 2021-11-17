@@ -56,12 +56,12 @@ open class ConfigMap<V>(
         super.clear()
     }
 
-    @Deprecated("Not Supported", ReplaceWith("this.put(value)", "java.util.HashMap"))
+    @Deprecated("Not Supported", ReplaceWith("this.put(value)", "java.util.HashMap"), DeprecationLevel.ERROR)
     override fun putAll(from: Map<out String, V>) {
         super.putAll(from)
     }
 
-    @Deprecated("Not Supported", ReplaceWith("this.put(value)", "java.util.HashMap"))
+    @Deprecated("Not Supported", ReplaceWith("this.put(value)", "java.util.HashMap"), DeprecationLevel.ERROR)
     override fun putIfAbsent(key: String, value: V): V? {
         return super.putIfAbsent(key, value)
     }

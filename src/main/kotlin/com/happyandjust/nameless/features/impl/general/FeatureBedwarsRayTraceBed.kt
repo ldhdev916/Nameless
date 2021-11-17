@@ -20,7 +20,7 @@ package com.happyandjust.nameless.features.impl.general
 
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.OverlayFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
@@ -45,6 +45,7 @@ import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.constraint
 import gg.essential.elementa.dsl.pixels
 import net.minecraft.block.Block
+import net.minecraft.block.BlockBed
 import net.minecraft.init.Blocks
 import net.minecraft.item.Item
 import net.minecraft.item.ItemAxe
@@ -55,9 +56,6 @@ import net.minecraft.util.MovingObjectPosition
 import net.minecraft.util.Vec3
 import java.awt.Color
 import java.util.*
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.set
 import kotlin.math.max
 import kotlin.math.min
 
@@ -194,7 +192,7 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
 
         if (scanBedTick == 0) {
 
-            val targetY = beds.toTypedArray()[0].y.toDouble()
+            val targetY = beds.first().y.toDouble()
 
             val entityPlayerSP = mc.thePlayer
 
@@ -209,11 +207,7 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
 
             val world = mc.theWorld
 
-            for (pos in BlockPos.getAllInBox(from, to)) {
-                if (world.getBlockAtPos(pos) == Blocks.bed) {
-                    beds.add(pos)
-                }
-            }
+            beds.addAll(BlockPos.getAllInBox(from, to).filter { world.getBlockAtPos(it) is BlockBed })
         }
     }
 
@@ -223,10 +217,8 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
     }
 
     override fun renderWorld(partialTicks: Float) {
-        currentRayTraceInfo?.let {
-            it.bedHit?.let { bed ->
-                RenderUtils.drawBox(bed.getAxisAlignedBB(), 0x80FF0000.toInt(), partialTicks)
-            }
+        currentRayTraceInfo?.bedHit?.let {
+            RenderUtils.drawBox(it.getAxisAlignedBB(), 0x80FF0000.toInt(), partialTicks)
         }
     }
 
@@ -237,7 +229,7 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
     /**
      * Contains all possible blocks. maybe
      */
-    private fun getBlockRequirement(block: Block): (Item) -> Boolean {
+    private fun getBlockRequirement(block: Block): (Item?) -> Boolean {
         if (AccessorItemAxe.getEFFECTIVE_ON().contains(block)) return { it is ItemAxe }
         if (AccessorItemPickaxe.getEFFECTIVE_ON().contains(block)) return { it is ItemPickaxe }
         when (block) {
@@ -256,19 +248,12 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
 
         val inventory = mc.thePlayer.inventory
 
-        label@ for (block in list) {
-
-            val requirement = getBlockRequirement(block)
-
-            for ((_, inventorySlotInfo) in map) {
-                if (requirement(inventorySlotInfo.itemStack?.item ?: continue)) {
-                    blockToKeyName[block] = inventorySlotInfo.keyName
-                    continue@label
-                }
+        blockToKeyName.putAll(
+            list.associateWith { block ->
+                val requirement = getBlockRequirement(block)
+                (map.values.firstOrNull { requirement(it.itemStack?.item) } ?: map[inventory.currentItem]!!).keyName
             }
-
-            blockToKeyName[block] = map[inventory.currentItem]!!.keyName
-        }
+        )
     }
 
     override fun shouldDisplayInRelocateGui(): Boolean {
@@ -280,22 +265,16 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
         if (Hypixel.currentGame != GameType.BEDWARS) return
 
         currentRayTraceInfo?.let {
-            val overlay = overlayPoint.value
-
             matrix {
-                translate(overlay.point.x, overlay.point.y, 0)
-                scale(overlay.scale, overlay.scale, 1.0)
+                setup(overlayPoint.value)
                 var y = 0
 
-                try {
-                    for (collideBlock in it.collideExceptBed) {
-                        val text = blockToKeyName[collideBlock] ?: "NULL"
-                        mc.fontRendererObj.drawString(text, 0, y, Color.red.rgb)
-                        y += mc.fontRendererObj.FONT_HEIGHT
-                    }
-                } catch (e: NullPointerException) { // somewhat ItemStack#getDisplayName throwing Exception
-                    e.printStackTrace()
+                for (collideBlock in it.collideExceptBed) {
+                    val text = blockToKeyName[collideBlock] ?: "NULL"
+                    mc.fontRendererObj.drawString(text, 0, y, Color.red.rgb)
+                    y += mc.fontRendererObj.FONT_HEIGHT
                 }
+
             }
         }
     }

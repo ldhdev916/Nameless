@@ -22,7 +22,7 @@ import com.google.gson.JsonObject
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.VERSION
 import com.happyandjust.nameless.core.JSONHandler
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener

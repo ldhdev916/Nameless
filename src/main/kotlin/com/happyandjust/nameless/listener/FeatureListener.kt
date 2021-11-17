@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.listener
 
-import com.happyandjust.nameless.devqol.color
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.color
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.PacketEvent
@@ -191,6 +191,16 @@ object FeatureListener {
     @SubscribeEvent
     fun enderTeleport(e: EnderTeleportEvent) {
         invoke<EnderTeleportListener> { onEnderTeleport(e) }
+    }
+
+    @SubscribeEvent
+    fun mouseInputPre(e: GuiScreenEvent.MouseInputEvent.Pre) {
+        invoke<ScreenMouseInputListener> { onMouseInputPre(e) }
+    }
+
+    @SubscribeEvent
+    fun mouseInputPost(e: GuiScreenEvent.MouseInputEvent.Post) {
+        invoke<ScreenMouseInputListener> { onMouseInputPost(e) }
     }
 
 }

@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless
 
-import com.happyandjust.nameless.devqol.toVec3
+import com.happyandjust.nameless.dsl.toVec3
 import net.minecraft.entity.Entity
 import net.minecraft.util.Vec3
 import kotlin.math.PI

@@ -19,8 +19,8 @@
 package com.happyandjust.nameless.listener
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.devqol.LOGGER
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.LOGGER
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.gui.feature.FeatureGui
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent

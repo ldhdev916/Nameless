@@ -19,9 +19,9 @@
 package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.devqol.stripControlCodes
-import com.happyandjust.nameless.devqol.toVec3
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.stripControlCodes
+import com.happyandjust.nameless.dsl.toVec3
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
@@ -69,19 +69,13 @@ object FeatureDungeonsDoorKey : SimpleFeature(
         scanTick = (scanTick + 1) % 10
         if (scanTick != 0) return
 
-        for (entityArmorStand in mc.theWorld.getEntitiesWithinAABB(
+        keyPosition = mc.theWorld.getEntitiesWithinAABB(
             EntityArmorStand::class.java,
             mc.thePlayer.entityBoundingBox.expand(16.0, 5.0, 16.0)
-        )) {
-            val name = entityArmorStand.displayName.unformattedText.stripControlCodes()
+        )
+            .firstOrNull { it.displayName.unformattedText.stripControlCodes() in arrayOf("Wither Key", "Blood Key") }
+            ?.toVec3()
 
-            if (name == "Wither Key" || name == "Blood Key") {
-                keyPosition = entityArmorStand.toVec3()
-                return
-            }
-        }
-
-        keyPosition = null
     }
 
     override fun renderOverlay(partialTicks: Float) {

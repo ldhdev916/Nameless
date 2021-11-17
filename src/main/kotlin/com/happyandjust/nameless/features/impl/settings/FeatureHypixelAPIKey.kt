@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.features.impl.settings
 
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.features.SettingFeature
 import com.happyandjust.nameless.features.listener.ChatListener
 import com.happyandjust.nameless.gui.feature.ComponentType
@@ -43,7 +43,7 @@ object FeatureHypixelAPIKey : SettingFeature("hypixelapikey", "Hypixel API Key",
 
     override fun toPropertyData(): PropertyData<out Any?> {
         return super.toPropertyData().also { propertyData ->
-            propertyData.validator = { it in 'a'..'z' || it in '0'..'9' || it == '-' }
+            propertyData.validator = { it.isLowerCase() || it.isDigit() || it == '-' }
         }
     }
 

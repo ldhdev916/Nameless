@@ -22,7 +22,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
 import net.minecraft.util.ResourceLocation
 import java.io.File
 import java.io.InputStream

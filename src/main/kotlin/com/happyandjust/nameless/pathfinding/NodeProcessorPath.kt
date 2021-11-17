@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.pathfinding
 
-import com.happyandjust.nameless.devqol.getBlockAtPos
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.getBlockAtPos
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.utils.Utils
 import net.minecraft.block.BlockFence
 import net.minecraft.block.BlockFenceGate

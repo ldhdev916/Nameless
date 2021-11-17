@@ -22,7 +22,7 @@ import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.OutlineMode
 import com.happyandjust.nameless.core.checkAndReplace
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.listener.StencilListener
 import com.happyandjust.nameless.mixinhooks.RenderGlobalHook
@@ -55,7 +55,7 @@ object OutlineHandleListener {
             .map { it.processors.filter { entry -> entry.value() } }
             .map { it.keys }
             .flatten()
-            .filterIsInstance<StencilListener>().toList()
+            .filterIsInstance<StencilListener>()
         val stencilListeners = stencilFeatures + stencilProcessers
 
         for (entity in mc.theWorld.loadedEntityList) {

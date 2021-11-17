@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.devqol.getAxisAlignedBB
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.getAxisAlignedBB
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
@@ -48,11 +48,7 @@ object FeatureGemstoneESP : SimpleFeature(
 
     private var scanTick = 0
     private var gemstoneBlocks = hashMapOf<AxisAlignedBB, Int>()
-    private val gemstoneBlockMap = hashMapOf<Int, Gemstone>().apply {
-        for (gemstone in Gemstone.values()) {
-            this[gemstone.metadata] = gemstone
-        }
-    }
+    private val gemstoneBlockMap = Gemstone.values().associateBy { it.metadata }.toMap()
 
     init {
         parameters["radius"] = FeatureParameter(
@@ -113,14 +109,15 @@ object FeatureGemstoneESP : SimpleFeature(
 
             for (pos in BlockPos.getAllInBox(from, to)) {
                 val blockState = world.getBlockState(pos)
+                val block = blockState.block
 
-                when (val b = blockState.block) {
-                    Blocks.stained_glass_pane, Blocks.stained_glass -> {
-                        map[pos.getAxisAlignedBB()] =
-                            (gemstoneBlockMap[b.getMetaFromState(blockState)]?.takeIf { getParameterValue(it.name.lowercase()) }
-                                ?: continue).color
-                    }
+                if (block in arrayOf(Blocks.stained_glass_pane, Blocks.stained_glass)) {
+                    map[pos.getAxisAlignedBB()] =
+                        (gemstoneBlockMap[block.getMetaFromState(blockState)]
+                            ?.takeIf { getParameterValue(it.name.lowercase()) }
+                            ?: continue).color
                 }
+
             }
 
             gemstoneBlocks = map

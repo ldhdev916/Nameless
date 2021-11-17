@@ -19,8 +19,9 @@
 package com.happyandjust.nameless.listener
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.devqol.getAxisAlignedBB
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.getAxisAlignedBB
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.toVec3
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.pathfinding.ModPathFinding
 import com.happyandjust.nameless.utils.RenderUtils
@@ -85,6 +86,7 @@ object WaypointListener {
 
             }
             RenderUtils.drawBox(it.targetPos.getAxisAlignedBB(), 0x4000FF00, e.partialTicks)
+            RenderUtils.renderBeaconBeam(it.targetPos.toVec3(), Color.green.rgb, 0.7f, e.partialTicks)
         }
     }
 

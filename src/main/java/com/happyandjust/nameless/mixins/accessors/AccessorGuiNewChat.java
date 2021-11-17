@@ -16,20 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.devqol
+package com.happyandjust.nameless.mixins.accessors;
 
-import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.features.SimpleFeature
+import net.minecraft.client.gui.ChatLine;
+import net.minecraft.client.gui.GuiNewChat;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-fun SimpleFeature.inCategory(
-    inCategory: String,
-    vararg pairs: Pair<String, FeatureParameter<*>>
-) {
-    for (pair in pairs) {
-        parameters[pair.first] = pair.second.also { it.inCategory = inCategory }
-    }
-}
+import java.util.List;
 
-fun <T : SimpleFeature> T.setInCategory(inCategory: String) = apply {
-    this.inCategory = inCategory
+@Mixin(GuiNewChat.class)
+public interface AccessorGuiNewChat {
+
+    @Accessor
+    List<ChatLine> getDrawnChatLines();
+
+    @Accessor
+    int getScrollPos();
 }

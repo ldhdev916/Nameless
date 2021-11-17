@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter

@@ -23,7 +23,8 @@ import com.happyandjust.nameless.commands.*
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.JSONHandler
 import com.happyandjust.nameless.core.OutlineMode
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.impl.misc.FeatureUpdateChecker
 import com.happyandjust.nameless.features.impl.qol.FeatureGTBHelper
 import com.happyandjust.nameless.features.impl.qol.FeatureMurdererFinder
@@ -134,6 +135,7 @@ class Nameless {
             mc.framebuffer.enableStencil()
         }
 
+        FeatureRegistry // init
 
         threadPool.execute {
             FeatureMurdererFinder.fetchAssassinData()

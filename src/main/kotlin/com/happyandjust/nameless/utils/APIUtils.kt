@@ -23,7 +23,7 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JSONHandler
 import com.happyandjust.nameless.core.NameHistory
-import com.happyandjust.nameless.devqol.decodeBase64
+import com.happyandjust.nameless.dsl.decodeBase64
 import com.happyandjust.nameless.network.Request
 
 object APIUtils {

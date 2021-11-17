@@ -19,120 +19,80 @@
 package com.happyandjust.nameless.commands
 
 import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.devqol.insertCommaEvery3Character
-import com.happyandjust.nameless.devqol.scanAuction
-import com.happyandjust.nameless.devqol.sendClientMessage
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.scanAuction
+import com.happyandjust.nameless.dsl.sendClientMessage
+import com.happyandjust.nameless.dsl.sendPrefixMessage
+import com.happyandjust.nameless.gui.auction.AuctionGui
 import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
-import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
-import com.happyandjust.nameless.utils.SkyblockUtils
 import net.minecraft.command.ICommandSender
 import net.minecraft.event.ClickEvent
 import net.minecraft.event.HoverEvent
-import net.minecraft.util.BlockPos
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.ChatStyle
-import net.minecraft.util.IChatComponent
-import java.util.*
+import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent
 import kotlin.concurrent.thread
 
 object SearchBinCommand : ClientCommandBase("searchbin") {
 
+    private var openGui: (() -> AuctionGui)? = null
+
     override fun processCommand(sender: ICommandSender, args: Array<out String>) {
-        if (args.size < 3) {
-            sendClientMessage("§cUsage: /searchbin [lowest/all] [Rarity] [Item Name]")
+        if (args.isEmpty()) {
+            openGui?.let {
+                MinecraftForge.EVENT_BUS.register(this)
+                return
+            }
+            sendClientMessage("§cUsage: /searchbin [Item Name]")
             return
         }
 
-        val method = args[0].lowercase()
+        openGui = null
+        val name = args.joinToString(" ")
 
-        val rarity = try {
-            ItemRarity.fromString(args[1].uppercase())
-        } catch (e: IllegalArgumentException) {
-            sendClientMessage("§c${e.message}")
-            return
-        }
-
-        val name = args.toList().subList(2, args.size).joinToString(" ")
-
-        sendClientMessage("§aSearching $name...")
+        sendPrefixMessage("§aSearching $name...")
 
         thread {
-            val priorityQueue = PriorityQueue<AuctionInfo>(compareBy { auctionInfo -> auctionInfo.price })
+            val auctionInfos = arrayListOf<AuctionInfo>()
 
-            scanAuction {
-                for (auctionInfo in it.filter { auctionInfo -> auctionInfo.isBuyableBinAuction() }) {
-                    if (!auctionInfo.item_name.contains(name, true)) continue
-                    if (auctionInfo.rarity != rarity) continue
+            scanAuction { list ->
+                auctionInfos.addAll(
+                    list.filter { it.isBuyableBinAuction() }
+                        .filter { it.item_name.contains(name, true) }
 
-                    priorityQueue.add(auctionInfo)
-                }
+                )
 
-                if (priorityQueue.isEmpty()) {
-                    sendClientMessage("§cNo Bin Found for Item $name")
+                if (auctionInfos.isEmpty()) {
+                    sendPrefixMessage("§cNo bin auction found for item $name")
                     return@scanAuction
                 }
 
-                when (method) {
-                    "all" -> {
-                        while (priorityQueue.isNotEmpty()) {
-                            sendClientMessage(getChatTextForAuctionInfo(priorityQueue.poll()))
-                        }
-                    }
-                    "lowest" -> {
-                        sendClientMessage(getChatTextForAuctionInfo(priorityQueue.peek()))
-                    }
-                    else -> sendClientMessage("No Such Method $method")
+                if (auctionInfos.size >= 700) {
+                    sendPrefixMessage("§cSo many items! (${auctionInfos.size}) try pass item name more specific")
+                    return@scanAuction
                 }
+
+                val click = ChatComponentText(" §a§l[CLICK]").apply {
+
+                    val hoverText = ChatComponentText("§aClick Here to View Items!")
+
+                    chatStyle = ChatStyle()
+                        .setChatClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/searchbin"))
+                        .setChatHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))
+                }
+
+                openGui = { AuctionGui(auctionInfos) }
+                sendPrefixMessage(ChatComponentText("§aFound total ${auctionInfos.size} items!").appendSibling(click))
             }
         }
     }
 
-    private fun getChatTextForAuctionInfo(auctionInfo: AuctionInfo): IChatComponent {
-        return try {
-            val textComponent =
-                ChatComponentText("§aFound ${auctionInfo.rarity.colorCode}${auctionInfo.item_name} §awith Price §6${auctionInfo.price.insertCommaEvery3Character()}\n")
-
-            val openAuction = ChatComponentText("§a[VIEW AUCTION] ").also {
-                it.chatStyle = ChatStyle().setChatClickEvent(
-                    ClickEvent(
-                        ClickEvent.Action.RUN_COMMAND,
-                        "/viewauction ${auctionInfo.auctionId}"
-                    )
-                )
-            }
-
-            val itemStackCompound = SkyblockUtils.readNBTFromItemBytes(auctionInfo.item_bytes)
-
-            val viewItem = ChatComponentText("§e[VIEW ITEM]").also {
-                it.chatStyle = ChatStyle().setChatHoverEvent(
-                    HoverEvent(
-                        HoverEvent.Action.SHOW_ITEM,
-                        ChatComponentText(itemStackCompound.toString())
-                    )
-                )
-            }
-
-            textComponent.appendSibling(openAuction).appendSibling(viewItem)
-
-            textComponent
-        } catch (e: Exception) {
-            ChatComponentText("§cERROR ${e.javaClass.name} ${e.message}")
-        }
+    @SubscribeEvent
+    fun onRenderTick(e: TickEvent.RenderTickEvent) {
+        mc.displayGuiScreen(openGui?.invoke())
+        MinecraftForge.EVENT_BUS.unregister(this)
     }
 
-    override fun addTabCompletionOptions(
-        sender: ICommandSender,
-        args: Array<out String>,
-        pos: BlockPos
-    ): MutableList<String> {
-
-        return when (args.size) {
-            1 -> listOf("all", "lowest").filter { it.startsWith(args[0], true) }.toMutableList()
-            2 -> {
-                ItemRarity.values().filter { it.webName.startsWith(args[1], true) }
-                    .map { it.webName }.toMutableList()
-            }
-            else -> mutableListOf()
-        }
-    }
 }

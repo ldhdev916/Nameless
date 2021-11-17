@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
@@ -117,15 +117,15 @@ object FeatureFairySoulWaypoint : SimpleFeature(
                     pathTick = (pathTick + 1) % REFRESH_TICK
 
                     if (pathTick == 0) {
-                        currentIslandFairySouls.filter { fairySoul -> !foundFairySoulsInThisProfile.contains(fairySoul) }
-                            .apply {
-                                if (isNotEmpty() && !pathFreezed) {
-                                    threadPool.execute {
-                                        fairySoulPaths = ModPathFinding(
-                                            sortedBy { fairySoul -> mc.thePlayer.getDistanceSq(fairySoul.toBlockPos()) }[0].toBlockPos(),
-                                            true
-                                        ).findPath().get()
-                                    }
+                        currentIslandFairySouls
+                            .asSequence()
+                            .filter { fairySoul -> !foundFairySoulsInThisProfile.contains(fairySoul) }
+                            .takeIf { list -> list.any() && !pathFreezed }
+                            ?.map(FairySoul::toBlockPos)
+                            ?.minByOrNull(mc.thePlayer::getDistanceSq)
+                            ?.let { blockPos ->
+                                threadPool.execute {
+                                    fairySoulPaths = ModPathFinding(blockPos, true).findPath().get()
                                 }
                             }
                     }
@@ -181,7 +181,6 @@ object FeatureFairySoulWaypoint : SimpleFeature(
 
         PROFILE.matchesMatcher(msg) {
             currentSkyBlockProfile = it.group("profile")
-            return
         }
         PROFILE_CHANGE.matchesMatcher(msg) {
             currentSkyBlockProfile = it.group("profile")

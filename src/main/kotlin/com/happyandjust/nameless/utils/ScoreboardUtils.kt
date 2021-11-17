@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.utils
 
-import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.devqol.stripControlCodes
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.stripControlCodes
 import net.minecraft.scoreboard.ScorePlayerTeam
 
 object ScoreboardUtils {

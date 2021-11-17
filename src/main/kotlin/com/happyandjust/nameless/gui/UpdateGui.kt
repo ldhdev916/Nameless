@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.gui
 
-import com.happyandjust.nameless.devqol.formatDouble
-import com.happyandjust.nameless.devqol.transformToPrecision
+import com.happyandjust.nameless.dsl.formatDouble
+import com.happyandjust.nameless.dsl.transformToPrecision
 import com.happyandjust.nameless.gui.feature.ColorCache
 import com.happyandjust.nameless.utils.Utils
 import gg.essential.elementa.WindowScreen

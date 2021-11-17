@@ -16,15 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.devqol
+package com.happyandjust.nameless.dsl
 
+import com.google.gson.JsonObject
 import com.happyandjust.nameless.config.ConfigMap
+import com.happyandjust.nameless.core.FAIRY_SOUL
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockMonster
 import com.happyandjust.nameless.utils.SkyblockUtils
+import net.minecraft.block.Block
 import net.minecraft.client.Minecraft
 import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.client.renderer.WorldRenderer
@@ -123,7 +126,7 @@ fun <T : EntityLivingBase> T.toSkyBlockMonster(): SkyBlockMonster<T>? {
 fun String.copyToClipboard() =
     Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(this), null)
 
-fun Double.formatDouble() =
+fun Double.formatDouble(): String =
     DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)).also { it.maximumFractionDigits = 640 }
         .format(this)
 
@@ -133,9 +136,7 @@ fun BlockPos.getAxisAlignedBB() =
 
 fun EntityArmorStand.isFairySoul(): Boolean {
     if (Hypixel.currentGame != GameType.SKYBLOCK) return false
-
-    val itemStack = getEquipmentInSlot(4) ?: return false
-    return itemStack.getSkullOwner().getMD5() == "57a4c8dc9b8e5d4180daa608901a6147"
+    return getEquipmentInSlot(4)?.getSkullOwner()?.getMD5() == FAIRY_SOUL
 }
 
 fun ItemStack?.getSkyBlockID(): String {
@@ -171,22 +172,11 @@ fun Int.getAlphaFloat() = getAlphaInt() / 255f
 
 fun Int.pow(n: Int) = toDouble().pow(n).toInt()
 
-fun Int.insertCommaEvery3Character(): String {
-    val builder = StringBuilder()
-
-    for ((index, char) in toString().reversed().withIndex()) {
-        builder.append(char)
-        if ((index + 1) % 3 == 0 && index + 1 != toString().length) {
-            builder.append(",")
-        }
-    }
-
-    return builder.reversed().toString()
-}
+fun Int.insertCommaEvery3Character() = toString().reversed().chunked(3).joinToString(",").reversed()
 
 val mc: Minecraft = Minecraft.getMinecraft()
 
-fun World.getBlockAtPos(pos: BlockPos) = getBlockState(pos).block
+fun World.getBlockAtPos(pos: BlockPos): Block = getBlockState(pos).block
 
 fun BlockPos.toVec3() = Vec3(x.toDouble(), y.toDouble(), z.toDouble())
 
@@ -196,13 +186,6 @@ inline val LOGGER: Logger
 fun Throwable.notifyException() {
     sendClientMessage("§cException Occurred ${javaClass.name} $message")
 }
-
-
-fun Array<out String>.toBlockPos(indexes: IntRange) = BlockPos(
-    this[indexes.first].toInt(),
-    this[indexes.first + indexes.step].toInt(),
-    this[indexes.first + indexes.step * 2].toInt()
-)
 
 fun ItemStack.getSkullOwner(): String {
 
@@ -253,12 +236,14 @@ fun Double.transformToPrecision(precision: Int): Double {
     return round(this * pow) / pow
 }
 
-inline fun Double.transformToPrecisionString(precision: Int) = transformToPrecision(precision).formatDouble()
+fun Double.transformToPrecisionString(precision: Int) = transformToPrecision(precision).formatDouble()
 
 fun String.decodeBase64() = Base64.getDecoder().decode(this).decodeToString()
 
-fun <T> nullCatch(defaultValue: T, block: () -> T) = try {
+inline fun <T> nullCatch(defaultValue: T, block: () -> T) = try {
     block()
 } catch (e: NullPointerException) {
     defaultValue
 }
+
+operator fun JsonObject.iterator() = entrySet().iterator()

@@ -16,21 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.commands
+package com.happyandjust.nameless.dsl
 
-import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.dsl.sendPrefixMessage
-import com.happyandjust.nameless.hypixel.Hypixel
-import net.minecraft.command.ICommandSender
+import com.happyandjust.nameless.features.FeatureParameter
+import com.happyandjust.nameless.features.SimpleFeature
 
-object HypixelCommand : ClientCommandBase("currentdata") {
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
-
-        sendPrefixMessage("Current Hypixel Game: ${Hypixel.currentGame}\n")
-
-        Hypixel.currentProperty.map { "Property key: ${it.key} Value: ${it.value}" }.forEach(::sendPrefixMessage)
-
-        sendPrefixMessage("\n${Hypixel.locrawInfo}")
-
+fun SimpleFeature.inCategory(
+    inCategory: String,
+    vararg pairs: Pair<String, FeatureParameter<*>>
+) {
+    for (pair in pairs) {
+        parameters[pair.first] = pair.second.also { it.inCategory = inCategory }
     }
+}
+
+fun <T : SimpleFeature> T.setInCategory(inCategory: String) = apply {
+    this.inCategory = inCategory
 }

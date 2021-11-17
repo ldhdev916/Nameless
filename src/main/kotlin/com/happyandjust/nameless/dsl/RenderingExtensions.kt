@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.devqol
+package com.happyandjust.nameless.dsl
 
 import com.happyandjust.nameless.core.Direction
 import com.happyandjust.nameless.core.Overlay

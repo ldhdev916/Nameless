@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.processor.partygames
 
-import com.happyandjust.nameless.devqol.getBlockAtPos
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.getBlockAtPos
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.PartyGameChangeListener
 import com.happyandjust.nameless.features.listener.WorldRenderListener
@@ -67,13 +67,9 @@ object JigsawRushProcessor : Processor(), ClientTickListener, PartyGameChangeLis
 
             if (mc.theWorld.getBlockAtPos(canvas[Pos.TOP_LEFT]!!) == Blocks.wool) return
 
-            val itemKeyBindingMap = hashMapOf<Item, String>()
-
-            val keyCategoryKeyName = Utils.getKeyBindingNameInEverySlot()
-
-            for ((_, inventorySlotInfo) in keyCategoryKeyName) {
-                itemKeyBindingMap[inventorySlotInfo.itemStack?.item ?: continue] = inventorySlotInfo.keyName
-            }
+            val itemKeyBindingMap = Utils.getKeyBindingNameInEverySlot().values
+                .filter { it.itemStack != null }
+                .associate { it.itemStack!!.item to it.keyName }
 
             if (itemKeyBindingMap.size != 9) return
 
@@ -106,19 +102,19 @@ object JigsawRushProcessor : Processor(), ClientTickListener, PartyGameChangeLis
         var playerFacingToCanvas: EnumFacing? = null
         var center: BlockPos? = null
 
-        face@ for (expandFacing in expandFacings) {
-            for (i in 0..5) {
-                when (mc.theWorld.getBlockAtPos(expandPos.offset(expandFacing, i))) {
+        for (expandFacing in expandFacings) {
+            repeat(5) {
+                when (mc.theWorld.getBlockAtPos(expandPos.offset(expandFacing, it))) {
                     Blocks.oak_fence_gate -> {
-                        continue@face
+                        return@repeat
                     }
                     Blocks.cobblestone_wall -> {
-                        continue@face
+                        return@repeat
                     }
                     Blocks.oak_stairs -> {
                         playerFacingToCanvas = expandFacing
-                        center = expandPos.offset(expandFacing, i + 1).up(2)
-                        break@face
+                        center = expandPos.offset(expandFacing, it + 1).up(2)
+                        return@repeat
                     }
                 }
             }
@@ -126,8 +122,8 @@ object JigsawRushProcessor : Processor(), ClientTickListener, PartyGameChangeLis
         playerFacingToCanvas ?: return null
         center ?: return null
 
-        val myCanvas = getCanvasByFacing(center, playerFacingToCanvas)
-        this.myCanvas = Canvas(myCanvas, playerFacingToCanvas)
+        val myCanvas = getCanvasByFacing(center!!, playerFacingToCanvas!!)
+        this.myCanvas = Canvas(myCanvas, playerFacingToCanvas!!)
 
         return playerFacingToCanvas
     }

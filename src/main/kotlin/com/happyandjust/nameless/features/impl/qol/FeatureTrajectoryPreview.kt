@@ -20,8 +20,8 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.devqol.inCategory
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.inCategory
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature

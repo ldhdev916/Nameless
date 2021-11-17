@@ -21,18 +21,24 @@ package com.happyandjust.nameless.features.impl.skyblock
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ChatListener
+import com.happyandjust.nameless.features.listener.ScreenMouseInputListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.mixins.accessors.AccessorGuiScreen
+import net.minecraft.client.gui.GuiChat
 import net.minecraft.event.ClickEvent
 import net.minecraft.util.IChatComponent
 import net.minecraftforge.client.event.ClientChatReceivedEvent
+import net.minecraftforge.client.event.GuiScreenEvent
+import org.lwjgl.input.Mouse
 import java.util.*
 import kotlin.concurrent.timerTask
 
 object FeatureClickOpenSlayer :
-    SimpleFeature(Category.SKYBLOCK, "clickopenslayer", "Click Anywhere to Open Slayer Menu"), ChatListener {
+    SimpleFeature(Category.SKYBLOCK, "clickopenslayer", "Click Anywhere to Open Slayer Menu"), ChatListener,
+    ScreenMouseInputListener {
 
-    var openMenuComponent: IChatComponent? = null
+    private var openMenuComponent: IChatComponent? = null
         set(value) {
             field = value
             if (value != null) {
@@ -48,11 +54,20 @@ object FeatureClickOpenSlayer :
         if (enabled && Hypixel.currentGame == GameType.SKYBLOCK && e.type.toInt() != 2) {
             openMenuComponent = e.message.siblings.firstOrNull { chatComponent ->
                 chatComponent.unformattedText == "§2§l[OPEN MENU]" && chatComponent.chatStyle?.let {
-                    it.chatClickEvent != null && it.chatClickEvent.action == ClickEvent.Action.RUN_COMMAND && it.chatClickEvent.value.startsWith(
-                        "/cb"
-                    )
+                    it.chatClickEvent != null && it.chatClickEvent.action == ClickEvent.Action.RUN_COMMAND &&
+                            it.chatClickEvent.value.startsWith("/cb")
                 } == true
             }
+        }
+    }
+
+    override fun onMouseInputPre(e: GuiScreenEvent.MouseInputEvent.Pre) {
+
+    }
+
+    override fun onMouseInputPost(e: GuiScreenEvent.MouseInputEvent.Post) {
+        if (enabled && Mouse.getEventButton() == 0 && e.gui is GuiChat && Mouse.getEventButtonState()) {
+            (e.gui as AccessorGuiScreen).invokeHandleComponentClick(openMenuComponent)
         }
     }
 }

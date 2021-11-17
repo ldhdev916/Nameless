@@ -19,10 +19,11 @@
 package com.happyandjust.nameless.commands
 
 import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.devqol.sendClientMessage
-import com.happyandjust.nameless.devqol.toBlockPos
+import com.happyandjust.nameless.dsl.sendClientMessage
+import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.listener.WaypointListener
 import net.minecraft.command.ICommandSender
+import net.minecraft.util.BlockPos
 
 object WaypointCommand : ClientCommandBase("waypoint") {
 
@@ -34,16 +35,20 @@ object WaypointCommand : ClientCommandBase("waypoint") {
         }
 
         if (args.size != 4 && args.size != 3) {
-            sendClientMessage("§cUsage: /waypoint [x] [y] [z] (canFly|true|false) or /waypoint clear")
+            sendPrefixMessage("§cUsage: /waypoint [x] [y] [z] (canFly|true|false) or /waypoint clear")
             return
         }
 
         val canFly = if (args.size == 3) true else args[3].toBoolean()
 
-        ///waypoint -6 108 -33 false
-
-        WaypointListener.currentWaypointInfo = WaypointListener.WaypointInfo(args.toBlockPos(0..2).also {
-            sendClientMessage("§aNow targeting $it")
-        }, canFly)
+        WaypointListener.currentWaypointInfo =
+            WaypointListener.WaypointInfo(
+                BlockPos(
+                    args[0].toInt(),
+                    args[1].toInt(),
+                    args[2].toInt()
+                ).also { sendClientMessage("§aNow targeting $it") },
+                canFly
+            )
     }
 }

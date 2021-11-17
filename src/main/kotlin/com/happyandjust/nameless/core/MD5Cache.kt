@@ -16,21 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.commands
+package com.happyandjust.nameless.core
 
-import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.dsl.sendPrefixMessage
-import com.happyandjust.nameless.hypixel.Hypixel
-import net.minecraft.command.ICommandSender
+const val FAIRY_SOUL = "57a4c8dc9b8e5d4180daa608901a6147"
 
-object HypixelCommand : ClientCommandBase("currentdata") {
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
+const val VOIDGLOOM_SKULL = "159dcb0174e3282cc7d63afa022fb379"
 
-        sendPrefixMessage("Current Hypixel Game: ${Hypixel.currentGame}\n")
-
-        Hypixel.currentProperty.map { "Property key: ${it.key} Value: ${it.value}" }.forEach(::sendPrefixMessage)
-
-        sendPrefixMessage("\n${Hypixel.locrawInfo}")
-
-    }
-}
+const val JERRY_GIFT = "7732c5e41800bb90270f727d2969254b"

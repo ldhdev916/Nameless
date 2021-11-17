@@ -18,11 +18,12 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.core.JERRY_GIFT
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.devqol.getAxisAlignedBB
-import com.happyandjust.nameless.devqol.getMD5
-import com.happyandjust.nameless.devqol.getSkullOwner
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.getAxisAlignedBB
+import com.happyandjust.nameless.dsl.getMD5
+import com.happyandjust.nameless.dsl.getSkullOwner
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
@@ -69,17 +70,9 @@ object FeatureJerryGiftESP : SimpleFeature(Category.SKYBLOCK, "jerrygiftesp", "J
         scanTick = (scanTick + 1) % 20
 
         if (scanTick != 0) return
-
-        val giftList = hashSetOf<EntityArmorStand>()
-        for (entityArmorStand in mc.theWorld.loadedEntityList.filterIsInstance<EntityArmorStand>()) {
-            val head = entityArmorStand.getEquipmentInSlot(4) ?: continue
-
-            if (head.getSkullOwner().getMD5() == "7732c5e41800bb90270f727d2969254b") {
-                giftList.add(entityArmorStand)
-            }
-        }
-
-        gifts = giftList
+        gifts = mc.theWorld.loadedEntityList.filterIsInstance<EntityArmorStand>()
+            .filter { it.getEquipmentInSlot(4)?.getSkullOwner()?.getMD5() == JERRY_GIFT }
+            .toHashSet()
     }
 
     override fun renderWorld(partialTicks: Float) {
@@ -87,7 +80,7 @@ object FeatureJerryGiftESP : SimpleFeature(Category.SKYBLOCK, "jerrygiftesp", "J
 
         val color = getParameterValue<Color>("color").rgb and 0x40FFFFFF
 
-        for (gift in gifts.filter { !foundGifts.contains(it) }) {
+        for (gift in gifts - foundGifts) {
             RenderUtils.drawBox(BlockPos(gift).up(2).getAxisAlignedBB(), color, partialTicks)
         }
     }

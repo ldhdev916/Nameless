@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixinhooks
 
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.features.impl.qol.FeatureShowPingInTab
 import net.minecraft.client.network.NetworkPlayerInfo
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo

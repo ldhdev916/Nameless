@@ -20,7 +20,7 @@ package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
@@ -120,11 +120,7 @@ object FeatureShowWitherShieldCoolTime :
         if (enabled && Hypixel.currentGame == GameType.SKYBLOCK) {
             getText()?.let {
                 matrix {
-                    val overlay = overlayPoint.value
-
-                    translate(overlay.point.x, overlay.point.y, 0)
-                    scale(overlay.scale, overlay.scale, 1.0)
-
+                    setup(overlayPoint.value)
                     mc.fontRendererObj.drawStringWithShadow(it.replace("&", "§"), 0f, 0f, 0xFFFFFFFF.toInt())
                 }
             }
@@ -166,7 +162,7 @@ object FeatureShowWitherShieldCoolTime :
         scanTick = (scanTick + 1) % 8
         if (scanTick == 0) {
             holdingSword = if (Hypixel.currentGame == GameType.SKYBLOCK) {
-                swords.contains(mc.thePlayer.heldItem.getSkyBlockID())
+                mc.thePlayer.heldItem.getSkyBlockID() in swords
             } else false
         }
 

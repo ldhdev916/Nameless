@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.pathfinding
 
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.utils.Utils
 import net.minecraft.pathfinding.PathFinder
 import net.minecraft.util.BlockPos
@@ -47,11 +47,10 @@ class ModPathFinding(private val target: BlockPos, private val canFly: Boolean) 
                         Int.MAX_VALUE.toFloat()
                     )
                         ?: return@Callable list
-
-                for (i in 0 until latest.currentPathLength) {
-                    val pathPoint = latest.getPathPointFromIndex(i)
-                    list.add(BlockPos(pathPoint.xCoord, pathPoint.yCoord, pathPoint.zCoord))
-                }
+                list.addAll((0 until latest.currentPathLength).map {
+                    val pathPoint = latest.getPathPointFromIndex(it)
+                    BlockPos(pathPoint.xCoord, pathPoint.yCoord, pathPoint.zCoord)
+                })
 
                 onArrive()
                 list

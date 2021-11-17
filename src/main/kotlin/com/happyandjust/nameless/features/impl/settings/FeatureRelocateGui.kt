@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.settings
 
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.IRelocateAble
 import com.happyandjust.nameless.features.SettingFeature
 import com.happyandjust.nameless.gui.feature.ComponentType

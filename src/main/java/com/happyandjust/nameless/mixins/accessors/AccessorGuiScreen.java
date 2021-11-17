@@ -16,21 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.commands
+package com.happyandjust.nameless.mixins.accessors;
 
-import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.dsl.sendPrefixMessage
-import com.happyandjust.nameless.hypixel.Hypixel
-import net.minecraft.command.ICommandSender
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.IChatComponent;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
-object HypixelCommand : ClientCommandBase("currentdata") {
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
+@Mixin(GuiScreen.class)
+public interface AccessorGuiScreen {
 
-        sendPrefixMessage("Current Hypixel Game: ${Hypixel.currentGame}\n")
-
-        Hypixel.currentProperty.map { "Property key: ${it.key} Value: ${it.value}" }.forEach(::sendPrefixMessage)
-
-        sendPrefixMessage("\n${Hypixel.locrawInfo}")
-
-    }
+    @Invoker
+    boolean invokeHandleComponentClick(IChatComponent component);
 }

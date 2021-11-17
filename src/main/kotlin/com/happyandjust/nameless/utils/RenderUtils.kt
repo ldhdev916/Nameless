@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.utils
 
 import com.happyandjust.nameless.Location
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.dsl.*
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
@@ -390,6 +390,10 @@ object RenderUtils {
             enableDepth()
 
         }
+    }
+
+    fun draw3DString(text: String, pos: BlockPos, scale: Double, color: Int, partialTicks: Float) {
+        draw3DString(text, Vec3(pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5), scale, color, partialTicks)
     }
 
     fun draw3DString(text: String, vec3: Vec3, scale: Double, color: Int, partialTicks: Float) {

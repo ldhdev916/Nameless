@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.devqol.inHypixel
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.inHypixel
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ChatListener

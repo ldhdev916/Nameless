@@ -20,7 +20,10 @@ package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.dsl.getSkyBlockID
+import com.happyandjust.nameless.dsl.matrix
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.setup
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.OverlayFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
@@ -45,7 +48,6 @@ object FeatureLividDaggerBackstep : OverlayFeature(
 ), ClientTickListener {
     override val overlayPoint = ConfigValue("lividdagger", "overlay", Overlay.DEFAULT, COverlay)
     private var text: String? = null
-        get() = field.takeIf { checkForRequirement() }
     private var checkTick = 0
 
     override fun shouldDisplayInRelocateGui(): Boolean {
@@ -57,10 +59,7 @@ object FeatureLividDaggerBackstep : OverlayFeature(
 
         text?.let {
             matrix {
-                val point = overlayPoint.value.point
-
-                translate(point.x, point.y, 0)
-                scale(overlayPoint.value.scale, overlayPoint.value.scale, 1.0)
+                setup(overlayPoint.value)
                 mc.fontRendererObj.drawString(it, 0, 0, Color.green.rgb)
             }
         }

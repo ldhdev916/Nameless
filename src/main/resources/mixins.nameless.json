@@ -9,7 +9,6 @@
     "MixinEntityFX",
     "MixinEntityRenderer",
     "MixinFontRenderer",
-    "MixinGuiChat",
     "MixinGuiPlayerTabOverlay",
     "MixinLayerCustomHead",
     "MixinMinecraft",
@@ -22,6 +21,8 @@
     "accessors.AccessorGuiChat",
     "accessors.AccessorGuiContainer",
     "accessors.AccessorGuiDisconnected",
+    "accessors.AccessorGuiNewChat",
+    "accessors.AccessorGuiScreen",
     "accessors.AccessorRenderGlobal"
   ],
   "mixins": [

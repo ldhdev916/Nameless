@@ -19,11 +19,10 @@
 package com.happyandjust.nameless.features.impl.qol
 
 import com.google.gson.JsonArray
-import com.google.gson.JsonObject
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.JSONHandler
 import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.devqol.*
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
@@ -68,12 +67,7 @@ object FeatureGTBHelper : OverlayFeature(
 
     fun fetchWordsData() {
         val jsonArray = JSONHandler(ResourceLocation("nameless", "words.json")).read(JsonArray())
-
-        for (word in jsonArray) {
-            word as JsonObject
-
-            words[word["english"].asString] = word["korean"].asString
-        }
+        words.putAll(jsonArray.map { it.asJsonObject }.map { it["english"].asString to it["korean"].asString })
     }
 
     init {
@@ -171,11 +165,7 @@ object FeatureGTBHelper : OverlayFeature(
 
         matrix {
             disableDepth()
-
-            val overlay = overlayPoint.value
-
-            translate(overlay.point.x, overlay.point.y, 0)
-            scale(overlay.scale, overlay.scale, 1.0)
+            setup(overlayPoint.value)
 
             try {
                 var y = 0

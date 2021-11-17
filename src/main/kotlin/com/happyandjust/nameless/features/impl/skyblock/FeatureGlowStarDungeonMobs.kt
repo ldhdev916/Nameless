@@ -20,7 +20,7 @@ package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
@@ -91,24 +91,16 @@ object FeatureGlowStarDungeonMobs : SimpleFeature(
                 val availMobs = mc.theWorld.getEntitiesWithinAABB(
                     Entity::class.java,
                     entityArmorStand.entityBoundingBox.expand(0.6, 1.4, 0.6)
-                ).also { it.removeIf(ignoreMobs) }
+                )
+                    .filter { !ignoreMobs(it) }
                     .sortedBy { (it.posX - entityArmorStand.posX).pow(2) + (it.posZ - entityArmorStand.posZ).pow(2) }
 
-                if (availMobs.isEmpty()) { // this is cursed
-                    continue
-                }
-
-                checkedDungeonMobs[entityArmorStand] = availMobs[0]
+                checkedDungeonMobs[entityArmorStand] = availMobs.firstOrNull() ?: continue
             }
         }
 
         if (validTick == 0) {
-            val iterator = checkedDungeonMobs.iterator()
-            for ((tag, mob) in iterator) {
-                if (abs(tag.posX - mob.posX) >= 1 || abs(tag.posZ - mob.posZ) >= 1) {
-                    iterator.remove()
-                }
-            }
+            checkedDungeonMobs.entries.removeIf { abs(it.key.posX - it.value.posX) >= 1 || abs(it.key.posZ - it.value.posZ) >= 1 }
         }
     }
 

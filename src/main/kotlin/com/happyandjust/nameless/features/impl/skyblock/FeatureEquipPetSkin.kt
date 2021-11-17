@@ -22,10 +22,10 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 import com.happyandjust.nameless.core.JSONHandler
-import com.happyandjust.nameless.devqol.getMD5
-import com.happyandjust.nameless.devqol.getSkullOwner
-import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.devqol.stripControlCodes
+import com.happyandjust.nameless.dsl.getMD5
+import com.happyandjust.nameless.dsl.getSkullOwner
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.stripControlCodes
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
@@ -55,7 +55,7 @@ object FeatureEquipPetSkin : SimpleFeature(
     /**
      * key: md5, value: pet name
      */
-    private var pets = mapOf<String, PetInfo>()
+    private val pets = hashMapOf<String, PetInfo>()
     private var scanTick = 0
     private var currentModifiedPet: EntityArmorStand? = null
         set(value) {
@@ -78,15 +78,17 @@ object FeatureEquipPetSkin : SimpleFeature(
     var currentPetSkinChangeInfo: PetSkinChangeInfo? = null
 
     fun fetchPetSkinData() {
-        pets = hashMapOf(
-            *JSONHandler(ResourceLocation("nameless", "pets.json")).read(JsonObject()).entrySet()
-                .map { it.key to gson.fromJson(it.value, PetInfo::class.java) }.toTypedArray()
+        pets.putAll(
+            JSONHandler(ResourceLocation("nameless", "pets.json"))
+                .read(JsonObject())
+                .entrySet()
+                .map { it.key to gson.fromJson(it.value, PetInfo::class.java) }
         )
 
-        val petSkins = hashMapOf(
-            *JSONHandler(ResourceLocation("nameless", "petskins.json")).read(JsonObject()).entrySet()
-                .map { it.key to it.value.asString }.toTypedArray()
-        )
+        val petSkins = JSONHandler(ResourceLocation("nameless", "petskins.json"))
+            .read(JsonObject())
+            .entrySet()
+            .associate { it.key to it.value.asString }
 
         val petSkinsByPetName = (PetSkinType.values().toList() - PetSkinType.DEFAULT).groupBy { petSkins[it.name]!! }
 

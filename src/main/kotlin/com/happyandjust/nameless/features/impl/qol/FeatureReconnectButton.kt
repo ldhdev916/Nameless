@@ -18,10 +18,10 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.devqol.LOGGER
-import com.happyandjust.nameless.devqol.formatDouble
-import com.happyandjust.nameless.devqol.mc
-import com.happyandjust.nameless.devqol.transformToPrecision
+import com.happyandjust.nameless.dsl.LOGGER
+import com.happyandjust.nameless.dsl.formatDouble
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.transformToPrecision
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature

@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.trajectory
 
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
 import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.entity.Entity
 import net.minecraft.init.Blocks

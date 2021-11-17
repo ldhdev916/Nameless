@@ -20,7 +20,7 @@ package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.devqol.mc
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
