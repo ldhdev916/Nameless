@@ -26,97 +26,98 @@ Unless, You can't use rendering outline on entity
 <details>
   <summary>General</summary>
 
-  - Glow All Players
-  - Remove Negative Effects (blindness, nausea)
   - Bedwars ESP
-  - Hide NPC in Lobby
   - Bedwars Ray Trace Bed
   - Display Better Armor in SkyWars
+  - Glow All Players
+  - Hide NPC in Lobby
   - Remove Certain Mod ID Sent to Server
+  - Remove Negative Effects (blindness, nausea)
 </details>
 <details>
   <summary>Quality of Life</summary>
 
-  - Join Hypixel Button in Main Menu
-  - Reconnect Button in Disconnect Gui
-  - Tab Complete /play commands in hypixel
-  - Perspective
-  - F5 Fix
-  - Murderer Finder
-  - Trajectory Preview
-  - Show Ping numbers in TabList
-  - Guess the Build Helper
-  - Party Games Helper
-    - Jigsaw Rush
-    - RPG-16
-    - Animal Slaughter
-    - Avalanche
-    - Anvil Spleef
-    - Spider Maze
-    - Dive
-    - Lab Escape
-  - Auto Accept Party
   - AFK Mode
-  - Hide Tip Message
+  - Auto Accept Party
   - Cancel Certain Block Rendering
-  - Pixel Party Helper
+  - F5 Fix
+  - Guess the Build Helper
+  - Hide Tip Message
   - In Game Stat Viewer
+  - Join Hypixel Button in Main Menu
+  - Murderer Finder
+  - Party Games Helper
+      - Animal Slaughter
+      - Anvil Spleef
+      - Avalanche
+      - Dive
+      - Jigsaw Rush
+      - Lab Escape
+      - RPG-16
+      - Spider Maze
+  - Perspective
+  - Pixel Party Helper
+  - Reconnect Button in Disconnect Gui
+  - Show Ping numbers in TabList
+  - Tab Complete /play commands in hypixel
+  - Trajectory Preview
 </details>
 <details>
   <summary>SkyBlock</summary>
 
-  - Fairy Soul Waypoint
-  - Glow Star Dungeon Mobs
-  - Damage Indicator
-  - Render Pointing Arrow to Wither/Blood Key
   - Blaze Solver
-  - Jerry Workshop Gift ESP
-  - Gemstone ESP
-  - Glow Dropped Item
-  - Livid Dagger Backstep Notifier
-  - Glow Bats in Dungeons
-  - Glow Dungeons Teammates
-  - Show Wither Shield CoolTime
-  - Click Anywhere to Open Slayer Menu
-  - Enderman Slayer Helper
-  - Disable Enderman Teleportation
-  - Equip Pet Skin
   - Change Helmet Texture
+  - Click Anywhere to Open Slayer Menu
+  - Damage Indicator
+  - Disable Enderman Teleportation
+  - Enderman Slayer Helper
+  - Equip Pet Skin
   - Experimentation Table Helper
+  - Fairy Soul Waypoint
+  - Gemstone ESP
+  - Glow Bats in Dungeons
+  - Glow Dropped Item
+  - Glow Dungeons Teammates
+  - Glow Star Dungeon Mobs
+  - Jerry Workshop Gift ESP
+  - Livid Dagger Backstep Notifier
+  - Render Pointing Arrow to Wither/Blood Key
+  - Show Wither Shield CoolTime
 </details>
 <details>
  <summary>Miscellaneous</summary>
 
- - Auto Update Checker
- - Hit Delay Fix
- - Stop Log Spamming
- - Change Nickname Color
- - Texture Overlay
- - Hide Other Player's Fish Hook
- - Change Fishing Particle Color
- - Disguise Nickname
- - Change Leather Armor Color
- - No HurtCam
- - Change Damaged Entity Color
- - Click Copy Chat
+  - Auto Update Checker
+  - Change Damaged Entity Color
+  - Change Fishing Particle Color
+  - Change Leather Armor Color
+  - Change Nickname Color
+  - Click Copy Chat
+  - Disguise Nickname
+  - Hide Other Player's Fish Hook
+  - Hit Delay Fix
+  - No HurtCam
+  - Stop Log Spamming
+  - Texture Overlay
 </details>
 <details>
   <summary>KeyBindings</summary>
 
-  - Open Gui
-  - Perspective
-  - Freeze FairySoul Paths
-  - Ghost Block
   - Accept Party
   - Deny Party
+  - Freeze FairySoul Paths
+  - Freeze Waypoint Paths
+  - Ghost Block
+  - Open Gui
+  - Perspective
 </details>
 <details>
   <summary>Commands</summary>
 
- - /currentdata - prints current game of hypixel
- - /searchbin - Search bins of specific item
- - /name - gets name history of player
- - /waypoint - Show paths to given coordinate
- - /viewstat - View someone's stats
- - /helmettexture - Select Helmet Texture
+  - /currentdata - prints current game of hypixel
+  - /helmettexture - Select Helmet Texture
+  - /name - gets name history of player
+  - /searchbin - Search bins of specific item
+  - /viewstat - View someone's stats
+  - /waypoint - Show paths to given coordinate
 </details>
