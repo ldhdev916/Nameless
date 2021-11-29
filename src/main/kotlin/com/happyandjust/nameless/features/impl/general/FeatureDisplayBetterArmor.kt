@@ -21,7 +21,6 @@ package com.happyandjust.nameless.features.impl.general
 import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.dsl.drawOnSlot
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.pow
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
@@ -29,18 +28,18 @@ import com.happyandjust.nameless.features.listener.BackgroundDrawnListener
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.mixins.accessors.AccessorNBTTagList
 import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.serialization.converters.CDouble
+import gg.essential.elementa.utils.withAlpha
 import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.inventory.Slot
 import net.minecraft.item.ItemArmor
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.MathHelper
 import net.minecraftforge.client.event.GuiScreenEvent
 import java.awt.Color
+import kotlin.math.pow
 
 object FeatureDisplayBetterArmor : SimpleFeature(
     Category.GENERAL,
@@ -56,7 +55,7 @@ object FeatureDisplayBetterArmor : SimpleFeature(
             "color",
             "Inventory Box Color",
             "",
-            Color.green.toChromaColor(),
+            Color.green.withAlpha(80).toChromaColor(),
             CChromaColor
         )
         parameters["scale"] = FeatureParameter(
@@ -67,9 +66,9 @@ object FeatureDisplayBetterArmor : SimpleFeature(
             "",
             3.0,
             CDouble
-        ).also {
-            it.minValue = 1.5
-            it.maxValue = 7.0
+        ).apply {
+            minValue = 1.5
+            maxValue = 7.0
         }
     }
 
@@ -78,23 +77,13 @@ object FeatureDisplayBetterArmor : SimpleFeature(
     private val drawSlots = arrayListOf<Slot>()
     val scaledItems = arrayListOf<EntityItem>()
 
-    private operator fun ItemStack.compareTo(other: ItemStack): Int {
-        val myItem = item
-        val otherItem = other.item
-
-        if (myItem !is ItemArmor || otherItem !is ItemArmor) throw RuntimeException("Can't compare Non-Armor item")
-
-        val damage1 = calcDamage(myItem, getProtectionLevel(this))
-        val damage2 = calcDamage(otherItem, getProtectionLevel(other))
-
-        return damage2.compareTo(damage1)
-    }
+    private fun ItemStack.getFinalDamage() = calcDamage(item as ItemArmor, getProtectionLevel(this))
 
     private fun getProtectionLevel(itemStack: ItemStack): Int {
         val enchantments = itemStack.enchantmentTagList ?: return 0
 
-        return (enchantments as AccessorNBTTagList).tagList
-            .filterIsInstance<NBTTagCompound>()
+        return (0 until enchantments.tagCount())
+            .map { enchantments.getCompoundTagAt(it) }
             .firstOrNull { it.getInteger("id") == 0 }
             ?.getInteger("lvl") ?: 0
     }
@@ -109,7 +98,7 @@ object FeatureDisplayBetterArmor : SimpleFeature(
         if (protectionLevel == 0) return testDamage
 
         // enchantment
-        val modifier = MathHelper.floor_float(((6 + protectionLevel.pow(2)) / 3F) * 0.75F).coerceIn(0, 25)
+        val modifier = MathHelper.floor_float(((6 + protectionLevel.toFloat().pow(2)) / 3F) * 0.75F).coerceIn(0, 25)
 
         // wtf minecraft uses random here
         var k = (modifier + 1 shr 1) + (((modifier shr 1) + 1) / 2)
@@ -133,87 +122,52 @@ object FeatureDisplayBetterArmor : SimpleFeature(
 
         if (scanTick != 0) return
 
-        drawSlots.clear()
-        scaledItems.clear()
-
         scanInventory()
         scanEntityItem()
     }
 
-    private fun scanEntityItem() {
+    private fun scanForBetterItem(itemsToScan: Iterable<ItemStack>): List<ItemStack> {
+        val armorInventory = mc.thePlayer.inventory.armorInventory.filter { it?.item is ItemArmor }
+            .map { it.getFinalDamage() to it.item as ItemArmor }
+        val list = arrayListOf<ItemStack>()
 
-        val armorInventory = mc.thePlayer.inventory.armorInventory
+        val actualScanItems = itemsToScan.filter { it.item is ItemArmor }
+            .groupBy { (it.item as ItemArmor).armorType }
 
-        val armorItems =
-            mc.theWorld.loadedEntityList.filterIsInstance<EntityItem>().filter { it.entityItem.item is ItemArmor }
+        for ((finalDamage, itemArmor) in armorInventory) {
+            val items = actualScanItems[itemArmor.armorType]?.takeIf { it.isNotEmpty() } ?: continue
 
-        for (armor in armorInventory.filter { it?.item is ItemArmor }) {
-            val armorType = (armor.item as ItemArmor).armorType
+            val itemStackByFinalDamage = items.map { it to it.getFinalDamage() }.minByOrNull { it.second }!!
 
-            var bestEntityItem: EntityItem? = null
-            var bestArmor: ItemStack? = null
-
-            for (armorItem in armorItems) {
-                val itemStack = armorItem.entityItem
-                val item = itemStack.item as ItemArmor
-
-                if (item.armorType == armorType) {
-                    if (bestArmor == null) {
-                        if (itemStack > armor) {
-                            bestEntityItem = armorItem
-                            bestArmor = itemStack
-                        }
-                    } else {
-                        if (itemStack > bestArmor) {
-                            bestEntityItem = armorItem
-                            bestArmor = itemStack
-                        }
-                    }
-                }
+            if (itemStackByFinalDamage.second < finalDamage) {
+                list.add(itemStackByFinalDamage.first)
             }
-
-            scaledItems.add(bestEntityItem ?: continue)
         }
+
+        return list
+    }
+
+    private fun scanEntityItem() {
+        val items = mc.theWorld.loadedEntityList.filterIsInstance<EntityItem>()
+            .associateBy { it.entityItem }
+        scaledItems.clear()
+        scaledItems.addAll(scanForBetterItem(items.keys).mapNotNull { items[it] })
     }
 
     private fun scanInventory() {
         val gui = mc.currentScreen
 
-        if (gui !is GuiInventory) return
-
-        val container = gui.inventorySlots
-        val slots = container.inventorySlots
-
-        val inventory = mc.thePlayer.inventory
-        val armorInventory = inventory.armorInventory
-
-        for (armor in armorInventory.filter { it?.item is ItemArmor }) {
-            val armorType = (armor.item as ItemArmor).armorType
-
-            var bestSlot: Slot? = null
-            var bestArmor: ItemStack? = null
-
-            for (slot in slots.filter { it.inventory == inventory && it.slotIndex !in 36 until 40 && it.hasStack }) {
-                val itemStack = slot.stack
-                val item = itemStack.item
-
-                if (item is ItemArmor && item.armorType == armorType) {
-                    if (bestArmor == null) {
-                        if (itemStack > armor) {
-                            bestArmor = itemStack
-                            bestSlot = slot
-                        }
-                    } else {
-                        if (itemStack > bestArmor) {
-                            bestArmor = itemStack
-                            bestSlot = slot
-                        }
-                    }
-                }
-            }
-
-            drawSlots.add(bestSlot ?: continue)
+        if (gui !is GuiInventory) {
+            drawSlots.clear()
+            return
         }
+
+        val items = gui.inventorySlots.inventorySlots
+            .filter { it.inventory == mc.thePlayer.inventory && it.slotIndex !in 36 until 40 && it.hasStack }
+            .associateBy { it.stack }
+
+        drawSlots.clear()
+        drawSlots.addAll(scanForBetterItem(items.keys).mapNotNull { items[it] })
     }
 
     override fun onBackgroundDrawn(e: GuiScreenEvent.BackgroundDrawnEvent) {
@@ -224,11 +178,7 @@ object FeatureDisplayBetterArmor : SimpleFeature(
 
         if (gui is GuiInventory) {
             for (slot in drawSlots) {
-                var color = getParameterValue<Color>("color").rgb
-
-                color = color and 0x50FFFFFF
-
-                gui.drawOnSlot(slot, color)
+                gui.drawOnSlot(slot, getParameterValue<Color>("color").rgb)
             }
         }
     }

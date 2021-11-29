@@ -19,39 +19,33 @@
 package com.happyandjust.nameless.listener
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.dsl.getAxisAlignedBB
+import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.toVec3
+import com.happyandjust.nameless.dsl.withAlpha
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.pathfinding.ModPathFinding
 import com.happyandjust.nameless.utils.RenderUtils
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import net.minecraft.util.BlockPos
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.InputEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import java.awt.Color
-import java.util.concurrent.Executors
 
 object WaypointListener {
 
-    var currentWaypointInfo: WaypointInfo? = null
-        set(value) {
-            field = value
-
-            value?.let {
-                createPathToPosition(it.targetPos)
-            }
-        }
     private var pathTick = 0
-    private val threadPool = Executors.newSingleThreadExecutor()
     private var pathFreezed = false
-    private val freezedPathColor = Color(95, 95, 229).rgb
+    val waypointInfos = arrayListOf<WaypointInfo>()
 
-    private fun createPathToPosition(pos: BlockPos) {
-        threadPool.execute {
-            currentWaypointInfo?.let {
-                it.waypointPaths = ModPathFinding(pos, it.canFly).findPath().get()
+    private fun createPathToPosition() {
+        GlobalScope.launch {
+            waypointInfos.filter { it.enabled }.forEach {
+                async { it.waypointPaths = ModPathFinding(it.targetPos, it.canFly).findPath() }
             }
         }
     }
@@ -63,30 +57,26 @@ object WaypointListener {
 
         if (pathFreezed) return
 
-        currentWaypointInfo?.let {
-            pathTick = (pathTick + 1) % 20
+        pathTick = (pathTick + 1) % 20
 
-            if (pathTick == 0) {
-                createPathToPosition(it.targetPos)
-            }
+        if (pathTick == 0) {
+            createPathToPosition()
         }
     }
 
     @SubscribeEvent
     fun onWorldRender(e: RenderWorldLastEvent) {
 
-        currentWaypointInfo?.let {
-            try {
-                RenderUtils.drawPath(
-                    it.waypointPaths,
-                    if (pathFreezed) freezedPathColor else Color.red.rgb,
-                    e.partialTicks
-                )
-            } catch (ignored: ConcurrentModificationException) {
-
-            }
-            RenderUtils.drawBox(it.targetPos.getAxisAlignedBB(), 0x4000FF00, e.partialTicks)
-            RenderUtils.renderBeaconBeam(it.targetPos.toVec3(), Color.green.rgb, 0.7f, e.partialTicks)
+        for (waypoint in waypointInfos) {
+            if (!waypoint.enabled) continue
+            val color = waypoint.color.rgb
+            RenderUtils.drawPath(
+                waypoint.waypointPaths,
+                if (pathFreezed) color.withAlpha(0.5f) else color,
+                e.partialTicks
+            )
+            RenderUtils.draw3DString(waypoint.name, waypoint.targetPos, 2.5, color, e.partialTicks)
+            RenderUtils.renderBeaconBeam(waypoint.targetPos.toVec3(), color, 0.7f, e.partialTicks)
         }
     }
 
@@ -97,8 +87,10 @@ object WaypointListener {
         }
     }
 
-    data class WaypointInfo(val targetPos: BlockPos, val canFly: Boolean) {
+    data class WaypointInfo(var name: String, var targetPos: BlockPos, var canFly: Boolean) {
         var waypointPaths = listOf<BlockPos>()
+        var enabled = true
+        var color = Color.red.toChromaColor()
     }
 
 }

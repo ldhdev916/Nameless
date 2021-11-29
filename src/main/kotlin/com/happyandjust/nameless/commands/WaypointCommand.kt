@@ -19,36 +19,24 @@
 package com.happyandjust.nameless.commands
 
 import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.dsl.sendClientMessage
-import com.happyandjust.nameless.dsl.sendPrefixMessage
-import com.happyandjust.nameless.listener.WaypointListener
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.gui.waypoint.WaypointManagerGui
 import net.minecraft.command.ICommandSender
-import net.minecraft.util.BlockPos
+import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent
 
 object WaypointCommand : ClientCommandBase("waypoint") {
 
     override fun processCommand(sender: ICommandSender, args: Array<out String>) {
-
-        if (args.size == 1 && args[0] == "clear") {
-            WaypointListener.currentWaypointInfo = null
-            return
-        }
-
-        if (args.size != 4 && args.size != 3) {
-            sendPrefixMessage("§cUsage: /waypoint [x] [y] [z] (canFly|true|false) or /waypoint clear")
-            return
-        }
-
-        val canFly = if (args.size == 3) true else args[3].toBoolean()
-
-        WaypointListener.currentWaypointInfo =
-            WaypointListener.WaypointInfo(
-                BlockPos(
-                    args[0].toInt(),
-                    args[1].toInt(),
-                    args[2].toInt()
-                ).also { sendClientMessage("§aNow targeting $it") },
-                canFly
-            )
+        MinecraftForge.EVENT_BUS.register(this)
     }
+
+    @SubscribeEvent
+    fun onRenderTick(e: TickEvent.RenderTickEvent) {
+        mc.displayGuiScreen(WaypointManagerGui())
+        MinecraftForge.EVENT_BUS.unregister(this)
+    }
+
+
 }

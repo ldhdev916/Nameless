@@ -84,7 +84,7 @@ object ChronomatronProcessor : Processor(), BackgroundDrawnListener, PacketListe
 
     private fun drawTexts(gui: GuiChest) {
         val left = (gui as AccessorGuiContainer).guiLeft
-        val top = (gui as AccessorGuiContainer).guiTop
+        val top = gui.guiTop
 
         val padding = 10
 

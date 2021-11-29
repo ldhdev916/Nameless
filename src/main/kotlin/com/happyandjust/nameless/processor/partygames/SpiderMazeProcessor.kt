@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.processor.partygames
 
-import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.PartyGameChangeListener
 import com.happyandjust.nameless.features.listener.WorldRenderListener
@@ -28,31 +27,25 @@ import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.util.BlockPos
 import java.awt.Color
-import java.util.concurrent.Executors
 
 object SpiderMazeProcessor : Processor(), ClientTickListener, WorldRenderListener, PartyGameChangeListener {
 
     private var mazePath = emptyList<BlockPos>()
     private val mazeEnds =
         listOf(BlockPos(45, 2, 2099), BlockPos(44, 2, 2098), BlockPos(45, 2, 2098), BlockPos(44, 2, 2099))
-    private val threadPool = Executors.newFixedThreadPool(2)
     private var pathTick = 0
 
 
     override fun tick() {
-        pathTick = (pathTick + 1) % 20
+        pathTick = (pathTick + 1) % 30
 
         if (pathTick == 0) {
-            val nearestEnd = mazeEnds.sortedBy { mc.thePlayer.getDistanceSq(it) }[0]
-
-            threadPool.execute { mazePath = ModPathFinding(nearestEnd, false).findPath().get() }
+            mazePath = mazeEnds.map { ModPathFinding(it, false).findPath() }.minByOrNull { it.size }!!
         }
     }
 
     override fun renderWorld(partialTicks: Float) {
-        if (mazePath.isNotEmpty()) {
-            RenderUtils.drawPath(mazePath, Color.red.rgb, partialTicks)
-        }
+        RenderUtils.drawPath(mazePath, Color.red.rgb, partialTicks)
     }
 
     override fun onPartyGameChange(from: PartyGamesType?, to: PartyGamesType?) {

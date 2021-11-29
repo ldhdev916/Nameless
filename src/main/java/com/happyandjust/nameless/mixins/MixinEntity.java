@@ -58,9 +58,6 @@ public abstract class MixinEntity {
             cir.setReturnValue(false);
         }
         if (glowAllPlayers.getEnabled() && glowAllPlayers.<Boolean>getParameterValue("invisible") && glowAllPlayers.getPlayersInTab().contains(this) && $this instanceof EntityPlayer) {
-            if (getFlag(5)) { // invisible
-                glowAllPlayers.getInvisiblePlayers().add((EntityPlayer) $this);
-            }
             cir.setReturnValue(false);
         }
     }

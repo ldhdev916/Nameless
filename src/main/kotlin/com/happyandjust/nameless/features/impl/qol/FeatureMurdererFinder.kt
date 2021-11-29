@@ -139,8 +139,8 @@ object FeatureMurdererFinder : SimpleFeature(
             "Glow gold ingot when you are in murder mystery",
             false,
             CBoolean
-        ).also {
-            it.parameters["goldcolor"] = FeatureParameter(
+        ).apply {
+            parameters["goldcolor"] = FeatureParameter(
                 0,
                 "murderer",
                 "goldcolor",
@@ -170,8 +170,8 @@ object FeatureMurdererFinder : SimpleFeature(
                 "Glow survivor in hypixel murderer INFECTION",
                 true,
                 CBoolean
-            ).also {
-                it.parameters["survivorcolor"] = FeatureParameter(
+            ).apply {
+                parameters["survivorcolor"] = FeatureParameter(
                     0,
                     "murderer",
                     "survivorcolor",
@@ -240,10 +240,8 @@ object FeatureMurdererFinder : SimpleFeature(
                 pathTick = (pathTick + 1) % 30
 
                 if (pathTick == 0 && getParameterValue("targetpath")) {
-                    getPlayerByName(targetName)?.let { player ->
-                        threadPool.execute {
-                            pathsToTarget = ModPathFinding(BlockPos(player), false).findPath().get()
-                        }
+                    getPlayerByName(targetName)?.let {
+                        pathsToTarget = ModPathFinding(BlockPos(it), false).findPath()
                     }
                 }
             }
@@ -336,7 +334,7 @@ object FeatureMurdererFinder : SimpleFeature(
 
         val isInfection = mode == MurdererMode.INFECTION
 
-        if (sword_list.contains(heldItem.item)) { // found
+        if (heldItem.item in sword_list) { // found
             if (isInfection && entityPlayer.getEquipmentInSlot(3)?.item == Items.iron_chestplate) {
                 alpha = playerName
             } else {
@@ -349,9 +347,9 @@ object FeatureMurdererFinder : SimpleFeature(
         } else if (isInfection) {
             when (heldItem.item) {
                 Items.bow -> {
-                    if (heldItem.displayName.contains("§c")) { // fake bow
+                    if ("§c" in heldItem.displayName) {
                         alpha = playerName
-                    } else if (heldItem.displayName.contains("§a")) {
+                    } else if ("§a" in heldItem.displayName) {
                         survivors.add(playerName)
                     }
                 }
@@ -404,8 +402,6 @@ object FeatureMurdererFinder : SimpleFeature(
 
         return colorInfo
     }
-
-    override fun getEntityColor(entity: Entity): ColorInfo? = null
 
     override fun renderOverlay(partialTicks: Float) {
         if (!checkForEnabledAndMurderMystery()) return

@@ -28,7 +28,11 @@ fun sendPrefixMessage(o: Any?) {
 }
 
 fun sendPrefixMessage(chatComponent: IChatComponent?) {
-    sendClientMessage(ChatComponentText("§6[§3Nameless§6]§r ").appendSibling(chatComponent))
+    sendClientMessage(
+        ChatComponentText("§6[§3Nameless§6]§r ").appendSibling(
+            chatComponent ?: ChatComponentText("null")
+        )
+    )
 }
 
 fun sendClientMessage(o: Any?) {
@@ -44,5 +48,5 @@ fun sendClientMessage(chatComponent: IChatComponent?) {
         if (!MinecraftForge.EVENT_BUS.post(ClientChatReceivedEvent(1, chatComponent))) {
             addChatMessage(chatComponent)
         }
-    } ?: LOGGER.info("[CHAT] ${chatComponent.formattedText}")
+    } ?: LOGGER.info("[CHAT] ${chatComponent.unformattedText}")
 }

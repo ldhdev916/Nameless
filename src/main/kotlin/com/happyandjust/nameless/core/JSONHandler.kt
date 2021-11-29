@@ -40,41 +40,26 @@ class JSONHandler(inputStream: InputStream? = null, val outputStream: () -> Outp
     constructor(file: File) : this(if (file.isFile) file.inputStream().buffered() else null, { file.outputStream() })
 
     constructor(jsonString: String) : this() {
-        jsonData = try {
-            parser.parse(jsonString)
-        } catch (e: Exception) {
-            null
-        }
+        jsonData = runCatching { parser.parse(jsonString) }.getOrNull()
     }
 
     init {
-        inputStream?.let {
-            jsonData = try {
-                parser.parse(it.bufferedReader())
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
+        inputStream?.run {
+            jsonData = runCatching { parser.parse(bufferedReader()) }.getOrNull()
+        }
+    }
+
+    fun <T : JsonElement> read(defaultValue: T): T =
+        runCatching { gson.fromJson(jsonData, defaultValue::class.java) }.getOrDefault(defaultValue)
+
+    fun write(write: JsonElement) = apply {
+        outputStream()?.run {
+            bufferedWriter().use {
+                gson.toJson(write, it)
+                it.flush()
             }
         }
 
-    }
-
-    fun <T : JsonElement> read(defaultValue: T): T = jsonData?.let {
-        try {
-            gson.fromJson(it, defaultValue::class.java)
-        } catch (e: Exception) {
-            defaultValue
-        }
-    } ?: defaultValue
-
-    fun write(write: JsonElement): JSONHandler {
-
-        outputStream()?.bufferedWriter()?.use {
-            gson.toJson(write, it)
-            it.flush()
-        }
-
-        return this
     }
 
 }

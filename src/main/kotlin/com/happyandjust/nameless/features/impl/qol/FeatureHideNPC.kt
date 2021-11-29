@@ -29,9 +29,7 @@ object FeatureHideNPC :
     RenderPlayerListener {
 
     override fun onRenderPlayerPre(e: RenderPlayerEvent.Pre) {
-        if (enabled && Hypixel.inLobby) {
-            if (e.entityPlayer.uniqueID.version() == 2) e.isCanceled = true
-        }
+        if (enabled && Hypixel.inLobby && e.entityPlayer.uniqueID.version() == 2) e.isCanceled = true
     }
 
     override fun onRenderPlayerPost(e: RenderPlayerEvent.Post) {

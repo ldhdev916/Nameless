@@ -53,11 +53,9 @@ object FeatureHypixelButton : SimpleFeature(
 
     override fun screenInitPost(e: GuiScreenEvent.InitGuiEvent.Post) {
         if (e.gui is GuiMainMenu && enabled) {
-            for (button in e.buttonList) {
-                if (button.id == 14) { // Realm button
-                    button.id = 10001
-                    button.displayString = "Hypixel"
-                }
+            e.buttonList.find { it.id == 14 }?.apply {
+                id = 10001
+                displayString = "Hypixel"
             }
         }
     }

@@ -18,10 +18,8 @@
 
 package com.happyandjust.nameless
 
-import com.google.gson.JsonObject
 import com.happyandjust.nameless.commands.*
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.core.JSONHandler
 import com.happyandjust.nameless.core.OutlineMode
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.FeatureRegistry
@@ -30,27 +28,23 @@ import com.happyandjust.nameless.features.impl.qol.FeatureGTBHelper
 import com.happyandjust.nameless.features.impl.qol.FeatureMurdererFinder
 import com.happyandjust.nameless.features.impl.qol.FeaturePlayTabComplete
 import com.happyandjust.nameless.features.impl.skyblock.FeatureEquipPetSkin
-import com.happyandjust.nameless.gui.GuiError
+import com.happyandjust.nameless.gui.feature.FeatureGui
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.keybinding.NamelessKeyBinding
 import com.happyandjust.nameless.listener.*
-import com.happyandjust.nameless.network.Request
 import com.happyandjust.nameless.serialization.converters.COutlineMode
 import com.happyandjust.nameless.utils.SkyblockUtils
-import net.minecraft.client.gui.GuiMainMenu
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import net.minecraft.command.CommandBase
 import net.minecraftforge.client.ClientCommandHandler
-import net.minecraftforge.client.event.GuiOpenEvent
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.common.eventhandler.EventPriority
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import org.apache.logging.log4j.LogManager
 import java.io.File
-import java.util.concurrent.Executors
 
 @Mod(modid = MOD_ID, name = MOD_NAME, version = VERSION)
 class Nameless {
@@ -60,95 +54,44 @@ class Nameless {
         lateinit var INSTANCE: Nameless
     }
 
-    val keyBindings = hashMapOf<KeyBindingCategory, NamelessKeyBinding>().apply {
-        for (category in KeyBindingCategory.values()) {
-            this[category] =
-                NamelessKeyBinding(category.desc, category.key).also { ClientRegistry.registerKeyBinding(it) }
-        }
-    }
-    private val selectedOutlineModeConfig = ConfigValue(
+    val keyBindings = KeyBindingCategory.values()
+        .associateWith { NamelessKeyBinding(it.desc, it.key).also(ClientRegistry::registerKeyBinding) }
+
+    var selectedOutlineMode by ConfigValue(
         "outline",
         "selected",
         OutlineMode.OUTLINE,
         COutlineMode
     )
-    var selectedOutlineMode = OutlineMode.OUTLINE
-        get() = selectedOutlineModeConfig.value
-        set(value) {
-            field = value
 
-            selectedOutlineModeConfig.value = value
-        }
     lateinit var modFile: File
-    var isErrored = false
-    private var shownErrorScreen = false
-    private lateinit var reason: String
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    fun onGuiOpen(e: GuiOpenEvent) {
-        if (!isErrored) return
-        if (shownErrorScreen) return
-        shownErrorScreen = true
-        val gui = e.gui
-
-        if (gui is GuiMainMenu) {
-            e.gui = GuiError(gui, reason)
-        }
-    }
 
     @Mod.EventHandler
     fun preInit(e: FMLPreInitializationEvent) {
         modFile = e.sourceFile
-
-        val errorVersions =
-            JSONHandler(Request.get("https://raw.githubusercontent.com/HappyAndJust/Nameless/master/errorModVersions.json")).read(
-                JsonObject()
-            )
-
-        for ((errorVersion, reason) in errorVersions.entrySet()) {
-            if (errorVersion == VERSION) {
-
-                isErrored = true
-                this.reason = reason.asString
-
-                LogManager.getLogger().fatal("[Nameless] Current Mod Version $VERSION is errored")
-
-                break
-            }
-        }
-
-        if (!isErrored) {
-            FeatureUpdateChecker.checkForUpdate()
-        }
+        FeatureUpdateChecker.checkForUpdate()
     }
 
     @Mod.EventHandler
     fun init(e: FMLInitializationEvent) {
-        if (isErrored) {
-            MinecraftForge.EVENT_BUS.register(this)
-            return
-        }
-
-        val threadPool = Executors.newFixedThreadPool(2)
-
         if (!mc.framebuffer.isStencilEnabled) {
             mc.framebuffer.enableStencil()
         }
 
         FeatureRegistry // init
+        FeatureGui() // init
 
-        threadPool.execute {
-            FeatureMurdererFinder.fetchAssassinData()
+        GlobalScope.launch {
 
-            FeatureGTBHelper.fetchWordsData()
+            async { FeatureMurdererFinder.fetchAssassinData() }
 
-            FeaturePlayTabComplete.fetchGameDataList()
+            async { FeatureGTBHelper.fetchWordsData() }
 
-            FeatureEquipPetSkin.fetchPetSkinData()
-        }
+            async { FeaturePlayTabComplete.fetchGameDataList() }
 
-        threadPool.execute {
-            SkyblockUtils.fetchSkyBlockData()
+            async { FeatureEquipPetSkin.fetchPetSkinData() }
+
+            async { SkyblockUtils.fetchSkyBlockData() }
         }
 
         registerCommands(

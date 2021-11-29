@@ -23,7 +23,7 @@ import java.awt.Color
 /**
  * Only use [java.awt.Color.getRGB]
  */
-class ChromaColor(val originRGB: Int) : Color(originRGB) {
+class ChromaColor(val originRGB: Int) : Color(originRGB, true) {
 
     /**
      * Due to lack of my programming skills, Chroma Speed is Immutable
@@ -31,14 +31,12 @@ class ChromaColor(val originRGB: Int) : Color(originRGB) {
     val chromaSpeed = 2000
     var chromaEnabled = false
 
-    constructor(red: Int, green: Int, blue: Int, alpha: Int = 255) : this(Color(red, green, blue, alpha).rgb)
-
     override fun getRGB(): Int {
-        return if (!chromaEnabled) super.getRGB() else run {
-            val ff = (System.currentTimeMillis() % chromaSpeed) / chromaSpeed.toFloat()
-
-            HSBtoRGB(ff, 1f, 1f)
-        }
+        return if (!chromaEnabled) super.getRGB() else HSBtoRGB(
+            (System.currentTimeMillis() % chromaSpeed) / chromaSpeed.toFloat(),
+            1f,
+            0.8f
+        ) and (super.getRGB() or 0xFFFFFF) // alpha
     }
 
     override fun equals(other: Any?): Boolean {

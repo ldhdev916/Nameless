@@ -23,15 +23,11 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JSONHandler
 import com.happyandjust.nameless.core.NameHistory
-import com.happyandjust.nameless.dsl.decodeBase64
-import com.happyandjust.nameless.network.Request
+import com.happyandjust.nameless.core.Request
 
 object APIUtils {
 
     private val gson = Gson()
-
-    fun getUsernameFromUUID(uuid: String): String =
-        JSONHandler(Request.get("https://sessionserver.mojang.com/session/minecraft/profile/$uuid")).read(JsonObject())["name"].asString
 
     fun getUUIDFromUsername(username: String): String =
         JSONHandler(Request.get("https://api.mojang.com/users/profiles/minecraft/$username")).read(JsonObject())["id"].asString
@@ -41,16 +37,4 @@ object APIUtils {
 
         return json.map { gson.fromJson(it, NameHistory::class.java) }
     }
-
-    fun getSkinURLFromUUID(uuid: String): String {
-        val json =
-            JSONHandler(Request.get("https://sessionserver.mojang.com/session/minecraft/profile/$uuid")).read(JsonObject())
-
-        val base64 = json["properties"].asJsonArray[0].asJsonObject["value"].asString
-
-        return getSkinURLFromJSON(gson.fromJson(base64.decodeBase64(), JsonObject::class.java))
-    }
-
-    fun getSkinURLFromJSON(jsonObject: JsonObject) =
-        jsonObject["textures"].asJsonObject["SKIN"].asJsonObject["url"].asString!!
 }

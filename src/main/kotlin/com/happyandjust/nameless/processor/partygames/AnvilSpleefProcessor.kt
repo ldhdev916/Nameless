@@ -46,9 +46,9 @@ object AnvilSpleefProcessor : Processor(), ClientTickListener, WorldRenderListen
 
     override fun renderWorld(partialTicks: Float) {
         for (anvil in renderingSet) {
-            val pos = BlockPos(anvil.posX, 1.0, anvil.posZ)
+            val pos = BlockPos(anvil.posX, 0.0, anvil.posZ)
 
-            RenderUtils.drawOutlinedBox(pos.getAxisAlignedBB(), boxColor(), partialTicks)
+            RenderUtils.drawBox(pos.getAxisAlignedBB(), boxColor(), partialTicks)
         }
     }
 

@@ -24,9 +24,10 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.sendClientMessage
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.utils.APIUtils
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.minecraft.command.ICommandSender
 import java.util.*
-import kotlin.concurrent.thread
 
 object NameHistoryCommand : ClientCommandBase("name") {
 
@@ -53,36 +54,31 @@ object NameHistoryCommand : ClientCommandBase("name") {
         "§6${if (isOriginal) "§l" else ""}${it.username} - $time"
     }
 
+
     override fun processCommand(sender: ICommandSender, args: Array<out String>) {
-        thread {
-            if (args.size != 1) {
-                sendPrefixMessage("§cUsage: /name [Player Name]")
-                return@thread
-            }
-
-            val name = args[0]
-
-            val uuid = try {
-                APIUtils.getUUIDFromUsername(name)
-            } catch (e: RuntimeException) {
+        if (args.size != 1) {
+            sendUsage("[Player Name]")
+            return
+        }
+        val name = args[0]
+        GlobalScope.launch {
+            val uuid = runCatching { APIUtils.getUUIDFromUsername(name) }.getOrElse {
                 sendPrefixMessage("§cFailed to get $name's uuid")
-                return@thread
+                return@launch
             }
 
-            val nameHistoryList = try {
-                APIUtils.getNameHistoryFromUUID(uuid)
-            } catch (e: RuntimeException) {
+            val nameHistories = runCatching { APIUtils.getNameHistoryFromUUID(uuid) }.getOrElse {
                 sendPrefixMessage("§cFailed to get $name's Name History")
-                return@thread
+                return@launch
             }
 
             val fontRenderer = mc.fontRendererObj
 
-            val nameHistoryTexts = nameHistoryList.map(transformNameHistoryToString)
+            val nameHistoryTexts = nameHistories.map(transformNameHistoryToString)
 
             if (nameHistoryTexts.isEmpty()) {
                 sendPrefixMessage("§cSomething went wrong! Try again")
-                return@thread
+                return@launch
             }
 
             val dash = "§6${getDashAsLongestString(nameHistoryTexts.maxOf { fontRenderer.getStringWidth(it) })}"
@@ -90,6 +86,7 @@ object NameHistoryCommand : ClientCommandBase("name") {
             sendClientMessage(dash)
             sendClientMessage(nameHistoryTexts.joinToString("\n"))
             sendClientMessage(dash)
+
         }
     }
 

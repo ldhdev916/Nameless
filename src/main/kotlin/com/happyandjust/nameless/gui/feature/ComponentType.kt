@@ -90,7 +90,7 @@ enum class ComponentType {
     COLOR {
         override fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent = ColorComponent(
             propertyData.property() as Color,
-            false
+            true
         ).toChromaColorComponent((propertyData.property() as ChromaColor).chromaEnabled).apply {
             onValueChange {
                 propertyData.property.set(it as T)

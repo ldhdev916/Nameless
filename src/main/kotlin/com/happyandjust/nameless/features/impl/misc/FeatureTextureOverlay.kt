@@ -37,8 +37,9 @@ import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.pixels
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.texture.DynamicTexture
-import net.minecraft.util.ResourceLocation
 import java.io.File
+import java.nio.file.Files
+import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
 
 object FeatureTextureOverlay : SimpleFeature(
@@ -48,7 +49,7 @@ object FeatureTextureOverlay : SimpleFeature(
     "Render texture which is under config/NamelessTextureOverlay to your screen. If you want to remove/add texture In Game, after modifying textures reload textures"
 ), RenderOverlayListener {
 
-    private val dir = File("config/NamelessTextureOverlay").also { it.mkdirs() }
+    private val dir = File("config/NamelessTextureOverlay").apply { mkdirs() }
 
     init {
         val callback = {
@@ -62,20 +63,22 @@ object FeatureTextureOverlay : SimpleFeature(
             "Reload Textures",
             "",
             callback,
-            DummyConverter(callback)
-        ).also {
-            it.placeHolder = "Reload"
+            DummyConverter()
+        ).apply {
+            placeHolder = "Reload"
         }
 
         reloadTexture()
     }
 
     private fun reloadTexture() {
-        parameters.entries.removeIf { it.value is OverlayParameter }
+        parameters.values.removeIf { it is OverlayParameter }
 
-        for (file in (dir.listFiles() ?: emptyArray()).filter {
-            arrayOf(".png", ".jpg").any { s -> it.name.endsWith(s) }
-        }) {
+        val files = (dir.listFiles() ?: emptyArray()).filter {
+            Files.probeContentType(it.toPath()).split("/")[0] == "image"
+        }
+
+        for (file in files) {
             val name = file.name
             parameters[name] = object : OverlayParameter<Boolean>(
                 1,
@@ -95,7 +98,7 @@ object FeatureTextureOverlay : SimpleFeature(
                     ConfigValue("textureoverlay", "${name}_position", Overlay.DEFAULT, COverlay)
 
                 override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
-                    return UIImage.ofFile(File(dir, name)).constrain {
+                    return UIImage(CompletableFuture.supplyAsync { image }).constrain {
                         width = (image.width * relocateComponent.currentScale).pixels()
                         height = ImageAspectConstraint()
 
@@ -143,6 +146,4 @@ object FeatureTextureOverlay : SimpleFeature(
             }
         }
     }
-
-    data class OverlayInfo(val resourceLocation: ResourceLocation, val width: Int, val height: Int)
 }

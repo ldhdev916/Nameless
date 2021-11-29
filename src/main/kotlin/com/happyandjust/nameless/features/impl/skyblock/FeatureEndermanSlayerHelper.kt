@@ -47,6 +47,7 @@ import gg.essential.elementa.constraints.SiblingConstraint
 import gg.essential.elementa.dsl.childOf
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.pixels
+import gg.essential.elementa.utils.withAlpha
 import net.minecraft.block.BlockBeacon
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.entity.monster.EntityEnderman
@@ -71,7 +72,7 @@ object FeatureEndermanSlayerHelper :
             .sortedBy { entityArmorStand ->
                 (it.posX - entityArmorStand.posX).pow(2) + (it.posZ - entityArmorStand.posZ).pow(2)
             }
-            .firstOrNull { entityArmorStand -> entityArmorStand.displayName.unformattedText.contains("Voidgloom Seraph") }
+            .find { entityArmorStand -> entityArmorStand.displayName.unformattedText.contains("Voidgloom Seraph") }
     }
 
     init {
@@ -84,14 +85,14 @@ object FeatureEndermanSlayerHelper :
             "",
             true,
             CBoolean
-        ).also {
-            it.parameters["color"] = FeatureParameter(
+        ).apply {
+            parameters["color"] = FeatureParameter(
                 0,
                 "endermanslayer",
                 "color",
                 "Highlight Color",
                 "",
-                Color.red.toChromaColor(),
+                Color.red.withAlpha(0.5f).toChromaColor(),
                 CChromaColor
             )
         }
@@ -124,19 +125,19 @@ object FeatureEndermanSlayerHelper :
             "",
             true,
             CBoolean
-        ).also {
-            it.parameters["color"] = FeatureParameter(
+        ).apply {
+            parameters["color"] = FeatureParameter(
                 0,
                 "endermanslayer",
                 "skullcolor",
                 "Highlight Color",
                 "",
-                Color.red.toChromaColor(),
+                Color.red.withAlpha(0.5f).toChromaColor(),
                 CChromaColor
             )
         }
 
-        val informations = VoidgloomInformation.values().map { VoidgloomIdentifier(it) }
+        val information = VoidgloomInformation.values().map { VoidgloomIdentifier(it) }
 
         parameters["order"] = FeatureParameter(
             2,
@@ -144,10 +145,10 @@ object FeatureEndermanSlayerHelper :
             "order",
             "Information List",
             "",
-            informations,
+            information,
             CIdentifierList { VoidgloomIdentifier.deserialize(it) }
-        ).also {
-            it.allIdentifiers = informations
+        ).apply {
+            allIdentifiers = information
         }
     }
 
@@ -182,7 +183,7 @@ object FeatureEndermanSlayerHelper :
             currentVoidgloomCache?.let {
                 matrix {
                     setup(overlayPoint.value)
-                    val identifiers = getParameterValue<List<Identifier>>("order").map { it as VoidgloomIdentifier }
+                    val identifiers = getParameterValue<List<VoidgloomIdentifier>>("order")
 
                     var y = 0
                     for (identifier in identifiers) {
@@ -215,29 +216,29 @@ object FeatureEndermanSlayerHelper :
 
         currentVoidgloomCache =
             if (ScoreboardUtils.getSidebarLines(true).any { it.contains("Slay the boss!") }) {
-                val cache = hashMapOf<EntityEnderman, EntityArmorStand?>()
-                val enderman = mc.theWorld.loadedEntityList
+                val pair = mc.theWorld.loadedEntityList
                     .asSequence()
                     .filterIsInstance<EntityEnderman>()
                     .filter { it.getDistanceToEntity(mc.thePlayer) <= 10 }
                     .sortedBy { it.getDistanceToEntity(mc.thePlayer) }
-                    .firstOrNull {
-                        cache[it] = findArmorStand(it)
-                        cache[it] != null
+                    .mapNotNull {
+                        val armorStand = findArmorStand(it)
+                        if (armorStand != null) it to armorStand else null
                     }
+                    .firstOrNull()
 
-                if (enderman != null) {
+                if (pair != null) {
                     VoidgloomCache(
-                        enderman,
-                        calculate(enderman, cache[enderman]!!)
+                        pair.first,
+                        calculate(pair.first, pair.second)
                     )
                 } else {
-                    currentVoidgloomCache?.let { voidGloomCache ->
+                    currentVoidgloomCache?.let {
                         VoidgloomCache(
-                            voidGloomCache.enderman,
+                            it.enderman,
                             calculate(
-                                voidGloomCache.enderman,
-                                voidGloomCache.stat[VoidgloomInformation.NAME]!! as EntityArmorStand
+                                it.enderman,
+                                it.stat[VoidgloomInformation.NAME]!! as EntityArmorStand
                             )
                         )
                     }
@@ -247,6 +248,17 @@ object FeatureEndermanSlayerHelper :
             }
     }
 
+    /**
+     * [VoidgloomInformation.NAME] to [EntityArmorStand]
+     *
+     * [VoidgloomInformation.HIT_PHASE] to [Boolean]
+     *
+     * [VoidgloomInformation.HOLDING_BEACON] to [Boolean]
+     *
+     * [VoidgloomInformation.BEACON_PLACED] to [BeaconInfo]
+     *
+     * [VoidgloomInformation.SKULLS_NEARBY] to [List]
+     */
     private fun calculate(
         enderman: EntityEnderman,
         armorStand: EntityArmorStand
@@ -270,13 +282,11 @@ object FeatureEndermanSlayerHelper :
                 blocks[0]
             },
             VoidgloomInformation.SKULLS_NEARBY to run {
-                val list = mc.theWorld.loadedEntityList.filterIsInstance<EntityArmorStand>()
-                    .filter { it.getDistanceToEntity(enderman) <= 12 }
+                mc.theWorld.loadedEntityList.filterIsInstance<EntityArmorStand>()
                     .filter {
-                        it.getEquipmentInSlot(4)?.getSkullOwner()?.getMD5() == VOIDGLOOM_SKULL
+                        it.getDistanceToEntity(enderman) <= 12 &&
+                                it.getEquipmentInSlot(4)?.getSkullOwner()?.getMD5() == VOIDGLOOM_SKULL
                     }
-
-                list
             }
         )
     }
@@ -295,7 +305,7 @@ object FeatureEndermanSlayerHelper :
 
             RenderUtils.drawBox(
                 aabb,
-                parameter.getParameterValue<Color>("color").rgb and 0x80FFFFFF.toInt(),
+                parameter.getParameterValue<Color>("color").rgb,
                 partialTicks
             )
         }
@@ -303,7 +313,7 @@ object FeatureEndermanSlayerHelper :
         run {
             val parameter = getParameter<Boolean>("skull")
             if (!parameter.value) return@run
-            val color = parameter.getParameterValue<Color>("color").rgb and 0x80FFFFFF.toInt()
+            val color = parameter.getParameterValue<Color>("color").rgb
 
             for (aabb in getSkullPos()) {
                 RenderUtils.drawBox(aabb, color, partialTicks)
@@ -352,15 +362,14 @@ object FeatureEndermanSlayerHelper :
 
             fun createInstance(pos: BlockPos, placeTime: Long, isBeacon: Boolean): BeaconInfo {
                 return if (isBeacon) {
-                    createdBeaconInstances[pos]?.takeIf { it.isBeacon } ?: BeaconInfo(pos, placeTime, true).also {
-                        if (getParameterValue("notify")) {
-                            mc.thePlayer.playSound("random.successful_hit", 1F, 0.5F)
-                            with(mc.ingameGUI) {
-                                displayTitle(null, null, 0, 20, 0)
-                                displayTitle("§cBeacon Placed!", null, 0, 0, 0)
-                            }
+                    if (getParameterValue("notify")) {
+                        mc.thePlayer.playSound("random.successful_hit", 1F, 0.5F)
+                        with(mc.ingameGUI) {
+                            displayTitle(null, null, 0, 20, 0)
+                            displayTitle("§cBeacon Placed!", null, 0, 0, 0)
                         }
                     }
+                    createdBeaconInstances[pos] ?: BeaconInfo(pos, placeTime, true)
                 } else {
                     createdBeaconInstances.remove(pos)
                     BeaconInfo(pos, placeTime, false)

@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.core
 
+import com.happyandjust.nameless.dsl.sendPrefixMessage
 import net.minecraft.command.CommandBase
 import net.minecraft.command.ICommandSender
 
@@ -30,4 +31,8 @@ abstract class ClientCommandBase(private val commandName: String) : CommandBase(
     abstract override fun processCommand(sender: ICommandSender, args: Array<out String>)
 
     final override fun canCommandSenderUseCommand(sender: ICommandSender?) = true
+
+    protected fun sendUsage(vararg args: String) {
+        sendPrefixMessage(args.joinToString(" or ", "§cUsage: ") { "/$commandName $it" })
+    }
 }

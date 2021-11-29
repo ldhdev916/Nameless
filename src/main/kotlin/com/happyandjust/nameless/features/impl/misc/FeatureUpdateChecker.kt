@@ -22,13 +22,15 @@ import com.google.gson.JsonObject
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.VERSION
 import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.Request
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.ScreenOpenListener
 import com.happyandjust.nameless.gui.UpdateGui
-import com.happyandjust.nameless.network.Request
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.minecraft.client.gui.GuiMainMenu
 import net.minecraftforge.client.event.GuiOpenEvent
 import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion
@@ -51,15 +53,16 @@ object FeatureUpdateChecker : SimpleFeature(
 
     fun checkForUpdate() {
         if (!enabled) return
-        threadPool.execute {
-            val s = Request.get("https://api.github.com/repos/HappyAndJust/Nameless/releases/latest")
 
-            val json = JSONHandler(s).read(JsonObject())
-
-            val latestTag = json["tag_name"].asString.substring(1)
+        GlobalScope.launch {
+            val json =
+                JSONHandler(Request.get("https://api.github.com/repos/HappyAndJust/Nameless/releases/latest"))
+                    .read(JsonObject())
+            val latestTag = json["tag_name"].asString.drop(1)
 
             val currentVersion = DefaultArtifactVersion(VERSION)
             val latestVersion = DefaultArtifactVersion(latestTag)
+
 
             if (currentVersion < latestVersion) {
                 val html_url = json["html_url"].asString
@@ -69,10 +72,10 @@ object FeatureUpdateChecker : SimpleFeature(
                 val body = json["body"].asString
 
                 updateGui = {
-                    UpdateGui(body).also {
-                        it.htmlURL = URI(html_url)
-                        it.downloadURL = URL(download_url)
-                        it.jarFile = File(Nameless.INSTANCE.modFile.parentFile, assets["name"].asString)
+                    UpdateGui(body).apply {
+                        htmlURL = URI(html_url)
+                        downloadURL = URL(download_url)
+                        jarFile = File(Nameless.INSTANCE.modFile.parentFile, assets["name"].asString)
                     }
                 }
                 needUpdate = true

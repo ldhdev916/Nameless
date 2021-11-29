@@ -18,7 +18,10 @@
 
 package com.happyandjust.nameless.mixinhooks
 
-import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.dsl.matrix
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.scale
+import com.happyandjust.nameless.dsl.translate
 import com.happyandjust.nameless.features.impl.qol.FeatureShowPingInTab
 import net.minecraft.client.network.NetworkPlayerInfo
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
@@ -35,11 +38,10 @@ object GuiPlayerTabOverlayHook {
     ) {
         if (FeatureShowPingInTab.enabled) {
             val x = p_175245_2_ + p_175245_1_ - 13
-            val y: Int = p_175245_3_ + mc.fontRendererObj.FONT_HEIGHT / 2
+            val y = p_175245_3_ + mc.fontRendererObj.FONT_HEIGHT / 2f
 
             matrix {
-                disableDepth()
-                translate(x.toFloat(), y.toFloat(), 0f)
+                translate(x.toFloat(), y, 0f)
                 scale(0.8, 0.8, 1.0)
                 mc.fontRendererObj.drawStringWithShadow(
                     networkPlayerInfoIn.responseTime.toString(),
@@ -47,8 +49,6 @@ object GuiPlayerTabOverlayHook {
                     -(mc.fontRendererObj.FONT_HEIGHT / 2f),
                     FeatureShowPingInTab.getParameter<Color>("color").value.rgb
                 )
-                scale(1f, 1f, 1f)
-                enableDepth()
             }
 
             ci.cancel()

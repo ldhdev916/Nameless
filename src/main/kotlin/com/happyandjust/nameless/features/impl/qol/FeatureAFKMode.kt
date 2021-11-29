@@ -47,9 +47,9 @@ object FeatureAFKMode :
             "",
             15,
             CInt
-        ).also {
-            it.minValue = 5.0
-            it.maxValue = 100.0
+        ).apply {
+            minValue = 5.0
+            maxValue = 100.0
         }
     }
 

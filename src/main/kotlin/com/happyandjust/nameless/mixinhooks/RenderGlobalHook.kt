@@ -139,10 +139,10 @@ object RenderGlobalHook {
     }
 
     private fun enableOutlineMode(color: Int) {
-        FLOAT_BUFFER.put(0, color.getRedFloat())
-        FLOAT_BUFFER.put(1, color.getGreenFloat())
-        FLOAT_BUFFER.put(2, color.getBlueFloat())
-        FLOAT_BUFFER.put(3, color.getAlphaFloat())
+        FLOAT_BUFFER.put(0, color.red / 255f)
+        FLOAT_BUFFER.put(1, color.green / 255f)
+        FLOAT_BUFFER.put(2, color.blue / 255f)
+        FLOAT_BUFFER.put(3, color.alpha / 255f)
 
         GL11.glTexEnv(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_COLOR, FLOAT_BUFFER)
         GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL13.GL_COMBINE)

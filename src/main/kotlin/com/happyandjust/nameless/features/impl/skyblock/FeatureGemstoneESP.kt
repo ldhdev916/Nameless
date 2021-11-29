@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.dsl.contains
 import com.happyandjust.nameless.dsl.getAxisAlignedBB
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.Category
@@ -47,7 +48,7 @@ object FeatureGemstoneESP : SimpleFeature(
         enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty<String>(PropertyKey.ISLAND) == "crystal_hollows"
 
     private var scanTick = 0
-    private var gemstoneBlocks = hashMapOf<AxisAlignedBB, Int>()
+    private val gemstoneBlocks = hashMapOf<AxisAlignedBB, Int>()
     private val gemstoneBlockMap = Gemstone.values().associateBy { it.metadata }.toMap()
 
     init {
@@ -88,40 +89,34 @@ object FeatureGemstoneESP : SimpleFeature(
 
         if (scanTick != 0) return
 
-        threadPool.execute {
-            val current = BlockPos(mc.thePlayer)
+        val current = BlockPos(mc.thePlayer)
 
-            val radius = getParameterValue<Int>("radius")
+        val radius = getParameterValue<Int>("radius")
 
-            val curX = current.x
-            val curY = current.y
-            val curZ = current.z
+        val curX = current.x
+        val curY = current.y
+        val curZ = current.z
 
-            val from = BlockPos.MutableBlockPos(curX - radius, curY - radius, curZ - radius)
-            val to = BlockPos.MutableBlockPos(curX + radius, curY + radius, curZ + radius)
+        val from = BlockPos.MutableBlockPos(curX - radius, curY - radius, curZ - radius)
+        val to = BlockPos.MutableBlockPos(curX + radius, curY + radius, curZ + radius)
 
-            if (from.y < 0) from.set(from.x, 0, from.z)
-            if (to.y > 255) to.set(to.x, 255, to.z)
+        if (from.y < 0) from.set(from.x, 0, from.z)
+        if (to.y > 255) to.set(to.x, 255, to.z)
 
-            val world = mc.theWorld
+        gemstoneBlocks.clear()
+        for (pos in BlockPos.getAllInBox(from, to)) {
+            val blockState = mc.theWorld.getBlockState(pos)
+            val block = blockState.block
 
-            val map = hashMapOf<AxisAlignedBB, Int>()
-
-            for (pos in BlockPos.getAllInBox(from, to)) {
-                val blockState = world.getBlockState(pos)
-                val block = blockState.block
-
-                if (block in arrayOf(Blocks.stained_glass_pane, Blocks.stained_glass)) {
-                    map[pos.getAxisAlignedBB()] =
-                        (gemstoneBlockMap[block.getMetaFromState(blockState)]
-                            ?.takeIf { getParameterValue(it.name.lowercase()) }
-                            ?: continue).color
-                }
-
+            if (block in Blocks.stained_glass_pane to Blocks.stained_glass) {
+                gemstoneBlocks[pos.getAxisAlignedBB()] =
+                    (gemstoneBlockMap[block.getMetaFromState(blockState)]
+                        ?.takeIf { getParameterValue(it.name.lowercase()) }
+                        ?: continue).color
             }
 
-            gemstoneBlocks = map
         }
+
     }
 
     override fun renderWorld(partialTicks: Float) {

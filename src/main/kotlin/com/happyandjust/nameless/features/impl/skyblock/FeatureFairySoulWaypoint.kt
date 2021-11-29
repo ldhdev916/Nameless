@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
@@ -85,13 +84,11 @@ object FeatureFairySoulWaypoint : SimpleFeature(
     override fun renderWorld(partialTicks: Float) {
         if (!enabled) return
         if (Hypixel.currentGame == GameType.SKYBLOCK) {
-            if (getParameterValue("path") && fairySoulPaths.isNotEmpty()) {
+            if (getParameterValue("path")) {
                 RenderUtils.drawPath(fairySoulPaths, if (pathFreezed) freezedPathColor else Color.red.rgb, partialTicks)
             }
             if (currentIslandFairySouls.isNotEmpty()) {
-                for (fairySoul in currentIslandFairySouls) {
-                    if (foundFairySoulsInThisProfile.contains(fairySoul)) continue
-
+                for (fairySoul in currentIslandFairySouls - foundFairySoulsInThisProfile.toSet()) {
                     RenderUtils.drawBox(fairySoul.toBlockPos().getAxisAlignedBB(), fairySoulColor, partialTicks)
                 }
             }
@@ -99,7 +96,7 @@ object FeatureFairySoulWaypoint : SimpleFeature(
     }
 
     override fun tick() {
-        if (Hypixel.currentGame == GameType.SKYBLOCK) {
+        if (enabled && Hypixel.currentGame == GameType.SKYBLOCK) {
             currentSkyblockIsland?.let {
 
                 if (it == "dungeon") {
@@ -118,15 +115,12 @@ object FeatureFairySoulWaypoint : SimpleFeature(
 
                     if (pathTick == 0) {
                         currentIslandFairySouls
-                            .asSequence()
                             .filter { fairySoul -> !foundFairySoulsInThisProfile.contains(fairySoul) }
                             .takeIf { list -> list.any() && !pathFreezed }
                             ?.map(FairySoul::toBlockPos)
                             ?.minByOrNull(mc.thePlayer::getDistanceSq)
                             ?.let { blockPos ->
-                                threadPool.execute {
-                                    fairySoulPaths = ModPathFinding(blockPos, true).findPath().get()
-                                }
+                                fairySoulPaths = ModPathFinding(blockPos, true).findPath()
                             }
                     }
                 }
@@ -148,24 +142,22 @@ object FeatureFairySoulWaypoint : SimpleFeature(
     }
 
     override fun onKeyInput() {
-        if (Nameless.INSTANCE.keyBindings[KeyBindingCategory.FREEZE_FAIRYSOUL_PATHS]!!.isKeyDown) {
+        if (KeyBindingCategory.FREEZE_FAIRYSOUL_PATHS.getKeyBinding().isKeyDown) {
             pathFreezed = !pathFreezed
         }
     }
 
     override fun onSendingPacket(e: PacketEvent.Sending) {
         if (Hypixel.currentGame != GameType.SKYBLOCK) return
-        FairySoulProfileCache.currentlyLoadedProfile.let {
-            val msg = e.packet
-            if (msg is C02PacketUseEntity && msg.action == C02PacketUseEntity.Action.ATTACK) {
-                val entity = msg.getEntityFromWorld(mc.theWorld)
+        val msg = e.packet
+        if (msg is C02PacketUseEntity && msg.action == C02PacketUseEntity.Action.ATTACK) {
+            val entity = msg.getEntityFromWorld(mc.theWorld)
 
-                if (entity is EntityArmorStand && entity.isFairySoul()) {
-                    it.addFoundFairySoul(
-                        currentSkyblockIsland ?: return,
-                        BlockPos(entity.posX, entity.posY + 2, entity.posZ)
-                    )
-                }
+            if (entity is EntityArmorStand && entity.isFairySoul()) {
+                FairySoulProfileCache.currentlyLoadedProfile.addFoundFairySoul(
+                    currentSkyblockIsland ?: return,
+                    BlockPos(entity.posX, entity.posY + 2, entity.posZ)
+                )
             }
         }
     }
@@ -174,7 +166,7 @@ object FeatureFairySoulWaypoint : SimpleFeature(
     }
 
     override fun onChatReceived(e: ClientChatReceivedEvent) {
-
+        if (e.type.toInt() == 2) return
         if (Hypixel.currentGame != GameType.SKYBLOCK) return
 
         val msg = e.message.unformattedText.stripControlCodes().trim()

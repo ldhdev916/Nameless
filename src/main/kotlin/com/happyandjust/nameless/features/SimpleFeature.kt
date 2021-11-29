@@ -18,15 +18,12 @@
 
 package com.happyandjust.nameless.features
 
-import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.gui.feature.PropertyData
 import com.happyandjust.nameless.processor.Processor
 import net.minecraftforge.common.MinecraftForge
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import kotlin.reflect.KMutableProperty0
 
 open class SimpleFeature(
@@ -39,7 +36,6 @@ open class SimpleFeature(
 
     var inCategory = ""
     private val enabledConfig = ConfigValue.BooleanConfigValue("features", key, enabled_)
-    protected val threadPool: ExecutorService = Executors.newFixedThreadPool(2)
     val processors = hashMapOf<Processor, () -> Boolean>()
 
     fun hasParameter(key: String) = parameters.contains(key)
@@ -48,11 +44,11 @@ open class SimpleFeature(
 
     fun <T> getParameterValue(key: String) = getParameter<T>(key).value
 
-    var enabled: Boolean
-        get() = enabledConfig.value && !Nameless.INSTANCE.isErrored
+    var enabled = enabledConfig.value
         set(value) {
             val event = FeatureStateChangeEvent.Pre(this, value)
             if (!MinecraftForge.EVENT_BUS.post(event)) {
+                field = event.enabledAfter
                 enabledConfig.value = event.enabledAfter
 
                 MinecraftForge.EVENT_BUS.post(FeatureStateChangeEvent.Post(this, enabledConfig.value))

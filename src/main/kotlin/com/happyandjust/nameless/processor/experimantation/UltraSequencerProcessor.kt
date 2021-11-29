@@ -58,7 +58,7 @@ object UltraSequencerProcessor : Processor(), BackgroundDrawnListener {
         matrix {
 
             val left = (gui as AccessorGuiContainer).guiLeft
-            val top = (gui as AccessorGuiContainer).guiTop
+            val top = gui.guiTop
 
             for ((index, slot) in ultrasequencerOrders.map { gui.inventorySlots.getSlot(it) }
                 .filter { it.stack?.item == Item.getItemFromBlock(Blocks.stained_glass_pane) }.withIndex()) {
@@ -67,7 +67,7 @@ object UltraSequencerProcessor : Processor(), BackgroundDrawnListener {
                     gui.drawOnSlot(slot, Color.yellow.rgb)
                 }
 
-                translate(left + slot.xDisplayPosition + 8, top + slot.yDisplayPosition + 8, 0) {
+                translate(left + slot.xDisplayPosition + 8.5, top + slot.yDisplayPosition + 8.5, 0.0) {
                     val text = (index + 1).toString()
                     mc.fontRendererObj.drawCenteredString(
                         text,

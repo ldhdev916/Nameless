@@ -25,11 +25,7 @@ fun SimpleFeature.inCategory(
     inCategory: String,
     vararg pairs: Pair<String, FeatureParameter<*>>
 ) {
-    for (pair in pairs) {
-        parameters[pair.first] = pair.second.also { it.inCategory = inCategory }
+    for ((key, parameter) in pairs) {
+        parameters[key] = parameter.also { it.inCategory = inCategory }
     }
-}
-
-fun <T : SimpleFeature> T.setInCategory(inCategory: String) = apply {
-    this.inCategory = inCategory
 }

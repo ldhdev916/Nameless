@@ -52,6 +52,4 @@ object FeatureGlowBats : SimpleFeature(Category.SKYBLOCK, "glowbats", "Glow Bats
             ColorInfo(getParameterValue<Color>("color").rgb, ColorInfo.ColorPriority.HIGHEST)
         else null
     }
-
-    override fun getEntityColor(entity: Entity): ColorInfo? = null
 }

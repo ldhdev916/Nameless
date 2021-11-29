@@ -80,14 +80,10 @@ object FeatureBedwarsESP : SimpleFeature(
 
     override fun getOutlineColor(entity: Entity): ColorInfo? {
         if (!checkForEnabledAndBedwars()) return null
-        if (entity !is EntityPlayer) return null
-
         val color = teamColorCache[entity] ?: return null
 
         return ColorInfo(color, ColorInfo.ColorPriority.HIGH)
     }
-
-    override fun getEntityColor(entity: Entity): ColorInfo? = null
 
     override fun onServerChange(server: String) {
         teamColorCache.clear()

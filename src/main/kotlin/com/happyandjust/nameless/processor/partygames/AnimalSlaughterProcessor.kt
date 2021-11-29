@@ -33,6 +33,4 @@ object AnimalSlaughterProcessor : Processor(), StencilListener {
         ) else null
     }
 
-    override fun getEntityColor(entity: Entity): ColorInfo? = null
-
 }

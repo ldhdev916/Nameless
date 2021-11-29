@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.network
+package com.happyandjust.nameless.core
 
 import java.io.DataOutputStream
 import java.io.IOException

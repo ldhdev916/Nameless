@@ -19,7 +19,6 @@
 package com.happyandjust.nameless.serialization
 
 import com.google.gson.JsonElement
-import com.google.gson.JsonNull
 
 interface Converter<T> {
 
@@ -28,12 +27,12 @@ interface Converter<T> {
     fun deserialize(jsonElement: JsonElement): T
 }
 
-class DummyConverter<T>(private val dummyValue: T) : Converter<T> {
+class DummyConverter<T> : Converter<T> {
     override fun serialize(t: T): JsonElement {
-        return JsonNull.INSTANCE
+        throw RuntimeException("You cannot serialize DummyConverter type of ${t!!.javaClass.name}")
     }
 
     override fun deserialize(jsonElement: JsonElement): T {
-        return dummyValue
+        throw RuntimeException("You cannot deserialize DummyConverter")
     }
 }

@@ -19,10 +19,14 @@
 package com.happyandjust.nameless.gui.feature.components
 
 import com.happyandjust.nameless.core.toChromaColor
+import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIImage
 import gg.essential.elementa.components.UIText
-import gg.essential.elementa.constraints.*
+import gg.essential.elementa.constraints.AspectConstraint
+import gg.essential.elementa.constraints.CenterConstraint
+import gg.essential.elementa.constraints.ChildBasedSizeConstraint
+import gg.essential.elementa.constraints.SiblingConstraint
 import gg.essential.elementa.dsl.*
 import gg.essential.vigilance.gui.settings.CheckboxComponent
 import gg.essential.vigilance.gui.settings.ColorComponent
@@ -56,17 +60,33 @@ class ChromaColorComponent(private var chromaEnabled: Boolean, colorComponent: C
             height += chromaContainerHeight
         }
 
-        for (child in colorPicker.children) {
-            val heightConstraint = child.constraints.height
+        adjustColorPickerChildren()
+    }
 
-            if (heightConstraint is RelativeConstraint && heightConstraint.value == 1f) {
-                child.constraints.height -= chromaContainerHeight
+    private fun adjustColorPickerChildren() {
+        with(ColorPicker::class.java) {
+            val bigPickerBox =
+                getDeclaredField("bigPickerBox").also { it.isAccessible = true }[colorPicker] as UIComponent
+            val huePickerLine =
+                getDeclaredField("huePickerLine").also { it.isAccessible = true }[colorPicker] as UIComponent
+
+            val alphaSlider =
+                getDeclaredField("alphaSlider").also { it.isAccessible = true }[colorPicker] as UIComponent
+
+            bigPickerBox.constrain {
+                height -= chromaContainerHeight
+            }
+            huePickerLine.constrain {
+                height -= chromaContainerHeight
+            }
+            alphaSlider.constrain {
+                height -= chromaContainerHeight
             }
         }
     }
 
     private val chromaEnabledContainer by UIContainer().constrain {
-        y = SiblingConstraint()
+        y = SiblingConstraint(5f)
 
         width = 100.percent()
         height = chromaContainerHeight

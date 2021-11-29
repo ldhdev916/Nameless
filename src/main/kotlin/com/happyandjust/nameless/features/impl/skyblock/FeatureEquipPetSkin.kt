@@ -125,8 +125,8 @@ object FeatureEquipPetSkin : SimpleFeature(
         } else {
             SkyblockUtils.getItemFromId(petSkinType.name)?.skin
         } ?: return
-        currentPetSkinChangeInfo = PetSkinChangeInfo(target, GameProfile(UUID.randomUUID(), "ChangePetSkin").also {
-            it.properties.put("textures", Property("textures", skin, null))
+        currentPetSkinChangeInfo = PetSkinChangeInfo(target, GameProfile(UUID.randomUUID(), "ChangePetSkin").apply {
+            properties.put("textures", Property("textures", skin, null))
         })
     }
 
@@ -145,9 +145,7 @@ object FeatureEquipPetSkin : SimpleFeature(
             EntityArmorStand::class.java,
             mc.thePlayer.entityBoundingBox.expand(10.0, 3.0, 10.0)
         )
-            .asSequence()
-            .filter { it.getPetItem()?.item is ItemSkull }
-            .filter { pets.contains(it.getPetItem().getSkullOwner().getMD5()) }
+            .filter { it.getPetItem()?.item is ItemSkull && it.getPetItem().getSkullOwner().getMD5() in pets }
             .minByOrNull { it.getDistanceSqToEntity(mc.thePlayer) }
     }
 
@@ -160,15 +158,15 @@ object FeatureEquipPetSkin : SimpleFeature(
                 if (container is ContainerChest && container.lowerChestInventory.displayName.unformattedText.stripControlCodes()
                         .startsWith("Auctions")
                 ) {
-                    mc.thePlayer.inventory.let { it.armorInventory + it.mainInventory }.toList()
+                    mc.thePlayer.inventory.run { armorInventory + mainInventory }.toList()
                 } else {
                     gui.inventorySlots.inventory
                 }
             } else {
-                mc.thePlayer.inventory.let { it.armorInventory + it.mainInventory }.toList()
+                mc.thePlayer.inventory.run { armorInventory + mainInventory }.toList()
             }
 
-        if (!stacks.contains(itemStack)) return null
+        if (itemStack !in stacks) return null
 
         val petInfo = pets[itemStack.getSkullOwner().getMD5()] ?: return null
 

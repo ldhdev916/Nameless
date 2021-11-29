@@ -18,16 +18,14 @@
 
 package com.happyandjust.nameless.mixins.accessors;
 
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.client.entity.AbstractClientPlayer;
+import net.minecraft.client.network.NetworkPlayerInfo;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
-import java.util.List;
+@Mixin(AbstractClientPlayer.class)
+public interface AccessorAbstractClientPlayer {
 
-@Mixin(NBTTagList.class)
-public interface AccessorNBTTagList {
-
-    @Accessor
-    List<NBTBase> getTagList();
+    @Invoker
+    NetworkPlayerInfo invokeGetPlayerInfo();
 }

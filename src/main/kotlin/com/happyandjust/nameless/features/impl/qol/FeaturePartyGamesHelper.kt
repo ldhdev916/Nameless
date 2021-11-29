@@ -46,6 +46,7 @@ import gg.essential.elementa.dsl.childOf
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.constraint
 import gg.essential.elementa.dsl.pixels
+import gg.essential.elementa.utils.withAlpha
 import net.minecraftforge.common.MinecraftForge
 import java.awt.Color
 
@@ -71,8 +72,8 @@ object FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper",
             "Glow player who is at 1 hearts",
             true,
             CBoolean
-        ).also {
-            it.parameters["color"] = FeatureParameter(
+        ).apply {
+            parameters["color"] = FeatureParameter(
                 0,
                 "partygames",
                 "rpg16color",
@@ -90,8 +91,8 @@ object FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper",
             "Render Box under the slabs",
             true,
             CBoolean
-        ).also {
-            it.parameters["color"] = FeatureParameter(
+        ).apply {
+            parameters["color"] = FeatureParameter(
                 0,
                 "partygames",
                 "avalanchecolor",
@@ -109,8 +110,8 @@ object FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper",
             "Glow -50% entity so you don't hit them",
             true,
             CBoolean
-        ).also {
-            it.parameters["color"] = FeatureParameter(
+        ).apply {
+            parameters["color"] = FeatureParameter(
                 0,
                 "partygames",
                 "animalcolor",
@@ -128,14 +129,14 @@ object FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper",
             "Render box on where the anvils will land on",
             true,
             CBoolean
-        ).also {
-            it.parameters["color"] = FeatureParameter(
+        ).apply {
+            parameters["color"] = FeatureParameter(
                 0,
                 "partygames",
                 "anvilcolor",
                 "Box Color",
                 "",
-                Color.red.toChromaColor(),
+                Color.red.withAlpha(0.4f).toChromaColor(),
                 CChromaColor
             )
         }
@@ -156,8 +157,8 @@ object FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper",
             "Render 'Exact Box' on where you'll land on, color will be red if you'll collide with block when you land",
             true,
             CBoolean
-        ).also {
-            it.parameters["color"] = FeatureParameter(
+        ).apply {
+            parameters["color"] = FeatureParameter(
                 0,
                 "partygames",
                 "divecolor",
@@ -210,35 +211,71 @@ object FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper",
             }
 
         }
+        parameters["workshop"] = FeatureParameter(
+            0,
+            "partygames",
+            "workshop",
+            "Workshop",
+            "Render what blocks you have to break, and etc",
+            true,
+            CBoolean
+        )
+        parameters["highground"] = FeatureParameter(
+            0,
+            "partygames",
+            "highground",
+            "High Ground",
+            "Glow players whose score is higher than you(only if player is in scoreboard)",
+            true,
+            CBoolean
+        ).apply {
+            parameters["color"] = FeatureParameter(
+                0,
+                "partygames",
+                "highground_color",
+                "Glowing Color",
+                "",
+                Color.red.toChromaColor(),
+                CChromaColor
+            )
+        }
 
-        processors[AnimalSlaughterProcessor.also {
-            it.entityColor = { getParameter<Boolean>("animal").getParameterValue<Color>("color").rgb }
+        processors[AnimalSlaughterProcessor.apply {
+            entityColor = { getParameter<Boolean>("animal").getParameterValue<Color>("color").rgb }
         }] =
             { partyGameType == PartyGamesType.ANIMAL_SLAUGHTER && getParameterValue("animal") }
 
-        processors[AnvilSpleefProcessor.also {
-            it.boxColor = { getParameter<Boolean>("anvil").getParameterValue<Color>("color").rgb }
+        processors[AnvilSpleefProcessor.apply {
+            boxColor = { getParameter<Boolean>("anvil").getParameterValue<Color>("color").rgb }
         }] =
             { partyGameType == PartyGamesType.ANVIL_SPLEEF && getParameterValue("anvil") }
 
-        processors[AvalancheProcessor.also {
-            it.boxColor = { getParameter<Boolean>("avalanche").getParameterValue<Color>("color").rgb }
+        processors[AvalancheProcessor.apply {
+            boxColor = { getParameter<Boolean>("avalanche").getParameterValue<Color>("color").rgb }
         }] = { partyGameType == PartyGamesType.AVALANCHE && getParameterValue("avalanche") }
 
-        processors[DiveProcessor.also {
-            it.boxColor = { getParameter<Boolean>("dive").getParameterValue<Color>("color").rgb }
+        processors[DiveProcessor.apply {
+            boxColor = { getParameter<Boolean>("dive").getParameterValue<Color>("color").rgb }
         }] = { partyGameType == PartyGamesType.DIVE && getParameterValue("dive") }
 
         processors[JigsawRushProcessor] = { partyGameType == PartyGamesType.JIGSAW_RUSH && getParameterValue("jigsaw") }
 
-        processors[RPG16Processor.also {
-            it.playerColor = { getParameter<Boolean>("rpg16").getParameterValue<Color>("color").rgb }
+        processors[RPG16Processor.apply {
+            playerColor = { getParameter<Boolean>("rpg16").getParameterValue<Color>("color").rgb }
         }] = { partyGameType == PartyGamesType.RPG_16 && getParameterValue("rpg16") }
 
         processors[SpiderMazeProcessor] = { partyGameType == PartyGamesType.SPIDER_MAZE && getParameterValue("maze") }
-        processors[LabEscapeProcessor.also {
-            it.overlay = { (getParameter<Boolean>("labescape") as OverlayParameter).overlayPoint.value }
+
+        processors[LabEscapeProcessor.apply {
+            overlay = { (getParameter<Boolean>("labescape") as OverlayParameter).overlayPoint.value }
         }] = { partyGameType == PartyGamesType.LAB_ESCAPE && getParameterValue("labescape") }
+
+        processors[WorkshopProcessor] = { partyGameType == PartyGamesType.WORKSHOP && getParameterValue("workshop") }
+
+        processors[HighGroundProcessor.apply {
+            entityColor = { getParameter<Boolean>("highground").getParameterValue<Color>("color").rgb }
+        }] =
+            { partyGameType == PartyGamesType.HIGH_GROUND && getParameterValue("highground") }
     }
 
     private var partyGameType: PartyGamesType? = null

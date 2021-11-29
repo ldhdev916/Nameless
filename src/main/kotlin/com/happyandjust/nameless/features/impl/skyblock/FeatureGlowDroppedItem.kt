@@ -40,7 +40,7 @@ object FeatureGlowDroppedItem : SimpleFeature(
     "Glow dropped item on skyblock according to its rarity"
 ), ClientTickListener, StencilListener {
 
-    private var itemRarityCache = hashMapOf<EntityItem, ColorInfo>()
+    private val itemRarityCache = hashMapOf<EntityItem, ColorInfo>()
     private var scanTick = 0
 
     private fun checkForRequirement() = enabled && Hypixel.currentGame == GameType.SKYBLOCK
@@ -51,16 +51,14 @@ object FeatureGlowDroppedItem : SimpleFeature(
         scanTick = (scanTick + 1) % 20
 
         if (scanTick == 0) {
-            val map = hashMapOf<EntityItem, ColorInfo>()
+            itemRarityCache.clear()
             for (entityItem in mc.theWorld.loadedEntityList.filterIsInstance<EntityItem>()
                 .filter { !isShopShowcaseItem(it) }) {
-                map[entityItem] = ColorInfo(
+                itemRarityCache[entityItem] = ColorInfo(
                     entityItem.entityItem.getSkyBlockRarity()?.color ?: continue,
                     ColorInfo.ColorPriority.HIGHEST
                 )
             }
-
-            itemRarityCache = map
         }
     }
 
@@ -70,8 +68,6 @@ object FeatureGlowDroppedItem : SimpleFeature(
 
         return itemRarityCache[entity]
     }
-
-    override fun getEntityColor(entity: Entity): ColorInfo? = null
 
     private fun isShopShowcaseItem(entityItem: EntityItem): Boolean {
         val list = entityItem.worldObj.getEntitiesWithinAABB(EntityArmorStand::class.java, entityItem.entityBoundingBox)

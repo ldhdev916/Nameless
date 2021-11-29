@@ -94,30 +94,22 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
         rayTraceTick = (rayTraceTick + 1) % 5 // I don't want to ray trace every tick
 
         if (rayTraceTick == 0) {
-            val entityPlayerSP = mc.thePlayer
-            val start = Vec3(entityPlayerSP.posX, entityPlayerSP.posY + entityPlayerSP.eyeHeight, entityPlayerSP.posZ)
+            val start = Vec3(mc.thePlayer.posX, mc.thePlayer.posY + mc.thePlayer.eyeHeight, mc.thePlayer.posZ)
 
-            val vec = entityPlayerSP.lookVec * mc.playerController.blockReachDistance.toDouble()
-            val w = mc.theWorld
+            val vec = mc.thePlayer.lookVec * mc.playerController.blockReachDistance.toDouble()
 
             var end = start.add(vec)
 
             val collideInfo = getCollideBed(start, end)
 
             val collides = PriorityQueue<BlockPos>(compareBy {
-                start.distanceTo(
-                    Vec3(
-                        it.x.toDouble(),
-                        it.y.toDouble(),
-                        it.z.toDouble()
-                    )
-                )
+                start.distanceTo(it.toVec3())
             })
 
             collideInfo?.let {
                 end = it.rayTraceResult.hitVec
 
-                val from = BlockPos(entityPlayerSP)
+                val from = BlockPos(mc.thePlayer)
                 val to = it.bed
 
                 val minY = min(from.y, to.y)
@@ -127,23 +119,18 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
                     val block = mc.theWorld.getBlockAtPos(pos)
 
                     if (!blackListBlock.contains(block)) {
-                        block.collisionRayTrace(w, pos, start, end)?.also {
+                        block.collisionRayTrace(mc.theWorld, pos, start, end)?.let {
                             collides.add(pos)
                         }
                     }
                 }
             }
 
-            val blocksAtPosition = arrayListOf<Block>()
-
-            for (collide in collides) {
-                blocksAtPosition.add(w.getBlockAtPos(collide))
-            }
+            val blocksAtPosition = collides.map { mc.theWorld.getBlockAtPos(it) }
 
             storeBlockToKeyName(blocksAtPosition)
 
-            currentRayTraceInfo =
-                RayTraceInfo(start, end, collideInfo?.bed, blocksAtPosition)
+            currentRayTraceInfo = RayTraceInfo(start, end, collideInfo?.bed, blocksAtPosition)
         }
     }
 
@@ -152,9 +139,8 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
      */
     private fun getCollideBed(start: Vec3, end: Vec3): CollideInfo? {
         val collides = PriorityQueue<CollideInfo>(compareBy { mc.thePlayer.getDistanceSq(it.bed) })
-        val w = mc.theWorld
         for (bed in beds) {
-            val rayTrace = w.getBlockAtPos(bed).collisionRayTrace(w, bed, start, end) ?: continue
+            val rayTrace = mc.theWorld.getBlockAtPos(bed).collisionRayTrace(mc.theWorld, bed, start, end) ?: continue
 
             collides.add(CollideInfo(bed, rayTrace))
         }
@@ -174,14 +160,8 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
 
                 val from = BlockPos(x - 20, y - 20, z - 20)
                 val to = BlockPos(x + 20, y + 20, z + 20)
-                val w = mc.theWorld
 
-                for (pos in BlockPos.getAllInBox(from, to)) {
-                    if (w.getBlockAtPos(pos) == Blocks.bed) {
-                        beds.add(pos)
-                        return
-                    }
-                }
+                beds.addAll(BlockPos.getAllInBox(from, to).filter { mc.theWorld.getBlockAtPos(it) is BlockBed })
             }
 
             return
@@ -194,10 +174,8 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
 
             val targetY = beds.first().y.toDouble()
 
-            val entityPlayerSP = mc.thePlayer
-
-            val x = entityPlayerSP.posX
-            val z = entityPlayerSP.posZ
+            val x = mc.thePlayer.posX
+            val z = mc.thePlayer.posZ
 
             // all beds have same Y
             val from =
@@ -205,9 +183,7 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
             val to =
                 BlockPos(x + 100, targetY, z + 100)
 
-            val world = mc.theWorld
-
-            beds.addAll(BlockPos.getAllInBox(from, to).filter { world.getBlockAtPos(it) is BlockBed })
+            beds.addAll(BlockPos.getAllInBox(from, to).filter { mc.theWorld.getBlockAtPos(it) is BlockBed })
         }
     }
 
@@ -301,5 +277,7 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
 
         return container
     }
+
+    private operator fun Vec3.times(m: Double) = Vec3(xCoord * m, yCoord * m, zCoord * m)
 
 }

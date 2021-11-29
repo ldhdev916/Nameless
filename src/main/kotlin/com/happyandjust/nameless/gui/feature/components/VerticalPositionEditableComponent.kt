@@ -31,7 +31,6 @@ import gg.essential.elementa.utils.withAlpha
 import gg.essential.vigilance.gui.settings.SettingComponent
 import gg.essential.vigilance.utils.onLeftClick
 import java.awt.Color
-import java.net.URL
 
 class VerticalPositionEditableComponent(
     allIdentifiers: List<Identifier>,
@@ -125,15 +124,13 @@ class VerticalPositionEditableComponent(
             height = basicHeightConstraint { child.getHeight() }
         } childOf this
 
-        private val threeLinesBlock by UIImage.ofURL(URL("https://raw.githubusercontent.com/HappyAndJust/Nameless/master/textures/threelines.png"))
-            .constrain {
+        private val threeLinesBlock by UIImage.ofResource("/nameless/threelines.png").constrain {
+            x = CenterConstraint()
+            y = CenterConstraint()
 
-                x = CenterConstraint()
-                y = CenterConstraint()
-
-                width = 70.percent()
-                height = ImageAspectConstraint()
-            } childOf container
+            width = 70.percent()
+            height = ImageAspectConstraint()
+        } childOf container
 
         private var offset: Pair<Float, Float>? = null
 

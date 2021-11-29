@@ -36,10 +36,9 @@ object FeatureHideTipMessage : SimpleFeature(
     private val TIP_ALL = "§aYou tipped \\d+ players in \\d+ different games!".toRegex()
 
     override fun onChatReceived(e: ClientChatReceivedEvent) {
+        if (e.type.toInt() == 2) return
         if (enabled && mc.thePlayer.inHypixel()) {
-            val msg = e.message.unformattedText
-
-            if (msg.matches(TIP_MESSAGE) || msg.matches(TIP_ALL)) {
+            if (arrayOf(TIP_ALL, TIP_MESSAGE).any(e.message.unformattedText::matches)) {
                 e.isCanceled = true
             }
         }

@@ -28,5 +28,7 @@ enum class PartyGamesType(val scoreboardName: String?) {
     SPIDER_MAZE("SPIDER MAZE"),
     DIVE("DIVE"),
     LAB_ESCAPE("LAB ESCAPE"),
+    WORKSHOP("WORKSHOP"),
+    HIGH_GROUND("HIGH GROUND"),
     NOTHING(null)
 }

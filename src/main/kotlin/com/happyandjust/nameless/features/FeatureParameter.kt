@@ -49,7 +49,7 @@ open class FeatureParameter<T>(
 
     var allIdentifiers = emptyList<Identifier>()
 
-    private var valueConfig =
+    private val valueConfig =
         ConfigValue(category, key, defaultValue, converter)
     var value = valueConfig.value
         set(value) {

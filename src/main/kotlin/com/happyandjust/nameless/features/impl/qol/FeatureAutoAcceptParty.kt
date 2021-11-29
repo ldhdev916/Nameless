@@ -50,7 +50,6 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent
 import org.lwjgl.input.Keyboard
 import java.awt.Color
 import java.util.regex.Pattern
-import kotlin.math.max
 
 object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", "Auto Accept Party", ""), ChatListener,
     KeyInputListener, ClientTickListener {
@@ -87,9 +86,9 @@ object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", 
     private var currentPartyInfo: PartyInfo? = null
     override val overlayPoint = ConfigValue("party", "overlay", Overlay.DEFAULT, COverlay)
 
-
     override fun onChatReceived(e: ClientChatReceivedEvent) {
         if (!enabled || !mc.thePlayer.inHypixel()) return
+        if (e.type.toInt() == 2) return
 
         val msg = e.message.unformattedText.stripControlCodes()
 
@@ -137,43 +136,31 @@ object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", 
 
     override fun renderOverlay0(partialTicks: Float) {
         currentPartyInfo?.let {
-            val keyBindings = Nameless.INSTANCE.keyBindings
-            val fontRenderer = mc.fontRendererObj
-            val overlay = overlayPoint.value
-
-            val s1 = "§6Party Request From §a${it.nickname}"
-            val s2 =
-                "§6Press [§a${Keyboard.getKeyName(keyBindings[KeyBindingCategory.ACCEPT_PARTY]!!.keyCode)}§6] to Accept [§c${
-                    Keyboard.getKeyName(
-                        keyBindings[KeyBindingCategory.DENY_PARTY]!!.keyCode
-                    )
+            val texts = arrayOf(
+                "§6Party Request From §a${it.nickname}",
+                "§6Press [§a${getKeyName(KeyBindingCategory.ACCEPT_PARTY)}§6] to Accept [§c${
+                    getKeyName(KeyBindingCategory.DENY_PARTY)
                 }§6] to Deny"
+            ).associateWith(mc.fontRendererObj::getStringWidth)
 
-            val s1Width = fontRenderer.getStringWidth(s1)
-            val s2Width = fontRenderer.getStringWidth(s2)
-
-            val maxWidth = max(s1Width, s2Width)
-            val height = fontRenderer.FONT_HEIGHT * 4
+            val maxWidth = texts.values.maxOrNull()!!
+            val height = mc.fontRendererObj.FONT_HEIGHT * 4
 
             matrix {
-                translate(overlay.point.x, overlay.point.y, 0)
-                scale(overlay.scale, overlay.scale, 1.0)
+                setup(overlayPoint.value)
 
                 Gui.drawRect(0, 0, maxWidth, height, 0x28FFFFFF)
 
-                fontRenderer.drawStringWithShadow(
-                    s1,
-                    (maxWidth / 2F) - (s1Width / 2F),
-                    fontRenderer.FONT_HEIGHT.toFloat(),
-                    Color.white.rgb
-                )
-
-                fontRenderer.drawStringWithShadow(
-                    s2,
-                    (maxWidth / 2F) - (s2Width / 2F),
-                    (fontRenderer.FONT_HEIGHT * 2).toFloat(),
-                    Color.white.rgb
-                )
+                var y = mc.fontRendererObj.FONT_HEIGHT
+                for ((text, width) in texts) {
+                    mc.fontRendererObj.drawStringWithShadow(
+                        text,
+                        (maxWidth / 2f) - (width / 2f),
+                        y.toFloat(),
+                        Color.white.rgb
+                    )
+                    y += mc.fontRendererObj.FONT_HEIGHT
+                }
             }
         }
     }
@@ -185,7 +172,6 @@ object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", 
         }
 
         val container = UIContainer().constrain {
-
             x = CenterConstraint()
             y = CenterConstraint()
 
@@ -193,15 +179,9 @@ object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", 
             height = ChildBasedSizeConstraint()
         } childOf block
 
-        val keyBindings = Nameless.INSTANCE.keyBindings
-
         val texts = arrayOf(
             "§6Party Request From §aSomeone",
-            "§6Press [§a${Keyboard.getKeyName(keyBindings[KeyBindingCategory.ACCEPT_PARTY]!!.keyCode)}§6] to Accept [§c${
-                Keyboard.getKeyName(
-                    keyBindings[KeyBindingCategory.DENY_PARTY]!!.keyCode
-                )
-            }§6] to Deny"
+            "§6Press [§a${getKeyName(KeyBindingCategory.ACCEPT_PARTY)}§6] to Accept [§c${getKeyName(KeyBindingCategory.DENY_PARTY)}§6] to Deny"
         )
 
         for (text in texts) {
@@ -220,4 +200,7 @@ object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", 
 
         return block
     }
+
+    private fun getKeyName(keyBindingCategory: KeyBindingCategory) =
+        Keyboard.getKeyName(keyBindingCategory.getKeyBinding().keyCode)
 }

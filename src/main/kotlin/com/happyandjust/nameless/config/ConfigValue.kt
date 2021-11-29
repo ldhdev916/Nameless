@@ -23,19 +23,21 @@ import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CDouble
 import com.happyandjust.nameless.serialization.converters.CInt
 import com.happyandjust.nameless.serialization.converters.CString
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 open class ConfigValue<T>(
     private val category: String,
     private val key: String,
     defaultValue: T,
     private val converter: Converter<T>
-) {
+) : ReadWriteProperty<Any?, T> {
 
     var value: T = ConfigHandler.get(category, key, defaultValue, converter)
         set(value) {
-            value?.let {
-                ConfigHandler.write(category, key, it, converter)
-                field = it
+            if (value != null) {
+                ConfigHandler.write(category, key, value, converter)
+                field = value
             }
         }
 
@@ -67,4 +69,12 @@ open class ConfigValue<T>(
         defaultValue,
         CString
     )
+
+    override fun getValue(thisRef: Any?, property: KProperty<*>): T {
+        return value
+    }
+
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+        this.value = value
+    }
 }

@@ -71,9 +71,9 @@ object FeatureShowWitherShieldCoolTime :
             "Decimal point precision of cooltime",
             3,
             CInt
-        ).also {
-            it.minValue = 0.0
-            it.maxValue = 3.0
+        ).apply {
+            minValue = 0.0
+            maxValue = 3.0
         }
         parameters["availtext"] = FeatureParameter(
             2,
@@ -148,7 +148,7 @@ object FeatureShowWitherShieldCoolTime :
         val msg = e.packet
 
         if (msg is C08PacketPlayerBlockPlacement && Hypixel.currentGame == GameType.SKYBLOCK) {
-            if (swords.contains(msg.stack.getSkyBlockID())) {
+            if (msg.stack.getSkyBlockID() in swords) {
                 lastWitherShieldUse = System.currentTimeMillis()
             }
         }

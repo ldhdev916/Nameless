@@ -30,12 +30,7 @@ import java.util.regex.Pattern
 object FeatureHypixelAPIKey : SettingFeature("hypixelapikey", "Hypixel API Key", "Your hypixel api key"), ChatListener {
 
     private val API_PATTERN = Pattern.compile("Your new API key is (?<api>.+)")
-    private val apiKeyConfig = ConfigValue.StringConfigValue("hypixel", "apikey", "")
-    var apiKey = apiKeyConfig.value
-        set(value) {
-            field = value
-            apiKeyConfig.value = apiKey
-        }
+    var apiKey by ConfigValue.StringConfigValue("hypixel", "apikey", "")
 
     override fun getComponentType() = ComponentType.PASSWORD
 

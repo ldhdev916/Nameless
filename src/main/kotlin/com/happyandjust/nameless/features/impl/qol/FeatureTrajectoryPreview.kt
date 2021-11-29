@@ -58,8 +58,8 @@ object FeatureTrajectoryPreview : SimpleFeature(
                 "",
                 false,
                 CBoolean
-            ).also {
-                it.parameters["tracecolor"] = FeatureParameter(
+            ).apply {
+                parameters["tracecolor"] = FeatureParameter(
                     0,
                     "trajectory",
                     "tracecolor",
@@ -95,8 +95,8 @@ object FeatureTrajectoryPreview : SimpleFeature(
                 "Glow entity which is hit by end point of trajectory",
                 false,
                 CBoolean
-            ).also {
-                it.parameters["glowcolor"] = FeatureParameter(
+            ).apply {
+                parameters["glowcolor"] = FeatureParameter(
                     0,
                     "trajectory",
                     "glowcolor",
@@ -245,7 +245,5 @@ object FeatureTrajectoryPreview : SimpleFeature(
 
         return null
     }
-
-    override fun getEntityColor(entity: Entity): ColorInfo? = null
 
 }

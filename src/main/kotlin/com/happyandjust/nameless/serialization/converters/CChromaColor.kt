@@ -32,6 +32,6 @@ object CChromaColor : Converter<ChromaColor> {
     override fun deserialize(jsonElement: JsonElement): ChromaColor {
         val jsonObject = jsonElement.asJsonObject
 
-        return ChromaColor(jsonObject["rgb"].asInt).also { it.chromaEnabled = jsonObject["chroma"].asBoolean }
+        return ChromaColor(jsonObject["rgb"].asInt).apply { chromaEnabled = jsonObject["chroma"].asBoolean }
     }
 }

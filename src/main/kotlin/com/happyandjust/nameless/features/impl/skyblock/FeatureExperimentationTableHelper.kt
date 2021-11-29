@@ -70,7 +70,10 @@ object FeatureExperimentationTableHelper :
     }
 
     override fun tick() {
-        if (!checkForRequirement()) return
+        if (!checkForRequirement()) {
+            currentExperimentationType = null
+            return
+        }
 
         val gui = mc.currentScreen
 

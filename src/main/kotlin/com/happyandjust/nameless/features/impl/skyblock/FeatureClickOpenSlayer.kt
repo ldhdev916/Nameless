@@ -52,10 +52,9 @@ object FeatureClickOpenSlayer :
 
     override fun onChatReceived(e: ClientChatReceivedEvent) {
         if (enabled && Hypixel.currentGame == GameType.SKYBLOCK && e.type.toInt() != 2) {
-            openMenuComponent = e.message.siblings.firstOrNull { chatComponent ->
-                chatComponent.unformattedText == "§2§l[OPEN MENU]" && chatComponent.chatStyle?.let {
-                    it.chatClickEvent != null && it.chatClickEvent.action == ClickEvent.Action.RUN_COMMAND &&
-                            it.chatClickEvent.value.startsWith("/cb")
+            openMenuComponent = e.message.siblings.find {
+                it.unformattedText == "§2§l[OPEN MENU]" && it.chatStyle?.chatClickEvent?.run {
+                    action == ClickEvent.Action.RUN_COMMAND && value.startsWith("/cb")
                 } == true
             }
         }
@@ -66,8 +65,9 @@ object FeatureClickOpenSlayer :
     }
 
     override fun onMouseInputPost(e: GuiScreenEvent.MouseInputEvent.Post) {
-        if (enabled && Mouse.getEventButton() == 0 && e.gui is GuiChat && Mouse.getEventButtonState()) {
-            (e.gui as AccessorGuiScreen).invokeHandleComponentClick(openMenuComponent)
+        val gui = e.gui
+        if (enabled && Mouse.getEventButton() == 0 && gui is GuiChat && gui is AccessorGuiScreen && Mouse.getEventButtonState()) {
+            gui.invokeHandleComponentClick(openMenuComponent)
         }
     }
 }

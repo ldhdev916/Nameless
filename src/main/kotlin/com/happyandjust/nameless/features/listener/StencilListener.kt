@@ -25,5 +25,5 @@ interface StencilListener {
 
     fun getOutlineColor(entity: Entity): ColorInfo?
 
-    fun getEntityColor(entity: Entity): ColorInfo?
+    fun getEntityColor(entity: Entity): ColorInfo? = null
 }

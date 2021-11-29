@@ -20,14 +20,15 @@ package com.happyandjust.nameless.utils
 
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.Request
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.features.impl.qol.FeatureInGameStatViewer
 import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
-import com.happyandjust.nameless.network.Request
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import java.util.concurrent.Executors
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -35,8 +36,6 @@ object StatAPIUtils {
 
     private val playerJSONCache = hashMapOf<EntityPlayer, JsonObject>()
     private val processingRequest = hashSetOf<EntityPlayer>()
-
-    private val threadPool = Executors.newFixedThreadPool(4)
 
     val networkExpToLevel: (Double) -> Int = { 1 + ((-8750 + sqrt(8750.0.pow(2) + 5000 * it)) / 2500).toInt() }
     val skyWarsExpToLevel: (Int) -> Int = {
@@ -76,12 +75,12 @@ object StatAPIUtils {
 
             if (processingRequest.add(player)) {
 
-                threadPool.submit {
+                GlobalScope.launch {
                     val api = FeatureHypixelAPIKey.apiKey
 
                     val uuid = player.uniqueID
                     if (uuid.version() != 4) {
-                        return@submit
+                        return@launch
                     }
 
                     val s = Request.get("https://api.hypixel.net/player?key=$api&uuid=$uuid")

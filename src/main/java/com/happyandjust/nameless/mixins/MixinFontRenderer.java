@@ -102,7 +102,7 @@ public abstract class MixinFontRenderer {
                 ChromaColor color = FeatureRegistry.INSTANCE.getCHANGE_NICKNAME_COLOR().<ChromaColor>getParameter("color").getValue();
 
                 if (color.getChromaEnabled() && RenderGlobalHook.INSTANCE.canDisplayOutline()) {
-                    drawChromaString(text, matchInfos);
+                    drawChromaString(text, matchInfos, color.getAlpha());
                 } else {
                     drawCustomString(text, matchInfos, color.getRGB());
                 }
@@ -222,7 +222,7 @@ public abstract class MixinFontRenderer {
     }
 
     @Unique
-    private void drawChromaString(String text, List<FontRendererHook.MatchInfo> matchInfos) {
+    private void drawChromaString(String text, List<FontRendererHook.MatchInfo> matchInfos, int alpha) {
         float left = posX;
 
         GL11.glEnable(GL11.GL_STENCIL_TEST);
@@ -241,7 +241,7 @@ public abstract class MixinFontRenderer {
 
         Rectangle rectangle = new Rectangle((int) left, (int) posY, (int) (posX - left), FONT_HEIGHT);
 
-        RenderingExtensionsKt.drawChromaRect(rectangle, Direction.RIGHT, (System.currentTimeMillis() % 2000 + (posX * 10L - posY * 10L)) / 2000F);
+        RenderingExtensionsKt.drawChromaRect(rectangle, Direction.RIGHT, (System.currentTimeMillis() % 2000 + (posX * 10L - posY * 10L)) / 2000F, alpha);
 
         GL11.glDisable(GL11.GL_STENCIL_TEST);
     }

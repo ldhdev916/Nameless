@@ -3,7 +3,6 @@
   "refmap": "mixins.nameless.refmap.json",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "MixinAbstractClientPlayer",
     "MixinActiveRenderInfo",
     "MixinBlockRendererDispatcher",
     "MixinEntityFX",
@@ -18,11 +17,13 @@
     "MixinRenderGlobal",
     "MixinRenderManager",
     "MixinTileEntityItemStackRenderer",
+    "accessors.AccessorAbstractClientPlayer",
     "accessors.AccessorGuiChat",
     "accessors.AccessorGuiContainer",
     "accessors.AccessorGuiDisconnected",
     "accessors.AccessorGuiNewChat",
     "accessors.AccessorGuiScreen",
+    "accessors.AccessorNetworkPlayerInfo",
     "accessors.AccessorRenderGlobal"
   ],
   "mixins": [
@@ -31,9 +32,10 @@
     "MixinItemArmor",
     "MixinModList",
     "MixinUtil",
+    "accessors.AccessorEntity",
     "accessors.AccessorItemAxe",
     "accessors.AccessorItemPickaxe",
-    "accessors.AccessorNBTTagList",
+    "accessors.AccessorShapedOreRecipe",
     "sba.MixinRenderGlobalHook"
   ]
 }

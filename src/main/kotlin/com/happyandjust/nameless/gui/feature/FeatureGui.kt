@@ -55,9 +55,17 @@ class FeatureGui : WindowScreen(
     private val content by UIContainer().constrain {
         x = CenterConstraint()
         y = CenterConstraint()
-        width = 85.percent()
+        // width = 85.percent()
         height = 75.percent()
     } childOf window
+
+    override fun initScreen(width: Int, height: Int) {
+        super.initScreen(width, height)
+
+        content.animate {
+            setWidthAnimation(Animations.OUT_EXP, 1f, 85.percent())
+        }
+    }
 
     private val backContainer by UIContainer().constrain {
         x = SiblingConstraint(20f, alignOpposite = true) boundTo content

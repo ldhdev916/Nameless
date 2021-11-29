@@ -20,7 +20,6 @@ package com.happyandjust.nameless.features
 
 import com.happyandjust.nameless.MOD_ID
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.dsl.setInCategory
 import com.happyandjust.nameless.features.impl.general.FeatureBedwarsESP
 import com.happyandjust.nameless.features.impl.general.FeatureBedwarsRayTraceBed
 import com.happyandjust.nameless.features.impl.general.FeatureDisplayBetterArmor
@@ -48,24 +47,20 @@ object FeatureRegistry {
 
     val features = arrayListOf<SimpleFeature>()
     val featuresByCategory = hashMapOf<Category, ArrayList<SimpleFeature>>()
-    val featuresByKey = hashMapOf<String, SimpleFeature>()
+    private val featuresByKey = hashMapOf<String, SimpleFeature>()
 
-    private fun <T : SimpleFeature> register(feature: T): T {
-        features.add(feature)
+    private fun <T : SimpleFeature> T.register(inCategory: String = "") = apply {
+        features.add(this)
 
-        val list = featuresByCategory[feature.category] ?: arrayListOf()
+        this.inCategory = inCategory
 
-        list.add(feature)
+        val list = featuresByCategory[category] ?: arrayListOf()
+        list.add(this)
+        featuresByCategory[category] = list
 
-        featuresByCategory[feature.category] = list
-
-        if (featuresByKey.containsKey(feature.key)) {
+        if (featuresByKey.put(key, this) != null) {
             throw RuntimeException("Duplicate Feature Key")
         }
-
-        featuresByKey[feature.key] = feature
-
-        return feature
     }
 
     fun <T : SimpleFeature> getFeatureByKey(key: String): T {
@@ -73,103 +68,88 @@ object FeatureRegistry {
     }
 
     //GENERAL
-    val GLOW_ALL_PLAYERS = register(FeatureGlowAllPlayers.setInCategory("Use At Your Own Risk"))
-    val REMOVE_NEGATIVE_EFFECTS = register(
-        SimpleFeature(
-            Category.GENERAL,
-            "removenegativeeffects",
-            "Remove Negative Effects",
-            "Support Blindness, Nausea"
-        ).also {
-            it.parameters["blindness"] = FeatureParameter(0, "effects", "blindness", "Blindness", "", true, CBoolean)
-            it.parameters["nausea"] = FeatureParameter(1, "effects", "nausea", "Nausea", "", true, CBoolean)
-        }.setInCategory("Use At Your Own Risk")
-    )
-    val BEDWARS_ESP = register(FeatureBedwarsESP.setInCategory("Use At Your Own Risk"))
-    val HIDE_NPC = register(FeatureHideNPC.setInCategory("Lobby"))
-    val BEDWARS_RAY_TRACE_BED = register(FeatureBedwarsRayTraceBed.setInCategory("In Game"))
-    val DISPLAY_BETTER_ARMOR = register(FeatureDisplayBetterArmor.setInCategory("In Game"))
-    val REMOVE_CERTAIN_MOD_ID =
-        register(
-            SimpleFeature(
-                Category.GENERAL,
-                "removemodid",
-                "Remove Certain Mod ID Sent to Server",
-                enabled_ = true
-            ).setInCategory("Mod").also {
-                val mods = Loader::class.java.getDeclaredField("mods").also { field ->
-                    field.isAccessible = true
-                }[Loader.instance()] as List<ModContainer>
+    val GLOW_ALL_PLAYERS = FeatureGlowAllPlayers.register("Visual")
+    val REMOVE_NEGATIVE_EFFECTS = SimpleFeature(
+        Category.GENERAL,
+        "removenegativeeffects",
+        "Remove Negative Effects",
+        "Support Blindness, Nausea"
+    ).also {
+        it.parameters["blindness"] = FeatureParameter(0, "effects", "blindness", "Blindness", "", true, CBoolean)
+        it.parameters["nausea"] = FeatureParameter(1, "effects", "nausea", "Nausea", "", true, CBoolean)
+    }.register("Visual")
+    val BEDWARS_ESP = FeatureBedwarsESP.register("Visual")
+    val HIDE_NPC = FeatureHideNPC.register("Lobby")
+    val BEDWARS_RAY_TRACE_BED = FeatureBedwarsRayTraceBed.register("In Game")
+    val DISPLAY_BETTER_ARMOR = FeatureDisplayBetterArmor.register("In Game")
+    val REMOVE_CERTAIN_MOD_ID = SimpleFeature(
+        Category.GENERAL,
+        "removemodid",
+        "Remove Certain Mod ID Sent to Server",
+        enabled_ = true
+    ).also {
+        val mods = Loader::class.java.getDeclaredField("mods").also { field ->
+            field.isAccessible = true
+        }[Loader.instance()] as List<ModContainer>
 
-                for (mod in mods) {
-                    it.parameters[mod.modId] = FeatureParameter(
-                        0,
-                        "removemodid",
-                        mod.modId,
-                        "${mod.name} ${mod.version}",
-                        "Source File: ${mod.source.absolutePath}",
-                        mod.modId == MOD_ID,
-                        CBoolean
-                    )
-                }
-            })
+        for (mod in mods) {
+            it.parameters[mod.modId] = FeatureParameter(
+                0,
+                "removemodid",
+                mod.modId,
+                "${mod.name} ${mod.version}",
+                "Source File: ${mod.source.absolutePath}",
+                mod.modId == MOD_ID,
+                CBoolean
+            )
+        }
+    }.register("Mod")
 
     //MISC
-    val UPDATE_CHECKER = register(FeatureUpdateChecker.setInCategory("Miscellaneous"))
-    val HIT_DELAY_FIX = register(
-        SimpleFeature(
-            Category.MISCELLANEOUS,
-            "hitdelayfix",
-            "Hit Delay Fix",
+    val UPDATE_CHECKER = FeatureUpdateChecker.register("Miscellaneous")
+    val HIT_DELAY_FIX = SimpleFeature(
+        Category.MISCELLANEOUS,
+        "hitdelayfix",
+        "Hit Delay Fix",
+        "",
+        true
+    ).register("Miscellaneous")
+    val STOP_LOG_SPAMMING = SimpleFeature(
+        Category.MISCELLANEOUS,
+        "stoplogspamming",
+        "Stop Log Spamming",
+        "Stops error message spamming in logger when you are in hypixel",
+        true
+    ).register("Miscellaneous")
+    val CHANGE_NICKNAME_COLOR = SimpleFeature(
+        Category.MISCELLANEOUS,
+        "nicknamecolor",
+        "Change Nickname Color",
+        "Customize your nickname color",
+        false
+    ).also {
+        it.parameters["color"] = FeatureParameter(
+            0,
+            "nickname",
+            "color",
+            "Nickname Color",
             "",
-            true
-        ).setInCategory("Miscellaneous")
-    )
-    val STOP_LOG_SPAMMING = register(
-        SimpleFeature(
-            Category.MISCELLANEOUS,
-            "stoplogspamming",
-            "Stop Log Spamming",
-            "Stops error message spamming in logger when you are in hypixel",
-            true
-        ).setInCategory("Miscellaneous")
-    )
-    val CHANGE_NICKNAME_COLOR = register(
-        SimpleFeature(
-            Category.MISCELLANEOUS,
-            "nicknamecolor",
-            "Change Nickname Color",
-            "Customize your nickname color",
-            false
-        ).also {
-            it.parameters["color"] = FeatureParameter(
-                0,
-                "nickname",
-                "color",
-                "Nickname Color",
-                "",
-                Color.white.toChromaColor(),
-                CChromaColor
-            )
-        }.setInCategory("Miscellaneous")
-    )
-    val TEXTURE_OVERLAY = register(FeatureTextureOverlay.setInCategory("Miscellaneous"))
-    val HIDE_FISH_HOOK =
-        register(
-            SimpleFeature(
-                Category.MISCELLANEOUS,
-                "hideothersfishhook",
-                "Hide Other Player's Fish Hook"
-            ).setInCategory("Fishing")
+            Color.white.toChromaColor(),
+            CChromaColor
         )
+    }.register("Miscellaneous")
+    val TEXTURE_OVERLAY = FeatureTextureOverlay.register("Miscellaneous")
+    val HIDE_FISH_HOOK = SimpleFeature(
+        Category.MISCELLANEOUS,
+        "hideothersfishhook",
+        "Hide Other Player's Fish Hook"
+    ).register("Fishing")
     val CHANGE_FISH_PARTICLE_COLOR =
-        register(
-            SimpleFeature(
-                Category.MISCELLANEOUS,
-                "changefishparticlecolor",
-                "Change Fishing Particle Color",
-                ""
-            )
+        SimpleFeature(
+            Category.MISCELLANEOUS,
+            "changefishparticlecolor",
+            "Change Fishing Particle Color",
+            ""
         ).also {
             it.parameters["color"] = FeatureParameter(
                 0,
@@ -180,156 +160,144 @@ object FeatureRegistry {
                 Color.red.toChromaColor(),
                 CChromaColor
             )
-        }.setInCategory("Fishing")
-    val DISGUISE_NICKNAME = register(FeatureDisguiseNickname.setInCategory("Miscellaneous"))
-    val CHANGE_LEATHER_ARMOR_COLOR = register(
-        SimpleFeature(
-            Category.MISCELLANEOUS,
-            "changeleatherarmorcolor",
-            "Change Leather Armor Color",
-            "Customize leather armor color"
-        ).setInCategory("Miscellaneous").also {
-            val parameter: (Int, String) -> Unit = { ordinal, name ->
-                val key = name.lowercase()
+        }.register("Fishing")
+    val DISGUISE_NICKNAME = FeatureDisguiseNickname.register("Miscellaneous")
+    val CHANGE_LEATHER_ARMOR_COLOR = SimpleFeature(
+        Category.MISCELLANEOUS,
+        "changeleatherarmorcolor",
+        "Change Leather Armor Color",
+        "Customize leather armor color"
+    ).also {
+        val parameter: (Int, String) -> Unit = { ordinal, name ->
+            val key = name.lowercase()
 
-                it.parameters[key] = FeatureParameter(
-                    ordinal,
-                    "leatherarmorcolor",
-                    key,
-                    "Customize $name Color",
-                    "",
-                    true,
-                    CBoolean
-                ).also { featureParameter ->
-                    featureParameter.parameters["color"] = FeatureParameter(
-                        0,
-                        "leatherarmorcolor",
-                        "${key}_color",
-                        "Leather $name Color",
-                        "",
-                        Color.white.toChromaColor(),
-                        CChromaColor
-                    )
-                }
-            }
-
-            for ((ordinal, name) in arrayOf("Helmet", "Chestplate", "Leggings", "Boots").withIndex()) {
-                parameter(ordinal, name)
-            }
-        }
-    )
-    val NO_HURTCAM = register(
-        SimpleFeature(
-            Category.MISCELLANEOUS,
-            "nohurtcam",
-            "No HurtCam",
-            "Remove the hurt animation when being hit"
-        ).setInCategory("Damage")
-    )
-    val CHANGE_DAMAGED_ENTITY_COLOR =
-        register(
-            SimpleFeature(
-                Category.MISCELLANEOUS,
-                "changedamagedentitycolor",
-                "Change Damaged Entity Color",
-                ""
-            ).setInCategory("Damage").also {
-                it.parameters["color"] = FeatureParameter(
+            it.parameters[key] = FeatureParameter(
+                ordinal,
+                "leatherarmorcolor",
+                key,
+                "Customize $name Color",
+                "",
+                true,
+                CBoolean
+            ).also { featureParameter ->
+                featureParameter.parameters["color"] = FeatureParameter(
                     0,
-                    "damagedentity",
-                    "color",
-                    "Damaged Entity Color",
+                    "leatherarmorcolor",
+                    "${key}_color",
+                    "Leather $name Color",
                     "",
-                    Color.red.toChromaColor(),
+                    Color.white.toChromaColor(),
                     CChromaColor
                 )
-            })
-    val CLICK_COPY_CHAT = register(FeatureClickCopyChat.setInCategory("Miscellaneous"))
+            }
+        }
+
+        for ((ordinal, name) in arrayOf("Helmet", "Chestplate", "Leggings", "Boots").withIndex()) {
+            parameter(ordinal, name)
+        }
+    }.register("Miscellaneous")
+    val NO_HURTCAM = SimpleFeature(
+        Category.MISCELLANEOUS,
+        "nohurtcam",
+        "No HurtCam",
+        "Remove the hurt animation when being hit"
+    ).register("Damage")
+    val CHANGE_DAMAGED_ENTITY_COLOR = SimpleFeature(
+        Category.MISCELLANEOUS,
+        "changedamagedentitycolor",
+        "Change Damaged Entity Color",
+        ""
+    ).also {
+        it.parameters["color"] = FeatureParameter(
+            0,
+            "damagedentity",
+            "color",
+            "Damaged Entity Color",
+            "",
+            Color.red.toChromaColor(),
+            CChromaColor
+        )
+    }.register("Damage")
+    val CLICK_COPY_CHAT = FeatureClickCopyChat.register("Miscellaneous")
 
     //QOL
-    val JOIN_HYPIXEL_BUTTON = register(FeatureHypixelButton.setInCategory("Button"))
-    val RECONNECT_BUTTON = register(FeatureReconnectButton.setInCategory("Button"))
-    val PLAY_AUTO_TAB_COMPLETE = register(FeaturePlayTabComplete.setInCategory("Hypixel"))
-    val PERSPECTIVE = register(FeaturePerspective.setInCategory("Use At Your Own Risk"))
-    val F5_FIX =
-        register(
-            SimpleFeature(
-                Category.QOL,
-                "f5fix",
-                "F5 Fix",
-                "Allow you to look through blocks when using f5",
-                true
-            ).setInCategory("Use At Your Own Risk")
-        )
-    val MURDERER_FINDER = register(FeatureMurdererFinder.setInCategory("Hypixel"))
-    val TRAJECTORY_PREVIEW = register(FeatureTrajectoryPreview.setInCategory("In Game"))
-    val SHOW_PING_NUMBER_IN_TAB = register(FeatureShowPingInTab.setInCategory("In Game"))
-    val GTB_HELPER = register(FeatureGTBHelper.setInCategory("Hypixel"))
-    val PARTY_GAMES_HELPER = register(FeaturePartyGamesHelper.setInCategory("Hypixel"))
-    val AUTO_ACCEPT_PARTY = register(FeatureAutoAcceptParty.setInCategory("Hypixel"))
-    val AFK_MODE = register(FeatureAFKMode.setInCategory("In Game"))
-    val HIDE_TIP_MESSAGE = register(FeatureHideTipMessage.setInCategory("Hypixel"))
-    val CANCEL_CERTAIN_BLOCK_RENDERING = register(FeatureCancelCertainBlockRendering.setInCategory("In Game"))
-    val PIXEL_PARTY_HELPER = register(FeaturePixelPartyHelper.setInCategory("Hypixel"))
-    val IN_GAME_STAT_VIEWER = register(FeatureInGameStatViewer.setInCategory("Hypixel"))
+    val JOIN_HYPIXEL_BUTTON = FeatureHypixelButton.register("Button")
+    val RECONNECT_BUTTON = FeatureReconnectButton.register("Button")
+    val PLAY_AUTO_TAB_COMPLETE = FeaturePlayTabComplete.register("Hypixel")
+    val PERSPECTIVE = FeaturePerspective.register("Quality Of Life")
+    val F5_FIX = SimpleFeature(
+        Category.QOL,
+        "f5fix",
+        "F5 Fix",
+        "Allow you to look through blocks when using f5",
+        true
+    ).register("Quality Of Life")
+    val MURDERER_FINDER = FeatureMurdererFinder.register("Hypixel")
+    val TRAJECTORY_PREVIEW = FeatureTrajectoryPreview.register("In Game")
+    val SHOW_PING_NUMBER_IN_TAB = FeatureShowPingInTab.register("In Game")
+    val GTB_HELPER = FeatureGTBHelper.register("Hypixel")
+    val PARTY_GAMES_HELPER = FeaturePartyGamesHelper.register("Hypixel")
+    val AUTO_ACCEPT_PARTY = FeatureAutoAcceptParty.register("Hypixel")
+    val AFK_MODE = FeatureAFKMode.register("In Game")
+    val HIDE_TIP_MESSAGE = FeatureHideTipMessage.register("Hypixel")
+    val CANCEL_CERTAIN_BLOCK_RENDERING = FeatureCancelCertainBlockRendering.register("In Game")
+    val PIXEL_PARTY_HELPER = FeaturePixelPartyHelper.register("Hypixel")
+    val IN_GAME_STAT_VIEWER = FeatureInGameStatViewer.register("Hypixel")
 
     //SKYBLOCK
-    val FAIRY_SOUL_WAYPOINT = register(FeatureFairySoulWaypoint.setInCategory("SkyBlock"))
-    val GLOW_STAR_DUNGEON_MOBS = register(FeatureGlowStarDungeonMobs.setInCategory("Dungeons"))
-    val DAMAGE_INDICATOR = register(
-        SimpleFeature(
-            Category.SKYBLOCK,
+    val FAIRY_SOUL_WAYPOINT = FeatureFairySoulWaypoint.register("SkyBlock")
+    val GLOW_STAR_DUNGEON_MOBS = FeatureGlowStarDungeonMobs.register("Dungeons")
+    val DAMAGE_INDICATOR = SimpleFeature(
+        Category.SKYBLOCK,
+        "damageindicator",
+        "Damage Indicator",
+        "Transform damage into K or M or B"
+    ).also {
+        it.parameters["type"] = FeatureParameter(
+            0,
             "damageindicator",
-            "Damage Indicator",
-            "Transform damage into K or M or B"
-        ).also {
-            it.parameters["type"] = FeatureParameter(
-                0,
-                "damageindicator",
-                "type",
-                "Damage Indicate Type",
-                "K, M, B, SMART",
-                DamageIndicateType.SMART,
-                CDamageIndicateType
-            ).also { featureParameter ->
-                featureParameter.allEnumList = DamageIndicateType.values().toList()
-            }
+            "type",
+            "Damage Indicate Type",
+            "K, M, B, SMART",
+            DamageIndicateType.SMART,
+            CDamageIndicateType
+        ).also { featureParameter ->
+            featureParameter.allEnumList = DamageIndicateType.values().toList()
+        }
 
-            it.parameters["precision"] = FeatureParameter(
-                0,
-                "damageindicator",
-                "precision",
-                "Precision",
-                "",
-                1,
-                CInt
-            ).also { featureParameter ->
-                featureParameter.minValue = 0.0
-                featureParameter.maxValue = 7.0
-            }
-        }.setInCategory("SkyBlock")
-    )
-    val DUNGEON_DOOR_KEY = register(FeatureDungeonsDoorKey.setInCategory("Dungeons"))
-    val BLAZE_SOLVER = register(FeatureBlazeSolver.setInCategory("Dungeons"))
-    val JERRY_GIFT_ESP = register(FeatureJerryGiftESP.setInCategory("SkyBlock"))
-    val GEMSTONE_ESP = register(FeatureGemstoneESP.setInCategory("Mining"))
-    val GLOW_DROPPED_ITEM = register(FeatureGlowDroppedItem.setInCategory("SkyBlock"))
-    val LIVID_DAGGER_BACKSTEP_NOTIFIER = register(FeatureLividDaggerBackstep.setInCategory("SkyBlock"))
-    val GLOW_BATS = register(FeatureGlowBats.setInCategory("Dungeons"))
-    val GLOW_DUNGEONS_TEAMMATES = register(FeatureGlowDungeonsTeammates.setInCategory("Dungeons"))
-    val SHOW_WITHER_SHIELD_COOLTIME = register(FeatureShowWitherShieldCoolTime.setInCategory("SkyBlock"))
-    val CLICK_OPEN_SLAYER = register(FeatureClickOpenSlayer.setInCategory("Slayer"))
-    val ENDERMAN_SLAYER_HELPER = register(FeatureEndermanSlayerHelper.setInCategory("Slayer"))
-    val DISABLE_ENDERMAN_TELEPORTATION = register(FeatureDisableEndermanTeleportation.setInCategory("SkyBlock"))
-    val EQUIP_PET_SKIN = register(FeatureEquipPetSkin.setInCategory("SkyBlock"))
-    val CHANGE_HELMET_TEXTURE = register(FeatureChangeHelmetTexture.setInCategory("SkyBlock"))
-    val EXPERIMENTAL_TABLE_HELPER = register(FeatureExperimentationTableHelper.setInCategory("SkyBlock"))
+        it.parameters["precision"] = FeatureParameter(
+            0,
+            "damageindicator",
+            "precision",
+            "Precision",
+            "",
+            1,
+            CInt
+        ).also { featureParameter ->
+            featureParameter.minValue = 0.0
+            featureParameter.maxValue = 7.0
+        }
+    }.register("SkyBlock")
+    val DUNGEON_DOOR_KEY = FeatureDungeonsDoorKey.register("Dungeons")
+    val JERRY_GIFT_ESP = FeatureJerryGiftESP.register("SkyBlock")
+    val GEMSTONE_ESP = FeatureGemstoneESP.register("Mining")
+    val GLOW_DROPPED_ITEM = FeatureGlowDroppedItem.register("SkyBlock")
+    val LIVID_DAGGER_BACKSTEP_NOTIFIER = FeatureLividDaggerBackstep.register("SkyBlock")
+    val GLOW_BATS = FeatureGlowBats.register("Dungeons")
+    val GLOW_DUNGEONS_TEAMMATES = FeatureGlowDungeonsTeammates.register("Dungeons")
+    val SHOW_WITHER_SHIELD_COOLTIME = FeatureShowWitherShieldCoolTime.register("SkyBlock")
+    val CLICK_OPEN_SLAYER = FeatureClickOpenSlayer.register("Slayer")
+    val ENDERMAN_SLAYER_HELPER = FeatureEndermanSlayerHelper.register("Slayer")
+    val DISABLE_ENDERMAN_TELEPORTATION = FeatureDisableEndermanTeleportation.register("SkyBlock")
+    val EQUIP_PET_SKIN = FeatureEquipPetSkin.register("SkyBlock")
+    val CHANGE_HELMET_TEXTURE = FeatureChangeHelmetTexture.register("SkyBlock")
+    val EXPERIMENTAL_TABLE_HELPER = FeatureExperimentationTableHelper.register("SkyBlock")
 
     //SETTINGS
-    val GHOST_BLOCK = register(FeatureGhostBlock.setInCategory("Settings"))
-    val HYPIXEL_API_KEY = register(FeatureHypixelAPIKey.setInCategory("Settings"))
-    val OUTLINE_MODE = register(FeatureOutlineMode.setInCategory("Settings"))
-    val RELOCATE_GUI = register(FeatureRelocateGui.setInCategory("Settings"))
+    val GHOST_BLOCK = FeatureGhostBlock.register("Settings")
+    val HYPIXEL_API_KEY = FeatureHypixelAPIKey.register("Settings")
+    val OUTLINE_MODE = FeatureOutlineMode.register("Settings")
+    val RELOCATE_GUI = FeatureRelocateGui.register("Settings")
 
 
 }

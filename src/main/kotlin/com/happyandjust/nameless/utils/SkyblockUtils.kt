@@ -22,6 +22,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.Request
 import com.happyandjust.nameless.dsl.isFairySoul
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.stripControlCodes
@@ -29,7 +30,6 @@ import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
-import com.happyandjust.nameless.network.Request
 import com.happyandjust.nameless.serialization.converters.CFairySoul
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityArmorStand

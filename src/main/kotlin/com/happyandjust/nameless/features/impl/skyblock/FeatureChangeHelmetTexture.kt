@@ -33,7 +33,7 @@ object FeatureChangeHelmetTexture : SimpleFeature(
     Category.SKYBLOCK,
     "changehelmettexture",
     "Change Helmet Texture",
-    "Change your current helmet. only works if you're wearing skull in SkyBlock. To select helmet texture, type /helmettexture [SkyBlock ID] you can use tab complete, and type /helmettexture view (SkyBlock ID) to view current helmet texture (SkyBlock ID) can be dropped then it'll show current helmet texture"
+    "Change your current helmet. only works if you're wearing skull in SkyBlock. To select helmet texture, type /helmettexture [SkyBlock ID]"
 ) {
 
     private val currentlyEquipedTextureConfig = ConfigValue("helmettexture", "current", SkyBlockItem(), CSkyBlockItem)

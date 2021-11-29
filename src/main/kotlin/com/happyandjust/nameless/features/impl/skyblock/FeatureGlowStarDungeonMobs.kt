@@ -86,8 +86,7 @@ object FeatureGlowStarDungeonMobs : SimpleFeature(
         validTick = (validTick + 1) % 50
 
         if (checkTick == 0) {
-            for (entityArmorStand in mc.theWorld.loadedEntityList.filterIsInstance<EntityArmorStand>()
-                .filter { !checkedDungeonMobs.contains(it) && it.displayName.unformattedText.contains("✯") }) {
+            for (entityArmorStand in (mc.theWorld.loadedEntityList.filterIsInstance<EntityArmorStand>() - checkedDungeonMobs.keys).filter { "✯" in it.displayName.unformattedText }) {
                 val availMobs = mc.theWorld.getEntitiesWithinAABB(
                     Entity::class.java,
                     entityArmorStand.entityBoundingBox.expand(0.6, 1.4, 0.6)
@@ -109,8 +108,6 @@ object FeatureGlowStarDungeonMobs : SimpleFeature(
             ColorInfo(getParameterValue<Color>("color").rgb, ColorInfo.ColorPriority.HIGHEST)
         } else null
     }
-
-    override fun getEntityColor(entity: Entity): ColorInfo? = null
 
     override fun onServerChange(server: String) {
         checkedDungeonMobs.clear()

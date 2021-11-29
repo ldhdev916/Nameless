@@ -29,41 +29,28 @@ object ConfigHandler {
     private val file = File("config/Nameless.json")
     private val handler: JSONHandler
         get() = JSONHandler(file)
+    private val config: JsonObject
+        get() = handler.read(JsonObject())
 
-    private fun readConfig() = handler.read(JsonObject())
-
-    private fun readCategory(category: String, config: JsonObject = readConfig()) =
+    private fun readCategory(category: String, config: JsonObject) =
         config[category] as? JsonObject ?: JsonObject()
 
-
     fun <T> get(category: String, key: String, defaultValue: T, converter: Converter<T>): T {
-        val keyObject = (readCategory(category)[key] ?: return defaultValue)
+        val keyObject = (readCategory(category, config)[key] ?: return defaultValue)
 
         return converter.deserialize(keyObject)
     }
 
     fun write(category: String, key: String, write: JsonElement) {
-        val configObject = readConfig()
-
-        val categoryObject = readCategory(category, configObject)
-
-        categoryObject.add(key, write)
-
-        configObject.add(category, categoryObject)
-
-        handler.write(configObject)
+        handler.write(config.also { it.add(category, readCategory(category, it).apply { add(key, write) }) })
     }
 
     fun <T> write(category: String, key: String, write: T, converter: Converter<T>) {
         write(category, key, converter.serialize(write))
     }
 
-    fun write(category: String, key: String, int: Int) {
-        write(category, key, JsonPrimitive(int))
-    }
-
-    fun write(category: String, key: String, double: Double) {
-        write(category, key, JsonPrimitive(double))
+    fun write(category: String, key: String, number: Number) {
+        write(category, key, JsonPrimitive(number))
     }
 
     fun write(category: String, key: String, boolean: Boolean) {
@@ -74,33 +61,16 @@ object ConfigHandler {
         write(category, key, JsonPrimitive(string))
     }
 
-    fun getKeys(category: String): Iterable<String> {
+    fun getKeys(category: String) = readCategory(category, config).entrySet().map { it.key }
 
-        val jsonObject = readCategory(category)
-
-        return arrayListOf<String>().apply {
-            for ((s, _) in jsonObject.entrySet()) {
-                add(s)
-            }
+    fun deleteCategory(category: String) {
+        with(config) {
+            remove(category)
+            handler.write(this)
         }
     }
 
-    fun deleteCategory(category: String) {
-        val config = readConfig()
-        config.remove(category)
-        handler.write(config)
-    }
-
     fun deleteKey(category: String, key: String) {
-
-        val configObject = readConfig()
-
-        val categoryObject = readCategory(category, configObject)
-
-        categoryObject.remove(key)
-
-        configObject.add(category, categoryObject)
-
-        handler.write(configObject)
+        handler.write(config.also { it.add(category, readCategory(category, it).apply { remove(key) }) })
     }
 }

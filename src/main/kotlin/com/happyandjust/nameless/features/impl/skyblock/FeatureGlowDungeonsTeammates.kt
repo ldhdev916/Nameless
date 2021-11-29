@@ -25,6 +25,7 @@ import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
+import com.happyandjust.nameless.features.listener.ServerChangeListener
 import com.happyandjust.nameless.features.listener.StencilListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -38,7 +39,7 @@ import java.awt.Color
 
 object FeatureGlowDungeonsTeammates :
     SimpleFeature(Category.SKYBLOCK, "glowdungeonsteammates", "Glow Dungeons Teammates", ""), ClientTickListener,
-    StencilListener {
+    StencilListener, ServerChangeListener {
 
     init {
         parameters["color"] = FeatureParameter(
@@ -76,11 +77,13 @@ object FeatureGlowDungeonsTeammates :
 
     override fun getOutlineColor(entity: Entity): ColorInfo? {
         if (!checkForRequirements()) return null
-        return if (entity is EntityPlayer && dungeonsTeammates.contains(entity)) ColorInfo(
+        return if (entity is EntityPlayer && entity in dungeonsTeammates) ColorInfo(
             getParameterValue<Color>("color").rgb,
             ColorInfo.ColorPriority.NORMAL
         ) else null
     }
 
-    override fun getEntityColor(entity: Entity): ColorInfo? = null
+    override fun onServerChange(server: String) {
+        dungeonsTeammates.clear()
+    }
 }

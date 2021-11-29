@@ -88,7 +88,7 @@ class AuctionGui(auctionInfos: List<AuctionInfo>) :
 
         val selector = SelectorComponent(rarities.indexOf(miniumRarity), rarities.map { it.loreName }).constrain {
             x = SiblingConstraint(5f)
-            y = 0.pixel()
+            y = 5.pixel()
         } childOf searchBar
 
         selector.onValueChange {

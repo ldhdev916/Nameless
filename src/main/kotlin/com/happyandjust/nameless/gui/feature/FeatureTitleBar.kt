@@ -31,7 +31,6 @@ import gg.essential.elementa.effects.ScissorEffect
 import gg.essential.elementa.utils.invisible
 import gg.essential.vigilance.utils.onLeftClick
 import net.minecraft.util.ChatAllowedCharacters
-import java.net.URL
 
 class FeatureTitleBar(gui: FeatureGui, window: Window) : UIContainer() {
 
@@ -93,13 +92,12 @@ class FeatureTitleBar(gui: FeatureGui, window: Window) : UIContainer() {
             }
         }
 
-        UIImage.ofURL(URL("https://raw.githubusercontent.com/HappyAndJust/Nameless/master/textures/search.png"))
-            .constrain {
-                x = CenterConstraint()
-                y = CenterConstraint()
-                width = 50.percent()
-                height = 50.percent()
-            } childOf searchIconContainer
+        UIImage.ofResource("/nameless/search.png").constrain {
+            x = CenterConstraint()
+            y = CenterConstraint()
+            width = 50.percent()
+            height = 50.percent()
+        } childOf searchIconContainer
             .onLeftClick {
                 toggleSearch()
             }

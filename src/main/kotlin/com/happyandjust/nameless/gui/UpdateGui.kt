@@ -53,7 +53,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
         x = CenterConstraint()
         y = 10.pixels()
 
-        width = 70.percent()
+        width = 45.percent()
         height = 75.percent()
     } childOf window
 
@@ -89,9 +89,9 @@ class UpdateGui(markDownText: String) : WindowScreen(
 
         MarkdownComponent(markDownText).constrain {
             x = CenterConstraint()
-            y = 10.pixels()
 
-            width = 60.percent()
+            width = 100.percent()
+            height = 100.percent()
         } childOf scroller
 
         ActionButton("Update") {

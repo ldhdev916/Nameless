@@ -71,14 +71,12 @@ object FeatureGTBHelper : OverlayFeature(
     }
 
     init {
-        // for korean users like me
-
         parameters["translate"] = FeatureParameter(
             0,
             "gtbhelper",
             "translate",
             "Translate Words",
-            "Translate all words, themes from english to korean for korean users like me.",
+            "Translate all words, themes from english to korean for korean users like me",
             false,
             CBoolean
         )
@@ -103,16 +101,17 @@ object FeatureGTBHelper : OverlayFeature(
 
         if (e.type.toInt() == 2) {
             THEME.matchesMatcher(e.message.unformattedText.stripControlCodes()) {
-                it.group("word")?.let { word ->
-                    if (word != prevWord) {
-                        prevWord = word
+                val word = it.group("word")
+                if (word != prevWord) {
+                    prevWord = word
 
-                        matches.clear()
+                    matches.clear()
 
+                    if ('_' in word) {
                         matches.addAll(words.keys.filter { s -> s.matches(word.replace("_", "\\w").toRegex()) })
 
                         if (matches.size == 1 && getParameterValue("clipboard")) {
-                            matches[0].also { sendClientMessage("§a$it was copied to your clipboard.") }
+                            matches[0].apply { sendPrefixMessage("§a$this was copied to your clipboard.") }
                                 .copyToClipboard()
                         }
                     }
@@ -167,22 +166,17 @@ object FeatureGTBHelper : OverlayFeature(
             disableDepth()
             setup(overlayPoint.value)
 
-            try {
-                var y = 0
+            var y = 0
 
-                for (english in matches) {
-                    val builder = StringBuilder(english)
+            for (english in matches) {
+                val builder = StringBuilder(english)
 
-                    if (getParameterValue("translate")) {
-                        builder.append(" ${words[english] ?: "NOT FOUND"}")
-                    }
-
-                    mc.fontRendererObj.drawString(builder.toString(), 0, y, Color.red.rgb)
-                    y += mc.fontRendererObj.FONT_HEIGHT
+                if (getParameterValue("translate")) {
+                    builder.append(" ${words[english] ?: "NOT FOUND"}")
                 }
 
-            } catch (ignored: ConcurrentModificationException) {
-
+                mc.fontRendererObj.drawString(builder.toString(), 0, y, Color.red.rgb)
+                y += mc.fontRendererObj.FONT_HEIGHT
             }
 
             enableDepth()

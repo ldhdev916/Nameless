@@ -20,6 +20,7 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.Request
 import com.happyandjust.nameless.dsl.inHypixel
 import com.happyandjust.nameless.dsl.matchesMatcher
 import com.happyandjust.nameless.dsl.mc
@@ -28,7 +29,6 @@ import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.PacketListener
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiChat
-import com.happyandjust.nameless.network.Request
 import net.minecraft.network.play.client.C01PacketChatMessage
 import net.minecraft.network.play.server.S3APacketTabComplete
 import java.util.regex.Pattern
@@ -44,9 +44,6 @@ object FeaturePlayTabComplete : SimpleFeature(
     private val gameMap = hashMapOf<String, String>()
     private val games = arrayListOf<String>()
 
-    /**
-     * Thanks asbyth
-     */
     fun fetchGameDataList() {
         val json =
             JSONHandler(Request.get("https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw")).read(

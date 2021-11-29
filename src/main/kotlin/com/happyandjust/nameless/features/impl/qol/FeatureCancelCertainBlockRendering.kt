@@ -19,7 +19,6 @@
 package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.nullCatch
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
@@ -32,7 +31,8 @@ object FeatureCancelCertainBlockRendering :
 
     init {
         for (block in Block.blockRegistry) {
-            val displayName = nullCatch(block.registryName.split(":")[1]) { ItemStack(block).displayName }
+            val displayName =
+                runCatching { ItemStack(block).displayName }.getOrDefault(block.registryName.split(":")[1])
 
             parameters[block.registryName] = FeatureParameter(
                 0,
@@ -42,8 +42,8 @@ object FeatureCancelCertainBlockRendering :
                 "",
                 false,
                 CBoolean
-            ).also {
-                it.onValueChange = { mc.renderGlobal.loadRenderers() }
+            ).apply {
+                onValueChange = { mc.renderGlobal.loadRenderers() }
             }
         }
     }

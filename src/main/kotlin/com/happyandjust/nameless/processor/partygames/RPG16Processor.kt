@@ -35,6 +35,4 @@ object RPG16Processor : Processor(), StencilListener {
         ) else null
     }
 
-    override fun getEntityColor(entity: Entity): ColorInfo? = null
-
 }

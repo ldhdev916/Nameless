@@ -19,10 +19,7 @@
 package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.dsl.getAxisAlignedBB
-import com.happyandjust.nameless.dsl.getBlockAtPos
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.toVec3
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
@@ -35,6 +32,9 @@ import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.utils.RenderUtils
+import gg.essential.elementa.utils.withAlpha
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.minecraft.block.BlockAir
 import net.minecraft.block.BlockBeacon
 import net.minecraft.init.Blocks
@@ -56,7 +56,7 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
             "boxcolor",
             "Box Color",
             "",
-            Color.red.toChromaColor(),
+            Color.red.withAlpha(64).toChromaColor(),
             CChromaColor
         )
         parameters["beacon"] = FeatureParameter(
@@ -65,7 +65,7 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
             "beaconcolor",
             "Beacon Color",
             "",
-            Color.blue.toChromaColor(),
+            Color.blue.withAlpha(0.7f).toChromaColor(),
             CChromaColor
         )
         parameters["arrow"] = FeatureParameter(
@@ -89,12 +89,15 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
     }
 
     private var scanTick = 0
+
     private val from = BlockPos(-32, 0, 31)
     private val to = BlockPos(31, 0, -32)
+
     private var sameBlocks = emptySet<AxisAlignedBB>()
     private var beaconPosition: Vec3? = null
     private var safePosition = listOf<Pair<BlockPos, DistanceResult>>()
     private var shouldScanAgain = false
+
     private val getColorByStandardDeviationDiff: (Double) -> Int = {
         when (it) {
             in 0.0..0.5 -> Color.green
@@ -136,17 +139,16 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
 
             val allInBox = BlockPos.getAllInBox(from, to)
             if (allInBox.map { mc.theWorld.getBlockAtPos(it) }.filterIsInstance<BlockAir>().isEmpty()) {
-
                 shouldScanAgain = false
 
-                threadPool.execute {
+                GlobalScope.launch {
                     val blockByMetadata = allInBox.groupBy {
                         val blockState = mc.theWorld.getBlockState(it)
                         blockState.block.getMetaFromState(blockState)
                     }
 
                     val getSortedByDistance: (BlockPos) -> List<BlockPos> = {
-                        blockByMetadata.values.map { list -> list.sortedBy { pos -> it.distanceSq(pos) }[0] }
+                        blockByMetadata.values.map { list -> list.sortedBy(it::distanceSq)[0] }
                     }
 
                     val comparator = compareBy<Pair<BlockPos, DistanceResult>>({ it.second.standardDeviation },
@@ -194,18 +196,17 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
         }
         sameBlocks = set
         beaconPosition =
-            BlockPos.getAllInBox(from.up(), to.up()).firstOrNull { mc.theWorld.getBlockAtPos(it) is BlockBeacon }
+            BlockPos.getAllInBox(from.up(), to.up())
+                .find { mc.theWorld.getBlockAtPos(it) is BlockBeacon }
                 ?.toVec3()
     }
 
     override fun renderWorld(partialTicks: Float) {
         if (!checkForRequirement()) return
 
-        val boxColor = getParameterValue<Color>("boxcolor").rgb and 0x40FFFFFF
+        val boxColor = getParameterValue<Color>("boxcolor").rgb
 
-        for (sameBlock in sameBlocks) {
-            RenderUtils.drawBox(sameBlock, boxColor, partialTicks)
-        }
+        sameBlocks.forEach { RenderUtils.drawBox(it, boxColor, partialTicks) }
 
         if (safePosition.isNotEmpty()) {
             val firstStandardDeviation = safePosition[0].second.standardDeviation
@@ -231,10 +232,11 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
         }
 
         beaconPosition?.let {
+            val color = getParameterValue<Color>("beacon").rgb
             RenderUtils.renderBeaconBeam(
                 it,
-                getParameterValue<Color>("beacon").rgb,
-                0.7F,
+                color,
+                color.alpha / 255f,
                 partialTicks
             )
         }

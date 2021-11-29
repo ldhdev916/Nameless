@@ -21,60 +21,47 @@ package com.happyandjust.nameless.commands
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.ClientCommandBase
 import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.Request
 import com.happyandjust.nameless.dsl.notifyException
-import com.happyandjust.nameless.dsl.nullCatch
 import com.happyandjust.nameless.dsl.sendClientMessage
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.features.impl.qol.FeatureInGameStatViewer
 import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
-import com.happyandjust.nameless.network.Request
 import com.happyandjust.nameless.utils.APIUtils
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.minecraft.command.ICommandSender
 import net.minecraft.util.EnumChatFormatting
-import kotlin.concurrent.thread
 
 object ViewStatCommand : ClientCommandBase("viewstat") {
 
     override fun processCommand(sender: ICommandSender, args: Array<out String>) {
         if (args.size != 1) {
-            sendPrefixMessage("§cUsage: /viewstat [Name]")
+            sendUsage("[Name]")
             return
         }
         val name = args[0]
 
-        thread {
-            val uuid = try {
-                APIUtils.getUUIDFromUsername(name)
-            } catch (e: RuntimeException) {
+        GlobalScope.launch {
+            val uuid = runCatching { APIUtils.getUUIDFromUsername(name) }.getOrElse {
                 sendPrefixMessage("§cFailed to get uuid of $name")
-                return@thread
+                return@launch
             }
 
             val identifiers =
                 FeatureInGameStatViewer.getParameterValue<List<FeatureInGameStatViewer.InGameStatIdentifier>>("order")
                     .filter { it.supportGame.shouldDisplay() }
 
-            try {
+            runCatching {
                 val s = Request.get("https://api.hypixel.net/player?key=${FeatureHypixelAPIKey.apiKey}&uuid=$uuid")
                 val json = JSONHandler(s).read(JsonObject())["player"].asJsonObject
 
                 sendClientMessage("§bStats of ${getPlayerName(json)}")
 
-                sendClientMessage(
-                    identifiers.joinToString("\n") {
-                        it.informationType.let { type ->
-                            type.getFormatText(
-                                type.getStatValue(
-                                    json
-                                )
-                            )
-                        }
-                    }
-                )
-            } catch (e: Exception) {
-                e.notifyException()
-                e.printStackTrace()
-            }
+                sendClientMessage(identifiers.joinToString("\n") {
+                    it.informationType.run { getFormatText(getStatValue(json)) }
+                })
+            }.exceptionOrNull()?.notifyException()
         }
     }
 
@@ -98,7 +85,7 @@ object ViewStatCommand : ClientCommandBase("viewstat") {
             }
         }
 
-        return when (nullCatch("NONE") { jsonObject["newPackageRank"].asString }) {
+        return when (runCatching { jsonObject["newPackageRank"].asString }.getOrDefault("NONE")) {
             "MVP_PLUS" -> {
                 val plus = if (jsonObject.has("rankPlusColor")) jsonObject["rankPlusColor"].asString else "RED"
                 val color = EnumChatFormatting.valueOf(plus)

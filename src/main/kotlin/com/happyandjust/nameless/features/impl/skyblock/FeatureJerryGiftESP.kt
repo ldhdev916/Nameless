@@ -37,6 +37,7 @@ import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.utils.RenderUtils
+import gg.essential.elementa.utils.withAlpha
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.network.play.client.C02PacketUseEntity
 import net.minecraft.util.BlockPos
@@ -57,7 +58,7 @@ object FeatureJerryGiftESP : SimpleFeature(Category.SKYBLOCK, "jerrygiftesp", "J
             "color",
             "Box Color",
             "",
-            Color.green.toChromaColor(),
+            Color.green.withAlpha(64).toChromaColor(),
             CChromaColor
         )
     }
@@ -78,7 +79,7 @@ object FeatureJerryGiftESP : SimpleFeature(Category.SKYBLOCK, "jerrygiftesp", "J
     override fun renderWorld(partialTicks: Float) {
         if (!checkForRequirements()) return
 
-        val color = getParameterValue<Color>("color").rgb and 0x40FFFFFF
+        val color = getParameterValue<Color>("color").rgb
 
         for (gift in gifts - foundGifts) {
             RenderUtils.drawBox(BlockPos(gift).up(2).getAxisAlignedBB(), color, partialTicks)
@@ -91,7 +92,7 @@ object FeatureJerryGiftESP : SimpleFeature(Category.SKYBLOCK, "jerrygiftesp", "J
         if (msg is C02PacketUseEntity) {
             val entity = msg.getEntityFromWorld(mc.theWorld) as? EntityArmorStand ?: return
 
-            if (gifts.contains(entity)) foundGifts.add(entity)
+            if (entity in gifts) foundGifts.add(entity)
         }
     }
 

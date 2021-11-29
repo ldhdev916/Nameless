@@ -29,15 +29,21 @@ import net.minecraft.pathfinding.PathPoint
 import net.minecraft.util.BlockPos
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.MathHelper
+import net.minecraft.util.Vec3i
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.pathfinder.NodeProcessor
 import java.util.*
 import kotlin.concurrent.timerTask
 
-class NodeProcessorPath(val canFly: Boolean) : NodeProcessor() {
+class NodeProcessorPath(private val canFly: Boolean) : NodeProcessor() {
 
     companion object {
-        private val facings = EnumFacing.values()
+        private val directionVectors = hashSetOf(
+            Vec3i(-1, 0, -1) to true,
+            Vec3i(-1, 0, 1) to true,
+            Vec3i(1, 0, -1) to true,
+            Vec3i(1, 0, 1) to true
+        ) + EnumFacing.values().map { it.directionVec to false }
     }
 
     private var shouldEnd = false
@@ -95,8 +101,7 @@ class NodeProcessorPath(val canFly: Boolean) : NodeProcessor() {
 
         var i = 0
 
-        for (facing in facings) {
-            val dir = facing.directionVec
+        for ((dir, isDiagonal) in directionVectors) {
 
             val newX = currentPoint.xCoord + dir.x
             val newY = currentPoint.yCoord + dir.y
@@ -106,16 +111,22 @@ class NodeProcessorPath(val canFly: Boolean) : NodeProcessor() {
             val current = BlockPos(newX, newY, newZ)
             val up = BlockPos(newX, newY + 1, newZ)
 
-            if (!canFly) {
+            if (!canFly && dir.y >= 0) {
                 if (entityIn.worldObj.getBlockAtPos(current) != Blocks.ladder && entityIn.worldObj.getBlockAtPos(up) != Blocks.ladder) {
-                    if (newY > currentPoint.yCoord) {
-                        val highestGround = Utils.getHighestGround(current, false)
+                    val highestGround = Utils.getHighestGround(current, false)
 
-                        if (newY - highestGround.y > 2) {
-                            continue
-                        }
+                    if (newY - highestGround.y > 2) {
+                        continue
                     }
+
                 }
+            }
+
+            if (isDiagonal) {
+                val subX = current.add(-dir.x, 0, 0)
+                val subZ = current.add(0, 0, -dir.z)
+
+                if ((!isValid(subX) || !isValid(subX.up())) && (!isValid(subZ) || !isValid(subZ.up()))) continue
             }
 
             val pathPoint = openPoint(newX, newY, newZ)
@@ -129,7 +140,6 @@ class NodeProcessorPath(val canFly: Boolean) : NodeProcessor() {
                 if (isValid(current)) {
                     if (pathPoint.visited) continue
                     pathOptions[i++] = pathPoint
-
                     continue
                 }
             }

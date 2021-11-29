@@ -19,7 +19,10 @@
 package com.happyandjust.nameless.processor.partygames
 
 import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.dsl.getBlockAtPos
+import com.happyandjust.nameless.dsl.matrix
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.setup
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.RenderOverlayListener
 import com.happyandjust.nameless.processor.Processor
@@ -60,11 +63,8 @@ object LabEscapeProcessor : Processor(), ClientTickListener, RenderOverlayListen
     }
 
     override fun renderOverlay(partialTicks: Float) {
-        val overlay = overlay()
-
         matrix {
-            translate(overlay.point.x, overlay.point.y, 0)
-            scale(overlay.scale, overlay.scale, 1.0)
+            setup(overlay())
             mc.fontRendererObj.drawSplitString(keys.joinToString("\n"), 0, 0, Int.MAX_VALUE, Color.red.rgb)
         }
     }

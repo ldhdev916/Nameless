@@ -25,6 +25,8 @@ import com.happyandjust.nameless.dsl.sendClientMessage
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.gui.auction.AuctionGui
 import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.minecraft.command.ICommandSender
 import net.minecraft.event.ClickEvent
 import net.minecraft.event.HoverEvent
@@ -33,7 +35,6 @@ import net.minecraft.util.ChatStyle
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
-import kotlin.concurrent.thread
 
 object SearchBinCommand : ClientCommandBase("searchbin") {
 
@@ -54,14 +55,12 @@ object SearchBinCommand : ClientCommandBase("searchbin") {
 
         sendPrefixMessage("§aSearching $name...")
 
-        thread {
+        GlobalScope.launch {
             val auctionInfos = arrayListOf<AuctionInfo>()
 
             scanAuction { list ->
                 auctionInfos.addAll(
-                    list.filter { it.isBuyableBinAuction() }
-                        .filter { it.item_name.contains(name, true) }
-
+                    list.filter { it.isBuyableBinAuction() && it.item_name.contains(name, true) }
                 )
 
                 if (auctionInfos.isEmpty()) {

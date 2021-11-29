@@ -51,10 +51,12 @@ Unless, You can't use rendering outline on entity
       - Anvil Spleef
       - Avalanche
       - Dive
+      - High Ground
       - Jigsaw Rush
       - Lab Escape
       - RPG-16
       - Spider Maze
+      - Workshop
   - Perspective
   - Pixel Party Helper
   - Reconnect Button in Disconnect Gui
@@ -65,7 +67,6 @@ Unless, You can't use rendering outline on entity
 <details>
   <summary>SkyBlock</summary>
 
-  - Blaze Solver
   - Change Helmet Texture
   - Click Anywhere to Open Slayer Menu
   - Damage Indicator

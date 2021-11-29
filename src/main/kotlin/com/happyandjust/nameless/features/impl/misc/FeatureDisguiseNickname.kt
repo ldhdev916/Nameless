@@ -18,25 +18,29 @@
 
 package com.happyandjust.nameless.features.impl.misc
 
+import com.google.gson.JsonObject
+import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.Request
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.sendClientMessage
+import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
+import com.happyandjust.nameless.features.listener.ClientTickListener
+import com.happyandjust.nameless.features.listener.FeatureStateListener
 import com.happyandjust.nameless.gui.feature.FeatureGui
+import com.happyandjust.nameless.mixins.accessors.AccessorAbstractClientPlayer
+import com.happyandjust.nameless.mixins.accessors.AccessorNetworkPlayerInfo
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CString
 import com.happyandjust.nameless.utils.APIUtils
-import net.minecraft.client.renderer.texture.DynamicTexture
+import com.mojang.authlib.GameProfile
+import com.mojang.authlib.minecraft.MinecraftProfileTexture
+import com.mojang.authlib.properties.Property
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.minecraft.util.ResourceLocation
-import java.awt.Image
-import java.awt.geom.AffineTransform
-import java.awt.image.AffineTransformOp
-import java.awt.image.BufferedImage
-import java.io.File
-import java.net.URL
-import java.util.concurrent.Callable
-import javax.imageio.ImageIO
+import java.util.*
 
 
 object FeatureDisguiseNickname : SimpleFeature(
@@ -44,9 +48,7 @@ object FeatureDisguiseNickname : SimpleFeature(
     "disguisenickname",
     "Disguise Nickname",
     "Change your nickname and skin if nickname is valid!"
-) {
-
-    private val dir = File("config/NamelessSkinTextures").also { it.mkdirs() }
+), FeatureStateListener, ClientTickListener {
 
     init {
         parameters["nick"] = FeatureParameter(
@@ -57,144 +59,84 @@ object FeatureDisguiseNickname : SimpleFeature(
             "If you leave this empty, your nickname will disappear",
             "",
             CString
-        ).also {
-            it.validator = { char -> char.isLetterOrDigit() }
+        ).apply {
+            validator = { char -> char.isLetterOrDigit() }
         }
         parameters["skin"] = FeatureParameter(
             1,
             "disguise",
             "chnageskin",
             "Change Skin",
-            "If nickname you set above is valid, your skin will be changed into his skin\nAs it caches skin texture by player's uuid, if player changes his skin it can show incorrect skin\nIn this case go directory ${dir.absolutePath} and delete all png files",
+            "If nickname you set above is valid, your skin will be changed into his skin",
             false,
             CBoolean
-        )
+        ).apply {
+            onValueChange = { value ->
+                if (!value) resetTexture()
+            }
+        }
     }
 
-    private val downloadingSkinUsernames = hashSetOf<String>()
-    val cachedUsernameResourceLocation = hashMapOf<String, ResourceLocation>()
     private val invalidUsernames = hashSetOf<String>()
+    private var currentlyLoadedUsername: String? = null
+    private val listener: (MinecraftProfileTexture.Type, ResourceLocation, MinecraftProfileTexture) -> Unit =
+        { _, location, _ ->
+            ((mc.thePlayer as AccessorAbstractClientPlayer).invokeGetPlayerInfo() as AccessorNetworkPlayerInfo)
+                .setLocationSkin(location)
+        }
 
     fun getNickname() = getParameterValue<String>("nick")
 
-    fun checkAndDownloadSkin(username: String) {
+    private fun checkAndLoadSkin(username: String) {
         if (mc.currentScreen is FeatureGui) return // in case you're writing username but mod stupidly gets all text you write
-        if (downloadingSkinUsernames.contains(username)) return
         if (invalidUsernames.contains(username)) return
-        if (cachedUsernameResourceLocation.contains(username)) return
-        threadPool.execute {
-            downloadingSkinUsernames.add(username)
-            val uuid = try {
-                APIUtils.getUUIDFromUsername(username)
-            } catch (ignored: Exception) {
+        if (username.equals(currentlyLoadedUsername, true)) return
+        GlobalScope.launch {
+            currentlyLoadedUsername = username
+            val uuid = runCatching { APIUtils.getUUIDFromUsername(username) }.getOrElse {
                 invalidUsernames.add(username)
-
-                downloadingSkinUsernames.remove(username)
-                return@execute
+                currentlyLoadedUsername = null
+                return@launch
             }
 
-            val file = File(dir, "$uuid.png")
+            val json =
+                JSONHandler(Request.get("https://sessionserver.mojang.com/session/minecraft/profile/$uuid"))
+                    .read(JsonObject())
 
-            val getResourceLocation: () -> ResourceLocation =
-                {
-                    mc.addScheduledTask(
-                        Callable {
-                            mc.textureManager.getDynamicTextureLocation(
-                                file.name,
-                                DynamicTexture(ImageIO.read(file))
-                            )
-                        }
-                    ).get()
-                }
-            if (file.isFile) {
-                cachedUsernameResourceLocation[username] = getResourceLocation()
-                downloadingSkinUsernames.remove(username)
-                return@execute
-            }
-
-            try {
-                downloadSkin(uuid)
-
-                Thread.sleep(2000L) // wait for image fully loaded
-                cachedUsernameResourceLocation[username] = getResourceLocation()
-            } finally {
-                downloadingSkinUsernames.remove(username)
-            }
+            mc.skinManager.loadProfileTextures(
+                GameProfile(UUID.randomUUID(), username).apply {
+                    properties.put(
+                        "textures",
+                        Property("textures", json["properties"].asJsonArray[0].asJsonObject["value"].asString, null)
+                    )
+                },
+                listener,
+                false
+            )
         }
     }
 
-    private fun downloadSkin(uuid: String) {
-        threadPool.execute {
-            try {
-                var image = ImageIO.read(URL(APIUtils.getSkinURLFromUUID(uuid)))
-
-                if (image.width == 64 && image.height == 32) {
-                    image = convertImageInto64x64(image)
-                }
-
-                if (image.width != 64 || image.height != 64) {
-                    sendClientMessage("§cDownloaded Image is not 64x64")
-                    return@execute
-                }
-
-                val file = File(dir, "$uuid.png")
-
-                ImageIO.write(image, "png", file)
-                sendClientMessage("§aSuccessfully downloaded $uuid's skin")
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-                sendClientMessage("§cFailed to Download Skin from uuid: $uuid")
-            }
+    override fun onFeatureStateChangePre(e: FeatureStateChangeEvent.Pre) {
+        if (e.feature == this && !e.enabledAfter) {
+            resetTexture()
         }
     }
 
-    private fun convertImageInto64x64(skin: Image): BufferedImage {
-        val upper = BufferedImage(64, 32, 2)
-        upper.graphics.drawImage(skin, 0, 0, 64, 32, 0, 0, 64, 32, null)
-        var armF = BufferedImage(12, 12, 2)
-        armF.graphics.drawImage(skin, 0, 0, 12, 12, 40, 20, 52, 32, null)
-        val tx = AffineTransform.getScaleInstance(-1.0, 1.0)
-        tx.translate(-armF.getWidth(null).toDouble(), 0.0)
-        val op = AffineTransformOp(tx, 1)
-        armF = op.filter(armF, null)
-        var armB = BufferedImage(4, 12, 2)
-        armB.graphics.drawImage(skin, 0, 0, 4, 12, 52, 20, 56, 32, null)
-        val txab = AffineTransform.getScaleInstance(-1.0, 1.0)
-        txab.translate(-armB.getWidth(null).toDouble(), 0.0)
-        val opab = AffineTransformOp(txab, 1)
-        armB = opab.filter(armB, null)
-        var armT = BufferedImage(4, 4, 2)
-        armT.graphics.drawImage(skin, 0, 0, 4, 4, 44, 16, 48, 20, null)
-        val txat = AffineTransform.getScaleInstance(-1.0, 1.0)
-        txat.translate(-armT.getWidth(null).toDouble(), 0.0)
-        val opat = AffineTransformOp(txat, 1)
-        armT = opat.filter(armT, null)
-        var armBo = BufferedImage(4, 4, 2)
-        armBo.graphics.drawImage(skin, 0, 0, 4, 4, 48, 16, 52, 20, null)
-        armBo = opat.filter(armBo, null)
-        var legF = BufferedImage(12, 12, 2)
-        legF.graphics.drawImage(skin, 0, 0, 12, 12, 0, 20, 12, 32, null)
-        legF = op.filter(legF, null)
-        var legB = BufferedImage(4, 12, 2)
-        legB.graphics.drawImage(skin, 0, 0, 4, 12, 12, 20, 16, 32, null)
-        legB = opab.filter(legB, null)
-        var legT = BufferedImage(4, 4, 2)
-        legT.graphics.drawImage(skin, 0, 0, 4, 4, 4, 16, 8, 20, null)
-        legT = opat.filter(legT, null)
-        var legBo = BufferedImage(4, 4, 2)
-        legBo.graphics.drawImage(skin, 0, 0, 4, 4, 8, 16, 12, 20, null)
-        legBo = opab.filter(legBo, null)
-        val bi = BufferedImage(64, 64, 2)
-        bi.graphics.drawImage(upper, 0, 0, 64, 64, 0, 0, 64, 64, null)
-        bi.graphics.drawImage(armF, 0, 0, 64, 64, -32, -52, 32, 12, null)
-        bi.graphics.drawImage(armB, 0, 0, 64, 64, -44, -52, 20, 12, null)
-        bi.graphics.drawImage(armT, 0, 0, 64, 64, -36, -48, 28, 16, null)
-        bi.graphics.drawImage(armBo, 0, 0, 64, 64, -40, -48, 24, 16, null)
-        bi.graphics.drawImage(legF, 0, 0, 64, 64, -16, -52, 48, 12, null)
-        bi.graphics.drawImage(legB, 0, 0, 64, 64, -28, -52, 36, 12, null)
-        bi.graphics.drawImage(legT, 0, 0, 64, 64, -20, -48, 44, 16, null)
-        bi.graphics.drawImage(legBo, 0, 0, 64, 64, -24, -48, 40, 16, null)
-        return bi
+    private fun resetTexture() {
+        with(((mc.thePlayer as AccessorAbstractClientPlayer).invokeGetPlayerInfo() as AccessorNetworkPlayerInfo)) {
+            setLocationSkin(null)
+            setPlayerTexturesLoaded(false)
+        }
+        currentlyLoadedUsername = mc.thePlayer.name
+    }
+
+    override fun onFeatureStateChangePost(e: FeatureStateChangeEvent.Post) {
+
+    }
+
+    override fun tick() {
+        if (enabled && getParameterValue("skin")) {
+            checkAndLoadSkin(getParameterValue("nick"))
+        }
     }
 }

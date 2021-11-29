@@ -118,14 +118,15 @@ fun color(colorRed: Float, colorGreen: Float, colorBlue: Float, colorAlpha: Floa
 fun color(colorRed: Float, colorGreen: Float, colorBlue: Float) =
     GlStateManager.color(colorRed, colorGreen, colorBlue)
 
-fun color(rgb: Int) =
-    GlStateManager.color(rgb.getRedFloat(), rgb.getGreenFloat(), rgb.getBlueFloat(), rgb.getAlphaFloat())
+fun color(rgb: Int) = GlStateManager.color(rgb.red / 255f, rgb.green / 255f, rgb.blue / 255f, rgb.alpha / 255f)
 
 fun resetColor() = GlStateManager.resetColor()
 fun callList(list: Int) = GlStateManager.callList(list)
 
 val tessellator: Tessellator
     get() = Tessellator.getInstance()
+
+fun WorldRenderer.pos(x: Int, y: Int, z: Int): WorldRenderer = pos(x.toDouble(), y.toDouble(), z.toDouble())
 
 fun FontRenderer.drawString(text: String, x: Int, y: Int, color: Int, dropShadow: Boolean) =
     drawString(text, x.toFloat(), y.toFloat(), color, dropShadow)
@@ -141,22 +142,7 @@ fun Entity.getRenderPosZ(partialTicks: Float) = lastTickPosZ + (posZ - lastTickP
 
 fun Entity.getRenderYaw(partialTicks: Float) = prevRotationYaw + (rotationYaw - prevRotationYaw) * partialTicks
 
-fun Entity.getRenderPitch(partialTicks: Float) = prevRotationPitch + (rotationPitch - prevRotationPitch) * partialTicks
-
-fun WorldRenderer.color(rgb: Int): WorldRenderer =
-    color(rgb.getRedInt(), rgb.getGreenInt(), rgb.getBlueInt(), rgb.getAlphaInt())
-
-inline fun glEnable(vararg caps: Int, block: () -> Unit) {
-    for (cap in caps) {
-        GL11.glEnable(cap)
-    }
-
-    block()
-
-    for (cap in caps) {
-        GL11.glDisable(cap)
-    }
-}
+fun WorldRenderer.color(rgb: Int) = color(rgb.red, rgb.green, rgb.blue, rgb.alpha)
 
 inline fun translate(x: Int, y: Int, z: Int, block: () -> Unit) =
     translate(x.toDouble(), y.toDouble(), z.toDouble(), block)
@@ -192,7 +178,10 @@ fun GuiContainer.drawOnSlot(slot: Slot, color: Int) {
     Gui.drawRect(left, top, left + 16, top + 16, color)
 }
 
-fun Rectangle.drawChromaRect(direction: Direction, startHue: Float = 0F) {
+fun Rectangle.drawChromaRect(direction: Direction, startHue: Float = 0F, alpha: Int = 255) {
+
+    val total = 60f
+
     disableTexture2D()
     enableBlend()
     disableCull()
@@ -200,8 +189,8 @@ fun Rectangle.drawChromaRect(direction: Direction, startHue: Float = 0F) {
     tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO)
 
     val addEach = when (direction) {
-        Direction.UP, Direction.DOWN -> height / 360.0
-        Direction.RIGHT, Direction.LEFT -> width / 360.0
+        Direction.UP, Direction.DOWN -> height / total
+        Direction.RIGHT, Direction.LEFT -> width / total
     }
 
     val starting = when (direction) {
@@ -215,9 +204,9 @@ fun Rectangle.drawChromaRect(direction: Direction, startHue: Float = 0F) {
 
     wr.begin(GL11.GL_QUAD_STRIP, DefaultVertexFormats.POSITION_COLOR)
 
-    repeat(361) {
-        val currentPosition = starting + (addEach * it)
-        val color = Color.HSBtoRGB(it / 360F + startHue, 1f, 1f)
+    repeat(total.toInt()) {
+        val currentPosition = starting + (addEach * it).toDouble()
+        val color = Color.HSBtoRGB(it / total + startHue, 1f, 1f) and ((alpha shl 24) or 0xFFFFFF)
 
         when (direction) {
             Direction.LEFT, Direction.RIGHT -> {

@@ -22,6 +22,7 @@ import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.InventorySlotInfo
 import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.mc
+import net.minecraft.block.material.Material
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.BlockPos
 import org.lwjgl.input.Keyboard
@@ -52,7 +53,7 @@ object Utils {
     fun getHighestGround(pos: BlockPos, shouldBeValid: Boolean): BlockPos {
         var pos = pos
         val world = mc.theWorld
-        while (world.getBlockAtPos(pos).isPassable(world, pos)) {
+        while (world.getBlockAtPos(pos).let { it.isPassable(world, pos) && it.material != Material.water }) {
             pos = pos.add(0, -1, 0)
             if (pos.y <= 0) return pos
         }

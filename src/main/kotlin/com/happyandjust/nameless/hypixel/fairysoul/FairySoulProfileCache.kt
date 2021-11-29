@@ -31,18 +31,12 @@ object FairySoulProfileCache {
         defaultProfile,
         CFairySoulProfile
     )
-    private val currentlyLoadedProfileConfig =
-        ConfigValue(
-            "fairysoul",
-            "currentprofile",
-            defaultProfile,
-            CFairySoulProfile
-        )
-    var currentlyLoadedProfile: FairySoulProfile = currentlyLoadedProfileConfig.value
-        set(value) {
-            field = value
-            currentlyLoadedProfileConfig.value = value
-        }
+    var currentlyLoadedProfile by ConfigValue(
+        "fairysoul",
+        "currentprofile",
+        defaultProfile,
+        CFairySoulProfile
+    )
 
     fun changeToProfileAndIfNotExistThenCreate(profileName: String) {
         val uuid = mc.session.playerID

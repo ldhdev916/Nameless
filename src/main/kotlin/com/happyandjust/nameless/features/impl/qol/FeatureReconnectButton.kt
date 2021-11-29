@@ -18,10 +18,8 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.dsl.LOGGER
-import com.happyandjust.nameless.dsl.formatDouble
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.transformToPrecision
+import com.happyandjust.nameless.dsl.transformToPrecisionString
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
@@ -46,7 +44,7 @@ object FeatureReconnectButton : SimpleFeature(
 ), ScreenInitListener, ScreenActionPerformedListener, ClientTickListener {
 
     private var lastServerData: ServerData? = null
-    private val gap = 8
+    private const val gap = 8
     private var currentDisconnectInfo: DisconnectInfo? = null
 
     init {
@@ -58,8 +56,8 @@ object FeatureReconnectButton : SimpleFeature(
             "If this is enabled, mod will auto reconnect to server in seconds you set",
             true,
             CBoolean
-        ).also {
-            it.parameters["second"] = FeatureParameter(
+        ).apply {
+            parameters["second"] = FeatureParameter(
                 0,
                 "autoreconnect",
                 "second",
@@ -67,9 +65,9 @@ object FeatureReconnectButton : SimpleFeature(
                 "",
                 5,
                 CInt
-            ).also { featureParameter ->
-                featureParameter.minValue = 1.0
-                featureParameter.maxValue = 60.0
+            ).apply {
+                minValue = 1.0
+                maxValue = 60.0
             }
         }
     }
@@ -81,8 +79,7 @@ object FeatureReconnectButton : SimpleFeature(
     override fun actionPerformedPost(e: GuiScreenEvent.ActionPerformedEvent.Post) {
         val gui = e.gui
         if (e.button.id == 101 && gui is AccessorGuiDisconnected && enabled) {
-            val guiConnecting = GuiConnecting(gui.parentScreen, mc, lastServerData!!)
-            mc.displayGuiScreen(guiConnecting)
+            mc.displayGuiScreen(GuiConnecting(gui.parentScreen, mc, lastServerData!!))
         }
     }
 
@@ -92,50 +89,39 @@ object FeatureReconnectButton : SimpleFeature(
     override fun screenInitPost(e: GuiScreenEvent.InitGuiEvent.Post) {
         when (val gui = e.gui) {
             is GuiDisconnected -> {
-                if (enabled) {
-                    if (lastServerData != null) { // This should not be happened
+                if (enabled && lastServerData != null) {
+                    e.buttonList.find { it.id == 0 }?.let {
+                        val sec = getParameter<Boolean>("auto").getParameterValue<Int>("second")
+                        val auto = getParameterValue<Boolean>("auto")
+                        val text = if (auto) "Reconnect in: ${getSecondText(sec.toDouble())}" else "Reconnect"
+                        e.buttonList.add(
+                            GuiButton(
+                                101,
+                                it.xPosition,
+                                it.yPosition,
+                                (it.width / 2) - (gap - 2),
+                                it.height,
+                                text
+                            ).apply {
+                                it.xPosition = it.xPosition + it.width - width
 
-                        for (button in e.buttonList) {
-                            if (button.id == 0) {
+                                it.width = width
 
-                                val sec = getParameter<Boolean>("auto").getParameterValue<Int>("second")
-                                val auto = getParameterValue<Boolean>("auto")
-                                val text = if (auto) "Reconnect in: ${getSecondText(sec.toDouble())}" else "Reconnect"
-                                e.buttonList.add(
-                                    GuiButton(
-                                        101,
-                                        button.xPosition,
-                                        button.yPosition,
-                                        (button.width / 2) - (gap - 2),
-                                        button.height,
-                                        text
-                                    ).also {
-                                        button.xPosition = button.xPosition + button.width - it.width
-
-                                        button.width = it.width
-
-                                        if (auto) {
-                                            currentDisconnectInfo =
-                                                DisconnectInfo(
-                                                    System.currentTimeMillis() + (sec * 1000),
-                                                    it
-                                                ) {
-                                                    GuiConnecting(
-                                                        (gui as AccessorGuiDisconnected).parentScreen,
-                                                        mc,
-                                                        lastServerData!!
-                                                    )
-                                                }
+                                if (auto) {
+                                    currentDisconnectInfo =
+                                        DisconnectInfo(
+                                            System.currentTimeMillis() + (sec * 1000),
+                                            this
+                                        ) {
+                                            GuiConnecting(
+                                                (gui as AccessorGuiDisconnected).parentScreen,
+                                                mc,
+                                                lastServerData!!
+                                            )
                                         }
-                                    }
-                                )
-
-                                break
+                                }
                             }
-                        }
-
-                    } else {
-                        LOGGER.error("ERROR: ServerData is null, how tf you got disconnected from server")
+                        )
                     }
                 }
             }
@@ -176,7 +162,7 @@ object FeatureReconnectButton : SimpleFeature(
 
         val colorCode = if (currentSecond <= percent) "§4" else "§a"
 
-        return "$colorCode${currentSecond.transformToPrecision(1).formatDouble()}s"
+        return "$colorCode${currentSecond.transformToPrecisionString(1)}s"
     }
 
     private fun getDisconnectInfo() = currentDisconnectInfo?.takeIf {

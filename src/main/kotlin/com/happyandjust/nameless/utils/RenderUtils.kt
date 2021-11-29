@@ -72,9 +72,9 @@ object RenderUtils {
 
         val d1 = MathHelper.func_181162_h(-time * 0.2 - MathHelper.floor_double(-time * 0.1).toDouble())
 
-        val r = rgb.getRedFloat()
-        val g = rgb.getGreenFloat()
-        val b = rgb.getBlueFloat()
+        val r = rgb.red / 255f
+        val g = rgb.green / 255f
+        val b = rgb.blue / 255f
 
         val d2 = time * 0.025 * -1.5
         val d4 = 0.5 + cos(d2 + 2.356194490192345) * 0.2
@@ -214,38 +214,37 @@ object RenderUtils {
         val render = mc.renderViewEntity?.takeUnless { it == entity } ?: return
 
         disableEntityShadow {
-            glEnable(GL11.GL_STENCIL_TEST) {
+            GL11.glEnable(GL11.GL_STENCIL_TEST)
+            GL11.glClearStencil(0)
+            clear(GL11.GL_STENCIL_BUFFER_BIT)
 
-                GL11.glClearStencil(0)
-                clear(GL11.GL_STENCIL_BUFFER_BIT)
+            GL11.glStencilMask(0xFF)
+            GL11.glStencilOp(GL11.GL_REPLACE, GL11.GL_REPLACE, GL11.GL_REPLACE)
+            GL11.glStencilFunc(GL11.GL_NEVER, 1, 0xFF)
 
-                GL11.glStencilMask(0xFF)
-                GL11.glStencilOp(GL11.GL_REPLACE, GL11.GL_REPLACE, GL11.GL_REPLACE)
-                GL11.glStencilFunc(GL11.GL_NEVER, 1, 0xFF)
+            matrix {
+                translate(
+                    -render.getRenderPosX(partialTicks),
+                    -render.getRenderPosY(partialTicks),
+                    -render.getRenderPosZ(partialTicks)
+                )
 
-                matrix {
-                    translate(
-                        -render.getRenderPosX(partialTicks),
-                        -render.getRenderPosY(partialTicks),
-                        -render.getRenderPosZ(partialTicks)
-                    )
-
-                    mc.renderManager.doRenderEntity(
-                        entity,
-                        entity.getRenderPosX(partialTicks),
-                        entity.getRenderPosY(partialTicks),
-                        entity.getRenderPosZ(partialTicks),
-                        entity.getRenderYaw(partialTicks),
-                        partialTicks,
-                        true
-                    )
-                }
-
-                GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP)
-                GL11.glStencilFunc(GL11.GL_EQUAL, 1, 0xFF)
-
-                drawBox(entity.entityBoundingBox.expand(1.0, 1.0, 1.0), color, partialTicks)
+                mc.renderManager.doRenderEntity(
+                    entity,
+                    entity.getRenderPosX(partialTicks),
+                    entity.getRenderPosY(partialTicks),
+                    entity.getRenderPosZ(partialTicks),
+                    entity.getRenderYaw(partialTicks),
+                    partialTicks,
+                    true
+                )
             }
+
+            GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP)
+            GL11.glStencilFunc(GL11.GL_EQUAL, 1, 0xFF)
+
+            drawBox(entity.entityBoundingBox.expand(1.0, 1.0, 1.0), color, partialTicks)
+            GL11.glDisable(GL11.GL_STENCIL_TEST)
         }
 
     }
@@ -259,59 +258,28 @@ object RenderUtils {
                 -render.getRenderPosY(partialTicks),
                 -render.getRenderPosZ(partialTicks)
             )
-            glEnable(GL11.GL_POINT_SMOOTH) {
-                disableTexture2D()
-                enableBlend()
-                disableDepth()
-                tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO)
-                GL11.glPointSize(size.toFloat())
-                color(color)
 
-                val wr = tessellator.worldRenderer
-
-                wr.begin(GL11.GL_POINTS, DefaultVertexFormats.POSITION)
-
-                wr.pos(point.xCoord, point.yCoord, point.zCoord).endVertex()
-
-                tessellator.draw()
-
-                color(1f, 1f, 1f, 1f)
-                disableBlend()
-                enableDepth()
-                enableTexture2D()
-            }
-        }
-    }
-
-    fun draw3DLine(start: Vec3, end: Vec3, width: Double, color: Int, partialTicks: Float) {
-        val render = mc.renderViewEntity ?: return
-
-        matrix {
-            translate(
-                -render.getRenderPosX(partialTicks),
-                -render.getRenderPosY(partialTicks),
-                -render.getRenderPosZ(partialTicks)
-            )
-
+            GL11.glEnable(GL11.GL_POINT_SMOOTH)
             disableTexture2D()
             enableBlend()
             disableDepth()
             tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO)
+            GL11.glPointSize(size.toFloat())
             color(color)
-            GL11.glLineWidth(width.toFloat())
 
             val wr = tessellator.worldRenderer
 
-            wr.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION)
+            wr.begin(GL11.GL_POINTS, DefaultVertexFormats.POSITION)
 
-            wr.pos(start.xCoord, start.yCoord, start.zCoord).endVertex()
-            wr.pos(end.xCoord, end.yCoord, end.zCoord).endVertex()
+            wr.pos(point.xCoord, point.yCoord, point.zCoord).endVertex()
 
             tessellator.draw()
 
-            enableDepth()
+            color(1f, 1f, 1f, 1f)
             disableBlend()
+            enableDepth()
             enableTexture2D()
+            GL11.glDisable(GL11.GL_POINT_SMOOTH)
         }
     }
 
@@ -393,7 +361,7 @@ object RenderUtils {
     }
 
     fun draw3DString(text: String, pos: BlockPos, scale: Double, color: Int, partialTicks: Float) {
-        draw3DString(text, Vec3(pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5), scale, color, partialTicks)
+        draw3DString(text, Vec3(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5), scale, color, partialTicks)
     }
 
     fun draw3DString(text: String, vec3: Vec3, scale: Double, color: Int, partialTicks: Float) {
@@ -415,14 +383,8 @@ object RenderUtils {
             rotate(mc.renderManager.playerViewX, 1f, 0f, 0f)
 
             scale(-scale, -scale, -scale)
-            // text are first inverted
+            mc.fontRendererObj.drawCenteredString(text, color)
 
-            mc.fontRendererObj.drawCenteredString(
-                text,
-                color
-            )
-
-            scale(1, 1, 1)
             disableBlend()
             enableDepth()
         }
@@ -462,6 +424,7 @@ object RenderUtils {
     }
 
     fun drawPath(paths: List<BlockPos>, color: Int, partialTicks: Float) {
+        if (paths.isEmpty()) return
         val render = mc.renderViewEntity ?: return
 
         val x = render.getRenderPosX(partialTicks)

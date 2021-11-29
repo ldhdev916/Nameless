@@ -97,9 +97,10 @@ object Hypixel {
                     (PartyGamesType.values().toList() - PartyGamesType.NOTHING).map { it to it.scoreboardName!! }
                 for (scoreboard in ScoreboardUtils.getSidebarLines(true)) {
                     currentProperty[PropertyKey.PARTY_GAME_TYPE] =
-                        partyGames.find { scoreboard.contains(it.second) }?.first ?: continue
+                        partyGames.find { scoreboard.contains(it.second, true) }?.first ?: continue
                 }
             }
+            else -> {}
         }
 
         if (serverChanged) {

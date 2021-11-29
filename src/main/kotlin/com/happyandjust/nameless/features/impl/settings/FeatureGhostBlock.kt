@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.features.impl.settings
 
-import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.events.PacketEvent
@@ -59,9 +58,9 @@ object FeatureGhostBlock : SettingFeature(
             "after the seconds you selected, block you made client-side air will be restored back\n-1 for not restoring back",
             10,
             CInt
-        ).also {
-            it.minValue = -1.0
-            it.maxValue = 60.0
+        ).apply {
+            minValue = -1.0
+            maxValue = 60.0
         }
         parameters["ignore"] = FeatureParameter(
             1,
@@ -75,10 +74,7 @@ object FeatureGhostBlock : SettingFeature(
     }
 
     override fun tick() {
-
-        if (!enabled) return
-
-        if (mc.inGameHasFocus && Nameless.INSTANCE.keyBindings[KeyBindingCategory.GHOST_BLOCK]!!.isKeyDown) {
+        if (mc.inGameHasFocus && KeyBindingCategory.GHOST_BLOCK.getKeyBinding().isKeyDown) {
             mc.objectMouseOver?.takeIf { it.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK }?.let {
                 makeGhostBlock(it.blockPos)
             }
@@ -86,31 +82,26 @@ object FeatureGhostBlock : SettingFeature(
 
         if (ghostBlocks.isEmpty()) return
 
-        val seconds = getParameterValue<Int>("restore")
-
-        if (seconds == -1) return // infinity
-
         val iterator = ghostBlocks.iterator()
 
-        for (blockInfo in iterator) {
-            if (mc.theWorld.getBlockAtPos(blockInfo.key) != Blocks.air) { // did the pos state changed by server?
+        for ((pos, blockInfo) in iterator) {
+            if (mc.theWorld.getBlockAtPos(pos) != Blocks.air) { // did the pos state changed by server?
                 iterator.remove()
                 continue
             }
-            if (blockInfo.value.tick == 0) { // restore
-                mc.theWorld.setBlockState(blockInfo.key, blockInfo.value.blockState)
+            if (blockInfo.tick == 0) { // restore
+                mc.theWorld.setBlockState(pos, blockInfo.blockState)
                 iterator.remove()
             }
 
-            blockInfo.value.tick--
+            blockInfo.tick--
         }
     }
 
     private fun makeGhostBlock(pos: BlockPos) {
         if (Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty(PropertyKey.DUNGEON) && getParameterValue("ignore")) {
-            val block = mc.theWorld.getBlockAtPos(pos)
-            if (block is BlockChest || block is BlockLever || block is BlockSkull) {
-                return
+            when (mc.theWorld.getBlockAtPos(pos)) {
+                is BlockChest, is BlockLever, is BlockSkull -> return
             }
         }
 
@@ -127,19 +118,16 @@ object FeatureGhostBlock : SettingFeature(
     }
 
     override fun onReceivedPacket(e: PacketEvent.Received) {
-        if (!enabled) return
         if (ghostBlocks.isEmpty()) return
 
         when (val msg = e.packet) {
             is S22PacketMultiBlockChange -> {
-                val data =
-                    msg.changedBlocks.firstOrNull { ghostBlocks.contains(it.pos) && it.blockState != null } ?: return
+                val data = msg.changedBlocks.find { it.pos in ghostBlocks && it.blockState != null } ?: return
                 ghostBlocks[data.pos]?.blockState = data.blockState
+
             }
             is S23PacketBlockChange -> {
-                val blockInfo = ghostBlocks[msg.blockPosition] ?: return
-
-                blockInfo.blockState = msg.blockState ?: return
+                ghostBlocks[msg.blockPosition]?.blockState = msg.blockState ?: return
             }
         }
     }

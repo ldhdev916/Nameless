@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.processor.partygames
 
+import com.happyandjust.nameless.core.Pos
 import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.listener.ClientTickListener
@@ -171,24 +172,6 @@ object JigsawRushProcessor : Processor(), ClientTickListener, PartyGameChangeLis
         if (from == PartyGamesType.JIGSAW_RUSH || to == PartyGamesType.JIGSAW_RUSH) {
             drawInfos.clear()
             myCanvas = null
-        }
-    }
-
-    enum class Pos {
-        TOP_LEFT,
-        TOP_CENTER,
-        TOP_RIGHT,
-
-        LEFT,
-        CENTER,
-        RIGHT,
-
-        BOTTOM_LEFT,
-        BOTTOM_CENTER,
-        BOTTOM_RIGHT;
-
-        companion object {
-            val v = values()
         }
     }
 }

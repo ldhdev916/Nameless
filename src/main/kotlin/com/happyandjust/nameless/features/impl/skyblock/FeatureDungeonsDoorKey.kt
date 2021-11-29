@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.core.toChromaColor
+import com.happyandjust.nameless.dsl.contains
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.stripControlCodes
 import com.happyandjust.nameless.dsl.toVec3
@@ -73,7 +74,7 @@ object FeatureDungeonsDoorKey : SimpleFeature(
             EntityArmorStand::class.java,
             mc.thePlayer.entityBoundingBox.expand(16.0, 5.0, 16.0)
         )
-            .firstOrNull { it.displayName.unformattedText.stripControlCodes() in arrayOf("Wither Key", "Blood Key") }
+            .find { it.displayName.unformattedText.stripControlCodes() in "Wither Key" to "Blood Key" }
             ?.toVec3()
 
     }
