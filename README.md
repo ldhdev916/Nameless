@@ -33,6 +33,7 @@ Unless, You can't use rendering outline on entity
   - Hide NPC in Lobby
   - Remove Certain Mod ID Sent to Server
   - Remove Negative Effects (blindness, nausea)
+  - Indicate Particles
 </details>
 <details>
   <summary>Quality of Life</summary>
@@ -84,6 +85,7 @@ Unless, You can't use rendering outline on entity
   - Livid Dagger Backstep Notifier
   - Render Pointing Arrow to Wither/Blood Key
   - Show Wither Shield CoolTime
+  - Hide Wither Impact Particle
 </details>
 <details>
  <summary>Miscellaneous</summary>
@@ -121,4 +123,5 @@ Unless, You can't use rendering outline on entity
   - /searchbin - Search bins of specific item
   - /viewstat - View someone's stats
   - /waypoint - Show paths to given coordinate
+  - /shortcommand, /shortcmd - Open short command gui
 </details>

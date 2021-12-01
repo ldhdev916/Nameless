@@ -20,10 +20,7 @@ package com.happyandjust.nameless.features
 
 import com.happyandjust.nameless.MOD_ID
 import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.features.impl.general.FeatureBedwarsESP
-import com.happyandjust.nameless.features.impl.general.FeatureBedwarsRayTraceBed
-import com.happyandjust.nameless.features.impl.general.FeatureDisplayBetterArmor
-import com.happyandjust.nameless.features.impl.general.FeatureGlowAllPlayers
+import com.happyandjust.nameless.features.impl.general.*
 import com.happyandjust.nameless.features.impl.misc.FeatureClickCopyChat
 import com.happyandjust.nameless.features.impl.misc.FeatureDisguiseNickname
 import com.happyandjust.nameless.features.impl.misc.FeatureTextureOverlay
@@ -91,7 +88,6 @@ object FeatureRegistry {
         val mods = Loader::class.java.getDeclaredField("mods").also { field ->
             field.isAccessible = true
         }[Loader.instance()] as List<ModContainer>
-
         for (mod in mods) {
             it.parameters[mod.modId] = FeatureParameter(
                 0,
@@ -104,6 +100,7 @@ object FeatureRegistry {
             )
         }
     }.register("Mod")
+    val INDICATE_PARTICLES = FeatureIndicateParticles.register("In Game")
 
     //MISC
     val UPDATE_CHECKER = FeatureUpdateChecker.register("Miscellaneous")
@@ -292,6 +289,7 @@ object FeatureRegistry {
     val EQUIP_PET_SKIN = FeatureEquipPetSkin.register("SkyBlock")
     val CHANGE_HELMET_TEXTURE = FeatureChangeHelmetTexture.register("SkyBlock")
     val EXPERIMENTAL_TABLE_HELPER = FeatureExperimentationTableHelper.register("SkyBlock")
+    val HIDE_WITHER_IMPACT_PARTICLE = FeatureHideWitherImpactParticle.register("SkyBlock")
 
     //SETTINGS
     val GHOST_BLOCK = FeatureGhostBlock.register("Settings")

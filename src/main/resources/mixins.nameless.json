@@ -5,6 +5,7 @@
   "client": [
     "MixinActiveRenderInfo",
     "MixinBlockRendererDispatcher",
+    "MixinEffectRenderer",
     "MixinEntityFX",
     "MixinEntityRenderer",
     "MixinFontRenderer",
@@ -18,6 +19,7 @@
     "MixinRenderManager",
     "MixinTileEntityItemStackRenderer",
     "accessors.AccessorAbstractClientPlayer",
+    "accessors.AccessorEntityFX",
     "accessors.AccessorGuiChat",
     "accessors.AccessorGuiContainer",
     "accessors.AccessorGuiDisconnected",

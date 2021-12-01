@@ -25,13 +25,10 @@ import com.happyandjust.nameless.utils.Utils
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.*
 import gg.essential.elementa.constraints.*
-import gg.essential.elementa.constraints.animation.Animations
 import gg.essential.elementa.dsl.*
 import gg.essential.elementa.effects.OutlineEffect
 import gg.essential.elementa.markdown.MarkdownComponent
-import gg.essential.elementa.utils.withAlpha
 import gg.essential.universal.GuiScale
-import gg.essential.vigilance.utils.onLeftClick
 import net.minecraftforge.fml.common.FMLCommonHandler
 import java.awt.Color
 import java.awt.Desktop
@@ -201,36 +198,6 @@ class UpdateGui(markDownText: String) : WindowScreen(
     companion object {
         private val DOTS = arrayOf(".", "..", "...", "...", "...")
         private const val DOT_TIME = 200
-    }
-
-
-    class ActionButton(text: String, action: ActionButton.() -> Unit) :
-        UIBlock(ColorCache.brightDivider.withAlpha(0.2f)) {
-
-        init {
-            effect(OutlineEffect(ColorCache.accent, 1f))
-
-            UIText(text).constrain {
-                x = CenterConstraint()
-                y = CenterConstraint()
-            } childOf this
-
-            onMouseEnter {
-                animate {
-                    setColorAnimation(Animations.OUT_EXP, .5f, ColorCache.brightDivider.withAlpha(0.8f).constraint)
-                }
-            }
-
-            onMouseLeave {
-                animate {
-                    setColorAnimation(Animations.OUT_EXP, .5f, ColorCache.brightDivider.withAlpha(0.2f).constraint)
-                }
-            }
-
-            onLeftClick {
-                this@ActionButton.action()
-            }
-        }
     }
 
     class ProgressBox : UIContainer() {
