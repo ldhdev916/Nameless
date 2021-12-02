@@ -94,7 +94,7 @@ object OutlineHandleListener {
             }
 
 
-            if (!RenderGlobalHook.canDisplayOutline() || Nameless.INSTANCE.selectedOutlineMode == OutlineMode.BOX) {
+            if (!RenderGlobalHook.canDisplayOutline() || Nameless.selectedOutlineMode == OutlineMode.BOX) {
                 outlineEntityCache[entity]?.let {
                     RenderUtils.drawOutlinedBox(entity.entityBoundingBox, it, e.partialTicks)
                 }

@@ -22,6 +22,7 @@ import com.happyandjust.nameless.dsl.formatDouble
 import com.happyandjust.nameless.dsl.transformToPrecision
 import com.happyandjust.nameless.gui.feature.ColorCache
 import com.happyandjust.nameless.utils.Utils
+import gg.essential.api.EssentialAPI
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.*
 import gg.essential.elementa.constraints.*
@@ -107,7 +108,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
 
     private fun doUpdate() {
         thread {
-            try {
+            runCatching {
                 val configDir = File("config/HappyAndJust/")
                 configDir.mkdirs()
 
@@ -119,30 +120,21 @@ class UpdateGui(markDownText: String) : WindowScreen(
                         URL("https://github.com/HappyAndJust/Deleter/releases/download/v1.0/Deleter.jar")
                     )
                 }
-            } catch (e: Exception) {
+            }.onFailure {
                 updateMessage.setText("§cException Occurred while downloading old file deleter jar.")
-                try {
-                    Desktop.getDesktop().open(jarFile.parentFile)
-                } catch (ignored: Exception) {
-
-                }
+                Desktop.getDesktop().open(jarFile.parentFile)
                 Thread.sleep(2000L)
             }
 
-            try {
+            runCatching {
                 downloadFile(jarFile, downloadURL)
-            } catch (e: Exception) {
+            }.onFailure {
                 updateMessage.setText("§cException Occurred while downloading latest mod file")
-                try {
-                    Desktop.getDesktop().browse(htmlURL)
-                } catch (ignored: Exception) {
-
-                }
+                Desktop.getDesktop().browse(htmlURL)
             }
-
-            Runtime.getRuntime().addShutdownHook(Thread {
+            EssentialAPI.getShutdownHookUtil().register {
                 Utils.deleteOldJar()
-            })
+            }
 
             FMLCommonHandler.instance().exitJava(-1, false)
         }

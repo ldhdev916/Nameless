@@ -30,7 +30,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import net.minecraft.block.Block
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityArmorStand
@@ -133,7 +132,6 @@ fun EntityArmorStand.isFairySoul(): Boolean {
 fun ItemStack?.getSkyBlockID(): String {
     this ?: return ""
     val tagCompound = getSubCompound("ExtraAttributes", false) ?: return ""
-
     return tagCompound.getString("id")
 }
 
@@ -189,8 +187,6 @@ suspend fun scanAuction(task: (List<AuctionInfo>) -> Unit) = coroutineScope {
         .flatten()
         .let(task)
 }
-
-fun EntityPlayerSP?.inHypixel() = this?.clientBrand?.startsWith("Hypixel BungeeCord") == true
 
 inline fun <T> Pattern.matchesMatcher(s: String, block: (Matcher) -> T) =
     matcher(s).takeIf { it.matches() }?.let(block)

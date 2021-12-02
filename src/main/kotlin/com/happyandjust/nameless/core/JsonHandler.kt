@@ -28,7 +28,7 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 
-class JSONHandler(inputStream: InputStream? = null, val outputStream: () -> OutputStream? = { null }) {
+class JsonHandler(inputStream: InputStream? = null, val outputStream: () -> OutputStream? = { null }) {
     private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
     private val parser = JsonParser()
     private var jsonData: JsonElement? = null

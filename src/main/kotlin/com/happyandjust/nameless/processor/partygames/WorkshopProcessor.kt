@@ -26,6 +26,7 @@ import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
 import com.happyandjust.nameless.mixins.accessors.AccessorShapedOreRecipe
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -83,6 +84,7 @@ object WorkshopProcessor : Processor(), PartyGameChangeListener, ClientTickListe
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun tick() {
 
         scanTick = (scanTick + 1) % 3

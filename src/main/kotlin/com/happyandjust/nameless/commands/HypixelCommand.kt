@@ -18,19 +18,18 @@
 
 package com.happyandjust.nameless.commands
 
-import com.happyandjust.nameless.core.ClientCommandBase
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.hypixel.Hypixel
-import net.minecraft.command.ICommandSender
+import gg.essential.api.commands.Command
+import gg.essential.api.commands.DefaultHandler
 
-object HypixelCommand : ClientCommandBase("currentdata") {
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
-
+object HypixelCommand : Command("currentdata") {
+    @DefaultHandler
+    fun handle() {
         sendPrefixMessage("Current Hypixel Game: ${Hypixel.currentGame}\n")
 
         Hypixel.currentProperty.map { "Property key: ${it.key} Value: ${it.value}" }.forEach(::sendPrefixMessage)
 
         sendPrefixMessage("\n${Hypixel.locrawInfo}")
-
     }
 }

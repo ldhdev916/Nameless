@@ -95,7 +95,7 @@ object RenderGlobalHook {
             RenderHelper.disableStandardItemLighting()
             mc.renderManager.setRenderOutlines(true)
 
-            if (Nameless.INSTANCE.selectedOutlineMode == OutlineMode.OUTLINE) {
+            if (Nameless.selectedOutlineMode == OutlineMode.OUTLINE) {
                 for (entity in entities) {
                     val flag = with(mc.renderViewEntity) {
                         this is EntityLivingBase && isPlayerSleeping

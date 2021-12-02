@@ -18,25 +18,27 @@
 
 package com.happyandjust.nameless.commands
 
-import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.core.NameHistory
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.sendClientMessage
 import com.happyandjust.nameless.dsl.sendPrefixMessage
-import com.happyandjust.nameless.utils.APIUtils
+import gg.essential.api.EssentialAPI
+import gg.essential.api.commands.Command
+import gg.essential.api.commands.DefaultHandler
+import gg.essential.api.commands.DisplayName
+import gg.essential.api.utils.mojang.Name
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import net.minecraft.command.ICommandSender
 import java.util.*
 
-object NameHistoryCommand : ClientCommandBase("name") {
+object NameHistoryCommand : Command("name") {
 
     private fun Int.convert() = String.format("%02d", this)
 
-    private val transformNameHistoryToString: (NameHistory) -> String = {
-        val isOriginal = it.timestamp == null
+    private val transformNameHistoryToString: (Name) -> String = {
+        val isOriginal = it.changedToAt == 0L
 
-        val time = it.timestamp?.let {
+        val time = it.changedToAt?.takeUnless { time -> time == 0L }?.let {
             val calendar = Calendar.getInstance().apply { time = Date(it) }
 
             val year = calendar[Calendar.YEAR]
@@ -51,30 +53,26 @@ object NameHistoryCommand : ClientCommandBase("name") {
 
         } ?: "Original Name"
 
-        "§6${if (isOriginal) "§l" else ""}${it.username} - $time"
+        "§6${if (isOriginal) "§l" else ""}${it.name} - $time"
     }
 
-
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
-        if (args.size != 1) {
-            sendUsage("[Player Name]")
-            return
-        }
-        val name = args[0]
+    @OptIn(DelicateCoroutinesApi::class)
+    @DefaultHandler
+    fun handle(@DisplayName("Player Name") name: String) {
         GlobalScope.launch {
-            val uuid = runCatching { APIUtils.getUUIDFromUsername(name) }.getOrElse {
+            val uuid = EssentialAPI.getMojangAPI().getUUID(name)?.get() ?: run {
                 sendPrefixMessage("§cFailed to get $name's uuid")
                 return@launch
             }
 
-            val nameHistories = runCatching { APIUtils.getNameHistoryFromUUID(uuid) }.getOrElse {
+            val nameHistories = EssentialAPI.getMojangAPI().getNameHistory(uuid) ?: run {
                 sendPrefixMessage("§cFailed to get $name's Name History")
                 return@launch
             }
 
             val fontRenderer = mc.fontRendererObj
 
-            val nameHistoryTexts = nameHistories.map(transformNameHistoryToString)
+            val nameHistoryTexts = nameHistories.filterNotNull().map(transformNameHistoryToString)
 
             if (nameHistoryTexts.isEmpty()) {
                 sendPrefixMessage("§cSomething went wrong! Try again")

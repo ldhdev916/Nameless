@@ -24,40 +24,31 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.gui.shortcmd.ShortCommandGui
 import com.happyandjust.nameless.serialization.Converter
-import net.minecraft.command.ICommandSender
+import gg.essential.api.EssentialAPI
+import gg.essential.api.commands.Command
+import gg.essential.api.commands.DefaultHandler
 import net.minecraft.network.play.client.C01PacketChatMessage
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent
 import java.util.regex.Pattern
 
-object ShortCommand : ClientCommandBase("shortcommand") {
+object ShortCommand : Command("shortcommand") {
 
-    var openGui = false
     private val gson = Gson()
     var shortCommandInfos by ConfigValue("shortcommand", "list", emptyList(), CShortCommandInfoList)
+
+    override val commandAliases = hashSetOf(Alias("shortcmd"))
 
     init {
         MinecraftForge.EVENT_BUS.register(this)
     }
 
-    override fun getCommandAliases() = arrayListOf("shortcmd")
-
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
-        openGui = true
-    }
-
-    @SubscribeEvent
-    fun onRenderTick(e: TickEvent.RenderTickEvent) {
-        if (openGui) {
-            mc.displayGuiScreen(ShortCommandGui())
-            openGui = false
-        }
+    @DefaultHandler
+    fun handle() {
+        EssentialAPI.getGuiUtil().openScreen(ShortCommandGui())
     }
 
     @SubscribeEvent

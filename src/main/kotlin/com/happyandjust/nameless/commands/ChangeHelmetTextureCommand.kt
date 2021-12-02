@@ -18,51 +18,44 @@
 
 package com.happyandjust.nameless.commands
 
-import com.happyandjust.nameless.core.ClientCommandBase
+import com.happyandjust.nameless.dsl.sendClientMessage
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.features.impl.skyblock.FeatureChangeHelmetTexture
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
 import com.happyandjust.nameless.utils.SkyblockUtils
-import net.minecraft.command.ICommandSender
-import net.minecraft.util.BlockPos
+import gg.essential.api.commands.Command
+import gg.essential.api.commands.DefaultHandler
+import gg.essential.api.commands.DisplayName
 
-object ChangeHelmetTextureCommand : ClientCommandBase("helmettexture") {
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
-        if (args.isEmpty()) {
-            sendUsage("[SkyBlock ID]")
+object ChangeHelmetTextureCommand : Command("helmettexture") {
+
+    private fun getSkins(id: String) =
+        SkyblockUtils.allItems.values.filter { it.skin.isNotBlank() }.map { it.id }.filter { id.uppercase() in it }
+
+    @DefaultHandler
+    fun handle(@DisplayName("SkyBlock ID") id: String) {
+        val skyBlockItem = runCatching {
+            getSkyBlockItemByID(id.uppercase())
+        }.getOrElse {
+            sendPrefixMessage(it.message)
             return
         }
 
-        val skyBlockItem = try {
-            getSkyBlockItemByID(args[0].uppercase())
-        } catch (e: IllegalArgumentException) {
-            sendPrefixMessage(e.message)
+        skyBlockItem ?: run {
+            sendClientMessage(getSkins(id).joinToString("\n"))
             return
         }
+
         FeatureChangeHelmetTexture.setCurrentHelmetTexture(skyBlockItem)
         sendPrefixMessage("§aChanged Helmet Texture to ${skyBlockItem.id}")
-
     }
 
-    private fun getSkyBlockItemByID(id: String): SkyBlockItem {
-        val skyBlockItem =
-            SkyblockUtils.getItemFromId(id) ?: throw IllegalArgumentException("§cNo Such SkyBlock ID: $id")
+    private fun getSkyBlockItemByID(id: String): SkyBlockItem? {
+        val skyBlockItem = SkyblockUtils.getItemFromId(id) ?: return null
         return if (skyBlockItem.skin.isBlank()) {
             throw IllegalArgumentException("§c${skyBlockItem.id} doesn't have skin")
         } else skyBlockItem
     }
 
-    override fun addTabCompletionOptions(
-        sender: ICommandSender,
-        args: Array<out String>,
-        pos: BlockPos?
-    ): MutableList<String> {
-        return when (args.size) {
-            1 -> SkyblockUtils.allItems.values.filter { it.skin.isNotBlank() }.filter { it.id.contains(args[0], true) }
-                .map { it.id }
-                .toMutableList()
-            else -> super.addTabCompletionOptions(sender, args, pos)
-        }
-    }
 
 }

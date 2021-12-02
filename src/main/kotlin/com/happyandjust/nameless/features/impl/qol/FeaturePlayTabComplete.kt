@@ -19,9 +19,8 @@
 package com.happyandjust.nameless.features.impl.qol
 
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.Request
-import com.happyandjust.nameless.dsl.inHypixel
 import com.happyandjust.nameless.dsl.matchesMatcher
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.events.PacketEvent
@@ -29,6 +28,7 @@ import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.PacketListener
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiChat
+import gg.essential.api.EssentialAPI
 import net.minecraft.network.play.client.C01PacketChatMessage
 import net.minecraft.network.play.server.S3APacketTabComplete
 import java.util.regex.Pattern
@@ -46,7 +46,7 @@ object FeaturePlayTabComplete : SimpleFeature(
 
     fun fetchGameDataList() {
         val json =
-            JSONHandler(Request.get("https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw")).read(
+            JsonHandler(Request.get("https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw")).read(
                 JsonObject()
             )
 
@@ -57,7 +57,7 @@ object FeaturePlayTabComplete : SimpleFeature(
     private val PLAY = Pattern.compile("/play (?<msg>.*)")
 
     override fun onSendingPacket(e: PacketEvent.Sending) {
-        if (!mc.thePlayer.inHypixel() || !enabled) return
+        if (!EssentialAPI.getMinecraftUtil().isHypixel() || !enabled) return
 
         val msg = e.packet
 
@@ -72,7 +72,7 @@ object FeaturePlayTabComplete : SimpleFeature(
     }
 
     override fun onReceivedPacket(e: PacketEvent.Received) {
-        if (!mc.thePlayer.inHypixel() || !enabled) return
+        if (!EssentialAPI.getMinecraftUtil().isHypixel() || !enabled) return
         val gui = mc.currentScreen
         if (gui !is AccessorGuiChat) return
         val msg = e.packet

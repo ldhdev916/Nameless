@@ -18,11 +18,10 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.dsl.inHypixel
-import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ChatListener
+import gg.essential.api.EssentialAPI
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 
 object FeatureHideTipMessage : SimpleFeature(
@@ -37,7 +36,7 @@ object FeatureHideTipMessage : SimpleFeature(
 
     override fun onChatReceived(e: ClientChatReceivedEvent) {
         if (e.type.toInt() == 2) return
-        if (enabled && mc.thePlayer.inHypixel()) {
+        if (enabled && EssentialAPI.getMinecraftUtil().isHypixel()) {
             if (arrayOf(TIP_ALL, TIP_MESSAGE).any(e.message.unformattedText::matches)) {
                 e.isCanceled = true
             }

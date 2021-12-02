@@ -38,6 +38,7 @@ import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.serialization.converters.*
 import com.happyandjust.nameless.utils.StatAPIUtils
 import com.happyandjust.nameless.utils.Utils
+import gg.essential.api.EssentialAPI
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIText
@@ -384,10 +385,10 @@ object FeatureInGameStatViewer :
 
     enum class SupportGame {
         ALL {
-            override fun shouldDisplay() = mc.thePlayer.inHypixel()
+            override fun shouldDisplay() = EssentialAPI.getMinecraftUtil().isHypixel()
         },
         EXCEPT_LOBBY {
-            override fun shouldDisplay() = mc.thePlayer.inHypixel() && !Hypixel.inLobby
+            override fun shouldDisplay() = EssentialAPI.getMinecraftUtil().isHypixel() && !Hypixel.inLobby
         },
         SKYWARS {
             override fun shouldDisplay() = Hypixel.currentGame == GameType.SKYWARS

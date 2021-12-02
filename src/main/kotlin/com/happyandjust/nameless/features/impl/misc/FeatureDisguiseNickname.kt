@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.features.impl.misc
 
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.Request
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
@@ -33,10 +33,11 @@ import com.happyandjust.nameless.mixins.accessors.AccessorAbstractClientPlayer
 import com.happyandjust.nameless.mixins.accessors.AccessorNetworkPlayerInfo
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CString
-import com.happyandjust.nameless.utils.APIUtils
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.minecraft.MinecraftProfileTexture
 import com.mojang.authlib.properties.Property
+import gg.essential.api.EssentialAPI
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.minecraft.util.ResourceLocation
@@ -87,20 +88,21 @@ object FeatureDisguiseNickname : SimpleFeature(
 
     fun getNickname() = getParameterValue<String>("nick")
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun checkAndLoadSkin(username: String) {
         if (mc.currentScreen is FeatureGui) return // in case you're writing username but mod stupidly gets all text you write
         if (invalidUsernames.contains(username)) return
         if (username.equals(currentlyLoadedUsername, true)) return
         GlobalScope.launch {
             currentlyLoadedUsername = username
-            val uuid = runCatching { APIUtils.getUUIDFromUsername(username) }.getOrElse {
+            val uuid = EssentialAPI.getMojangAPI().getUUID(username)?.get() ?: run {
                 invalidUsernames.add(username)
                 currentlyLoadedUsername = null
                 return@launch
             }
 
             val json =
-                JSONHandler(Request.get("https://sessionserver.mojang.com/session/minecraft/profile/$uuid"))
+                JsonHandler(Request.get("https://sessionserver.mojang.com/session/minecraft/profile/$uuid"))
                     .read(JsonObject())
 
             mc.skinManager.loadProfileTextures(

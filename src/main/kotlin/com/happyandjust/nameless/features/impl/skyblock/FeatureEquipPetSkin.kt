@@ -21,7 +21,7 @@ package com.happyandjust.nameless.features.impl.skyblock
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
-import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.dsl.getMD5
 import com.happyandjust.nameless.dsl.getSkullOwner
 import com.happyandjust.nameless.dsl.mc
@@ -79,13 +79,13 @@ object FeatureEquipPetSkin : SimpleFeature(
 
     fun fetchPetSkinData() {
         pets.putAll(
-            JSONHandler(ResourceLocation("nameless", "pets.json"))
+            JsonHandler(ResourceLocation("nameless", "pets.json"))
                 .read(JsonObject())
                 .entrySet()
                 .map { it.key to gson.fromJson(it.value, PetInfo::class.java) }
         )
 
-        val petSkins = JSONHandler(ResourceLocation("nameless", "petskins.json"))
+        val petSkins = JsonHandler(ResourceLocation("nameless", "petskins.json"))
             .read(JsonObject())
             .entrySet()
             .associate { it.key to it.value.asString }

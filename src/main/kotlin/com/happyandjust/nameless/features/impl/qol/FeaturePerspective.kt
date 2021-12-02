@@ -52,7 +52,7 @@ object FeaturePerspective : SimpleFeature(Category.QOL, "perspective", "Perspect
     }
 
     override fun onKeyInput() {
-        if (Nameless.INSTANCE.keyBindings[KeyBindingCategory.PERSPECTIVE]!!.isKeyDown) {
+        if (Nameless.keyBindings[KeyBindingCategory.PERSPECTIVE]!!.isKeyDown) {
             invertEnableState()
         }
     }

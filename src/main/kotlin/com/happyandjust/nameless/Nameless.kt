@@ -34,11 +34,11 @@ import com.happyandjust.nameless.keybinding.NamelessKeyBinding
 import com.happyandjust.nameless.listener.*
 import com.happyandjust.nameless.serialization.converters.COutlineMode
 import com.happyandjust.nameless.utils.SkyblockUtils
+import gg.essential.api.commands.Command
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import net.minecraft.command.CommandBase
-import net.minecraftforge.client.ClientCommandHandler
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Mod
@@ -46,13 +46,8 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import java.io.File
 
-@Mod(modid = MOD_ID, name = MOD_NAME, version = VERSION)
-class Nameless {
-
-    companion object {
-        @Mod.Instance(MOD_ID)
-        lateinit var INSTANCE: Nameless
-    }
+@Mod(modid = MOD_ID, name = MOD_NAME, version = VERSION, modLanguageAdapter = "gg.essential.api.utils.KotlinAdapter")
+object Nameless {
 
     val keyBindings = KeyBindingCategory.values()
         .associateWith { NamelessKeyBinding(it.desc, it.key).also(ClientRegistry::registerKeyBinding) }
@@ -72,6 +67,7 @@ class Nameless {
         FeatureUpdateChecker.checkForUpdate()
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     @Mod.EventHandler
     fun init(e: FMLInitializationEvent) {
         if (!mc.framebuffer.isStencilEnabled) {
@@ -104,20 +100,17 @@ class Nameless {
             ChangeHelmetTextureCommand,
             ShortCommand
         )
+
         registerListeners(FeatureListener, BasicListener, OutlineHandleListener, LocrawListener, WaypointListener)
     }
 
 
-    private fun registerCommands(vararg commands: CommandBase) {
-        ClientCommandHandler.instance.apply {
-            commands.forEach { registerCommand(it) }
-        }
+    private fun registerCommands(vararg commands: Command) {
+        commands.forEach(Command::register)
     }
 
     private fun registerListeners(vararg listeners: Any) {
-        for (listener in listeners) {
-            MinecraftForge.EVENT_BUS.register(listener)
-        }
+        listeners.forEach(MinecraftForge.EVENT_BUS::register)
     }
 
 }

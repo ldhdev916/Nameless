@@ -18,16 +18,19 @@
 
 package com.happyandjust.nameless.commands
 
-import com.happyandjust.nameless.core.ClientCommandBase
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.scanAuction
-import com.happyandjust.nameless.dsl.sendClientMessage
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.gui.auction.AuctionGui
 import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
+import gg.essential.api.commands.Command
+import gg.essential.api.commands.DefaultHandler
+import gg.essential.api.commands.DisplayName
+import gg.essential.api.commands.Greedy
+import gg.essential.api.utils.GuiUtil
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import net.minecraft.command.ICommandSender
 import net.minecraft.event.ClickEvent
 import net.minecraft.event.HoverEvent
 import net.minecraft.util.ChatComponentText
@@ -36,23 +39,21 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 
-object SearchBinCommand : ClientCommandBase("searchbin") {
+object SearchBinCommand : Command("searchbin") {
 
     private var openGui: (() -> AuctionGui)? = null
 
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
-        if (args.isEmpty()) {
+    @OptIn(DelicateCoroutinesApi::class)
+    @DefaultHandler
+    fun handle(@DisplayName("Item Name") @Greedy name: String?) {
+        name ?: run {
             openGui?.let {
-                MinecraftForge.EVENT_BUS.register(this)
+                GuiUtil.open(it())
                 return
             }
-            sendClientMessage("§cUsage: /searchbin [Item Name]")
+            sendPrefixMessage("§cUsage: /searchbin [Item Name]")
             return
         }
-
-        openGui = null
-        val name = args.joinToString(" ")
-
         sendPrefixMessage("§aSearching $name...")
 
         GlobalScope.launch {

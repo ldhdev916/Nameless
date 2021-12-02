@@ -19,11 +19,12 @@
 package com.happyandjust.nameless.utils
 
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.Request
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.features.impl.qol.FeatureInGameStatViewer
 import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.minecraft.entity.player.EntityPlayer
@@ -69,6 +70,7 @@ object StatAPIUtils {
         processingRequest.clear()
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun getStatValue(player: EntityPlayer, informationType: FeatureInGameStatViewer.InformationType): String {
 
         val json = playerJSONCache[player] ?: run {
@@ -85,7 +87,7 @@ object StatAPIUtils {
 
                     val s = Request.get("https://api.hypixel.net/player?key=$api&uuid=$uuid")
 
-                    playerJSONCache[player] = JSONHandler(s).read(JsonObject())["player"].asJsonObject
+                    playerJSONCache[player] = JsonHandler(s).read(JsonObject())["player"].asJsonObject
 
                     processingRequest.remove(player)
                 }

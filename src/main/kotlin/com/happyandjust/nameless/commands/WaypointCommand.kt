@@ -18,25 +18,16 @@
 
 package com.happyandjust.nameless.commands
 
-import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.gui.waypoint.WaypointManagerGui
-import net.minecraft.command.ICommandSender
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent
+import gg.essential.api.commands.Command
+import gg.essential.api.commands.DefaultHandler
+import gg.essential.api.utils.GuiUtil
 
-object WaypointCommand : ClientCommandBase("waypoint") {
+object WaypointCommand : Command("waypoint") {
 
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
-        MinecraftForge.EVENT_BUS.register(this)
+    @DefaultHandler
+    fun handle() {
+        GuiUtil.open(WaypointManagerGui())
     }
-
-    @SubscribeEvent
-    fun onRenderTick(e: TickEvent.RenderTickEvent) {
-        mc.displayGuiScreen(WaypointManagerGui())
-        MinecraftForge.EVENT_BUS.unregister(this)
-    }
-
 
 }

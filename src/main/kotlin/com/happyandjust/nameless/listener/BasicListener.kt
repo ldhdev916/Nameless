@@ -20,9 +20,9 @@ package com.happyandjust.nameless.listener
 
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.dsl.LOGGER
-import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.gui.feature.FeatureGui
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
+import gg.essential.api.utils.GuiUtil
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.InputEvent
 import net.minecraftforge.fml.common.network.FMLNetworkEvent
@@ -31,8 +31,8 @@ object BasicListener {
 
     @SubscribeEvent
     fun onKeyInput(e: InputEvent.KeyInputEvent) {
-        if (Nameless.INSTANCE.keyBindings[KeyBindingCategory.OPEN_GUI]!!.isKeyDown) {
-            mc.displayGuiScreen(FeatureGui())
+        if (Nameless.keyBindings[KeyBindingCategory.OPEN_GUI]!!.isKeyDown) {
+            GuiUtil.open(FeatureGui())
         }
     }
 

@@ -32,6 +32,7 @@ import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.COverlay
+import gg.essential.api.EssentialAPI
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIContainer
@@ -87,7 +88,7 @@ object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", 
     override val overlayPoint = ConfigValue("party", "overlay", Overlay.DEFAULT, COverlay)
 
     override fun onChatReceived(e: ClientChatReceivedEvent) {
-        if (!enabled || !mc.thePlayer.inHypixel()) return
+        if (!enabled || !EssentialAPI.getMinecraftUtil().isHypixel()) return
         if (e.type.toInt() == 2) return
 
         val msg = e.message.unformattedText.stripControlCodes()
@@ -111,7 +112,7 @@ object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", 
 
     override fun onKeyInput() {
         currentPartyInfo?.let {
-            val keyBinding = Nameless.INSTANCE.keyBindings
+            val keyBinding = Nameless.keyBindings
 
             if (keyBinding[KeyBindingCategory.ACCEPT_PARTY]!!.isKeyDown) {
                 mc.thePlayer.sendChatMessage("/p accept ${it.nickname}")
@@ -131,7 +132,7 @@ object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", 
     }
 
     override fun shouldDisplayInRelocateGui(): Boolean {
-        return enabled && mc.thePlayer.inHypixel() && getParameterValue("press")
+        return enabled && EssentialAPI.getMinecraftUtil().isHypixel() && getParameterValue("press")
     }
 
     override fun renderOverlay0(partialTicks: Float) {

@@ -18,16 +18,11 @@
 
 package com.happyandjust.nameless.commands
 
-import com.happyandjust.nameless.core.ClientCommandBase
-import net.minecraft.command.ICommandSender
+import gg.essential.api.commands.Command
+import gg.essential.api.commands.DefaultHandler
 
-object DevCommand : ClientCommandBase("devtest") {
+object DevCommand : Command("devtest") {
 
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
-        try {
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
+    @DefaultHandler
+    fun handle() = Unit
 }

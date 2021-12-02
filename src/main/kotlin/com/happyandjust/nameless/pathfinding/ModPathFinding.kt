@@ -47,4 +47,3 @@ class ModPathFinding(private val target: BlockPos, private val canFly: Boolean) 
     }
 
 }
-

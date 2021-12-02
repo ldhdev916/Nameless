@@ -31,5 +31,5 @@ enum class KeyBindingCategory(val desc: String, val key: Int) {
     DENY_PARTY("Deny Party", Keyboard.KEY_N),
     FREEZE_WAYPOINT_PATH("Freeze Waypoint Paths", Keyboard.KEY_NONE);
 
-    fun getKeyBinding() = Nameless.INSTANCE.keyBindings[this]!!
+    fun getKeyBinding() = Nameless.keyBindings[this]!!
 }

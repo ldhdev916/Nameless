@@ -19,11 +19,14 @@
 package com.happyandjust.nameless.features.impl.settings
 
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.dsl.matchesMatcher
+import com.happyandjust.nameless.dsl.sendPrefixMessage
+import com.happyandjust.nameless.dsl.stripControlCodes
 import com.happyandjust.nameless.features.SettingFeature
 import com.happyandjust.nameless.features.listener.ChatListener
 import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.gui.feature.PropertyData
+import gg.essential.api.EssentialAPI
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import java.util.regex.Pattern
 
@@ -43,7 +46,7 @@ object FeatureHypixelAPIKey : SettingFeature("hypixelapikey", "Hypixel API Key",
     }
 
     override fun onChatReceived(e: ClientChatReceivedEvent) {
-        if (e.type.toInt() != 2 && mc.thePlayer.inHypixel()) {
+        if (e.type.toInt() != 2 && EssentialAPI.getMinecraftUtil().isHypixel()) {
             API_PATTERN.matchesMatcher(e.message.unformattedText.stripControlCodes()) {
                 apiKey = it.group("api")
                 sendPrefixMessage("§aGrabbed Hypixel API!")

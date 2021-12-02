@@ -20,11 +20,11 @@ package com.happyandjust.nameless.listener
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
-import com.happyandjust.nameless.dsl.inHypixel
 import com.happyandjust.nameless.dsl.matchesMatcher
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.LocrawInfo
+import gg.essential.api.EssentialAPI
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
@@ -45,7 +45,7 @@ object LocrawListener {
         val entityPlayerSP = mc.thePlayer ?: return
 
         locrawTick++
-        if (locrawTick == 20 && entityPlayerSP.inHypixel()) {
+        if (locrawTick == 20 && EssentialAPI.getMinecraftUtil().isHypixel()) {
             sentCommand = true
             entityPlayerSP.sendChatMessage("/locraw")
         }

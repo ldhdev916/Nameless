@@ -27,7 +27,7 @@ import kotlin.reflect.KMutableProperty0
 
 object FeatureOutlineMode : SettingFeature("outlinemode", "Outline Mode", "BOX, OUTLINE") {
 
-    override fun getProperty(): KMutableProperty0<*> = Nameless.INSTANCE::selectedOutlineMode
+    override fun getProperty(): KMutableProperty0<*> = Nameless::selectedOutlineMode
 
     override fun getComponentType() = ComponentType.SELECTOR
 

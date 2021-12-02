@@ -21,14 +21,14 @@ package com.happyandjust.nameless.config
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
-import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.serialization.Converter
 import java.io.File
 
 object ConfigHandler {
     private val file = File("config/Nameless.json")
-    private val handler: JSONHandler
-        get() = JSONHandler(file)
+    private val handler: JsonHandler
+        get() = JsonHandler(file)
     private val config: JsonObject
         get() = handler.read(JsonObject())
 

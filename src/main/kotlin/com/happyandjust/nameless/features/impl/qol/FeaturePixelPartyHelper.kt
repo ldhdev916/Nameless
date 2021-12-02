@@ -33,6 +33,7 @@ import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.elementa.utils.withAlpha
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.minecraft.block.BlockAir
@@ -109,6 +110,7 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
 
     private fun checkForRequirement() = enabled && Hypixel.currentGame == GameType.PIXEL_PARTY
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun tick() {
         if (!checkForRequirement()) return
         scanTick = (scanTick + 1) % 3
@@ -126,7 +128,7 @@ object FeaturePixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper",
 
                 for (pos in BlockPos.getAllInBox(from, to)) {
                     val blockState = mc.theWorld.getBlockState(pos)
-                    val block = blockState.block.takeIf { it == Blocks.stained_hardened_clay } ?: continue
+                    val block = blockState.block.takeIf { block -> block == Blocks.stained_hardened_clay } ?: continue
 
                     if (block.getMetaFromState(blockState) == meta) {
                         set.add(pos.getAxisAlignedBB())

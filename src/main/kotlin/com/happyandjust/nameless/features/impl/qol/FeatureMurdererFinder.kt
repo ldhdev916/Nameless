@@ -20,7 +20,7 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.ColorInfo
-import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.checkAndReplace
 import com.happyandjust.nameless.core.toChromaColor
 import com.happyandjust.nameless.dsl.*
@@ -126,7 +126,7 @@ object FeatureMurdererFinder : SimpleFeature(
     private val assassinMapHash = hashMapOf<String, String>()
 
     fun fetchAssassinData() {
-        val json = JSONHandler(ResourceLocation("nameless", "assassins.json")).read(JsonObject())
+        val json = JsonHandler(ResourceLocation("nameless", "assassins.json")).read(JsonObject())
         assassinMapHash.putAll(json.entrySet().map { it.key to it.value.asString })
     }
 

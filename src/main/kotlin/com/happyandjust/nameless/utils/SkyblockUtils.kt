@@ -21,7 +21,7 @@ package com.happyandjust.nameless.utils
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.Request
 import com.happyandjust.nameless.dsl.isFairySoul
 import com.happyandjust.nameless.dsl.mc
@@ -53,7 +53,7 @@ object SkyblockUtils {
     fun getItemFromId(id: String) = allItems[id.uppercase()]
 
     fun fetchSkyBlockData() {
-        val handler = JSONHandler(ResourceLocation("nameless", "fairysouls.json"))
+        val handler = JsonHandler(ResourceLocation("nameless", "fairysouls.json"))
 
         val souls = handler.read(JsonObject())
 
@@ -73,7 +73,7 @@ object SkyblockUtils {
 
         val s = Request.get("https://api.hypixel.net/resources/skyblock/items")
 
-        val json = JSONHandler(s).read(JsonObject())
+        val json = JsonHandler(s).read(JsonObject())
 
         val items = json["items"].asJsonArray
 
@@ -143,7 +143,7 @@ object SkyblockUtils {
     fun getAuctionDataInPage(page: Int): List<AuctionInfo> {
         val s = Request.get("https://api.hypixel.net/skyblock/auctions?page=$page")
 
-        val json = JSONHandler(s).read(JsonObject())
+        val json = JsonHandler(s).read(JsonObject())
 
         if (!json["success"].asBoolean) return emptyList()
 
@@ -170,7 +170,7 @@ object SkyblockUtils {
     fun getMaxAuctionPage(): Int {
         val s = Request.get("https://api.hypixel.net/skyblock/auctions")
 
-        val json = JSONHandler(s).read(JsonObject())
+        val json = JsonHandler(s).read(JsonObject())
 
         if (!json["success"].asBoolean) return 0
 

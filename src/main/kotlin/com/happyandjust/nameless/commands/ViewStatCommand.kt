@@ -19,31 +19,29 @@
 package com.happyandjust.nameless.commands
 
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.ClientCommandBase
-import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.Request
 import com.happyandjust.nameless.dsl.notifyException
 import com.happyandjust.nameless.dsl.sendClientMessage
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.features.impl.qol.FeatureInGameStatViewer
 import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
-import com.happyandjust.nameless.utils.APIUtils
+import gg.essential.api.EssentialAPI
+import gg.essential.api.commands.Command
+import gg.essential.api.commands.DefaultHandler
+import gg.essential.api.commands.DisplayName
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import net.minecraft.command.ICommandSender
 import net.minecraft.util.EnumChatFormatting
 
-object ViewStatCommand : ClientCommandBase("viewstat") {
+object ViewStatCommand : Command("viewstat") {
 
-    override fun processCommand(sender: ICommandSender, args: Array<out String>) {
-        if (args.size != 1) {
-            sendUsage("[Name]")
-            return
-        }
-        val name = args[0]
-
+    @OptIn(DelicateCoroutinesApi::class)
+    @DefaultHandler
+    fun handle(@DisplayName("Name") name: String) {
         GlobalScope.launch {
-            val uuid = runCatching { APIUtils.getUUIDFromUsername(name) }.getOrElse {
+            val uuid = EssentialAPI.getMojangAPI().getUUID(name)?.get() ?: run {
                 sendPrefixMessage("§cFailed to get uuid of $name")
                 return@launch
             }
@@ -54,14 +52,14 @@ object ViewStatCommand : ClientCommandBase("viewstat") {
 
             runCatching {
                 val s = Request.get("https://api.hypixel.net/player?key=${FeatureHypixelAPIKey.apiKey}&uuid=$uuid")
-                val json = JSONHandler(s).read(JsonObject())["player"].asJsonObject
+                val json = JsonHandler(s).read(JsonObject())["player"].asJsonObject
 
                 sendClientMessage("§bStats of ${getPlayerName(json)}")
 
                 sendClientMessage(identifiers.joinToString("\n") {
                     it.informationType.run { getFormatText(getStatValue(json)) }
                 })
-            }.exceptionOrNull()?.notifyException()
+            }.onFailure { it.notifyException() }
         }
     }
 

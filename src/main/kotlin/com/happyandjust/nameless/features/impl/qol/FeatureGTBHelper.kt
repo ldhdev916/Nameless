@@ -20,7 +20,7 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.google.gson.JsonArray
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.Overlay
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
@@ -66,7 +66,7 @@ object FeatureGTBHelper : OverlayFeature(
     private val words = hashMapOf<String, String>()
 
     fun fetchWordsData() {
-        val jsonArray = JSONHandler(ResourceLocation("nameless", "words.json")).read(JsonArray())
+        val jsonArray = JsonHandler(ResourceLocation("nameless", "words.json")).read(JsonArray())
         words.putAll(jsonArray.map { it.asJsonObject }.map { it["english"].asString to it["korean"].asString })
     }
 

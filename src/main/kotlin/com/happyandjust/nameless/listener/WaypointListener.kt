@@ -26,6 +26,7 @@ import com.happyandjust.nameless.dsl.withAlpha
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.pathfinding.ModPathFinding
 import com.happyandjust.nameless.utils.RenderUtils
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -42,6 +43,7 @@ object WaypointListener {
     private var pathFreezed = false
     val waypointInfos = arrayListOf<WaypointInfo>()
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun createPathToPosition() {
         GlobalScope.launch {
             waypointInfos.filter { it.enabled }.forEach {
@@ -82,7 +84,7 @@ object WaypointListener {
 
     @SubscribeEvent
     fun onKeyInput(e: InputEvent.KeyInputEvent) {
-        if (Nameless.INSTANCE.keyBindings[KeyBindingCategory.FREEZE_WAYPOINT_PATH]!!.isKeyDown) {
+        if (Nameless.keyBindings[KeyBindingCategory.FREEZE_WAYPOINT_PATH]!!.isKeyDown) {
             pathFreezed = !pathFreezed
         }
     }

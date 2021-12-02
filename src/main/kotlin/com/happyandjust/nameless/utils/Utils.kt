@@ -90,7 +90,7 @@ object Utils {
      * https://github.com/Skytils/SkytilsMod/blob/1.x/LICENSE.md
      */
     fun deleteOldJar() {
-        val modFile = Nameless.INSTANCE.modFile
+        val modFile = Nameless.modFile
 
         if (modFile.delete()) {
             return

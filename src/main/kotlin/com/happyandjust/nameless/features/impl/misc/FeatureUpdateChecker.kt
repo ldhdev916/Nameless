@@ -21,7 +21,7 @@ package com.happyandjust.nameless.features.impl.misc
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.VERSION
-import com.happyandjust.nameless.core.JSONHandler
+import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.Request
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.Category
@@ -29,6 +29,7 @@ import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.features.listener.ScreenOpenListener
 import com.happyandjust.nameless.gui.UpdateGui
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.minecraft.client.gui.GuiMainMenu
@@ -51,12 +52,13 @@ object FeatureUpdateChecker : SimpleFeature(
     private var needUpdate = false
     private var shouldShow = false
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun checkForUpdate() {
         if (!enabled) return
 
         GlobalScope.launch {
             val json =
-                JSONHandler(Request.get("https://api.github.com/repos/HappyAndJust/Nameless/releases/latest"))
+                JsonHandler(Request.get("https://api.github.com/repos/HappyAndJust/Nameless/releases/latest"))
                     .read(JsonObject())
             val latestTag = json["tag_name"].asString.drop(1)
 
@@ -75,7 +77,7 @@ object FeatureUpdateChecker : SimpleFeature(
                     UpdateGui(body).apply {
                         htmlURL = URI(html_url)
                         downloadURL = URL(download_url)
-                        jarFile = File(Nameless.INSTANCE.modFile.parentFile, assets["name"].asString)
+                        jarFile = File(Nameless.modFile.parentFile, assets["name"].asString)
                     }
                 }
                 needUpdate = true
