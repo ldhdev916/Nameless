@@ -64,6 +64,7 @@ Unless, You can't use rendering outline on entity
   - Show Ping numbers in TabList
   - Tab Complete /play commands in hypixel
   - Trajectory Preview
+  - Charm
 </details>
 <details>
   <summary>SkyBlock</summary>

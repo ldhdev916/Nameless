@@ -47,7 +47,7 @@ configurations {
 
 dependencies {
     implementation "org.spongepowered:mixin:0.7.11-SNAPSHOT"
-    implementation 'gg.essential:essential-1.8.9-forge:1598+release-launch'
+    implementation 'gg.essential:essential-1.8.9-forge:1612+release-launch'
     include 'gg.essential:loader-launchwrapper:1.1.2'
 
     annotationProcessor "org.spongepowered:mixin:0.7.11-SNAPSHOT"

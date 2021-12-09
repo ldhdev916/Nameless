@@ -53,8 +53,8 @@ object Utils {
     fun getHighestGround(pos: BlockPos, shouldBeValid: Boolean): BlockPos {
         var pos = pos
         val world = mc.theWorld
-        while (world.getBlockAtPos(pos).let { it.isPassable(world, pos) && it.material != Material.water }) {
-            pos = pos.add(0, -1, 0)
+        while (world.getBlockAtPos(pos).run { isPassable(world, pos) && material != Material.water }) {
+            pos = pos.down()
             if (pos.y <= 0) return pos
         }
 

@@ -206,3 +206,13 @@ fun Double.transformToPrecision(precision: Int): Double {
 fun Double.transformToPrecisionString(precision: Int) = transformToPrecision(precision).formatDouble()
 
 operator fun Pair<*, *>.contains(other: Any?) = first == other || second == other
+
+inline fun <T> repeat0(times: Int, action: (Int) -> T): List<T> {
+    val list = arrayListOf<T>()
+
+    for (i in 0 until times) {
+        list.add(action(i))
+    }
+
+    return list
+}

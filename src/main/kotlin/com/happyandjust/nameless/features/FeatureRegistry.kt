@@ -240,6 +240,7 @@ object FeatureRegistry {
     val CANCEL_CERTAIN_BLOCK_RENDERING = FeatureCancelCertainBlockRendering.register("In Game")
     val PIXEL_PARTY_HELPER = FeaturePixelPartyHelper.register("Hypixel")
     val IN_GAME_STAT_VIEWER = FeatureInGameStatViewer.register("Hypixel")
+    val CHARM = FeatureCharm.register("In Game")
 
     //SKYBLOCK
     val FAIRY_SOUL_WAYPOINT = FeatureFairySoulWaypoint.register("SkyBlock")
