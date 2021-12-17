@@ -21,10 +21,7 @@ package com.happyandjust.nameless.features
 import com.happyandjust.nameless.MOD_ID
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.features.impl.general.*
-import com.happyandjust.nameless.features.impl.misc.FeatureClickCopyChat
-import com.happyandjust.nameless.features.impl.misc.FeatureDisguiseNickname
-import com.happyandjust.nameless.features.impl.misc.FeatureTextureOverlay
-import com.happyandjust.nameless.features.impl.misc.FeatureUpdateChecker
+import com.happyandjust.nameless.features.impl.misc.*
 import com.happyandjust.nameless.features.impl.qol.*
 import com.happyandjust.nameless.features.impl.settings.FeatureGhostBlock
 import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
@@ -225,12 +222,7 @@ object FeatureRegistry {
             parameter(ordinal, name)
         }
     }.register("Miscellaneous")
-    val NO_HURTCAM = SimpleFeature(
-        Category.MISCELLANEOUS,
-        "nohurtcam",
-        "No HurtCam",
-        "Remove the hurt animation when being hit"
-    ).register("Damage")
+    val NO_HURTCAM = FeatureNoHurtCam.register("Damage")
     val CHANGE_DAMAGED_ENTITY_COLOR = SimpleFeature(
         Category.MISCELLANEOUS,
         "changedamagedentitycolor",
@@ -248,6 +240,8 @@ object FeatureRegistry {
         )
     }.register("Damage")
     val CLICK_COPY_CHAT = FeatureClickCopyChat.register("Miscellaneous")
+    val CHANGE_SKY_COLOR = FeatureChangeSkyColor.register("Miscellaneous")
+    val CHANGE_WORLD_TIME = FeatureChangeWorldTime.register("Miscellaneous")
 
     //QOL
     val JOIN_HYPIXEL_BUTTON = FeatureHypixelButton.register("Button")

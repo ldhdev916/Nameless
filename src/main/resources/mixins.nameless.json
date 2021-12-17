@@ -34,6 +34,7 @@
     "MixinItemArmor",
     "MixinModList",
     "MixinUtil",
+    "MixinWorldInfo",
     "accessors.AccessorEntity",
     "accessors.AccessorItemAxe",
     "accessors.AccessorItemPickaxe",

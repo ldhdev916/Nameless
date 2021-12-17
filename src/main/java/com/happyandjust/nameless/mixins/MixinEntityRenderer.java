@@ -19,10 +19,12 @@
 package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.features.FeatureRegistry;
+import com.happyandjust.nameless.features.impl.misc.FeatureNoHurtCam;
 import com.happyandjust.nameless.features.impl.qol.FeatureCharm;
 import com.happyandjust.nameless.mixinhooks.EntityRendererHook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.MovingObjectPosition;
 import org.spongepowered.asm.mixin.Mixin;
@@ -69,9 +71,10 @@ public class MixinEntityRenderer {
         return EntityRendererHook.INSTANCE.overrideMouse();
     }
 
-    @Inject(method = "hurtCameraEffect", at = @At("HEAD"), cancellable = true)
-    public void noHurtCam(float entitylivingbase, CallbackInfo ci) {
-        if (FeatureRegistry.INSTANCE.getNO_HURTCAM().getEnabled()) ci.cancel();
+    @Redirect(method = "hurtCameraEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;rotate(FFFF)V", ordinal = 2))
+    public void noHurtCam(float angle, float x, float y, float z) {
+        GlStateManager.rotate(angle / 14f * FeatureNoHurtCam.INSTANCE.getHurtCamModifier(), x, y, z);
+
     }
 
     @Inject(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;renderEntities(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", ordinal = 1, shift = At.Shift.AFTER))

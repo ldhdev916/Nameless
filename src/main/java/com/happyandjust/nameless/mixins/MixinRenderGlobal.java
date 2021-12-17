@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
+import com.happyandjust.nameless.features.impl.misc.FeatureChangeSkyColor;
 import com.happyandjust.nameless.features.impl.qol.FeatureAFKMode;
 import com.happyandjust.nameless.mixinhooks.RenderGlobalHook;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -26,6 +27,7 @@ import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.EnumWorldBlockLayer;
+import net.minecraft.util.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -64,6 +66,11 @@ public class MixinRenderGlobal {
     @Redirect(method = "renderEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;isRenderEntityOutlines()Z"))
     public boolean cancelOutline(RenderGlobal renderGlobal) {
         return false;
+    }
+
+    @Redirect(method = "renderSky(FI)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/WorldClient;getSkyColor(Lnet/minecraft/entity/Entity;F)Lnet/minecraft/util/Vec3;"))
+    public Vec3 changeSkyColor(WorldClient instance, Entity entity, float partialTicks) {
+        return FeatureChangeSkyColor.INSTANCE.getEnabled() ? FeatureChangeSkyColor.INSTANCE.getConvert() : instance.getSkyColor(entity, partialTicks);
     }
 
 

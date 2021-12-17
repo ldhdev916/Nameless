@@ -100,9 +100,11 @@ Unless, You can't use rendering outline on entity
   - Disguise Nickname
   - Hide Other Player's Fish Hook
   - Hit Delay Fix
-  - No HurtCam
+  - HurtCam Adjuster
   - Stop Log Spamming
   - Texture Overlay
+  - Change Sky Color
+  - Change World Time
 </details>
 <details>
   <summary>KeyBindings</summary>
