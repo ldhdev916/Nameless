@@ -18,38 +18,39 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.core.ColorInfo
-import com.happyandjust.nameless.core.toChromaColor
+import com.happyandjust.nameless.core.info.ColorInfo
+import com.happyandjust.nameless.core.value.toChromaColor
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.StencilListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.serialization.converters.CChromaColor
-import net.minecraft.entity.Entity
 import net.minecraft.entity.passive.EntityBat
 import java.awt.Color
 
-object FeatureGlowBats : SimpleFeature(Category.SKYBLOCK, "glowbats", "Glow Bats in SkyBlock Dungeons", ""),
-    StencilListener {
+object FeatureGlowBats : SimpleFeature(Category.SKYBLOCK, "glowbats", "Glow Bats in SkyBlock Dungeons", "") {
+
+    private var color by FeatureParameter(
+        0,
+        "glowbats",
+        "color",
+        "Glowing Color",
+        "",
+        Color.pink.toChromaColor(),
+        CChromaColor
+    )
 
     init {
-        parameters["color"] = FeatureParameter(
-            0,
-            "glowbats",
-            "color",
-            "Glowing Color",
-            "",
-            Color.pink.toChromaColor(),
-            CChromaColor
-        )
-    }
-
-    override fun getOutlineColor(entity: Entity): ColorInfo? {
-        return if (enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty(PropertyKey.DUNGEON) && entity is EntityBat)
-            ColorInfo(getParameterValue<Color>("color").rgb, ColorInfo.ColorPriority.HIGHEST)
-        else null
+        on<OutlineRenderEvent>().filter {
+            enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty(
+                PropertyKey.DUNGEON
+            ) && entity is EntityBat
+        }.subscribe {
+            colorInfo = ColorInfo(color.rgb, ColorInfo.ColorPriority.HIGHEST)
+        }
     }
 }

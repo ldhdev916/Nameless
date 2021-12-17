@@ -16,11 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.listener
+package com.happyandjust.nameless.core
 
-import net.minecraftforge.event.entity.living.EnderTeleportEvent
+data class TickTimer(private val targetTick: Int) {
 
-interface EnderTeleportListener {
+    private var currentTick = 0
 
-    fun onEnderTeleport(e: EnderTeleportEvent)
+    fun reset() = apply {
+        currentTick = 0
+    }
+
+    fun update() = apply {
+        currentTick = (currentTick + 1) % targetTick
+    }
+
+    fun check() = currentTick == 0
+
+    companion object {
+        fun withSecond(second: Number) = TickTimer((second.toDouble() * 20).toInt())
+    }
 }

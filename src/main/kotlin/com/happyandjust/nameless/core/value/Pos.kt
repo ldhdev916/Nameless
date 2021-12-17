@@ -16,8 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.serialization.converters
+package com.happyandjust.nameless.core.value
 
-import com.happyandjust.nameless.features.impl.qol.FeatureInGameStatViewer
 
-object CDisplayType : CEnum<FeatureInGameStatViewer.DisplayType>(FeatureInGameStatViewer.DisplayType::valueOf)
+enum class Pos {
+    TOP_LEFT,
+    TOP_CENTER,
+    TOP_RIGHT,
+
+    LEFT,
+    CENTER,
+    RIGHT,
+
+    BOTTOM_LEFT,
+    BOTTOM_CENTER,
+    BOTTOM_RIGHT;
+
+    companion object {
+        val v = values()
+    }
+}

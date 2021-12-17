@@ -68,7 +68,7 @@ object FontRendererHook {
     private fun getCurrentSessionNickname(): String {
         val feature = FeatureRegistry.DISGUISE_NICKNAME
 
-        return if (feature.enabled) feature.getNickname() else mc.session.username ?: ""
+        return if (feature.enabled) feature.nick else mc.session.username ?: ""
     }
 
 

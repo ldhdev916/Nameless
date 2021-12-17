@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.features.impl.settings
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.core.OutlineMode
+import com.happyandjust.nameless.core.enums.OutlineMode
 import com.happyandjust.nameless.features.SettingFeature
 import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.gui.feature.PropertyData

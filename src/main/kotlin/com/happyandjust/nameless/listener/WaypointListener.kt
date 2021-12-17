@@ -18,11 +18,13 @@
 
 package com.happyandjust.nameless.listener
 
-import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.value.toChromaColor
+import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.toVec3
 import com.happyandjust.nameless.dsl.withAlpha
+import com.happyandjust.nameless.events.KeyPressEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.pathfinding.ModPathFinding
 import com.happyandjust.nameless.utils.RenderUtils
@@ -32,14 +34,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import net.minecraft.util.BlockPos
 import net.minecraftforge.client.event.RenderWorldLastEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.InputEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent
 import java.awt.Color
 
 object WaypointListener {
 
-    private var pathTick = 0
+    private val pathTimer = TickTimer.withSecond(1)
     private var pathFreezed = false
     val waypointInfos = arrayListOf<WaypointInfo>()
 
@@ -52,41 +51,27 @@ object WaypointListener {
         }
     }
 
-    @SubscribeEvent
-    fun onTick(e: TickEvent.ClientTickEvent) {
-        if (e.phase == TickEvent.Phase.START) return
-        if (mc.thePlayer == null || mc.theWorld == null) return
-
-        if (pathFreezed) return
-
-        pathTick = (pathTick + 1) % 20
-
-        if (pathTick == 0) {
+    init {
+        on<SpecialTickEvent>().filter { !pathFreezed && pathTimer.update().check() }.subscribe {
             createPathToPosition()
         }
-    }
-
-    @SubscribeEvent
-    fun onWorldRender(e: RenderWorldLastEvent) {
-
-        for (waypoint in waypointInfos) {
-            if (!waypoint.enabled) continue
-            val color = waypoint.color.rgb
-            RenderUtils.drawPath(
-                waypoint.waypointPaths,
-                if (pathFreezed) color.withAlpha(0.5f) else color,
-                e.partialTicks
-            )
-            RenderUtils.draw3DString(waypoint.name, waypoint.targetPos, 2.5, color, e.partialTicks)
-            RenderUtils.renderBeaconBeam(waypoint.targetPos.toVec3(), color, 0.7f, e.partialTicks)
+        on<RenderWorldLastEvent>().subscribe {
+            for (waypoint in waypointInfos) {
+                if (!waypoint.enabled) continue
+                val color = waypoint.color.rgb
+                RenderUtils.drawPath(
+                    waypoint.waypointPaths,
+                    if (pathFreezed) color.withAlpha(0.5f) else color,
+                    partialTicks
+                )
+                RenderUtils.draw3DString(waypoint.name, waypoint.targetPos, 2.5, color, partialTicks)
+                RenderUtils.renderBeaconBeam(waypoint.targetPos.toVec3(), color, 0.7f, partialTicks)
+            }
         }
-    }
-
-    @SubscribeEvent
-    fun onKeyInput(e: InputEvent.KeyInputEvent) {
-        if (Nameless.keyBindings[KeyBindingCategory.FREEZE_WAYPOINT_PATH]!!.isKeyDown) {
-            pathFreezed = !pathFreezed
-        }
+        on<KeyPressEvent>().filter { isNew && !inGui && keyBindingCategory == KeyBindingCategory.FREEZE_WAYPOINT_PATH }
+            .subscribe {
+                pathFreezed = !pathFreezed
+            }
     }
 
     data class WaypointInfo(var name: String, var targetPos: BlockPos, var canFly: Boolean) {

@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.serialization.converters
+package com.happyandjust.nameless.events
 
-import com.happyandjust.nameless.hypixel.skyblock.PetSkinType
+import net.minecraftforge.fml.common.eventhandler.Event
 
-object CPetSkinType : CEnum<PetSkinType>(PetSkinType::valueOf)
+data class SpecialOverlayEvent(val partialTicks: Float) : Event()

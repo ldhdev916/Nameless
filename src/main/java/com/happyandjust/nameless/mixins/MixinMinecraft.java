@@ -58,6 +58,6 @@ public class MixinMinecraft {
     public void afkMode(CallbackInfoReturnable<Integer> cir) {
         FeatureAFKMode feature = FeatureRegistry.INSTANCE.getAFK_MODE();
 
-        if (feature.getEnabled()) cir.setReturnValue(feature.getParameterValue("fps"));
+        if (feature.getEnabled()) cir.setReturnValue(feature.getFps());
     }
 }

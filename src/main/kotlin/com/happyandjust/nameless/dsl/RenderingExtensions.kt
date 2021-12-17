@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.dsl
 
-import com.happyandjust.nameless.core.Direction
-import com.happyandjust.nameless.core.Overlay
+import com.happyandjust.nameless.core.enums.Direction
+import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.Gui

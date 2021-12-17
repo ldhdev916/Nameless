@@ -21,15 +21,13 @@ package com.happyandjust.nameless.features.impl.qol
 import com.google.gson.JsonArray
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.JsonHandler
-import com.happyandjust.nameless.core.Overlay
+import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.OverlayFeature
-import com.happyandjust.nameless.features.listener.ChatListener
-import com.happyandjust.nameless.features.listener.ItemTooltipListener
-import com.happyandjust.nameless.features.listener.PacketListener
+import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -42,10 +40,10 @@ import gg.essential.elementa.components.UIText
 import gg.essential.elementa.constraints.ChildBasedMaxSizeConstraint
 import gg.essential.elementa.constraints.ChildBasedSizeConstraint
 import gg.essential.elementa.constraints.SiblingConstraint
+import gg.essential.elementa.dsl.basicTextScaleConstraint
 import gg.essential.elementa.dsl.childOf
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.constraint
-import gg.essential.elementa.dsl.pixels
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.init.Items
 import net.minecraft.network.play.server.S3APacketTabComplete
@@ -53,14 +51,13 @@ import net.minecraft.util.ResourceLocation
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.event.entity.player.ItemTooltipEvent
 import java.awt.Color
-import java.util.regex.Pattern
 
 object FeatureGTBHelper : OverlayFeature(
     Category.QOL,
     "gtbhelper",
     "Guess the Build Helper",
     "Shows possible matching words in screen, also you can press tab to auto complete"
-), ItemTooltipListener, ChatListener, PacketListener {
+) {
 
     // english, korean
     private val words = hashMapOf<String, String>()
@@ -70,37 +67,34 @@ object FeatureGTBHelper : OverlayFeature(
         words.putAll(jsonArray.map { it.asJsonObject }.map { it["english"].asString to it["korean"].asString })
     }
 
-    init {
-        parameters["translate"] = FeatureParameter(
-            0,
-            "gtbhelper",
-            "translate",
-            "Translate Words",
-            "Translate all words, themes from english to korean for korean users like me",
-            false,
-            CBoolean
-        )
-        parameters["clipboard"] = FeatureParameter(
-            1,
-            "gtbhelper",
-            "clipboard",
-            "Copy to Clipboard",
-            "When there's only 1 word that matches, copy it to your clipboard",
-            false,
-            CBoolean
-        )
-    }
+    private var translate by FeatureParameter(
+        0,
+        "gtbhelper",
+        "translate",
+        "Translate Words",
+        "Translate all words, themes from english to korean for korean users like me",
+        false,
+        CBoolean
+    )
 
-    private val THEME = Pattern.compile("The theme is (?<word>.+)")
+    private var clipboard by FeatureParameter(
+        1,
+        "gtbhelper",
+        "clipboard",
+        "Copy to Clipboard",
+        "When there's only 1 word that matches, copy it to your clipboard",
+        false,
+        CBoolean
+    )
+
+    private val THEME = "The theme is (?<word>.+)".toPattern()
     private val matches = arrayListOf<String>()
     private var prevWord: String? = null
-    override val overlayPoint = ConfigValue("gtboverlay", "overlay", Overlay.DEFAULT, COverlay)
+    override var overlayPoint by ConfigValue("gtboverlay", "overlay", Overlay.DEFAULT, COverlay)
 
-    override fun onChatReceived(e: ClientChatReceivedEvent) {
-        if (!checkForEnabledAndGuessTheBuild()) return
-
-        if (e.type.toInt() == 2) {
-            THEME.matchesMatcher(e.message.unformattedText.stripControlCodes()) {
+    init {
+        on<ClientChatReceivedEvent>().filter { checkForEnabledAndGuessTheBuild() && type.toInt() == 2 }.subscribe {
+            THEME.matchesMatcher(pureText) {
                 val word = it.group("word")
                 if (word != prevWord) {
                     prevWord = word
@@ -110,7 +104,7 @@ object FeatureGTBHelper : OverlayFeature(
                     if ('_' in word) {
                         matches.addAll(words.keys.filter { s -> s.matches(word.replace("_", "\\w").toRegex()) })
 
-                        if (matches.size == 1 && getParameterValue("clipboard")) {
+                        if (matches.size == 1 && clipboard) {
                             matches[0].apply { sendPrefixMessage("§a$this was copied to your clipboard.") }
                                 .copyToClipboard()
                         }
@@ -118,17 +112,11 @@ object FeatureGTBHelper : OverlayFeature(
                 }
             }
         }
-    }
 
-    override fun onItemTooltip(e: ItemTooltipEvent) {
-        if (!checkForEnabledAndGuessTheBuild()) return
-
-        if (getParameterValue("translate")) {
-            // Theme Selecting Window
-            if (e.itemStack.item == Items.paper && mc.currentScreen is GuiChest) {
-                e.toolTip.add(words[e.itemStack.displayName.stripControlCodes()] ?: "NOT FOUND")
+        on<ItemTooltipEvent>().filter { checkForEnabledAndGuessTheBuild() && translate && itemStack.item == Items.paper && mc.currentScreen is GuiChest }
+            .subscribe {
+                toolTip.add(words[itemStack.displayName.stripControlCodes()] ?: "NOT FOUND")
             }
-        }
     }
 
     override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
@@ -142,11 +130,7 @@ object FeatureGTBHelper : OverlayFeature(
             UIText("Something Something").constrain {
                 y = SiblingConstraint()
 
-                textScale = relocateComponent.currentScale.pixels()
-
-                relocateComponent.onScaleChange {
-                    textScale = it.pixels()
-                }
+                textScale = basicTextScaleConstraint { relocateComponent.currentScale.toFloat() }.fixed()
 
                 color = Color.red.constraint
             } childOf container
@@ -164,14 +148,14 @@ object FeatureGTBHelper : OverlayFeature(
 
         matrix {
             disableDepth()
-            setup(overlayPoint.value)
+            setup(overlayPoint)
 
             var y = 0
 
             for (english in matches) {
                 val builder = StringBuilder(english)
 
-                if (getParameterValue("translate")) {
+                if (translate) {
                     builder.append(" ${words[english] ?: "NOT FOUND"}")
                 }
 
@@ -185,25 +169,16 @@ object FeatureGTBHelper : OverlayFeature(
 
     private fun checkForEnabledAndGuessTheBuild() = enabled && Hypixel.currentGame == GameType.GUESS_THE_BUILD
 
-    override fun onSendingPacket(e: PacketEvent.Sending) {
+    init {
+        on<PacketEvent.Received>().filter { checkForEnabledAndGuessTheBuild() }.subscribe {
+            packet.withInstance<S3APacketTabComplete> {
+                mc.currentScreen.withInstance<AccessorGuiChat> {
+                    val text = inputField.text
 
-    }
-
-    override fun onReceivedPacket(e: PacketEvent.Received) {
-        if (checkForEnabledAndGuessTheBuild()) {
-            val msg = e.packet
-            val screen = mc.currentScreen
-
-            if (msg is S3APacketTabComplete && screen is AccessorGuiChat) {
-                val text = screen.inputField.text
-
-                if (!text.startsWith("/")) {
-
-                    val list = words.keys.filter { matches.contains(it) && it.contains(text, true) }.toMutableList()
-
-                    list.addAll(msg.func_149630_c())
-
-                    e.packet = S3APacketTabComplete(list.toTypedArray())
+                    if (!text.startsWith("/")) {
+                        packet = S3APacketTabComplete(words.keys.filter { it in matches && it.contains(text, true) }
+                            .toTypedArray())
+                    }
                 }
             }
         }

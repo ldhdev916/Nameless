@@ -18,41 +18,39 @@
 
 package com.happyandjust.nameless.dsl
 
-import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.client.event.ClientChatReceivedEvent
+import net.minecraftforge.fml.common.eventhandler.ASMEventHandler
 import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.fml.common.eventhandler.EventPriority
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.Opcodes
 import kotlin.reflect.KClass
 
 private val createdHandlers = hashMapOf<KClass<out Event>, Handler<out Event>>()
 
+private val classLoader =
+    ASMEventHandler::class.java.getDeclaredField("LOADER").apply { isAccessible = true }[null] as ClassLoader
+//private val defineMethod = classLoader.javaClass.getDeclaredMethod("define", String::class.java, ByteArray::class.java)
+
 class SubscriptionBuilder<T : Event>(private val eventClass: KClass<T>) {
 
     private var subscribed = false
-    private var filters = arrayListOf<(T) -> Boolean>()
-    private var priority = EventPriority.NORMAL
-    private var receiveCanceled = false
+    private var filters = arrayListOf<T.() -> Boolean>()
+    var priority = EventPriority.NORMAL
+    var receiveCanceled = true
 
-    fun filter(predicate: (T) -> Boolean) = apply {
+    fun filter(predicate: T.() -> Boolean) = apply {
         filters.add(predicate)
     }
 
-    fun setPriority(eventPriority: EventPriority) = apply {
-        priority = eventPriority
-    }
-
-    fun setReceiveCanceled(receiveCanceled: Boolean) = apply {
-        this.receiveCanceled = receiveCanceled
-    }
-
-    fun subscribe(action: (T) -> Unit) {
+    fun subscribe(action: T.() -> Unit) {
         if (subscribed) return
         val handler = createdHandlers.getOrPut(eventClass) { Handler(eventClass.java) } as Handler<T>
 
         handler.addListener(
             handler.HandlerData(
                 action,
-                { filters.all { filter -> filter(it) } },
+                { filters.all { it() } },
                 priority,
                 receiveCanceled
             )
@@ -62,11 +60,11 @@ class SubscriptionBuilder<T : Event>(private val eventClass: KClass<T>) {
 
 }
 
-class Handler<T : Event>(val eventClass: Class<T>) {
+class Handler<T : Event>(private val eventClass: Class<T>) {
 
     inner class HandlerData(
-        val action: (T) -> Unit,
-        val filter: (T) -> Boolean,
+        val action: T.() -> Unit,
+        val filter: T.() -> Boolean,
         val priority: EventPriority,
         val receiveCanceled: Boolean
     )
@@ -75,17 +73,82 @@ class Handler<T : Event>(val eventClass: Class<T>) {
 
     fun addListener(handlerData: HandlerData) {
         listeners.add(handlerData)
-        listeners.sortByDescending { it.priority }
+        listeners.sortBy { it.priority }
+    }
+
+    private fun getHandlerClass(): Class<*> {
+        val cw = ClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS)
+        val eventName = eventClass.name.split(".").last().replace("$", "_")
+        val fullEventName = eventClass.name.replace(".", "/")
+
+        val name = "com/happyandjust/nameless/Handler_$eventName"
+
+        cw.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", null)
+
+        cw.visitField(Opcodes.ACC_PRIVATE, "handler", "Lcom/happyandjust/nameless/dsl/Handler;", null, null)
+
+        with(cw.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "(Lcom/happyandjust/nameless/dsl/Handler;)V", null, null)) {
+            visitCode()
+            visitVarInsn(Opcodes.ALOAD, 0)
+            visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false)
+
+            visitVarInsn(Opcodes.ALOAD, 0)
+            visitVarInsn(Opcodes.ALOAD, 1)
+            visitFieldInsn(Opcodes.PUTFIELD, name, "handler", "Lcom/happyandjust/nameless/dsl/Handler;")
+
+            visitFieldInsn(
+                Opcodes.GETSTATIC,
+                "net/minecraftforge/common/MinecraftForge",
+                "EVENT_BUS",
+                "Lnet/minecraftforge/fml/common/eventhandler/EventBus;"
+            )
+            visitVarInsn(Opcodes.ALOAD, 0)
+            visitMethodInsn(
+                Opcodes.INVOKEVIRTUAL,
+                "net/minecraftforge/fml/common/eventhandler/EventBus",
+                "register",
+                "(Ljava/lang/Object;)V",
+                false
+            )
+
+            visitInsn(Opcodes.RETURN)
+            visitEnd()
+            visitMaxs(0, 0)
+        }
+
+        with(cw.visitMethod(Opcodes.ACC_PUBLIC, "handle_$eventName", "(L$fullEventName;)V", null, null)) {
+
+            visitAnnotation("Lnet/minecraftforge/fml/common/eventhandler/SubscribeEvent;", true).apply {
+                visit("receiveCanceled", true)
+                visitEnum("priority", "Lnet/minecraftforge/fml/common/eventhandler/EventPriority;", "HIGHEST")
+            }
+            visitCode()
+
+            visitVarInsn(Opcodes.ALOAD, 0)
+            visitFieldInsn(Opcodes.GETFIELD, name, "handler", "Lcom/happyandjust/nameless/dsl/Handler;")
+            visitVarInsn(Opcodes.ALOAD, 1)
+            visitMethodInsn(
+                Opcodes.INVOKEVIRTUAL,
+                "com/happyandjust/nameless/dsl/Handler",
+                "handleEvent",
+                "(Lnet/minecraftforge/fml/common/eventhandler/Event;)V",
+                false
+            )
+
+            visitInsn(Opcodes.RETURN)
+            visitEnd()
+            visitMaxs(0, 0)
+        }
+
+        return ASMClassLoader.define(name.replace("/", "."), cw.toByteArray())
     }
 
 
     init {
-        MinecraftForge.EVENT_BUS.register(this)
+        getHandlerClass().getConstructor(javaClass).newInstance(this)
     }
 
-    @SubscribeEvent
-    fun handle(e: T) {
-        if (e.javaClass != eventClass) return
+    fun handleEvent(e: T) {
         for (listener in listeners) {
             if (listener.filter(e) && (!e.isCanceled || listener.receiveCanceled)) {
                 listener.action(e)
@@ -94,4 +157,21 @@ class Handler<T : Event>(val eventClass: Class<T>) {
     }
 }
 
+object ASMClassLoader : ClassLoader(classLoader) {
+
+    private val defineClassMethod = ClassLoader::class.java.getDeclaredMethod(
+        "defineClass",
+        String::class.java,
+        ByteArray::class.java,
+        Int::class.java,
+        Int::class.java
+    ).apply { isAccessible = true }
+
+    fun define(name: String, data: ByteArray): Class<*> =
+        defineClassMethod(classLoader, name, data, 0, data.size) as Class<*>
+}
+
 inline fun <reified T : Event> on() = SubscriptionBuilder(T::class)
+
+val ClientChatReceivedEvent.pureText
+    get() = message.unformattedText.trim().stripControlCodes()

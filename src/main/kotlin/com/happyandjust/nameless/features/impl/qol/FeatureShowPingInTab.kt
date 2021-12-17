@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.core.toChromaColor
+import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
@@ -26,15 +26,14 @@ import com.happyandjust.nameless.serialization.converters.CChromaColor
 import java.awt.Color
 
 object FeatureShowPingInTab : SimpleFeature(Category.QOL, "pingtab", "Show Ping numbers in Tab") {
-    init {
-        parameters["color"] = FeatureParameter(
-            0,
-            "pingtab",
-            "color",
-            "Ping Text Color",
-            "",
-            Color.green.toChromaColor(),
-            CChromaColor
-        )
-    }
+
+    var color by FeatureParameter(
+        0,
+        "pingtab",
+        "color",
+        "Ping Text Color",
+        "",
+        Color.green.toChromaColor(),
+        CChromaColor
+    )
 }

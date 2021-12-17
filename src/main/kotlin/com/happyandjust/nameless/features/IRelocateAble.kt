@@ -18,31 +18,63 @@
 
 package com.happyandjust.nameless.features
 
-import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.dsl.color
+import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.listener.RenderOverlayListener
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.events.SpecialOverlayEvent
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.gui.relocate.RelocateGui
+import com.happyandjust.nameless.serialization.Converter
 import gg.essential.elementa.UIComponent
 
-interface IRelocateAble : RenderOverlayListener {
+interface IRelocateAble {
 
-    val overlayPoint: ConfigValue<Overlay>
+    /**
+     * Make sure you use delegate to save to config
+     */
+    var overlayPoint: Overlay
 
     fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent
 
-    fun getWheelSensitive() = 7
+    fun getWheelSensitive() = 13
 
     fun getDisplayName(): String
 
     fun shouldDisplayInRelocateGui(): Boolean
 
     fun renderOverlay0(partialTicks: Float)
+}
 
-    override fun renderOverlay(partialTicks: Float) {
-        if (mc.currentScreen !is RelocateGui) renderOverlay0(partialTicks)
-        color(1f, 1f, 1f, 1f)
+abstract class OverlayFeature(
+    category: Category,
+    key: String,
+    title: String,
+    desc: String = "",
+    enabled_: Boolean = false
+) : SimpleFeature(category, key, title, desc, enabled_), IRelocateAble {
+    override fun getDisplayName() = title
+
+    init {
+        on<SpecialOverlayEvent>().filter { mc.currentScreen !is RelocateGui }.subscribe { renderOverlay0(partialTicks) }
     }
+}
+
+abstract class OverlayParameter<T>(
+    ordinal: Int,
+    category: String,
+    key: String,
+    title: String,
+    desc: String,
+    defaultValue: T,
+    converter: Converter<T>
+) : FeatureParameter<T>(ordinal, category, key, title, desc, defaultValue, converter), IRelocateAble {
+
+    init {
+        on<SpecialOverlayEvent>().filter { mc.currentScreen !is RelocateGui }.subscribe { renderOverlay0(partialTicks) }
+    }
+
+    override fun getDisplayName(): String {
+        return title
+    }
+
 }

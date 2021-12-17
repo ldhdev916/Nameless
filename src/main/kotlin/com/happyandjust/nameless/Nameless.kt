@@ -20,7 +20,7 @@ package com.happyandjust.nameless
 
 import com.happyandjust.nameless.commands.*
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.core.OutlineMode
+import com.happyandjust.nameless.core.enums.OutlineMode
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.impl.misc.FeatureUpdateChecker
@@ -31,15 +31,17 @@ import com.happyandjust.nameless.features.impl.skyblock.FeatureEquipPetSkin
 import com.happyandjust.nameless.gui.feature.FeatureGui
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.keybinding.NamelessKeyBinding
-import com.happyandjust.nameless.listener.*
-import com.happyandjust.nameless.serialization.converters.COutlineMode
+import com.happyandjust.nameless.listener.BasicListener
+import com.happyandjust.nameless.listener.LocrawListener
+import com.happyandjust.nameless.listener.OutlineHandleListener
+import com.happyandjust.nameless.listener.WaypointListener
+import com.happyandjust.nameless.serialization.converters.getEnumConverter
 import com.happyandjust.nameless.utils.SkyblockUtils
 import gg.essential.api.commands.Command
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
@@ -56,7 +58,7 @@ object Nameless {
         "outline",
         "selected",
         OutlineMode.OUTLINE,
-        COutlineMode
+        getEnumConverter()
     )
 
     lateinit var modFile: File
@@ -101,20 +103,18 @@ object Nameless {
             ShortCommand
         )
 
-        registerListeners(FeatureListener, BasicListener, OutlineHandleListener, LocrawListener, WaypointListener)
+        BasicListener
+        LocrawListener
+        OutlineHandleListener
+        WaypointListener
     }
 
 
     private fun registerCommands(vararg commands: Command) {
         commands.forEach(Command::register)
     }
-
-    private fun registerListeners(vararg listeners: Any) {
-        listeners.forEach(MinecraftForge.EVENT_BUS::register)
-    }
-
 }
 
 const val MOD_ID = "nameless"
 const val MOD_NAME = "Nameless"
-const val VERSION = "1.0.3"
+const val VERSION = "1.0.4"

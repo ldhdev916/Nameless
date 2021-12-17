@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.mixinhooks
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.core.OutlineMode
+import com.happyandjust.nameless.core.enums.OutlineMode
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.listener.OutlineHandleListener
 import com.happyandjust.nameless.mixins.accessors.AccessorRenderGlobal

@@ -20,42 +20,44 @@ package com.happyandjust.nameless.processor.partygames
 
 import com.happyandjust.nameless.dsl.getAxisAlignedBB
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.PartyGameChangeListener
-import com.happyandjust.nameless.features.listener.WorldRenderListener
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.events.PartyGameChangeEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
+import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
 import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.entity.item.EntityFallingBlock
 import net.minecraft.init.Blocks
 import net.minecraft.util.BlockPos
+import net.minecraftforge.client.event.RenderWorldLastEvent
 
-object AnvilSpleefProcessor : Processor(), ClientTickListener, WorldRenderListener, PartyGameChangeListener {
+object AnvilSpleefProcessor : Processor() {
 
-    var boxColor = { -1 }
     private val renderingSet = hashSetOf<EntityFallingBlock>()
+    override val filter = FeaturePartyGamesHelper.getFilter(this)
 
-    override fun tick() {
-        renderingSet.clear()
-        renderingSet.addAll(
-            mc.theWorld.loadedEntityList
-                .filterIsInstance<EntityFallingBlock>()
-                .filter { it.posY > 1 && it.block.block == Blocks.anvil }
-        )
-    }
-
-    override fun renderWorld(partialTicks: Float) {
-        for (anvil in renderingSet) {
-            val pos = BlockPos(anvil.posX, 0.0, anvil.posZ)
-
-            RenderUtils.drawBox(pos.getAxisAlignedBB(), boxColor(), partialTicks)
-        }
-    }
-
-    override fun onPartyGameChange(from: PartyGamesType?, to: PartyGamesType?) {
-        if (from == PartyGamesType.ANVIL_SPLEEF || to == PartyGamesType.ANVIL_SPLEEF) {
+    init {
+        request<SpecialTickEvent>().subscribe {
             renderingSet.clear()
+            renderingSet.addAll(
+                mc.theWorld.loadedEntityList
+                    .filterIsInstance<EntityFallingBlock>()
+                    .filter { it.posY > 1 && it.block.block == Blocks.anvil }
+            )
         }
-    }
 
+        request<RenderWorldLastEvent>().subscribe {
+            for (anvil in renderingSet) {
+                val pos = BlockPos(anvil.posX, 0.0, anvil.posZ)
+
+                RenderUtils.drawBox(pos.getAxisAlignedBB(), FeaturePartyGamesHelper.anvilColor.rgb, partialTicks)
+            }
+        }
+
+        on<PartyGameChangeEvent>().filter { from == PartyGamesType.ANVIL_SPLEEF || to == PartyGamesType.ANVIL_SPLEEF }
+            .subscribe {
+                renderingSet.clear()
+            }
+    }
 }

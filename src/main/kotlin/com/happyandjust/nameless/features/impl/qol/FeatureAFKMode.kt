@@ -19,12 +19,11 @@
 package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.FeatureStateListener
-import com.happyandjust.nameless.features.listener.PlaySoundListener
 import com.happyandjust.nameless.serialization.converters.CInt
 import net.minecraftforge.client.event.sound.PlaySoundEvent
 import net.minecraftforge.event.entity.PlaySoundAtEntityEvent
@@ -35,41 +34,29 @@ object FeatureAFKMode :
         "afkmode",
         "AFK Mode",
         "Disable rendering blocks, entities, sounds, other things and limit fps"
-    ),
-    FeatureStateListener, PlaySoundListener {
+    ) {
+
+    var fps by FeatureParameter(
+        0,
+        "afkmode",
+        "fps",
+        "Limit FPS",
+        "",
+        15,
+        CInt
+    ).apply {
+        minValue = 5.0
+        maxValue = 100.0
+    }
 
     init {
-        parameters["fps"] = FeatureParameter(
-            0,
-            "afkmode",
-            "fps",
-            "Limit FPS",
-            "",
-            15,
-            CInt
-        ).apply {
-            minValue = 5.0
-            maxValue = 100.0
-        }
-    }
-
-    override fun onFeatureStateChangePre(e: FeatureStateChangeEvent.Pre) {
-    }
-
-    override fun onFeatureStateChangePost(e: FeatureStateChangeEvent.Post) {
-        if (e.enabledAfter && e.feature == this) {
+        on<FeatureStateChangeEvent.Post>().filter { enabledAfter && feature == this@FeatureAFKMode }.subscribe {
             mc.thePlayer.closeScreen()
             mc.renderGlobal.loadRenderers()
         }
-    }
 
-    override fun onPlaySound(e: PlaySoundEvent) {
-        if (!enabled) return
-        e.result = null
-    }
+        on<PlaySoundEvent>().filter { enabled }.subscribe { result = null }
 
-    override fun onPlaySoundAtEntity(e: PlaySoundAtEntityEvent) {
-        if (!enabled) return
-        e.isCanceled = true
+        on<PlaySoundAtEntityEvent>().filter { enabled }.subscribe { isCanceled = true }
     }
 }

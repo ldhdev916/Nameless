@@ -46,9 +46,8 @@ object ViewStatCommand : Command("viewstat") {
                 return@launch
             }
 
-            val identifiers =
-                FeatureInGameStatViewer.getParameterValue<List<FeatureInGameStatViewer.InGameStatIdentifier>>("order")
-                    .filter { it.supportGame.shouldDisplay() }
+            val identifiers = FeatureInGameStatViewer.order.map { it }
+                .filter { it.supportGame.shouldDisplay() }
 
             runCatching {
                 val s = Request.get("https://api.hypixel.net/player?key=${FeatureHypixelAPIKey.apiKey}&uuid=$uuid")
@@ -71,7 +70,7 @@ object ViewStatCommand : Command("viewstat") {
 
     private fun processRank(jsonObject: JsonObject): String {
         if (jsonObject.has("prefix")) { // WTF
-            return jsonObject["prefix"].asString
+            return "${jsonObject["prefix"].asString} "
         }
 
         if (jsonObject.has("rank")) {

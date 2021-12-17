@@ -19,16 +19,16 @@
 package com.happyandjust.nameless.listener
 
 import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
+import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.dsl.matchesMatcher
 import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.LocrawInfo
 import gg.essential.api.EssentialAPI
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.event.world.WorldEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent
 import java.util.regex.Pattern
 
 object LocrawListener {
@@ -36,52 +36,38 @@ object LocrawListener {
     private var sentCommand = false
     private val JSON = Pattern.compile("\\{.+}")
     private val gson = Gson()
-    private var updateTick = 0
+    private val updateTimer = TickTimer.withSecond(2)
     private var locrawTick = 0
 
-    @SubscribeEvent
-    fun onClientTick(e: TickEvent.ClientTickEvent) {
-        if (e.phase == TickEvent.Phase.START) return
-        val entityPlayerSP = mc.thePlayer ?: return
-
-        locrawTick++
-        if (locrawTick == 20 && EssentialAPI.getMinecraftUtil().isHypixel()) {
+    init {
+        on<SpecialTickEvent>().filter { EssentialAPI.getMinecraftUtil().isHypixel() && ++locrawTick == 20 }.subscribe {
             sentCommand = true
-            entityPlayerSP.sendChatMessage("/locraw")
+            mc.thePlayer.sendChatMessage("/locraw")
         }
-
-        updateTick = (updateTick + 1) % 40
-
-        if (updateTick == 0) {
+        on<SpecialTickEvent>().filter { updateTimer.update().check() }.subscribe {
             Hypixel.updateGame()
         }
-    }
+        on<WorldEvent.Load>().subscribe {
+            locrawTick = 0
+        }
 
+        on<ClientChatReceivedEvent>().subscribe {
+            val msg = message.unformattedText
+            JSON.matchesMatcher(msg) {
+                Hypixel.apply {
+                    if (sentCommand) {
+                        isCanceled = true
+                    }
+                    val prev = locrawInfo
+                    runCatching {
+                        locrawInfo = gson.fromJson(msg, LocrawInfo::class.java)
 
-    @SubscribeEvent
-    fun onWorldLoad(e: WorldEvent.Load) {
-        locrawTick = 0
-    }
+                        updateGame()
+                    }.onFailure { locrawInfo = prev }
 
-    @SubscribeEvent(receiveCanceled = true)
-    fun onChatReceived(e: ClientChatReceivedEvent) {
-
-        val msg = e.message.unformattedText
-        JSON.matchesMatcher(msg) {
-            Hypixel.apply {
-                if (sentCommand) {
-                    e.isCanceled = true
-                }
-                try {
-                    locrawInfo = gson.fromJson(msg, LocrawInfo::class.java)
-
-                    updateGame()
-                } catch (ignored: JsonSyntaxException) {
-
-                }
-
-                if (sentCommand) {
-                    sentCommand = false
+                    if (sentCommand) {
+                        sentCommand = false
+                    }
                 }
             }
         }

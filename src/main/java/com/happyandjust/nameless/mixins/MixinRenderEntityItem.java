@@ -36,7 +36,7 @@ public class MixinRenderEntityItem {
     public void modifyScale(EntityItem entity, double x, double y, double z, float entityYaw, float partialTicks, CallbackInfo ci) {
         FeatureDisplayBetterArmor feature = FeatureDisplayBetterArmor.INSTANCE;
         if (feature.getEnabled() && Hypixel.INSTANCE.getCurrentGame() == GameType.SKYWARS && feature.getScaledItems().contains(entity)) {
-            double scale = feature.getParameterValue("scale");
+            double scale = feature.getScale();
 
             GlStateManager.scale(scale, scale, scale);
         }

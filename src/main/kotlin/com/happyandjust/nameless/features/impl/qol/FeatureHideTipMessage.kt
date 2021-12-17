@@ -18,9 +18,10 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.dsl.cancel
+import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.ChatListener
 import gg.essential.api.EssentialAPI
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 
@@ -29,17 +30,19 @@ object FeatureHideTipMessage : SimpleFeature(
     "hidetipmessage",
     "Hide Tip Message",
     "Hide you tipped SomePlayer in SomeGame! Message in Hypixel"
-), ChatListener {
+) {
 
     private val TIP_MESSAGE = "§aYou tipped \\w+ in .+!".toRegex()
     private val TIP_ALL = "§aYou tipped \\d+ players in \\d+ different games!".toRegex()
 
-    override fun onChatReceived(e: ClientChatReceivedEvent) {
-        if (e.type.toInt() == 2) return
-        if (enabled && EssentialAPI.getMinecraftUtil().isHypixel()) {
-            if (arrayOf(TIP_ALL, TIP_MESSAGE).any(e.message.unformattedText::matches)) {
-                e.isCanceled = true
-            }
+    init {
+        on<ClientChatReceivedEvent>().filter {
+            type.toInt() != 2 && enabled && EssentialAPI.getMinecraftUtil().isHypixel() && arrayOf(
+                TIP_ALL,
+                TIP_MESSAGE
+            ).any(message.unformattedText::matches)
+        }.subscribe {
+            cancel()
         }
     }
 }

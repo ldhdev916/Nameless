@@ -22,7 +22,6 @@ import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.gui.feature.PropertyData
-import com.happyandjust.nameless.processor.Processor
 import net.minecraftforge.common.MinecraftForge
 import kotlin.reflect.KMutableProperty0
 
@@ -36,7 +35,6 @@ open class SimpleFeature(
 
     var inCategory = ""
     private val enabledConfig = ConfigValue.BooleanConfigValue("features", key, enabled_)
-    val processors = hashMapOf<Processor, () -> Boolean>()
 
     fun hasParameter(key: String) = parameters.contains(key)
 

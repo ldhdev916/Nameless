@@ -16,9 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.listener
+package com.happyandjust.nameless.core.value
 
-interface WorldRenderListener {
+import java.awt.Point
 
-    fun renderWorld(partialTicks: Float)
+data class Overlay(val point: Point, val scale: Double) {
+    companion object {
+        val DEFAULT = Overlay(Point(0, 0), 1.0)
+    }
 }

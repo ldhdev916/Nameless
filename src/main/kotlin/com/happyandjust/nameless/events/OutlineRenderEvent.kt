@@ -16,11 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.core
+package com.happyandjust.nameless.events
 
-import net.minecraft.item.ItemStack
+import com.happyandjust.nameless.core.info.ColorInfo
+import com.happyandjust.nameless.core.info.checkAndReplace
+import net.minecraft.entity.Entity
+import net.minecraftforge.fml.common.eventhandler.Event
 
-/**
- * @param slot 0 ~ 8
- */
-data class InventorySlotInfo(val slot: Int, val keyName: String, val itemStack: ItemStack?)
+data class OutlineRenderEvent(val entity: Entity) : Event() {
+
+    var colorInfo: ColorInfo? = null
+        set(value) {
+            value ?: return
+            field = field.checkAndReplace(value)
+        }
+}

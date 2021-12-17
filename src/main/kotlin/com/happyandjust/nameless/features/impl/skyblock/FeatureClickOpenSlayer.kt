@@ -18,10 +18,10 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.ChatListener
-import com.happyandjust.nameless.features.listener.ScreenMouseInputListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiScreen
@@ -35,8 +35,7 @@ import java.util.*
 import kotlin.concurrent.timerTask
 
 object FeatureClickOpenSlayer :
-    SimpleFeature(Category.SKYBLOCK, "clickopenslayer", "Click Anywhere to Open Slayer Menu"), ChatListener,
-    ScreenMouseInputListener {
+    SimpleFeature(Category.SKYBLOCK, "clickopenslayer", "Click Anywhere to Open Slayer Menu") {
 
     private var openMenuComponent: IChatComponent? = null
         set(value) {
@@ -50,24 +49,23 @@ object FeatureClickOpenSlayer :
             }
         }
 
-    override fun onChatReceived(e: ClientChatReceivedEvent) {
-        if (enabled && Hypixel.currentGame == GameType.SKYBLOCK && e.type.toInt() != 2) {
-            openMenuComponent = e.message.siblings.find {
-                it.unformattedText == "§2§l[OPEN MENU]" && it.chatStyle?.chatClickEvent?.run {
-                    action == ClickEvent.Action.RUN_COMMAND && value.startsWith("/cb")
-                } == true
+    init {
+        on<ClientChatReceivedEvent>().filter { enabled && Hypixel.currentGame == GameType.SKYBLOCK && type.toInt() != 2 }
+            .subscribe {
+                openMenuComponent = message.siblings.find {
+                    it.unformattedText == "§2§l[OPEN MENU]" && it.chatStyle?.chatClickEvent?.run {
+                        action == ClickEvent.Action.RUN_COMMAND && value.startsWith("/cb")
+                    } == true
+                }
             }
-        }
-    }
 
-    override fun onMouseInputPre(e: GuiScreenEvent.MouseInputEvent.Pre) {
-
-    }
-
-    override fun onMouseInputPost(e: GuiScreenEvent.MouseInputEvent.Post) {
-        val gui = e.gui
-        if (enabled && Mouse.getEventButton() == 0 && gui is GuiChat && gui is AccessorGuiScreen && Mouse.getEventButtonState()) {
-            gui.invokeHandleComponentClick(openMenuComponent)
-        }
+        on<GuiScreenEvent.MouseInputEvent.Post>().filter { openMenuComponent != null && enabled && Mouse.getEventButton() == 0 && Mouse.getEventButtonState() }
+            .subscribe {
+                if (gui is GuiChat) {
+                    gui.withInstance<AccessorGuiScreen> {
+                        invokeHandleComponentClick(openMenuComponent)
+                    }
+                }
+            }
     }
 }

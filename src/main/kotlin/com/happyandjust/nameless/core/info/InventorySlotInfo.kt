@@ -16,23 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.core
+package com.happyandjust.nameless.core.info
 
-data class ColorInfo(val color: Int, val priority: ColorPriority) {
+import net.minecraft.item.ItemStack
 
-    operator fun compareTo(other: ColorInfo?) = priority.compareTo(other?.priority)
-
-    enum class ColorPriority(val number: Int) {
-        HIGHEST(5), HIGH(4), NORMAL(3), LOW(2), LOWEST(1);
-
-        operator fun compareTo(other: ColorPriority?) = number.compareTo(other?.number ?: -1)
-    }
-}
-
-fun ColorInfo?.checkAndReplace(other: ColorInfo): ColorInfo {
-    this ?: return other
-    return if (other >= this) other else this
-}
-
-fun ColorInfo?.checkAndReplace(color: Int, priority: ColorInfo.ColorPriority) =
-    checkAndReplace(ColorInfo(color, priority))
+/**
+ * @param slot 0 ~ 8
+ */
+data class InventorySlotInfo(val slot: Int, val keyName: String, val itemStack: ItemStack?)

@@ -20,8 +20,7 @@ package com.happyandjust.nameless.processor.experimantation
 
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
-import com.happyandjust.nameless.features.listener.BackgroundDrawnListener
-import com.happyandjust.nameless.features.listener.PacketListener
+import com.happyandjust.nameless.features.impl.skyblock.FeatureExperimentationTableHelper
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
 import com.happyandjust.nameless.processor.Processor
 import net.minecraft.client.gui.inventory.GuiChest
@@ -31,53 +30,56 @@ import net.minecraft.inventory.ContainerChest
 import net.minecraft.item.Item
 import net.minecraft.network.play.client.C0EPacketClickWindow
 import net.minecraftforge.client.event.GuiScreenEvent
-import java.util.regex.Pattern
 
-object ChronomatronProcessor : Processor(), BackgroundDrawnListener, PacketListener {
+object ChronomatronProcessor : Processor() {
 
-    private val timerPattern = Pattern.compile("Timer: (?<sec>\\d+)s")
+    private val timerPattern = "Timer: (?<sec>\\d+)s".toPattern()
     val chronomatronPatterns = arrayListOf<String>()
     var chronomatronClicks = 0
     var lastRound = 0
+    override val filter
+        get() = FeatureExperimentationTableHelper.processors[this]!!
 
-    override fun onBackgroundDrawn(e: GuiScreenEvent.BackgroundDrawnEvent) {
-        val gui = e.gui
+    init {
+        request<GuiScreenEvent.BackgroundDrawnEvent>().subscribe {
+            gui.withInstance<GuiChest> {
+                val containerChest = inventorySlots as ContainerChest
+                val slots =
+                    containerChest.inventorySlots.filter { it.inventory != com.happyandjust.nameless.dsl.mc.thePlayer.inventory }
 
-        if (gui is GuiChest) {
-            val containerChest = gui.inventorySlots as ContainerChest
-            val slots = containerChest.inventorySlots.filter { it.inventory != mc.thePlayer.inventory }
+                val timerItem = slots[49].stack
+                val item = timerItem?.item ?: return@subscribe
 
-            val timerItem = slots[49].stack
-            val item = timerItem?.item ?: return
+                if (item == Items.clock) {
+                    timerPattern.matchesMatcher(timerItem.displayName.stripControlCodes()) { matcher ->
 
-            if (item == Items.clock) {
-                timerPattern.matchesMatcher(timerItem.displayName.stripControlCodes()) { matcher ->
+                        val round = slots[4].stack?.stackSize ?: return@subscribe
 
-                    val round = slots[4].stack?.stackSize ?: return
+                        if (round != lastRound && matcher.group("sec").toInt() == round + 2) {
+                            lastRound = round
 
-                    if (round != lastRound && matcher.group("sec").toInt() == round + 2) {
-                        lastRound = round
+                            val colorName =
+                                slots.firstOrNull { it.stack?.item == Item.getItemFromBlock(Blocks.stained_hardened_clay) }?.stack?.displayName
+                                    ?: return@subscribe
 
-                        val colorName =
-                            slots.firstOrNull { it.stack?.item == Item.getItemFromBlock(Blocks.stained_hardened_clay) }?.stack?.displayName
-                                ?: return
-
-                        chronomatronPatterns.add(colorName)
-                    }
-
-
-                    if (chronomatronClicks in 0 until chronomatronPatterns.size) {
-                        val pattern = chronomatronPatterns[chronomatronClicks]
-                        slots.filter { it.stack?.displayName == pattern }.forEach {
-                            val color = mc.fontRendererObj.getColorCode(pattern[1]) or 0xFF000000.toInt()
-                            gui.drawOnSlot(it, color)
+                            chronomatronPatterns.add(colorName)
                         }
 
-                        drawTexts(gui)
+
+                        if (chronomatronClicks in 0 until chronomatronPatterns.size) {
+                            val pattern = chronomatronPatterns[chronomatronClicks]
+                            slots.filter { it.stack?.displayName == pattern }.forEach {
+                                val color =
+                                    com.happyandjust.nameless.dsl.mc.fontRendererObj.getColorCode(pattern[1]) or 0xFF000000.toInt()
+                                drawOnSlot(it, color)
+                            }
+
+                            drawTexts(this)
+                        }
                     }
+                } else if (item == Item.getItemFromBlock(Blocks.glowstone)) {
+                    chronomatronClicks = 0
                 }
-            } else if (item == Item.getItemFromBlock(Blocks.glowstone)) {
-                chronomatronClicks = 0
             }
         }
     }
@@ -106,25 +108,21 @@ object ChronomatronProcessor : Processor(), BackgroundDrawnListener, PacketListe
         }
     }
 
-    override fun onSendingPacket(e: PacketEvent.Sending) {
-        val msg = e.packet
+    init {
+        request<PacketEvent.Sending>().subscribe {
+            packet.withInstance<C0EPacketClickWindow> {
+                mc.currentScreen.withInstance<GuiChest> {
+                    val item = clickedItem?.item
 
-        if (msg is C0EPacketClickWindow) {
-            val item = msg.clickedItem?.item
-
-            val gui = mc.currentScreen
-
-            if (gui is GuiChest && gui.inventorySlots.inventorySlots[49].stack?.displayName?.stripControlCodes()
-                    ?.matches(timerPattern.toRegex()) == true
-            ) {
-                if (item == Item.getItemFromBlock(Blocks.stained_glass) || item == Item.getItemFromBlock(Blocks.stained_hardened_clay)) {
-                    chronomatronClicks++
+                    if (inventorySlots.inventorySlots[49].stack?.displayName?.stripControlCodes()
+                            ?.matches(timerPattern.toRegex()) == true && item in Item.getItemFromBlock(Blocks.stained_glass) to Item.getItemFromBlock(
+                            Blocks.stained_hardened_clay
+                        )
+                    ) {
+                        chronomatronClicks++
+                    }
                 }
             }
         }
-    }
-
-    override fun onReceivedPacket(e: PacketEvent.Received) {
-
     }
 }

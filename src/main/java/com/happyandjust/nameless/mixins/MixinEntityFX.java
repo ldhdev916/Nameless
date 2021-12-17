@@ -53,7 +53,7 @@ public class MixinEntityFX {
         SimpleFeature feature = FeatureRegistry.INSTANCE.getCHANGE_FISH_PARTICLE_COLOR();
 
         if (feature.getEnabled()) {
-            int color = ((Color) (feature.getParameterValue("color"))).getRGB();
+            int color = feature.<Color>getParameterValue("color").getRGB();
 
             particleRed = (color >> 16 & 255) / 255F;
             particleGreen = (color >> 8 & 255) / 255F;

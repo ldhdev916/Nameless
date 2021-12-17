@@ -19,13 +19,14 @@
 package com.happyandjust.nameless.features.impl.general
 
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.core.Overlay
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.events.HypixelServerChangeEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.OverlayFeature
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.ServerChangeListener
-import com.happyandjust.nameless.features.listener.WorldRenderListener
+import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -40,10 +41,10 @@ import gg.essential.elementa.components.UIText
 import gg.essential.elementa.constraints.ChildBasedMaxSizeConstraint
 import gg.essential.elementa.constraints.ChildBasedSizeConstraint
 import gg.essential.elementa.constraints.SiblingConstraint
+import gg.essential.elementa.dsl.basicTextScaleConstraint
 import gg.essential.elementa.dsl.childOf
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.constraint
-import gg.essential.elementa.dsl.pixels
 import net.minecraft.block.Block
 import net.minecraft.block.BlockBed
 import net.minecraft.init.Blocks
@@ -54,6 +55,7 @@ import net.minecraft.item.ItemShears
 import net.minecraft.util.BlockPos
 import net.minecraft.util.MovingObjectPosition
 import net.minecraft.util.Vec3
+import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 import java.util.*
 import kotlin.math.max
@@ -64,7 +66,7 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
     "raytracebed",
     "Bedwars Ray Trace Bed",
     "Ray trace up to your reach(3 blocks) and if there's a bed in your ray trace, Show all keys you should press and break blocks to get bed"
-), ClientTickListener, ServerChangeListener, WorldRenderListener {
+) {
 
     private val blackListBlock = hashSetOf(
         Blocks.air,
@@ -76,61 +78,60 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
         Blocks.bed
     )
     private val blockToKeyName = hashMapOf<Block, String>()
-    private var scanBedTick = 0
-    private var scanMyBedTick = 0
-    private var rayTraceTick = 0
+    private val scanBedTimer = TickTimer.withSecond(10)
+    private val scanMyBedTimer = TickTimer.withSecond(2)
+    private val rayTraceTimer = TickTimer(5)
     private val beds = hashSetOf<BlockPos>()
     private var currentRayTraceInfo: RayTraceInfo? = null
-    override val overlayPoint = ConfigValue("bedwarsoverlay", "overlay", Overlay.DEFAULT, COverlay)
+    override var overlayPoint by ConfigValue("bedwarsoverlay", "overlay", Overlay.DEFAULT, COverlay)
 
-    override fun tick() {
-        if (!enabled) return
-        if (Hypixel.currentGame != GameType.BEDWARS) return
+    init {
+        on<SpecialTickEvent>().filter { enabled && Hypixel.currentGame == GameType.BEDWARS }.subscribe {
+            scanForBeds()
 
-        scanForBeds()
+            if (beds.isEmpty()) return@subscribe
+            if (rayTraceTimer.update().check()) {
+                val start = Vec3(mc.thePlayer.posX, mc.thePlayer.posY + mc.thePlayer.eyeHeight, mc.thePlayer.posZ)
 
-        if (beds.isEmpty()) return
+                val vec = mc.thePlayer.lookVec * mc.playerController.blockReachDistance.toDouble()
 
-        rayTraceTick = (rayTraceTick + 1) % 5 // I don't want to ray trace every tick
+                var end = start.add(vec)
 
-        if (rayTraceTick == 0) {
-            val start = Vec3(mc.thePlayer.posX, mc.thePlayer.posY + mc.thePlayer.eyeHeight, mc.thePlayer.posZ)
+                val collideInfo = getCollideBed(start, end)
 
-            val vec = mc.thePlayer.lookVec * mc.playerController.blockReachDistance.toDouble()
+                val collides = PriorityQueue<BlockPos>(compareBy {
+                    start.distanceTo(it.toVec3())
+                })
 
-            var end = start.add(vec)
+                collideInfo?.let {
+                    end = it.rayTraceResult.hitVec
 
-            val collideInfo = getCollideBed(start, end)
+                    val from = BlockPos(mc.thePlayer)
+                    val to = it.bed
 
-            val collides = PriorityQueue<BlockPos>(compareBy {
-                start.distanceTo(it.toVec3())
-            })
+                    val minY = min(from.y, to.y)
+                    val maxY = max(from.y, to.y)
 
-            collideInfo?.let {
-                end = it.rayTraceResult.hitVec
+                    for (pos in BlockPos.getAllInBox(
+                        BlockPos(from.x, minY - 2, from.z),
+                        BlockPos(to.x, maxY + 2, to.z)
+                    )) {
+                        val block = mc.theWorld.getBlockAtPos(pos)
 
-                val from = BlockPos(mc.thePlayer)
-                val to = it.bed
-
-                val minY = min(from.y, to.y)
-                val maxY = max(from.y, to.y)
-
-                for (pos in BlockPos.getAllInBox(BlockPos(from.x, minY - 2, from.z), BlockPos(to.x, maxY + 2, to.z))) {
-                    val block = mc.theWorld.getBlockAtPos(pos)
-
-                    if (!blackListBlock.contains(block)) {
-                        block.collisionRayTrace(mc.theWorld, pos, start, end)?.let {
-                            collides.add(pos)
+                        if (!blackListBlock.contains(block)) {
+                            block.collisionRayTrace(mc.theWorld, pos, start, end)?.let {
+                                collides.add(pos)
+                            }
                         }
                     }
                 }
+
+                val blocksAtPosition = collides.map { mc.theWorld.getBlockAtPos(it) }
+
+                storeBlockToKeyName(blocksAtPosition)
+
+                currentRayTraceInfo = RayTraceInfo(start, end, collideInfo?.bed, blocksAtPosition)
             }
-
-            val blocksAtPosition = collides.map { mc.theWorld.getBlockAtPos(it) }
-
-            storeBlockToKeyName(blocksAtPosition)
-
-            currentRayTraceInfo = RayTraceInfo(start, end, collideInfo?.bed, blocksAtPosition)
         }
     }
 
@@ -150,10 +151,7 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
 
     private fun scanForBeds() {
         if (beds.isEmpty()) { // if no stored bed, store for my team's bed first
-
-            scanMyBedTick = (scanMyBedTick + 1) % 40
-
-            if (scanMyBedTick == 0) {
+            if (scanMyBedTimer.update().check()) {
                 val x = mc.thePlayer.posX
                 val y = mc.thePlayer.posY
                 val z = mc.thePlayer.posZ
@@ -167,10 +165,7 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
             return
         }
 
-        scanBedTick =
-            (scanBedTick + 1) % 200 // scan bed every 10 seconds, it'll never affect your performance, hopefully
-
-        if (scanBedTick == 0) {
+        if (scanBedTimer.update().check()) {
 
             val targetY = beds.first().y.toDouble()
 
@@ -187,14 +182,15 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
         }
     }
 
-    override fun onServerChange(server: String) {
-        beds.clear()
-        currentRayTraceInfo = null
-    }
-
-    override fun renderWorld(partialTicks: Float) {
-        currentRayTraceInfo?.bedHit?.let {
-            RenderUtils.drawBox(it.getAxisAlignedBB(), 0x80FF0000.toInt(), partialTicks)
+    init {
+        on<HypixelServerChangeEvent>().subscribe {
+            beds.clear()
+            currentRayTraceInfo = null
+        }
+        on<RenderWorldLastEvent>().subscribe {
+            currentRayTraceInfo?.bedHit?.let {
+                RenderUtils.drawBox(it.getAxisAlignedBB(), 0x80FF0000.toInt(), partialTicks)
+            }
         }
     }
 
@@ -242,7 +238,7 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
 
         currentRayTraceInfo?.let {
             matrix {
-                setup(overlayPoint.value)
+                setup(overlayPoint)
                 var y = 0
 
                 for (collideBlock in it.collideExceptBed) {
@@ -265,11 +261,7 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
             UIText((it + 1).toString()).constrain {
                 y = SiblingConstraint()
 
-                textScale = relocateComponent.currentScale.pixels()
-
-                relocateComponent.onScaleChange { scale ->
-                    textScale = scale.pixels()
-                }
+                textScale = basicTextScaleConstraint { relocateComponent.currentScale.toFloat() }.fixed()
 
                 color = Color.red.constraint
             } childOf container

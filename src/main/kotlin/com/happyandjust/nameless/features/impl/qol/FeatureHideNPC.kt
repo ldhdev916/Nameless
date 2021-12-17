@@ -18,21 +18,20 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.dsl.cancel
+import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.RenderPlayerListener
 import com.happyandjust.nameless.hypixel.Hypixel
 import net.minecraftforge.client.event.RenderPlayerEvent
 
 object FeatureHideNPC :
-    SimpleFeature(Category.GENERAL, "hidenpc", "Hide NPC in Lobby", "hide npcs in tab, and stop rendering"),
-    RenderPlayerListener {
+    SimpleFeature(Category.GENERAL, "hidenpc", "Hide NPC in Lobby", "hide npcs in tab, and stop rendering") {
 
-    override fun onRenderPlayerPre(e: RenderPlayerEvent.Pre) {
-        if (enabled && Hypixel.inLobby && e.entityPlayer.uniqueID.version() == 2) e.isCanceled = true
-    }
-
-    override fun onRenderPlayerPost(e: RenderPlayerEvent.Post) {
-
+    init {
+        on<RenderPlayerEvent.Pre>().filter { enabled && Hypixel.inLobby && entityPlayer.uniqueID.version() == 2 }
+            .subscribe {
+                cancel()
+            }
     }
 }

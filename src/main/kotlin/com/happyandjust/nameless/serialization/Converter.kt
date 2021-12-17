@@ -29,10 +29,10 @@ interface Converter<T> {
 
 class DummyConverter<T> : Converter<T> {
     override fun serialize(t: T): JsonElement {
-        throw RuntimeException("You cannot serialize DummyConverter type of ${t!!.javaClass.name}")
+        error("You cannot serialize DummyConverter type of ${t!!.javaClass.name}")
     }
 
     override fun deserialize(jsonElement: JsonElement): T {
-        throw RuntimeException("You cannot deserialize DummyConverter")
+        error("You cannot deserialize DummyConverter")
     }
 }

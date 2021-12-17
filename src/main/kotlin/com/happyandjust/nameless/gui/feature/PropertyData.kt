@@ -50,8 +50,8 @@ data class PropertyData<T>(
     var minValue: Double = 0.0
     var maxValue: Double = 0.0
 
-    var allEnumList = emptyList<Enum<*>>()
     var enumName: (Enum<*>) -> String = { it.name }
+    var allEnumList = emptyList<Enum<*>>()
 
     var allIdentifiers = emptyList<Identifier>()
 }

@@ -19,16 +19,13 @@
 package com.happyandjust.nameless.features.impl.qol
 
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.ColorInfo
 import com.happyandjust.nameless.core.JsonHandler
-import com.happyandjust.nameless.core.checkAndReplace
-import com.happyandjust.nameless.core.toChromaColor
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.info.ColorInfo
+import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.*
-import com.happyandjust.nameless.events.PacketEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.*
+import com.happyandjust.nameless.events.*
+import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.MurdererMode
@@ -37,7 +34,6 @@ import com.happyandjust.nameless.pathfinding.ModPathFinding
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.utils.RenderUtils
-import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Blocks
@@ -50,17 +46,16 @@ import net.minecraft.network.play.server.S09PacketHeldItemChange
 import net.minecraft.util.BlockPos
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.client.event.ClientChatReceivedEvent
+import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 import java.awt.Point
-import java.util.regex.Pattern
 
 object FeatureMurdererFinder : SimpleFeature(
     Category.QOL,
     "murdererfinder",
     "Murderer Finder",
     "Supports All types of murder mystery in hypixel"
-), ClientTickListener, ServerChangeListener, ChatListener, WorldRenderListener, StencilListener, RenderOverlayListener,
-    PacketListener {
+) {
     private val sword_list = hashSetOf(
         Items.iron_sword,
         Items.stone_sword,
@@ -102,7 +97,7 @@ object FeatureMurdererFinder : SimpleFeature(
         Items.book
     )
     private var pathsToTarget = emptyList<BlockPos>()
-    private var pathTick = 0
+    private val pathTimer = TickTimer.withSecond(1.5)
 
     private val murderers = MurdererSet()
     private val survivors = hashSetOf<String>()
@@ -114,11 +109,11 @@ object FeatureMurdererFinder : SimpleFeature(
             }
             field = value
         }
-    private val ALPHA_FOUND = Pattern.compile("The alpha, (?<alpha>\\w+), has been revealed by \\w+!")
-    private val INFECTED = Pattern.compile("\\w+(\\s\\w+)? infected (?<infected>\\w+)")
-    private val ENVIRONMENT_INFECTED = Pattern.compile("(?<infected>\\w+) was infected by the environment!")
+    private val ALPHA_FOUND = "The alpha, (?<alpha>\\w+), has been revealed by \\w+!".toPattern()
+    private val INFECTED = "\\w+(\\s\\w+)? infected (?<infected>\\w+)".toPattern()
+    private val ENVIRONMENT_INFECTED = "(?<infected>\\w+) was infected by the environment!".toPattern()
     private val ALPHA_LEFT =
-        Pattern.compile("The alpha left the game\\. (?<name>\\w+) was chosen to be the new alpha infected!")
+        "The alpha left the game\\. (?<name>\\w+) was chosen to be the new alpha infected!".toPattern()
 
     private var targetName: String? = null
     private var prevTargetName: String? = null
@@ -130,288 +125,252 @@ object FeatureMurdererFinder : SimpleFeature(
         assassinMapHash.putAll(json.entrySet().map { it.key to it.value.asString })
     }
 
+    private var glowGold by FeatureParameter(
+        0,
+        "murderer",
+        "glowgold",
+        "Glow Gold Ingot",
+        "Glow gold ingot when you are in murder mystery",
+        false,
+        CBoolean
+    )
+
+    @SubParameterOf("glowGold")
+    private var goldColor by FeatureParameter(
+        0,
+        "murderer",
+        "goldcolor",
+        "Gold Ingot Color",
+        "",
+        Color(255, 128, 0).toChromaColor(),
+        CChromaColor
+    )
+
+    private var murdererColor by FeatureParameter(
+        1,
+        "murderer",
+        "murderercolor",
+        "Murderer Color",
+        "",
+        Color.blue.toChromaColor(),
+        CChromaColor
+    )
+
+    @InCategory("Infection")
+    private var glowSurvivor by FeatureParameter(
+        0,
+        "murderer",
+        "glowsurvivor",
+        "Glow Survivor",
+        "Glow survivor in hypixel murderer INFECTION",
+        true,
+        CBoolean
+    )
+
+    @SubParameterOf("glowSurvivor")
+    private var survivorColor by FeatureParameter(
+        0,
+        "murderer",
+        "survivorcolor",
+        "Survivor Color",
+        "",
+        Color.green.toChromaColor(),
+        CChromaColor
+    )
+
+    @InCategory("Infection")
+    private var alphaColor by FeatureParameter(
+        1,
+        "murderer",
+        "alphacolor",
+        "Alpha Color",
+        "",
+        Color(128, 0, 128).toChromaColor(),
+        CChromaColor
+    )
+
+    @InCategory("Assassin")
+    private var targetColor by FeatureParameter(
+        0,
+        "murderer",
+        "targetcolor",
+        "Target Color",
+        "Target glow color in hypixel murderer ASSASSIN",
+        Color.red.toChromaColor(),
+        CChromaColor
+    )
+
+    @InCategory("Assassin")
+    private var targetArrow by FeatureParameter(
+        1,
+        "murderer",
+        "targetarrow",
+        "Render Direction Arrow to Target",
+        "Render arrow shape on your screen which is pointing the target",
+        true,
+        CBoolean
+    )
+
+    @InCategory("Assassin")
+    private var targetPath by FeatureParameter(
+        2,
+        "murderer",
+        "targetpath",
+        "Show Paths to Target",
+        "",
+        false,
+        CBoolean
+    )
+
     init {
-        parameters["gold"] = FeatureParameter(
-            0,
-            "murderer",
-            "glowgold",
-            "Glow Gold Ingot",
-            "Glow gold ingot when you are in murder mystery",
-            false,
-            CBoolean
-        ).apply {
-            parameters["goldcolor"] = FeatureParameter(
-                0,
-                "murderer",
-                "goldcolor",
-                "Gold Ingot Color",
-                "",
-                Color(255, 128, 0).toChromaColor(),
-                CChromaColor
-            )
-        }
-        parameters["murderercolor"] = FeatureParameter(
-            1,
-            "murderer",
-            "murderercolor",
-            "Murderer Color",
-            "",
-            Color.blue.toChromaColor(),
-            CChromaColor
-        )
-
-        inCategory(
-            "Infection",
-            "survivor" to FeatureParameter(
-                0,
-                "murderer",
-                "glowsurvivor",
-                "Glow Survivor",
-                "Glow survivor in hypixel murderer INFECTION",
-                true,
-                CBoolean
-            ).apply {
-                parameters["survivorcolor"] = FeatureParameter(
-                    0,
-                    "murderer",
-                    "survivorcolor",
-                    "Survivor Color",
-                    "",
-                    Color.green.toChromaColor(),
-                    CChromaColor
-                )
-            },
-            "alphacolor" to FeatureParameter(
-                1,
-                "murderer",
-                "alphacolor",
-                "Alpha Color",
-                "",
-                Color(128, 0, 128).toChromaColor(),
-                CChromaColor
-            ),
-        )
-
-        inCategory(
-            "Assassin",
-            "targetcolor" to FeatureParameter(
-                0,
-                "murderer",
-                "targetcolor",
-                "Target Color",
-                "Target glow color in hypixel murderer ASSASSIN",
-                Color.red.toChromaColor(),
-                CChromaColor
-            ),
-            "targetarrow" to FeatureParameter(
-                1,
-                "murderer",
-                "targetarrow",
-                "Render Direction Arrow to Target",
-                "Render arrow shape on your screen which is pointing the target",
-                true,
-                CBoolean
-            ),
-            "targetpath" to FeatureParameter(
-                2,
-                "murderer",
-                "targetpath",
-                "Show Paths to Target",
-                "",
-                false,
-                CBoolean
-            )
-        )
-
-    }
-
-    override fun tick() {
-        if (!checkForEnabledAndMurderMystery()) return
-
-        val mode = Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)
-
-        if (mode == MurdererMode.ASSASSIN) {
+        on<SpecialTickEvent>().filter {
+            checkForEnabledAndMurderMystery() && Hypixel.getProperty<MurdererMode>(
+                PropertyKey.MURDERER_TYPE
+            ) == MurdererMode.ASSASSIN
+        }.subscribe {
             if (targetName == null) {
-                // Kill Contract is updated a bit later
                 targetName = getTargetName()?.takeIf { it != prevTargetName }?.also {
                     sendClientMessage("§eYour new target is §c$it")
                 }
             } else {
-                pathTick = (pathTick + 1) % 30
-
-                if (pathTick == 0 && getParameterValue("targetpath")) {
+                if (targetPath && pathTimer.update().check()) {
                     getPlayerByName(targetName)?.let {
                         pathsToTarget = ModPathFinding(BlockPos(it), false).findPath()
                     }
                 }
             }
         }
-    }
 
-    /**
-     * Clear all data here
-     */
-    override fun onServerChange(server: String) {
-        murderers.clear()
-        survivors.clear()
-        alpha = null
-        targetName = null
-        pathsToTarget = emptyList()
-    }
-
-    override fun onChatReceived(e: ClientChatReceivedEvent) {
-        if (!checkForEnabledAndMurderMystery()) return
-
-        val mode = Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)
-        val msg = e.message.unformattedText.trim().stripControlCodes()
-
-        when (mode) {
-            MurdererMode.INFECTION -> {
-                ALPHA_FOUND.matchesMatcher(msg) {
-                    alpha = it.group("alpha")
-                    // this is why I set alpha to String, player may not be loaded when alpha is found
-                }
-                INFECTED.matchesMatcher(msg) {
-                    val infectedName = it.group("infected")
-                    murderers.add(infectedName)
-                    survivors.remove(infectedName) // infected cannot be survivor smh
-
-                    // same as reason why I set to String
-                }
-                ENVIRONMENT_INFECTED.matchesMatcher(msg) {
-                    val infectedName = it.group("infected")
-                    murderers.add(infectedName)
-                    survivors.remove(infectedName)
-                }
-                ALPHA_LEFT.matchesMatcher(msg) {
-                    alpha = it.group("name")
-                }
-            }
-            MurdererMode.ASSASSIN -> {
-                if (msg == "Your kill contract has been updated!") {
-                    e.isCanceled = true
-                    prevTargetName = targetName
-                    targetName = null // reset
-                }
-            }
-            else -> {}
+        on<HypixelServerChangeEvent>().subscribe {
+            murderers.clear()
+            survivors.clear()
+            alpha = null
+            targetName = null
+            pathsToTarget = emptyList()
         }
-    }
 
-    override fun renderWorld(partialTicks: Float) {
-        if (!checkForEnabledAndMurderMystery()) return
+        on<ClientChatReceivedEvent>().filter { checkForEnabledAndMurderMystery() }.subscribe {
+            when (Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)) {
+                MurdererMode.INFECTION -> {
+                    ALPHA_FOUND.matchesMatcher(pureText) {
+                        alpha = it.group("alpha")
+                        // this is why I set alpha to String, player may not be loaded when alpha is found
+                    }
+                    INFECTED.matchesMatcher(pureText) {
+                        val infectedName = it.group("infected")
+                        murderers.add(infectedName)
+                        survivors.remove(infectedName) // infected cannot be survivor smh
 
-        if (Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE) == MurdererMode.ASSASSIN && getParameterValue("targetpath")) {
+                        // same as reason why I set to String
+                    }
+                    ENVIRONMENT_INFECTED.matchesMatcher(pureText) {
+                        val infectedName = it.group("infected")
+                        murderers.add(infectedName)
+                        survivors.remove(infectedName)
+                    }
+                    ALPHA_LEFT.matchesMatcher(pureText) {
+                        alpha = it.group("name")
+                    }
+                }
+                MurdererMode.ASSASSIN -> {
+                    if (pureText == "Your kill contract has been updated!") {
+                        cancel()
+                        prevTargetName = targetName
+                        targetName = null // reset
+                    }
+                }
+                else -> {}
+            }
+        }
+
+        on<RenderWorldLastEvent>().filter {
+            checkForEnabledAndMurderMystery() && Hypixel.getProperty<MurdererMode>(
+                PropertyKey.MURDERER_TYPE
+            ) == MurdererMode.ASSASSIN && targetPath && pathsToTarget.isNotEmpty()
+        }.subscribe {
             RenderUtils.drawPath(pathsToTarget, Color.red.rgb, partialTicks)
         }
-    }
 
-    override fun onSendingPacket(e: PacketEvent.Sending) {
-
-    }
-
-    override fun onReceivedPacket(e: PacketEvent.Received) {
-        if (!checkForEnabledAndMurderMystery()) return
-        val entityPlayer: EntityPlayer
-        val heldItem: ItemStack?
-        when (val msg = e.packet) {
-            is S04PacketEntityEquipment -> {
-                entityPlayer = mc.theWorld.getEntityByID(msg.entityID) as? EntityPlayer ?: return
-                heldItem = msg.itemStack
-            }
-            is S09PacketHeldItemChange -> {
-                entityPlayer = mc.thePlayer
-                heldItem = mc.thePlayer.inventory.getStackInSlot(msg.heldItemHotbarIndex)
-            }
-            else -> return
-        }
-        heldItem ?: return
-
-        val mode = Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)
-        val playerName = entityPlayer.name
-
-        if (mode == MurdererMode.ASSASSIN) return
-
-        val isInfection = mode == MurdererMode.INFECTION
-
-        if (heldItem.item in sword_list) { // found
-            if (isInfection && entityPlayer.getEquipmentInSlot(3)?.item == Items.iron_chestplate) {
-                alpha = playerName
-            } else {
-                murderers.add(playerName)
-
-                if (isInfection) {
-                    survivors.remove(playerName)
+        on<PacketEvent.Received>().filter { checkForEnabledAndMurderMystery() }.subscribe {
+            val entityPlayer: EntityPlayer
+            val heldItem: ItemStack?
+            when (val msg = packet) {
+                is S04PacketEntityEquipment -> {
+                    entityPlayer = mc.theWorld.getEntityByID(msg.entityID) as? EntityPlayer ?: return@subscribe
+                    heldItem = msg.itemStack
                 }
+                is S09PacketHeldItemChange -> {
+                    entityPlayer = mc.thePlayer
+                    heldItem = mc.thePlayer.inventory.getStackInSlot(msg.heldItemHotbarIndex)
+                }
+                else -> return@subscribe
             }
-        } else if (isInfection) {
-            when (heldItem.item) {
-                Items.bow -> {
-                    if ("§c" in heldItem.displayName) {
-                        alpha = playerName
-                    } else if ("§a" in heldItem.displayName) {
+            heldItem ?: return@subscribe
+
+            val mode = Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)
+            val playerName = entityPlayer.name
+
+            if (mode == MurdererMode.ASSASSIN) return@subscribe
+
+            val isInfection = mode == MurdererMode.INFECTION
+
+            if (heldItem.item in sword_list) { // found
+                if (isInfection && entityPlayer.getEquipmentInSlot(3)?.item == Items.iron_chestplate) {
+                    alpha = playerName
+                } else {
+                    murderers.add(playerName)
+
+                    if (isInfection) {
+                        survivors.remove(playerName)
+                    }
+                }
+            } else if (isInfection) {
+                when (heldItem.item) {
+                    Items.bow -> {
+                        if ("§c" in heldItem.displayName) {
+                            alpha = playerName
+                        } else if ("§a" in heldItem.displayName) {
+                            survivors.add(playerName)
+                        }
+                    }
+                    Items.arrow -> { // there's no FAKE ARROW
                         survivors.add(playerName)
                     }
                 }
-                Items.arrow -> { // there's no FAKE ARROW
-                    survivors.add(playerName)
-                }
-            }
 
+            }
         }
     }
 
     private fun checkForEnabledAndMurderMystery() = enabled && Hypixel.currentGame == GameType.MURDER_MYSTERY
 
-    override fun getOutlineColor(entity: Entity): ColorInfo? {
-        if (!checkForEnabledAndMurderMystery()) return null
+    init {
+        on<OutlineRenderEvent>().filter { checkForEnabledAndMurderMystery() }.subscribe {
+            val mode = Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)
+            entity.withInstance<EntityPlayer> {
+                val color = when {
+                    mode != MurdererMode.ASSASSIN && name in murderers && (mode != MurdererMode.INFECTION || alpha != name) -> murdererColor
+                    mode == MurdererMode.INFECTION -> if (name in survivors) {
+                        if (glowSurvivor) survivorColor else return@subscribe
+                    } else if (name == alpha) alphaColor else return@subscribe
+                    mode == MurdererMode.ASSASSIN && targetName == name.trim() -> targetColor
+                    else -> return@subscribe
+                }.rgb
 
-        var colorInfo: ColorInfo? = null
-
-        val mode = Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)
-
-        if (entity is EntityPlayer) {
-            val name = entity.name
-
-            val color =
-                (if (mode != MurdererMode.ASSASSIN && murderers.contains(name) && (mode != MurdererMode.INFECTION || alpha != name)) {
-                    getParameterValue("murderercolor")
-                } else if (mode == MurdererMode.INFECTION) {
-                    if (survivors.contains(name)) {
-                        if (getParameterValue("survivor")) {
-                            getParameter<Boolean>("survivor").getParameterValue<Color>("survivorcolor")
-                        } else return null
-                    } else if (name == alpha) {
-                        getParameterValue<Color>("alphacolor")
-                    } else return null
-                } else if (mode == MurdererMode.ASSASSIN && targetName == name.trim()) {
-                    getParameterValue<Color>("targetcolor")
-                } else return null).rgb
-
-            colorInfo = colorInfo.checkAndReplace(color, ColorInfo.ColorPriority.HIGH)
-        } else if (entity is EntityItem && entity.entityItem.item == Items.gold_ingot) {
-            if (getParameterValue("gold")) {
-                colorInfo =
-                    colorInfo.checkAndReplace(
-                        getParameter<Boolean>("gold").getParameterValue<Color>("goldcolor").rgb,
-                        ColorInfo.ColorPriority.HIGH
-                    )
+                colorInfo = ColorInfo(color, ColorInfo.ColorPriority.HIGH)
+                return@subscribe
+            }
+            entity.withInstance<EntityItem> {
+                if (entityItem.item == Items.gold_ingot && glowGold) {
+                    colorInfo = ColorInfo(goldColor.rgb, ColorInfo.ColorPriority.HIGH)
+                }
             }
         }
 
-
-        return colorInfo
-    }
-
-    override fun renderOverlay(partialTicks: Float) {
-        if (!checkForEnabledAndMurderMystery()) return
-
-        if (!getParameterValue<Boolean>("targetarrow")) return
-
-        getPlayerByName(targetName)?.let {
-            RenderUtils.drawDirectionArrow(it.toVec3(), Color.red.rgb)
-            color(1f, 1f, 1f, 1f)
-
+        on<SpecialOverlayEvent>().filter { checkForEnabledAndMurderMystery() && targetArrow }.subscribe {
+            getPlayerByName(targetName)?.let {
+                RenderUtils.drawDirectionArrow(it.toVec3(), Color.red.rgb)
+            }
         }
     }
 
@@ -468,5 +427,5 @@ object FeatureMurdererFinder : SimpleFeature(
         }
     }
 
-    fun Point.toMapString() = "($x,$y)"
+    private fun Point.toMapString() = "($x,$y)"
 }

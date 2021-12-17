@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.processor.experimantation
 
 import com.happyandjust.nameless.dsl.*
-import com.happyandjust.nameless.features.listener.BackgroundDrawnListener
+import com.happyandjust.nameless.features.impl.skyblock.FeatureExperimentationTableHelper
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
 import com.happyandjust.nameless.processor.Processor
 import net.minecraft.client.gui.inventory.GuiChest
@@ -30,26 +30,29 @@ import net.minecraft.item.Item
 import net.minecraftforge.client.event.GuiScreenEvent
 import java.awt.Color
 
-object UltraSequencerProcessor : Processor(), BackgroundDrawnListener {
+object UltraSequencerProcessor : Processor() {
 
     private var ultrasequencerOrders = listOf<Int>()
+    override val filter
+        get() = FeatureExperimentationTableHelper.processors[this]!!
 
-    override fun onBackgroundDrawn(e: GuiScreenEvent.BackgroundDrawnEvent) {
-        val gui = e.gui
+    init {
+        request<GuiScreenEvent.BackgroundDrawnEvent>().subscribe {
+            gui.withInstance<GuiChest> {
+                val containerChest = inventorySlots as ContainerChest
+                val slots =
+                    containerChest.inventorySlots.filter { it.inventory != com.happyandjust.nameless.dsl.mc.thePlayer.inventory }
 
-        if (gui is GuiChest) {
-            val containerChest = gui.inventorySlots as ContainerChest
-            val slots = containerChest.inventorySlots.filter { it.inventory != mc.thePlayer.inventory }
+                val item = slots[49].stack?.item
 
-            val item = slots[49].stack?.item
-
-            if (item == Item.getItemFromBlock(Blocks.glowstone)) {
-                ultrasequencerOrders =
-                    slots.filter { it.stack?.displayName?.stripControlCodes()?.matches("\\d+".toRegex()) == true }
-                        .sortedBy { it.stack.stackSize }
-                        .map { it.slotNumber }
-            } else if (item == Items.clock) {
-                drawOrders(gui)
+                if (item == Item.getItemFromBlock(Blocks.glowstone)) {
+                    ultrasequencerOrders =
+                        slots.filter { it.stack?.displayName?.stripControlCodes()?.matches("\\d+".toRegex()) == true }
+                            .sortedBy { it.stack.stackSize }
+                            .map { it.slotNumber }
+                } else if (item == Items.clock) {
+                    drawOrders(this)
+                }
             }
         }
     }

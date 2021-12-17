@@ -18,4 +18,13 @@
 
 package com.happyandjust.nameless.processor
 
-abstract class Processor
+import com.happyandjust.nameless.dsl.on
+import net.minecraftforge.fml.common.eventhandler.Event
+
+abstract class Processor {
+    abstract val filter: () -> Boolean
+
+
+    inline fun <reified T : Event> request() = on<T>().filter { filter() }
+
+}

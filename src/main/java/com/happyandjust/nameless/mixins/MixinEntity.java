@@ -50,14 +50,14 @@ public abstract class MixinEntity {
         FeatureBedwarsESP bedwarsESP = FeatureBedwarsESP.INSTANCE;
         FeatureGlowStarDungeonMobs glowStarDungeonMobs = FeatureGlowStarDungeonMobs.INSTANCE;
         FeatureGlowAllPlayers glowAllPlayers = FeatureGlowAllPlayers.INSTANCE;
-        if (bedwarsESP.getTeamColorCache().containsKey(this) && bedwarsESP.getEnabled() && (boolean) bedwarsESP.getParameterValue("invisible")) {
+        if (bedwarsESP.getTeamColorCache().containsKey(this) && bedwarsESP.getEnabled() && bedwarsESP.getInvisible()) {
             cir.setReturnValue(false);
             return;
         }
-        if ($this instanceof EntityEnderman && glowStarDungeonMobs.getEnabled() && glowStarDungeonMobs.getCheckedDungeonMobs().containsValue(this) && (boolean) glowStarDungeonMobs.getParameterValue("fel")) {
+        if ($this instanceof EntityEnderman && glowStarDungeonMobs.getEnabled() && glowStarDungeonMobs.getCheckedDungeonMobs().containsValue(this) && glowStarDungeonMobs.getShowFel()) {
             cir.setReturnValue(false);
         }
-        if (glowAllPlayers.getEnabled() && glowAllPlayers.<Boolean>getParameterValue("invisible") && glowAllPlayers.getPlayersInTab().contains(this) && $this instanceof EntityPlayer) {
+        if (glowAllPlayers.getEnabled() && glowAllPlayers.getInvisible() && glowAllPlayers.getPlayersInTab().contains(this) && $this instanceof EntityPlayer) {
             cir.setReturnValue(false);
         }
     }

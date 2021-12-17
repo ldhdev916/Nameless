@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.core.ChromaColor;
-import com.happyandjust.nameless.core.Direction;
+import com.happyandjust.nameless.core.enums.Direction;
+import com.happyandjust.nameless.core.value.ChromaColor;
 import com.happyandjust.nameless.dsl.RenderingExtensionsKt;
 import com.happyandjust.nameless.features.FeatureRegistry;
 import com.happyandjust.nameless.features.impl.misc.FeatureDisguiseNickname;
@@ -127,7 +127,7 @@ public abstract class MixinFontRenderer {
     private String replaceDisguisedNickname(String text) {
         FeatureDisguiseNickname feature = FeatureDisguiseNickname.INSTANCE;
 
-        return feature.getEnabled() ? text.replaceAll("(?i)" + Minecraft.getMinecraft().getSession().getUsername(), feature.getNickname()) : text;
+        return feature.getEnabled() ? text.replaceAll("(?i)" + Minecraft.getMinecraft().getSession().getUsername(), feature.getNick()) : text;
 
     }
 

@@ -22,12 +22,13 @@ import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.Request
 import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.FeatureStateListener
 import com.happyandjust.nameless.gui.feature.FeatureGui
 import com.happyandjust.nameless.mixins.accessors.AccessorAbstractClientPlayer
 import com.happyandjust.nameless.mixins.accessors.AccessorNetworkPlayerInfo
@@ -49,32 +50,31 @@ object FeatureDisguiseNickname : SimpleFeature(
     "disguisenickname",
     "Disguise Nickname",
     "Change your nickname and skin if nickname is valid!"
-), FeatureStateListener, ClientTickListener {
+) {
 
-    init {
-        parameters["nick"] = FeatureParameter(
-            0,
-            "disguise",
-            "nickname",
-            "Disguise Nickname",
-            "If you leave this empty, your nickname will disappear",
-            "",
-            CString
-        ).apply {
-            validator = { char -> char.isLetterOrDigit() }
-        }
-        parameters["skin"] = FeatureParameter(
-            1,
-            "disguise",
-            "chnageskin",
-            "Change Skin",
-            "If nickname you set above is valid, your skin will be changed into his skin",
-            false,
-            CBoolean
-        ).apply {
-            onValueChange = { value ->
-                if (!value) resetTexture()
-            }
+    var nick by FeatureParameter(
+        0,
+        "disguise",
+        "nickname",
+        "Disguise Nickname",
+        "If you leave this empty, your nickname will disappear",
+        "",
+        CString
+    ).apply {
+        validator = { char -> char.isLetterOrDigit() }
+    }
+
+    private var skin by FeatureParameter(
+        1,
+        "disguise",
+        "chnageskin",
+        "Change Skin",
+        "If nickname you set above is valid, your skin will be changed into his skin",
+        false,
+        CBoolean
+    ).apply {
+        onValueChange = { value ->
+            if (!value) resetTexture()
         }
     }
 
@@ -85,8 +85,6 @@ object FeatureDisguiseNickname : SimpleFeature(
             ((mc.thePlayer as AccessorAbstractClientPlayer).invokeGetPlayerInfo() as AccessorNetworkPlayerInfo)
                 .setLocationSkin(location)
         }
-
-    fun getNickname() = getParameterValue<String>("nick")
 
     @OptIn(DelicateCoroutinesApi::class)
     private fun checkAndLoadSkin(username: String) {
@@ -118,27 +116,20 @@ object FeatureDisguiseNickname : SimpleFeature(
         }
     }
 
-    override fun onFeatureStateChangePre(e: FeatureStateChangeEvent.Pre) {
-        if (e.feature == this && !e.enabledAfter) {
-            resetTexture()
-        }
+    init {
+        on<FeatureStateChangeEvent.Pre>().filter { feature == this@FeatureDisguiseNickname && !enabledAfter }
+            .subscribe { resetTexture() }
+
+        on<SpecialTickEvent>().filter { enabled && skin }.subscribe { checkAndLoadSkin(nick) }
     }
 
     private fun resetTexture() {
-        with(((mc.thePlayer as AccessorAbstractClientPlayer).invokeGetPlayerInfo() as AccessorNetworkPlayerInfo)) {
-            setLocationSkin(null)
-            setPlayerTexturesLoaded(false)
-        }
         currentlyLoadedUsername = mc.thePlayer.name
-    }
-
-    override fun onFeatureStateChangePost(e: FeatureStateChangeEvent.Post) {
-
-    }
-
-    override fun tick() {
-        if (enabled && getParameterValue("skin")) {
-            checkAndLoadSkin(getParameterValue("nick"))
+        mc.thePlayer.withInstance<AccessorAbstractClientPlayer> {
+            invokeGetPlayerInfo().withInstance<AccessorNetworkPlayerInfo> {
+                setLocationSkin(null)
+                setPlayerTexturesLoaded(false)
+            }
         }
     }
 }

@@ -21,17 +21,13 @@ package com.happyandjust.nameless.features.impl.qol
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.core.Overlay
+import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.features.OverlayParameter
-import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.RenderOverlayListener
-import com.happyandjust.nameless.features.listener.WorldRenderListener
+import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
+import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -49,6 +45,7 @@ import gg.essential.elementa.dsl.*
 import gg.essential.vigilance.gui.settings.SelectorComponent
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.MovingObjectPosition
+import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 
 object FeatureInGameStatViewer :
@@ -57,176 +54,154 @@ object FeatureInGameStatViewer :
         "ingamestatviewer",
         "In Game Stat Viewer",
         "View someone's stat in game. §eRequires hypixel api key"
-    ), WorldRenderListener, RenderOverlayListener {
+    ) {
 
-    init {
+    private var type by object : OverlayParameter<DisplayType>(
+        0,
+        "ingamestatviewer",
+        "displaytype",
+        "Display Type",
+        DisplayType.values().joinToString("\n") { "${it.name}: ${it.lore}" },
+        DisplayType.OVERLAY,
+        getEnumConverter()
+    ) {
+        override var overlayPoint by ConfigValue("ingamestatviewer", "overlay", Overlay.DEFAULT, COverlay)
 
-        val lores = DisplayType.values().map { "${it.name}: ${it.lore}" }
-
-        parameters["type"] = object : OverlayParameter<DisplayType>(
-            0,
-            "ingamestatviewer",
-            "displaytype",
-            "Display Type",
-            lores.joinToString("\n"),
-            DisplayType.OVERLAY,
-            CDisplayType
-        ) {
-
-            init {
-                allEnumList = DisplayType.values().toList()
-
-                parameters["y"] = FeatureParameter(
-                    0,
-                    "ingamestatviewer",
-                    "yoffset",
-                    "Y Offset",
-                    "Offset y from player's head (Only for display type 'HEAD')",
-                    0.0,
-                    CDouble
-                ).apply {
-                    minValue = -5.0
-                    maxValue = 5.0
-                }
-
-                parameters["scale"] = FeatureParameter(
-                    1,
-                    "ingamestatviewer",
-                    "scale",
-                    "Text Scale",
-                    "Select text scale (Only for display type 'HEAD')",
-                    1.0,
-                    CDouble
-                ).apply {
-                    minValue = 0.5
-                    maxValue = 5.0
-                }
-
-                parameters["onlylook"] = FeatureParameter(
-                    2,
-                    "ingamestatviewer",
-                    "onlylook",
-                    "Only Looking At",
-                    "Show stats of only a player you're currently looking at instead of everyone (Only for display type 'HEAD')",
-                    true,
-                    CBoolean
-                )
+        override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
+            val container = UIContainer().constrain {
+                width = ChildBasedMaxSizeConstraint()
+                height = ChildBasedSizeConstraint()
             }
 
-            override val overlayPoint = ConfigValue("ingamestatviewer", "overlay", Overlay.DEFAULT, COverlay)
+            for (text in arrayOf(
+                "Hypixel Level: 10",
+                "BedWars Level: 999§e✫",
+                "BedWars FKDR: 1.0",
+                "SkyWars Kills: 9999"
+            )) {
+                UIText(text).constrain {
+                    y = SiblingConstraint()
 
-            override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
-                val container = UIContainer().constrain {
-                    width = ChildBasedMaxSizeConstraint()
-                    height = ChildBasedSizeConstraint()
-                }
-
-                for (text in arrayOf(
-                    "Hypixel Level: 10",
-                    "BedWars Level: 999§e✫",
-                    "BedWars FKDR: 1.0",
-                    "SkyWars Kills: 9999"
-                )) {
-                    UIText(text).constrain {
-                        y = SiblingConstraint()
-
-                        textScale = relocateComponent.currentScale.pixels()
-
-                        relocateComponent.onScaleChange {
-                            textScale = it.pixels()
-                        }
-                    } childOf container
-                }
-
-                return container
+                    textScale = basicTextScaleConstraint { relocateComponent.currentScale.toFloat() }.fixed()
+                } childOf container
             }
 
-            override fun shouldDisplayInRelocateGui(): Boolean {
-                return enabled && value == DisplayType.OVERLAY
-            }
+            return container
+        }
 
-            override fun renderOverlay0(partialTicks: Float) {
-                val identifiers = this@FeatureInGameStatViewer.getParameterValue<List<Identifier>>("order")
-                    .map { it as InGameStatIdentifier }
-                val overlay = overlayPoint.value
+        override fun shouldDisplayInRelocateGui(): Boolean {
+            return enabled && value == DisplayType.OVERLAY
+        }
 
-                for (player in getPlayersForRender()) {
-                    matrix {
-                        translate(overlay.point.x, overlay.point.y, 0)
-                        scale(overlay.scale, overlay.scale, 1.0)
+        override fun renderOverlay0(partialTicks: Float) {
+            if (!enabled || value != DisplayType.OVERLAY) return
+            for (player in getPlayersForRender()) {
+                matrix {
+                    setup(overlayPoint)
 
-                        mc.fontRendererObj.drawString("§e${player.name}", 0, 0, Color.white.rgb, true)
+                    mc.fontRendererObj.drawString("§e${player.name}", 0, 0, Color.white.rgb, true)
 
-                        var y = mc.fontRendererObj.FONT_HEIGHT
+                    var y = mc.fontRendererObj.FONT_HEIGHT
 
-                        for (identifier in identifiers.filter { it.supportGame.shouldDisplay() }) {
-                            mc.fontRendererObj.drawString(
-                                identifier.informationType.getFormatText(player),
-                                0,
-                                y,
-                                Color.white.rgb,
-                                true
-                            )
-                            y += mc.fontRendererObj.FONT_HEIGHT
-                        }
+                    for (identifier in order.filter { it.supportGame.shouldDisplay() }) {
+                        mc.fontRendererObj.drawString(
+                            identifier.informationType.getFormatText(player),
+                            0,
+                            y,
+                            Color.white.rgb,
+                            true
+                        )
+                        y += mc.fontRendererObj.FONT_HEIGHT
                     }
-                }
-            }
-
-        }
-
-        val stats = InformationType.values().map { InGameStatIdentifier(it, SupportGame.ALL) }
-
-        parameters["order"] = FeatureParameter(
-            2,
-            "ingamestatviewer",
-            "order",
-            "Stats List",
-            "",
-            emptyList(),
-            CIdentifierList { InGameStatIdentifier.deserialize(it) }
-        ).apply {
-            allIdentifiers = stats
-        }
-
-        parameters["texts"] = object : FeatureParameter<String>(
-            3,
-            "ingamestatviewer",
-            "texts",
-            "Each Stat Texts",
-            "{value} is converted to actual value(like level) when rendering and & will be converted to §",
-            "",
-            CString
-        ) {
-            override fun getComponentType(): ComponentType? = null
-
-            init {
-                for (informationType in InformationType.values()) {
-                    val informationName = informationType.name.lowercase()
-                    val statName = informationType.statName
-
-
-                    parameters[informationName] = FeatureParameter(
-                        0,
-                        "ingamestatviewer",
-                        "${informationName}_text",
-                        statName,
-                        "",
-                        "$statName: {value}",
-                        CString
-                    )
                 }
             }
         }
 
     }
 
+    @SubParameterOf("type")
+    private var yOffset by FeatureParameter(
+        0,
+        "ingamestatviewer",
+        "yoffset",
+        "Y Offset",
+        "Offset y from player's head (Only for display type 'HEAD')",
+        0.0,
+        CDouble
+    ).apply {
+        minValue = -5.0
+        maxValue = 5.0
+    }
+
+    @SubParameterOf("type")
+    private var scale by FeatureParameter(
+        1,
+        "ingamestatviewer",
+        "scale",
+        "Text Scale",
+        "Select text scale (Only for display type 'HEAD')",
+        1.0,
+        CDouble
+    ).apply {
+        minValue = 0.5
+        maxValue = 5.0
+    }
+
+    @SubParameterOf("type")
+    private var onlyLook by FeatureParameter(
+        2,
+        "ingamestatviewer",
+        "onlylook",
+        "Only Looking At",
+        "Show stats of only a player you're currently looking at instead of everyone (Only for display type 'HEAD')",
+        true,
+        CBoolean
+    )
+
+    var order by FeatureParameter(
+        2,
+        "ingamestatviewer",
+        "order",
+        "Stats List",
+        "",
+        emptyList(),
+        CList(InGameStatIdentifier::serialize, InGameStatIdentifier::deserialize)
+    ).apply {
+        allIdentifiers = InformationType.values().map { InGameStatIdentifier(it, SupportGame.ALL) }
+    }
+
+    private var texts by object : FeatureParameter<String>(
+        3,
+        "ingamestatviewer",
+        "texts",
+        "Each Stat Texts",
+        "{value} is converted to actual value(like level) when rendering and & will be converted to §",
+        "",
+        CString
+    ) {
+        override fun getComponentType(): ComponentType? = null
+
+        init {
+            for (informationType in InformationType.values()) {
+                val informationName = informationType.name.lowercase()
+                val statName = informationType.statName
+
+
+                parameters[informationName] = FeatureParameter(
+                    0,
+                    "ingamestatviewer",
+                    "${informationName}_text",
+                    statName,
+                    "",
+                    "$statName: {value}",
+                    CString
+                )
+            }
+        }
+    }
+
     private fun getPlayersForRender(): List<EntityPlayer> {
-        val parameter = getParameter<DisplayType>("type")
-
-        val displayType = parameter.value
-
-        return if (displayType == DisplayType.OVERLAY || parameter.getParameterValue("onlylook")) {
+        return if (type == DisplayType.OVERLAY || onlyLook) {
             mc.objectMouseOver?.takeIf { it.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY }?.let {
                 val entity = it.entityHit
                 if (entity is EntityPlayer) arrayListOf(entity) else emptyList()
@@ -236,59 +211,43 @@ object FeatureInGameStatViewer :
         }
     }
 
-    override fun renderOverlay(partialTicks: Float) {
-        if (enabled) {
-            val parameter = getParameter<DisplayType>("type")
-            if (parameter.value == DisplayType.OVERLAY) {
-                (parameter as OverlayParameter).renderOverlay(partialTicks)
-            }
-        }
-    }
+    init {
+        on<RenderWorldLastEvent>().filter { enabled && type == DisplayType.HEAD }.subscribe {
+            val render = mc.renderViewEntity
 
-    override fun renderWorld(partialTicks: Float) {
-        if (enabled) {
-            val parameter = getParameter<DisplayType>("type")
-            if (parameter.value == DisplayType.HEAD) {
-                val identifiers = getParameterValue<List<InGameStatIdentifier>>("order")
-                val yOffset = parameter.getParameterValue<Double>("y")
-                val scale = parameter.getParameterValue<Double>("scale")
-
-                val render = mc.renderViewEntity
-
-                val renderX = render.getRenderPosX(partialTicks)
-                val renderY = render.getRenderPosY(partialTicks)
-                val renderZ = render.getRenderPosZ(partialTicks)
+            val renderX = render.getRenderPosX(partialTicks)
+            val renderY = render.getRenderPosY(partialTicks)
+            val renderZ = render.getRenderPosZ(partialTicks)
 
 
-                for (player in getPlayersForRender()) {
-                    matrix {
-                        translate(
-                            player.posX - renderX,
-                            player.posY + player.getEyeHeight() + yOffset - renderY,
-                            player.posZ - renderZ
-                        )
-                        rotate(-mc.renderManager.playerViewY, 0f, 1f, 0f)
-                        rotate(mc.renderManager.playerViewX, 1f, 0f, 0f)
+            for (player in getPlayersForRender()) {
+                matrix {
+                    translate(
+                        player.posX - renderX,
+                        player.posY + player.getEyeHeight() + yOffset - renderY,
+                        player.posZ - renderZ
+                    )
+                    rotate(-mc.renderManager.playerViewY, 0f, 1f, 0f)
+                    rotate(mc.renderManager.playerViewX, 1f, 0f, 0f)
 
-                        val fontHeight = mc.fontRendererObj.FONT_HEIGHT.toFloat()
+                    val fontHeight = mc.fontRendererObj.FONT_HEIGHT.toFloat()
 
-                        for (identifier in identifiers.filter { it.supportGame.shouldDisplay() }.reversed()) {
-                            val text = identifier.informationType.getFormatText(player)
+                    for (identifier in order.filter { it.supportGame.shouldDisplay() }.reversed()) {
+                        val text = identifier.informationType.getFormatText(player)
 
-                            val fixedScale = scale / wrapScaleTo1Block(text)
+                        val fixedScale = scale / wrapScaleTo1Block(text)
 
-                            matrix {
-                                scale(-fixedScale, -fixedScale, -fixedScale)
-                                mc.fontRendererObj.drawStringWithShadow(
-                                    text,
-                                    -(mc.fontRendererObj.getStringWidth(text) / 2f),
-                                    -fontHeight,
-                                    Color.white.rgb
-                                )
-                            }
-
-                            translate(0.0, (fontHeight * fixedScale), 0.0)
+                        matrix {
+                            scale(-fixedScale, -fixedScale, -fixedScale)
+                            mc.fontRendererObj.drawStringWithShadow(
+                                text,
+                                -(mc.fontRendererObj.getStringWidth(text) / 2f),
+                                -fontHeight,
+                                Color.white.rgb
+                            )
                         }
+
+                        translate(0.0, (fontHeight * fixedScale), 0.0)
                     }
                 }
             }
@@ -342,8 +301,8 @@ object FeatureInGameStatViewer :
         override fun serialize(): JsonElement {
             val jsonObject = JsonObject()
 
-            jsonObject.add("game", CSupportGame.serialize(supportGame))
-            jsonObject.add("information", CInformationType.serialize(informationType))
+            jsonObject.add("game", supportGameConverter.serialize(supportGame))
+            jsonObject.add("information", informationConverter.serialize(informationType))
 
             return jsonObject
         }
@@ -372,12 +331,16 @@ object FeatureInGameStatViewer :
 
 
         companion object {
-            fun deserialize(jsonElement: JsonElement): Identifier {
+
+            private val informationConverter = getEnumConverter<InformationType>()
+            private val supportGameConverter = getEnumConverter<SupportGame>()
+
+            fun deserialize(jsonElement: JsonElement): InGameStatIdentifier {
                 jsonElement as JsonObject
 
                 return InGameStatIdentifier(
-                    CInformationType.deserialize(jsonElement["information"]),
-                    CSupportGame.deserialize(jsonElement["game"])
+                    informationConverter.deserialize(jsonElement["information"]),
+                    supportGameConverter.deserialize(jsonElement["game"])
                 )
             }
         }

@@ -16,16 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.dsl
+package com.happyandjust.nameless.core.enums
 
-import com.happyandjust.nameless.features.FeatureParameter
-import com.happyandjust.nameless.features.SimpleFeature
-
-fun SimpleFeature.inCategory(
-    inCategory: String,
-    vararg pairs: Pair<String, FeatureParameter<*>>
-) {
-    for ((key, parameter) in pairs) {
-        parameters[key] = parameter.also { it.inCategory = inCategory }
-    }
+enum class Direction {
+    LEFT, RIGHT, UP, DOWN
 }

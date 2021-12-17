@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.gui.waypoint
 
-import com.happyandjust.nameless.core.ChromaColor
+import com.happyandjust.nameless.core.value.ChromaColor
 import com.happyandjust.nameless.gui.feature.ColorCache
 import com.happyandjust.nameless.gui.feature.components.toChromaColorComponent
 import com.happyandjust.nameless.listener.WaypointListener

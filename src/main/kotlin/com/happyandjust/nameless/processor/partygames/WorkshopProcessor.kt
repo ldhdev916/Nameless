@@ -18,9 +18,13 @@
 
 package com.happyandjust.nameless.processor.partygames
 
-import com.happyandjust.nameless.core.Pos
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.value.Pos
 import com.happyandjust.nameless.dsl.*
-import com.happyandjust.nameless.features.listener.*
+import com.happyandjust.nameless.events.PartyGameChangeEvent
+import com.happyandjust.nameless.events.SpecialOverlayEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
+import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
 import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
 import com.happyandjust.nameless.mixins.accessors.AccessorShapedOreRecipe
@@ -47,18 +51,19 @@ import net.minecraft.item.crafting.ShapedRecipes
 import net.minecraft.util.BlockPos
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.client.event.GuiScreenEvent
+import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.oredict.ShapedOreRecipe
 import java.awt.Color
 import java.util.*
 import kotlin.math.ceil
 import kotlin.reflect.KClass
 
-object WorkshopProcessor : Processor(), PartyGameChangeListener, ClientTickListener, WorldRenderListener,
-    BackgroundDrawnListener, RenderOverlayListener {
+@OptIn(DelicateCoroutinesApi::class)
+object WorkshopProcessor : Processor() {
     //39 ~ 45
 
     private var prevOutputItemStack: ItemStack? = null
-    private var scanTick = 0
+    private val scanTimer = TickTimer(3)
     private val tasks = arrayListOf<WorkshopTask>()
     private var currentWorkshopRoom: WorkshopRoom? = null
     private val toWorkshopBlockType: BlockPos.() -> WorkshopBlockType? = {
@@ -77,6 +82,7 @@ object WorkshopProcessor : Processor(), PartyGameChangeListener, ClientTickListe
     }
 
     private val itemRecipeCached = hashMapOf<Item, IRecipe?>()
+    override val filter = FeaturePartyGamesHelper.getFilter(this)
 
     private inline fun firstTask(action: WorkshopTask.() -> Unit) {
         if (tasks.isNotEmpty()) {
@@ -84,33 +90,30 @@ object WorkshopProcessor : Processor(), PartyGameChangeListener, ClientTickListe
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    override fun tick() {
+    init {
+        request<SpecialTickEvent>().filter { scanTimer.update().check() }.subscribe {
+            firstTask { if (isCompleted()) tasks.remove(this) }
 
-        scanTick = (scanTick + 1) % 3
-        if (scanTick != 0) return
+            currentWorkshopRoom?.let {
+                val output = it.outputItemFrame.displayedItem
 
-        firstTask { if (isCompleted()) tasks.remove(this) }
-
-        currentWorkshopRoom?.let {
-            val output = it.outputItemFrame.displayedItem
-
-            if (output != prevOutputItemStack && it.blockPosList.filter { pos -> pos.toWorkshopBlockType() == WorkshopBlockType.BREAKABLE }.size == 100) {
-                tasks.clear()
-                prevOutputItemStack = output
-                GlobalScope.launch {
-                    scanRecipes(it)
+                if (output != prevOutputItemStack && it.blockPosList.filter { pos -> pos.toWorkshopBlockType() == WorkshopBlockType.BREAKABLE }.size == 100) {
+                    tasks.clear()
+                    prevOutputItemStack = output
+                    GlobalScope.launch {
+                        scanRecipes(it)
+                    }
                 }
+                return@subscribe
             }
-            return
+
+            val outputItemFrame = mc.theWorld.loadedEntityList
+                .filterIsInstance<EntityItemFrame>()
+                .find { mc.thePlayer.getDistanceToEntity(it) <= 10 && it.hangingPosition.y == 39 } ?: return@subscribe
+
+            currentWorkshopRoom = WorkshopRoom(outputItemFrame, scanRoom(outputItemFrame.hangingPosition))
+
         }
-
-        val outputItemFrame = mc.theWorld.loadedEntityList
-            .filterIsInstance<EntityItemFrame>()
-            .find { mc.thePlayer.getDistanceToEntity(it) <= 10 && it.hangingPosition.y == 39 } ?: return
-
-        currentWorkshopRoom = WorkshopRoom(outputItemFrame, scanRoom(outputItemFrame.hangingPosition))
-
     }
 
     private suspend fun scanRecipes(
@@ -319,27 +322,25 @@ object WorkshopProcessor : Processor(), PartyGameChangeListener, ClientTickListe
         return list
     }
 
-    override fun onPartyGameChange(from: PartyGamesType?, to: PartyGamesType?) {
-        if (from == PartyGamesType.WORKSHOP || to == PartyGamesType.WORKSHOP) {
-            currentWorkshopRoom = null
-            tasks.clear()
-            prevOutputItemStack = null
+    init {
+        on<PartyGameChangeEvent>().filter { from == PartyGamesType.WORKSHOP || to == PartyGamesType.WORKSHOP }
+            .subscribe {
+                currentWorkshopRoom = null
+                tasks.clear()
+                prevOutputItemStack = null
+            }
+
+        request<RenderWorldLastEvent>().subscribe {
+            firstTask { renderWorld(partialTicks) }
         }
-    }
 
-    override fun renderWorld(partialTicks: Float) {
-        firstTask { renderWorld(partialTicks) }
-    }
-
-    override fun onBackgroundDrawn(e: GuiScreenEvent.BackgroundDrawnEvent) {
-        val gui = e.gui
-        if (gui is GuiContainer) {
+        request<GuiScreenEvent.BackgroundDrawnEvent>().filter { gui is GuiContainer }.subscribe {
             firstTask { renderInGui() }
         }
-    }
 
-    override fun renderOverlay(partialTicks: Float) {
-        firstTask { renderOverlay(partialTicks) }
+        request<SpecialOverlayEvent>().subscribe {
+            firstTask { renderOverlay(partialTicks) }
+        }
     }
 
     data class WorkshopRoom(

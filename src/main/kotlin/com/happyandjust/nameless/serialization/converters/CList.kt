@@ -16,11 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.listener
+package com.happyandjust.nameless.serialization.converters
 
-import net.minecraftforge.event.entity.player.ItemTooltipEvent
+import com.google.gson.JsonArray
+import com.google.gson.JsonElement
+import com.happyandjust.nameless.serialization.Converter
 
-interface ItemTooltipListener {
+class CList<T>(private val serializer: (T) -> JsonElement, private val deserializer: (JsonElement) -> T) :
+    Converter<List<T>> {
 
-    fun onItemTooltip(e: ItemTooltipEvent)
+    override fun serialize(t: List<T>): JsonElement {
+        return JsonArray().apply {
+            t.map(serializer).forEach(::add)
+        }
+    }
+
+    override fun deserialize(jsonElement: JsonElement): List<T> {
+        return arrayListOf<T>().apply {
+            addAll(jsonElement.asJsonArray.map(deserializer))
+        }
+    }
 }

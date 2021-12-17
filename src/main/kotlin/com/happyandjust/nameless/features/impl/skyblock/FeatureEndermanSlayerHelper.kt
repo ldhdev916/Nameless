@@ -20,18 +20,20 @@ package com.happyandjust.nameless.features.impl.skyblock
 
 import com.google.gson.JsonElement
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.core.Overlay
+import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.VOIDGLOOM_SKULL
-import com.happyandjust.nameless.core.toChromaColor
+import com.happyandjust.nameless.core.value.Overlay
+import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.events.HypixelServerChangeEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.OverlayFeature
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.ServerChangeListener
-import com.happyandjust.nameless.features.listener.WorldRenderListener
+import com.happyandjust.nameless.features.SubParameterOf
 import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
+import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -44,6 +46,7 @@ import gg.essential.elementa.components.UIText
 import gg.essential.elementa.constraints.ChildBasedMaxSizeConstraint
 import gg.essential.elementa.constraints.ChildBasedSizeConstraint
 import gg.essential.elementa.constraints.SiblingConstraint
+import gg.essential.elementa.dsl.basicTextScaleConstraint
 import gg.essential.elementa.dsl.childOf
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.pixels
@@ -53,16 +56,16 @@ import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.entity.monster.EntityEnderman
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
+import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 import kotlin.math.pow
 
 object FeatureEndermanSlayerHelper :
-    OverlayFeature(Category.SKYBLOCK, "endermanslayerhelper", "Enderman Slayer Helper", "Display Voidgloom Info"),
-    ClientTickListener, WorldRenderListener, ServerChangeListener {
+    OverlayFeature(Category.SKYBLOCK, "endermanslayerhelper", "Enderman Slayer Helper", "Display Voidgloom Info") {
 
-    private var scanTick = 0
-    override val overlayPoint = ConfigValue("endermanslayer", "overlay", Overlay.DEFAULT, COverlay)
-    var currentVoidgloomCache: VoidgloomCache? = null
+    private val scanTimer = TickTimer.withSecond(0.5)
+    override var overlayPoint by ConfigValue("endermanslayer", "overlay", Overlay.DEFAULT, COverlay)
+    private var currentVoidgloomCache: VoidgloomCache? = null
     private val findArmorStand: (EntityEnderman) -> EntityArmorStand? = {
         val aabb = it.entityBoundingBox
         val axisAlignedBB =
@@ -72,84 +75,80 @@ object FeatureEndermanSlayerHelper :
             .sortedBy { entityArmorStand ->
                 (it.posX - entityArmorStand.posX).pow(2) + (it.posZ - entityArmorStand.posZ).pow(2)
             }
-            .find { entityArmorStand -> entityArmorStand.displayName.unformattedText.contains("Voidgloom Seraph") }
+            .find { entityArmorStand -> "Voidgloom Seraph" in entityArmorStand.displayName.unformattedText }
     }
 
-    init {
+    private var highlightBeacon by FeatureParameter(
+        0,
+        "endermanslayer",
+        "highlightbeacon",
+        "Highlight Beacon",
+        "",
+        true,
+        CBoolean
+    )
 
-        parameters["beacon"] = FeatureParameter(
-            0,
-            "endermanslayer",
-            "highlightbeacon",
-            "Highlight Beacon",
-            "",
-            true,
-            CBoolean
-        ).apply {
-            parameters["color"] = FeatureParameter(
-                0,
-                "endermanslayer",
-                "color",
-                "Highlight Color",
-                "",
-                Color.red.withAlpha(0.5f).toChromaColor(),
-                CChromaColor
-            )
-        }
+    @SubParameterOf("highlightBeacon")
+    private var beaconColor by FeatureParameter(
+        0,
+        "endermanslayer",
+        "color",
+        "Highlight Color",
+        "",
+        Color.red.withAlpha(0.5f).toChromaColor(),
+        CChromaColor
+    )
 
-        parameters["arrow"] = FeatureParameter(
-            0,
-            "endermanslayer",
-            "directionarrow",
-            "Render Direction Arrow on Screen",
-            "Render arrow pointing to beacon",
-            false,
-            CBoolean
-        )
+    private var directionArrow by FeatureParameter(
+        0,
+        "endermanslayer",
+        "directionarrow",
+        "Render Direction Arrow on Screen",
+        "Render arrow pointing to beacon",
+        false,
+        CBoolean
+    )
 
-        parameters["notify"] = FeatureParameter(
-            0,
-            "endermanslayer",
-            "beaconnotify",
-            "Notify Beacon",
-            "Display title and play sound when beacon is placed",
-            false,
-            CBoolean
-        )
+    private var notifyBeacon by FeatureParameter(
+        0,
+        "endermanslayer",
+        "beaconnotify",
+        "Notify Beacon",
+        "Display title and play sound when beacon is placed",
+        false,
+        CBoolean
+    )
 
-        parameters["skull"] = FeatureParameter(
-            1,
-            "endermanslayer",
-            "highlightskull",
-            "Highligh Skulls",
-            "",
-            true,
-            CBoolean
-        ).apply {
-            parameters["color"] = FeatureParameter(
-                0,
-                "endermanslayer",
-                "skullcolor",
-                "Highlight Color",
-                "",
-                Color.red.withAlpha(0.5f).toChromaColor(),
-                CChromaColor
-            )
-        }
+    private var highlightSkull by FeatureParameter(
+        1,
+        "endermanslayer",
+        "highlightskull",
+        "Highligh Skulls",
+        "",
+        true,
+        CBoolean
+    )
 
-        val information = VoidgloomInformation.values().map { VoidgloomIdentifier(it) }
+    private var skullColor by FeatureParameter(
+        0,
+        "endermanslayer",
+        "skullcolor",
+        "Highlight Color",
+        "",
+        Color.red.withAlpha(0.5f).toChromaColor(),
+        CChromaColor
+    )
 
-        parameters["order"] = FeatureParameter(
-            2,
-            "endermanslayer",
-            "order",
-            "Information List",
-            "",
-            information,
-            CIdentifierList { VoidgloomIdentifier.deserialize(it) }
-        ).apply {
-            allIdentifiers = information
-        }
+    private var order by FeatureParameter(
+        2,
+        "endermanslayer",
+        "order",
+        "Information List",
+        "",
+        VoidgloomInformation.values().map { VoidgloomIdentifier(it) },
+        CList(VoidgloomIdentifier::serialize, VoidgloomIdentifier::deserialize)
+    ).apply {
+        allIdentifiers = VoidgloomInformation.values().map { VoidgloomIdentifier(it) }
     }
 
     override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
@@ -163,11 +162,7 @@ object FeatureEndermanSlayerHelper :
 
                 y = SiblingConstraint()
 
-                textScale = relocateComponent.currentScale.pixels()
-
-                relocateComponent.onScaleChange {
-                    textScale = it.pixels()
-                }
+                textScale = basicTextScaleConstraint { relocateComponent.currentScale.toFloat() }.fixed()
             } childOf container
         }
 
@@ -182,11 +177,9 @@ object FeatureEndermanSlayerHelper :
         if (checkForRequirement()) {
             currentVoidgloomCache?.let {
                 matrix {
-                    setup(overlayPoint.value)
-                    val identifiers = getParameterValue<List<VoidgloomIdentifier>>("order")
-
+                    setup(overlayPoint)
                     var y = 0
-                    for (identifier in identifiers) {
+                    for (identifier in order) {
                         val information = identifier.information
 
                         mc.fontRendererObj.drawStringWithShadow(
@@ -199,7 +192,7 @@ object FeatureEndermanSlayerHelper :
                     }
                 }
 
-                if (getParameterValue("arrow")) {
+                if (directionArrow) {
                     val pos = getBeaconPos()?.toVec3() ?: return
 
                     RenderUtils.drawDirectionArrow(pos, 0xFFFF0000.toInt())
@@ -209,44 +202,43 @@ object FeatureEndermanSlayerHelper :
         }
     }
 
-    override fun tick() {
-        if (!checkForRequirement()) return
-        scanTick = (scanTick + 1) % 10
-        if (scanTick != 0) return
+    init {
+        on<SpecialTickEvent>().filter { checkForRequirement() && scanTimer.update().check() }.subscribe {
+            currentVoidgloomCache =
+                if (ScoreboardUtils.getSidebarLines(true).any { "Slay the boss!" in it }) {
+                    val pair = mc.theWorld.loadedEntityList
+                        .asSequence()
+                        .filterIsInstance<EntityEnderman>()
+                        .filter { it.getDistanceToEntity(mc.thePlayer) <= 10 }
+                        .sortedBy { it.getDistanceToEntity(mc.thePlayer) }
+                        .mapNotNull {
+                            val armorStand = findArmorStand(it)
+                            if (armorStand != null) it to armorStand else null
+                        }
+                        .firstOrNull()
 
-        currentVoidgloomCache =
-            if (ScoreboardUtils.getSidebarLines(true).any { it.contains("Slay the boss!") }) {
-                val pair = mc.theWorld.loadedEntityList
-                    .asSequence()
-                    .filterIsInstance<EntityEnderman>()
-                    .filter { it.getDistanceToEntity(mc.thePlayer) <= 10 }
-                    .sortedBy { it.getDistanceToEntity(mc.thePlayer) }
-                    .mapNotNull {
-                        val armorStand = findArmorStand(it)
-                        if (armorStand != null) it to armorStand else null
-                    }
-                    .firstOrNull()
-
-                if (pair != null) {
-                    VoidgloomCache(
-                        pair.first,
-                        calculate(pair.first, pair.second)
-                    )
-                } else {
-                    currentVoidgloomCache?.let {
+                    if (pair != null) {
                         VoidgloomCache(
-                            it.enderman,
-                            calculate(
-                                it.enderman,
-                                it.stat[VoidgloomInformation.NAME]!! as EntityArmorStand
-                            )
+                            pair.first,
+                            calculate(pair.first, pair.second)
                         )
+                    } else {
+                        currentVoidgloomCache?.let {
+                            VoidgloomCache(
+                                it.enderman,
+                                calculate(
+                                    it.enderman,
+                                    it.stat[VoidgloomInformation.NAME]!! as EntityArmorStand
+                                )
+                            )
+                        }
                     }
+                } else {
+                    null
                 }
-            } else {
-                null
-            }
+        }
     }
+
 
     /**
      * [VoidgloomInformation.NAME] to [EntityArmorStand]
@@ -294,30 +286,30 @@ object FeatureEndermanSlayerHelper :
     private fun checkForRequirement() =
         enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.locrawInfo?.mode == "combat_3"
 
+    init {
+        on<RenderWorldLastEvent>().filter { checkForRequirement() }.subscribe {
+            if (highlightBeacon) {
+                run {
+                    val aabb = getBeaconPos()?.getAxisAlignedBB() ?: return@run
 
-    override fun renderWorld(partialTicks: Float) {
+                    RenderUtils.drawBox(
+                        aabb,
+                        beaconColor.rgb,
+                        partialTicks
+                    )
+                }
+            }
 
-        if (!checkForRequirement()) return
-        run {
-            val parameter = getParameter<Boolean>("beacon")
-            if (!parameter.value) return@run
-            val aabb = getBeaconPos()?.getAxisAlignedBB() ?: return@run
-
-            RenderUtils.drawBox(
-                aabb,
-                parameter.getParameterValue<Color>("color").rgb,
-                partialTicks
-            )
+            if (highlightSkull) {
+                for (aabb in getSkullPos()) {
+                    RenderUtils.drawBox(aabb, skullColor.rgb, partialTicks)
+                }
+            }
         }
 
-        run {
-            val parameter = getParameter<Boolean>("skull")
-            if (!parameter.value) return@run
-            val color = parameter.getParameterValue<Color>("color").rgb
-
-            for (aabb in getSkullPos()) {
-                RenderUtils.drawBox(aabb, color, partialTicks)
-            }
+        on<HypixelServerChangeEvent>().subscribe {
+            BeaconInfo.clear()
+            currentVoidgloomCache = null
         }
     }
 
@@ -333,11 +325,6 @@ object FeatureEndermanSlayerHelper :
             top,
             posZ + width
         )
-    }
-
-    override fun onServerChange(server: String) {
-        BeaconInfo.clear()
-        currentVoidgloomCache = null
     }
 
     private fun getBeaconPos() =
@@ -362,7 +349,7 @@ object FeatureEndermanSlayerHelper :
 
             fun createInstance(pos: BlockPos, placeTime: Long, isBeacon: Boolean): BeaconInfo {
                 return if (isBeacon) {
-                    if (getParameterValue("notify")) {
+                    if (notifyBeacon) {
                         mc.thePlayer.playSound("random.successful_hit", 1F, 0.5F)
                         with(mc.ingameGUI) {
                             displayTitle(null, null, 0, 20, 0)
@@ -388,7 +375,7 @@ object FeatureEndermanSlayerHelper :
         }
 
         override fun serialize(): JsonElement {
-            return CVoidgloomInformation.serialize(information)
+            return voidgloomInformationConverter.serialize(information)
         }
 
         override fun areEqual(other: Identifier) = this == other
@@ -409,9 +396,11 @@ object FeatureEndermanSlayerHelper :
         }
 
         companion object {
-            fun deserialize(jsonElement: JsonElement): Identifier {
-                return VoidgloomIdentifier(CVoidgloomInformation.deserialize(jsonElement))
-            }
+
+            private val voidgloomInformationConverter = getEnumConverter<VoidgloomInformation>()
+
+            fun deserialize(jsonElement: JsonElement) =
+                VoidgloomIdentifier(voidgloomInformationConverter.deserialize(jsonElement))
         }
 
     }

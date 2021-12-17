@@ -19,11 +19,14 @@
 package com.happyandjust.nameless.features
 
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.core.ChromaColor
+import com.happyandjust.nameless.core.value.ChromaColor
 import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.gui.feature.PropertyData
 import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.serialization.Converter
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
+import kotlin.reflect.full.functions
 
 open class FeatureParameter<T>(
     var ordinal: Int,
@@ -33,13 +36,16 @@ open class FeatureParameter<T>(
     desc: String,
     private val defaultValue: T,
     converter: Converter<T>
-) : AbstractDefaultFeature(key, title, desc) {
+) : AbstractDefaultFeature(key, title, desc), ReadWriteProperty<AbstractDefaultFeature, T> {
     var inCategory = ""
 
     var onValueChange: (T) -> Unit = {}
 
-    var allEnumList = emptyList<Enum<*>>()
     var enumName: (Enum<*>) -> String = { it.name }
+    var allEnumList = emptyList<Enum<*>>()
+    private val reflectionEnumList by lazy {
+        (defaultValue!!::class.functions.first { it.name == "values" }.call() as Array<Enum<*>>).toList()
+    }
 
     var validator: (Char) -> Boolean = { true }
     var placeHolder = ""
@@ -96,8 +102,8 @@ open class FeatureParameter<T>(
 
         it.validator = validator
 
-        it.allEnumList = allEnumList
         it.enumName = enumName
+        it.allEnumList = allEnumList.ifEmpty { if (defaultValue is Enum<*>) reflectionEnumList else emptyList() }
 
         it.allIdentifiers = allIdentifiers
 
@@ -105,5 +111,11 @@ open class FeatureParameter<T>(
 
         it.settings = parameters.values.map { featureParameter -> featureParameter.toPropertyData() }
     }
-}
 
+
+    override fun getValue(thisRef: AbstractDefaultFeature, property: KProperty<*>) = value
+
+    override fun setValue(thisRef: AbstractDefaultFeature, property: KProperty<*>, value: T) {
+        this.value = value
+    }
+}

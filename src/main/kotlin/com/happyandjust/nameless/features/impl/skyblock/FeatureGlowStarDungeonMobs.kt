@@ -18,15 +18,17 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.core.ColorInfo
-import com.happyandjust.nameless.core.toChromaColor
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.info.ColorInfo
+import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.events.HypixelServerChangeEvent
+import com.happyandjust.nameless.events.OutlineRenderEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.ServerChangeListener
-import com.happyandjust.nameless.features.listener.StencilListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
@@ -47,69 +49,60 @@ object FeatureGlowStarDungeonMobs : SimpleFeature(
     "stardungeonmobs",
     "Glow Star Dungeon Mobs",
     "Glow Star Dungeons mobs"
-), ClientTickListener, StencilListener, ServerChangeListener {
+) {
 
-    init {
-        parameters["color"] = FeatureParameter(
-            0,
-            "stardungeonmobs",
-            "color",
-            "Outline Color",
-            "",
-            Color.yellow.toChromaColor(),
-            CChromaColor
-        )
-        parameters["fel"] = FeatureParameter(
-            1,
-            "stardungeonmobs",
-            "fel",
-            "Show Fel",
-            "Make fel visible",
-            false,
-            CBoolean
-        )
-    }
+    private var color by FeatureParameter(
+        0,
+        "stardungeonmobs",
+        "color",
+        "Outline Color",
+        "",
+        Color.yellow.toChromaColor(),
+        CChromaColor
+    )
+
+    var showFel by FeatureParameter(
+        1,
+        "stardungeonmobs",
+        "fel",
+        "Show Fel",
+        "Make fel visible",
+        false,
+        CBoolean
+    )
 
     val checkedDungeonMobs = hashMapOf<EntityArmorStand, Entity>()
     private val ignoreMobs: (Entity) -> Boolean =
         { it is EntityArmorStand || it is EntityItem || it is EntityItemFrame || it is EntityXPOrb || it is EntityFishHook || it == mc.thePlayer }
-    private var checkTick = 0
-    private var validTick = 0
+    private val checkTimer = TickTimer.withSecond(0.25)
+    private val validTimer = TickTimer.withSecond(2.5)
 
     private fun checkForEnabledAndDungeon() =
         enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty(PropertyKey.DUNGEON)
 
-    override fun tick() {
-        if (!checkForEnabledAndDungeon()) return
+    init {
+        on<SpecialTickEvent>().filter { checkForEnabledAndDungeon() }.subscribe {
+            if (checkTimer.update().check()) {
+                for (entityArmorStand in (mc.theWorld.loadedEntityList.filterIsInstance<EntityArmorStand>() - checkedDungeonMobs.keys).filter { "✯" in it.displayName.unformattedText }) {
+                    val availMobs = mc.theWorld.getEntitiesWithinAABB(
+                        Entity::class.java,
+                        entityArmorStand.entityBoundingBox.expand(0.6, 1.4, 0.6)
+                    )
+                        .filter { !ignoreMobs(it) }
+                        .sortedBy { (it.posX - entityArmorStand.posX).pow(2) + (it.posZ - entityArmorStand.posZ).pow(2) }
 
-        checkTick = (checkTick + 1) % 5
-        validTick = (validTick + 1) % 50
-
-        if (checkTick == 0) {
-            for (entityArmorStand in (mc.theWorld.loadedEntityList.filterIsInstance<EntityArmorStand>() - checkedDungeonMobs.keys).filter { "✯" in it.displayName.unformattedText }) {
-                val availMobs = mc.theWorld.getEntitiesWithinAABB(
-                    Entity::class.java,
-                    entityArmorStand.entityBoundingBox.expand(0.6, 1.4, 0.6)
-                )
-                    .filter { !ignoreMobs(it) }
-                    .sortedBy { (it.posX - entityArmorStand.posX).pow(2) + (it.posZ - entityArmorStand.posZ).pow(2) }
-
-                checkedDungeonMobs[entityArmorStand] = availMobs.firstOrNull() ?: continue
+                    checkedDungeonMobs[entityArmorStand] = availMobs.firstOrNull() ?: continue
+                }
+            }
+            if (validTimer.update().check()) {
+                checkedDungeonMobs.entries.removeIf { abs(it.key.posX - it.value.posX) >= 1 || abs(it.key.posZ - it.value.posZ) >= 1 }
             }
         }
 
-        if (validTick == 0) {
-            checkedDungeonMobs.entries.removeIf { abs(it.key.posX - it.value.posX) >= 1 || abs(it.key.posZ - it.value.posZ) >= 1 }
+        on<OutlineRenderEvent>().filter { entity in checkedDungeonMobs.values }.subscribe {
+            colorInfo = ColorInfo(color.rgb, ColorInfo.ColorPriority.HIGHEST)
         }
-    }
 
-    override fun getOutlineColor(entity: Entity): ColorInfo? {
-        return if (checkedDungeonMobs.containsValue(entity)) {
-            ColorInfo(getParameterValue<Color>("color").rgb, ColorInfo.ColorPriority.HIGHEST)
-        } else null
-    }
-
-    override fun onServerChange(server: String) {
-        checkedDungeonMobs.clear()
+        on<HypixelServerChangeEvent>().subscribe { checkedDungeonMobs.clear() }
     }
 }

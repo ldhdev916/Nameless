@@ -18,14 +18,14 @@
 
 package com.happyandjust.nameless.features.impl.general
 
-import com.happyandjust.nameless.core.toChromaColor
+import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.disableDepth
 import com.happyandjust.nameless.dsl.enableDepth
+import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.tessellator
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.WorldLoadListener
 import com.happyandjust.nameless.mixins.accessors.AccessorEntityFX
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CChromaColor
@@ -44,7 +44,7 @@ object FeatureIndicateParticles : SimpleFeature(
     "indicateparticles",
     "Indicate Particles",
     "Indicate certain particle types you selected, set color alpha to 0 if you don't want custom color"
-), WorldLoadListener {
+) {
 
     private val entities = hashMapOf<EntityFX, Color>()
 
@@ -87,10 +87,9 @@ object FeatureIndicateParticles : SimpleFeature(
         entities[entityFX] = parameter.getParameterValue("color")
     }
 
-    override fun onWorldLoad(e: WorldEvent.Load) {
-        entities.clear()
+    init {
+        on<WorldEvent.Load>().subscribe { entities.clear() }
     }
-
 
     @JvmStatic
     fun renderParticle(

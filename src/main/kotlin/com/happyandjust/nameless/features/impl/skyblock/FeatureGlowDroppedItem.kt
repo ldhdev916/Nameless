@@ -18,16 +18,17 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.core.ColorInfo
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.dsl.getSkyBlockRarity
 import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.events.OutlineRenderEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.StencilListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.init.Blocks
@@ -38,36 +39,31 @@ object FeatureGlowDroppedItem : SimpleFeature(
     "glowdroppeditem",
     "Glow Dropped Item",
     "Glow dropped item on skyblock according to its rarity"
-), ClientTickListener, StencilListener {
+) {
 
     private val itemRarityCache = hashMapOf<EntityItem, ColorInfo>()
-    private var scanTick = 0
+    private val scanTimer = TickTimer.withSecond(1)
 
     private fun checkForRequirement() = enabled && Hypixel.currentGame == GameType.SKYBLOCK
 
-    override fun tick() {
-        if (!checkForRequirement()) return
-
-        scanTick = (scanTick + 1) % 20
-
-        if (scanTick == 0) {
+    init {
+        on<SpecialTickEvent>().filter { checkForRequirement() && scanTimer.update().check() }.subscribe {
             itemRarityCache.clear()
             for (entityItem in mc.theWorld.loadedEntityList.filterIsInstance<EntityItem>()
-                .filter { !isShopShowcaseItem(it) }) {
+                .filterNot { isShopShowcaseItem(it) }) {
                 itemRarityCache[entityItem] = ColorInfo(
                     entityItem.entityItem.getSkyBlockRarity()?.color ?: continue,
                     ColorInfo.ColorPriority.HIGHEST
                 )
             }
         }
+
+        on<OutlineRenderEvent>().filter { checkForRequirement() && entity is EntityItem }
+            .subscribe {
+                colorInfo = itemRarityCache[entity]
+            }
     }
 
-    override fun getOutlineColor(entity: Entity): ColorInfo? {
-        if (!checkForRequirement()) return null
-        if (entity !is EntityItem) return null
-
-        return itemRarityCache[entity]
-    }
 
     private fun isShopShowcaseItem(entityItem: EntityItem): Boolean {
         val list = entityItem.worldObj.getEntitiesWithinAABB(EntityArmorStand::class.java, entityItem.entityBoundingBox)

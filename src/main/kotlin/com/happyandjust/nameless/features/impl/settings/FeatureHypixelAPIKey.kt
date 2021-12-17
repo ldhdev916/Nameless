@@ -20,19 +20,18 @@ package com.happyandjust.nameless.features.impl.settings
 
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.dsl.matchesMatcher
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.dsl.pureText
 import com.happyandjust.nameless.dsl.sendPrefixMessage
-import com.happyandjust.nameless.dsl.stripControlCodes
 import com.happyandjust.nameless.features.SettingFeature
-import com.happyandjust.nameless.features.listener.ChatListener
 import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.gui.feature.PropertyData
 import gg.essential.api.EssentialAPI
 import net.minecraftforge.client.event.ClientChatReceivedEvent
-import java.util.regex.Pattern
 
-object FeatureHypixelAPIKey : SettingFeature("hypixelapikey", "Hypixel API Key", "Your hypixel api key"), ChatListener {
+object FeatureHypixelAPIKey : SettingFeature("hypixelapikey", "Hypixel API Key", "Your hypixel api key") {
 
-    private val API_PATTERN = Pattern.compile("Your new API key is (?<api>.+)")
+    private val API_PATTERN = "Your new API key is (?<api>.+)".toPattern()
     var apiKey by ConfigValue.StringConfigValue("hypixel", "apikey", "")
 
     override fun getComponentType() = ComponentType.PASSWORD
@@ -45,12 +44,13 @@ object FeatureHypixelAPIKey : SettingFeature("hypixelapikey", "Hypixel API Key",
         }
     }
 
-    override fun onChatReceived(e: ClientChatReceivedEvent) {
-        if (e.type.toInt() != 2 && EssentialAPI.getMinecraftUtil().isHypixel()) {
-            API_PATTERN.matchesMatcher(e.message.unformattedText.stripControlCodes()) {
-                apiKey = it.group("api")
-                sendPrefixMessage("§aGrabbed Hypixel API!")
+    init {
+        on<ClientChatReceivedEvent>().filter { type.toInt() != 2 && EssentialAPI.getMinecraftUtil().isHypixel() }
+            .subscribe {
+                API_PATTERN.matchesMatcher(pureText) {
+                    apiKey = it.group("api")
+                    sendPrefixMessage("§aGrabbed Hypixel API!")
+                }
             }
-        }
     }
 }

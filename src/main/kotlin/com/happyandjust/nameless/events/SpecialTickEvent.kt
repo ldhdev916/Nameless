@@ -16,14 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.listener
+package com.happyandjust.nameless.events
 
-import net.minecraft.entity.EntityLivingBase
-import net.minecraftforge.client.event.RenderLivingEvent
+import net.minecraftforge.fml.common.eventhandler.Event
 
-interface RenderLivingListener {
-
-    fun onRenderLivingPre(e: RenderLivingEvent.Pre<EntityLivingBase>)
-
-    fun onRenderLivingPost(e: RenderLivingEvent.Post<EntityLivingBase>)
-}
+class SpecialTickEvent : Event()

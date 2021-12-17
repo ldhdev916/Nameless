@@ -31,12 +31,12 @@ import gg.essential.elementa.utils.invisible
 import gg.essential.elementa.utils.withAlpha
 import gg.essential.vigilance.utils.onLeftClick
 import java.awt.Color
+import kotlin.math.abs
 
-class RelocateComponent(window: Window, relocateAble: IRelocateAble) : UIBlock(ColorCache.brightDivider.invisible()) {
+class RelocateComponent(gui: RelocateGui, relocateAble: IRelocateAble) : UIBlock(ColorCache.brightDivider.invisible()) {
 
     private var offset: Pair<Float, Float>? = null
-    private val scaleChangeListeners = arrayListOf<(Double) -> Unit>()
-    var currentScale = relocateAble.overlayPoint.value.scale
+    var currentScale = relocateAble.overlayPoint.scale
 
     private val indicatorText = UIText(relocateAble.getDisplayName()).constrain {
 
@@ -44,12 +44,12 @@ class RelocateComponent(window: Window, relocateAble: IRelocateAble) : UIBlock(C
         textScale = 1.5.pixels()
 
         color = Color.red.invisible().constraint
-    } childOf window
+    } childOf gui.window
 
     init {
         constrain {
 
-            val point = relocateAble.overlayPoint.value.point
+            val point = relocateAble.overlayPoint.point
 
             x = point.x.pixels()
             y = point.y.pixels()
@@ -57,6 +57,8 @@ class RelocateComponent(window: Window, relocateAble: IRelocateAble) : UIBlock(C
             width = ChildBasedSizeConstraint()
             height = ChildBasedSizeConstraint()
         }
+
+        fun UIBlock.isPresent() = isChildOf(gui.window)
 
         onMouseEnter {
             animate {
@@ -86,6 +88,13 @@ class RelocateComponent(window: Window, relocateAble: IRelocateAble) : UIBlock(C
 
         onMouseRelease {
             offset = null
+
+            if (gui.xCenterLine.isPresent()) {
+                Window.enqueueRenderOperation { gui.xCenterLine.hide(true) }
+            }
+            if (gui.yCenterLine.isPresent()) {
+                Window.enqueueRenderOperation { gui.yCenterLine.hide(true) }
+            }
         }
 
         onMouseDrag { mouseX, mouseY, mouseButton ->
@@ -96,7 +105,22 @@ class RelocateComponent(window: Window, relocateAble: IRelocateAble) : UIBlock(C
                         y = (mouseY + getTop() - it.second).pixels()
                     }
 
-                    fitIntoWindow(Window.of(this))
+                    if (abs(getLeft() + getWidth() / 2 - gui.centerX) <= 1) {
+                        Window.enqueueRenderOperation { gui.xCenterLine.unhide(true) }
+                        setX((gui.centerX - getWidth() / 2).pixels())
+
+                    } else if (gui.xCenterLine.isPresent()) {
+                        Window.enqueueRenderOperation { gui.xCenterLine.hide(true) }
+                    }
+                    if (abs(getTop() + getHeight() / 2 - gui.centerY) <= 1) {
+                        Window.enqueueRenderOperation { gui.yCenterLine.unhide(true) }
+                        setY((gui.centerY - getHeight() / 2).pixels())
+
+                    } else if (gui.yCenterLine.isPresent()) {
+                        Window.enqueueRenderOperation { gui.yCenterLine.hide(true) }
+                    }
+
+                    fitIntoWindow(gui.window)
                 }
             }
         }
@@ -108,21 +132,15 @@ class RelocateComponent(window: Window, relocateAble: IRelocateAble) : UIBlock(C
         }
 
         relocateAble.getRelocateComponent(this) childOf this
-        changeScale(relocateAble.overlayPoint.value.scale)
-        fitIntoWindow(window)
+        changeScale(relocateAble.overlayPoint.scale)
+        fitIntoWindow(gui.window)
     }
 
-    fun changeScale(newValue: Double) {
+    private fun changeScale(newValue: Double) {
         currentScale = newValue.coerceAtLeast(0.05)
-
-        scaleChangeListeners.forEach { it(currentScale) }
     }
 
-    fun onScaleChange(listener: (Double) -> Unit) = apply {
-        scaleChangeListeners.add(listener)
-    }
-
-    fun fitIntoWindow(window: Window) {
+    private fun fitIntoWindow(window: Window) {
 
         val right = window.getRight() - getWidth()
 

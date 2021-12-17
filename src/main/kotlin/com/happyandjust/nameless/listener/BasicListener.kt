@@ -18,27 +18,60 @@
 
 package com.happyandjust.nameless.listener
 
-import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.dsl.LOGGER
+import com.happyandjust.nameless.dsl.color
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.events.KeyPressEvent
+import com.happyandjust.nameless.events.SpecialOverlayEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.gui.feature.FeatureGui
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import gg.essential.api.utils.GuiUtil
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.InputEvent
+import net.minecraftforge.client.event.RenderGameOverlayEvent
+import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.common.network.FMLNetworkEvent
 
 object BasicListener {
 
-    @SubscribeEvent
-    fun onKeyInput(e: InputEvent.KeyInputEvent) {
-        if (Nameless.keyBindings[KeyBindingCategory.OPEN_GUI]!!.isKeyDown) {
-            GuiUtil.open(FeatureGui())
-        }
-    }
+    private val prevPressed = hashMapOf<KeyBindingCategory, Boolean>()
 
-    @SubscribeEvent
-    fun onClientConnectedToServer(e: FMLNetworkEvent.ClientConnectedToServerEvent) {
-        e.manager.channel().pipeline().addBefore("packet_handler", "namelees_packet_handler", PacketHandler())
-        LOGGER.info("Added Packet Handler")
+    init {
+        on<KeyPressEvent>().filter { isNew && !inGui && keyBindingCategory == KeyBindingCategory.OPEN_GUI }
+            .subscribe {
+                GuiUtil.open(FeatureGui())
+            }
+
+        on<SpecialTickEvent>().subscribe {
+            for (keyBindingCategory in KeyBindingCategory.values()) {
+                val pressed = keyBindingCategory.getKeyBinding().isKeyDown
+                if (pressed) {
+                    MinecraftForge.EVENT_BUS.post(
+                        KeyPressEvent(
+                            keyBindingCategory,
+                            !(prevPressed[keyBindingCategory] ?: false),
+                            mc.currentScreen != null
+                        )
+                    )
+                }
+                prevPressed[keyBindingCategory] = pressed
+            }
+        }
+
+        on<FMLNetworkEvent.ClientConnectedToServerEvent>().subscribe {
+            manager.channel().pipeline().addBefore("packet_handler", "nameless_packet_handler", PacketHandler())
+            LOGGER.info("Added Packet Handler")
+        }
+
+        on<TickEvent.ClientTickEvent>().filter { phase == TickEvent.Phase.END && mc.theWorld != null && mc.thePlayer != null }
+            .subscribe {
+                MinecraftForge.EVENT_BUS.post(SpecialTickEvent())
+            }
+
+        on<RenderGameOverlayEvent>().filter { type == RenderGameOverlayEvent.ElementType.BOSSHEALTH }.subscribe {
+            MinecraftForge.EVENT_BUS.post(SpecialOverlayEvent(partialTicks))
+            color(1f, 1f, 1f, 1f)
+        }
     }
 }

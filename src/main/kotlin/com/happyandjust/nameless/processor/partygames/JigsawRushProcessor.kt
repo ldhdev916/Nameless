@@ -18,12 +18,13 @@
 
 package com.happyandjust.nameless.processor.partygames
 
-import com.happyandjust.nameless.core.Pos
+import com.happyandjust.nameless.core.value.Pos
 import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.PartyGameChangeListener
-import com.happyandjust.nameless.features.listener.WorldRenderListener
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.events.PartyGameChangeEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
+import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
 import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
@@ -33,9 +34,10 @@ import net.minecraft.item.Item
 import net.minecraft.util.BlockPos
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.Vec3
+import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 
-object JigsawRushProcessor : Processor(), ClientTickListener, PartyGameChangeListener, WorldRenderListener {
+object JigsawRushProcessor : Processor() {
 
     private val canvas = hashMapOf<Pos, BlockPos>().apply {
         val pos = BlockPos(226, 14, 1820)
@@ -51,28 +53,28 @@ object JigsawRushProcessor : Processor(), ClientTickListener, PartyGameChangeLis
         put(Pos.BOTTOM_LEFT, pos.add(0, -6, 0))
         put(Pos.BOTTOM_CENTER, pos.add(0, -6, -3))
         put(Pos.BOTTOM_RIGHT, pos.add(0, -6, -6))
-
     }
 
     private val drawInfos = arrayListOf<DrawInfo>()
     private val expandFacings = arrayOf(EnumFacing.EAST, EnumFacing.WEST, EnumFacing.SOUTH, EnumFacing.NORTH)
     private var myCanvas: Canvas? = null
+    override val filter = FeaturePartyGamesHelper.getFilter(this)
 
-    override fun tick() {
-        if (drawInfos.isEmpty()) {
+    init {
+        request<SpecialTickEvent>().filter { drawInfos.isEmpty() }.subscribe {
 
-            val myCanvas = this.myCanvas ?: run {
+            val myCanvas = this@JigsawRushProcessor.myCanvas ?: run {
                 findMyCanvas()
-                return
+                return@subscribe
             }
 
-            if (mc.theWorld.getBlockAtPos(canvas[Pos.TOP_LEFT]!!) == Blocks.wool) return
+            if (mc.theWorld.getBlockAtPos(canvas[Pos.TOP_LEFT]!!) == Blocks.wool) return@subscribe
 
             val itemKeyBindingMap = Utils.getKeyBindingNameInEverySlot().values
                 .filter { it.itemStack != null }
                 .associate { it.itemStack!!.item to it.keyName }
 
-            if (itemKeyBindingMap.size != 9) return
+            if (itemKeyBindingMap.size != 9) return@subscribe
 
             val opposite = myCanvas.playerFacingToCanvas.opposite
 
@@ -156,22 +158,21 @@ object JigsawRushProcessor : Processor(), ClientTickListener, PartyGameChangeLis
         return hashMap
     }
 
-    override fun renderWorld(partialTicks: Float) {
-        if (drawInfos.isNotEmpty()) {
+    init {
+        request<RenderWorldLastEvent>().subscribe {
             for (drawInfo in drawInfos) {
                 RenderUtils.draw3DString(drawInfo.keyBindingName, drawInfo.vec3, 0.5, Color.red.rgb, partialTicks)
             }
         }
+
+        on<PartyGameChangeEvent>().filter { from == PartyGamesType.JIGSAW_RUSH || to == PartyGamesType.JIGSAW_RUSH }
+            .subscribe {
+                drawInfos.clear()
+                myCanvas = null
+            }
     }
 
     private data class Canvas(val canvas: HashMap<Pos, BlockPos>, val playerFacingToCanvas: EnumFacing)
 
     private data class DrawInfo(val vec3: Vec3, val keyBindingName: String)
-
-    override fun onPartyGameChange(from: PartyGamesType?, to: PartyGamesType?) {
-        if (from == PartyGamesType.JIGSAW_RUSH || to == PartyGamesType.JIGSAW_RUSH) {
-            drawInfos.clear()
-            myCanvas = null
-        }
-    }
 }

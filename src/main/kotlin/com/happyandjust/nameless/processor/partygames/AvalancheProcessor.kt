@@ -20,10 +20,10 @@ package com.happyandjust.nameless.processor.partygames
 
 import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.stripControlCodes
-import com.happyandjust.nameless.features.listener.ChatListener
-import com.happyandjust.nameless.features.listener.PartyGameChangeListener
-import com.happyandjust.nameless.features.listener.WorldRenderListener
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.dsl.pureText
+import com.happyandjust.nameless.events.PartyGameChangeEvent
+import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
 import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
@@ -31,25 +31,37 @@ import net.minecraft.init.Blocks
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
 import net.minecraftforge.client.event.ClientChatReceivedEvent
+import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.util.*
 import kotlin.concurrent.timerTask
 
-object AvalancheProcessor : Processor(), ChatListener, PartyGameChangeListener, WorldRenderListener {
+object AvalancheProcessor : Processor() {
 
-    var boxColor = { -1 }
     private val ROUND_CHANGE = "Wave \\d+ will begin in \\d+ seconds with \\d+ safe point(s)?! Find cover!".toRegex()
     private val slabs = arrayListOf<AxisAlignedBB>()
     private val timer = Timer()
 
     private val minPos = BlockPos(-2406, 49, -1893)
     private val maxPos = BlockPos(-2380, 49, -1867)
+    override val filter = FeaturePartyGamesHelper.getFilter(this)
 
-    override fun onChatReceived(e: ClientChatReceivedEvent) {
-        if (e.message.unformattedText.stripControlCodes().matches(ROUND_CHANGE)) {
+    init {
+        request<ClientChatReceivedEvent>().filter { pureText.matches(ROUND_CHANGE) }.subscribe {
             slabs.clear()
-            // slabs aren't generated instantly
             timer.schedule(timerTask { findSlabs() }, 700L)
+        }
 
+        on<PartyGameChangeEvent>().filter { from == PartyGamesType.AVALANCHE || to == PartyGamesType.AVALANCHE }
+            .subscribe {
+                slabs.clear()
+            }
+
+        request<RenderWorldLastEvent>().subscribe {
+            runCatching {
+                for (slab in slabs) {
+                    RenderUtils.drawOutlinedBox(slab, FeaturePartyGamesHelper.avalancheColor.rgb, partialTicks)
+                }
+            }
         }
     }
 
@@ -67,21 +79,6 @@ object AvalancheProcessor : Processor(), ChatListener, PartyGameChangeListener, 
                     )
                 )
             }
-        }
-    }
-
-    override fun onPartyGameChange(from: PartyGamesType?, to: PartyGamesType?) {
-        if (from == PartyGamesType.AVALANCHE || to == PartyGamesType.AVALANCHE) {
-            slabs.clear()
-        }
-    }
-
-    override fun renderWorld(partialTicks: Float) {
-        try {
-            for (slab in slabs) {
-                RenderUtils.drawOutlinedBox(slab, boxColor(), partialTicks)
-            }
-        } catch (ignored: ConcurrentModificationException) {
         }
     }
 }

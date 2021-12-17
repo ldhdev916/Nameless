@@ -19,10 +19,10 @@
 package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.ScreenActionPerformedListener
-import com.happyandjust.nameless.features.listener.ScreenInitListener
+import gg.essential.api.utils.GuiUtil
 import net.minecraft.client.gui.GuiMainMenu
 import net.minecraft.client.multiplayer.GuiConnecting
 import net.minecraft.client.multiplayer.ServerData
@@ -34,26 +34,16 @@ object FeatureHypixelButton : SimpleFeature(
     "Add Join Hypixel Button",
     "Add join hypixel button in main menu instead of realm button",
     true
-), ScreenInitListener, ScreenActionPerformedListener {
+) {
 
-    override fun actionPerformedPre(e: GuiScreenEvent.ActionPerformedEvent.Pre) {
+    init {
+        on<GuiScreenEvent.ActionPerformedEvent.Post>().filter { button.id == 10001 && gui is GuiMainMenu && enabled }
+            .subscribe {
+                GuiUtil.open(GuiConnecting(gui, mc, ServerData("Hypixel", "stuck.hypixel.net", false)))
+            }
 
-    }
-
-    override fun actionPerformedPost(e: GuiScreenEvent.ActionPerformedEvent.Post) {
-        if (e.button.id == 10001 && e.gui is GuiMainMenu && enabled) {
-            val guiConnecting = GuiConnecting(e.gui, mc, ServerData("Hypixel", "stuck.hypixel.net", false))
-            mc.displayGuiScreen(guiConnecting)
-        }
-    }
-
-    override fun screenInitPre(e: GuiScreenEvent.InitGuiEvent.Pre) {
-
-    }
-
-    override fun screenInitPost(e: GuiScreenEvent.InitGuiEvent.Post) {
-        if (e.gui is GuiMainMenu && enabled) {
-            e.buttonList.find { it.id == 14 }?.apply {
+        on<GuiScreenEvent.InitGuiEvent.Post>().filter { gui is GuiMainMenu && enabled }.subscribe {
+            buttonList.find { it.id == 14 }?.apply {
                 id = 10001
                 displayString = "Hypixel"
             }

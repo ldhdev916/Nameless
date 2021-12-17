@@ -18,26 +18,25 @@
 
 package com.happyandjust.nameless.processor.partygames
 
-import com.happyandjust.nameless.core.ColorInfo
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.StencilListener
+import com.happyandjust.nameless.events.OutlineRenderEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
+import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.ScoreboardUtils
-import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
-import java.util.regex.Pattern
 
-object HighGroundProcessor : Processor(), ClientTickListener, StencilListener {
+object HighGroundProcessor : Processor() {
 
-    private val SCOREBOARD_PATTERN = Pattern.compile("(?<name>\\w+): (?<score>\\d+)")
-    var entityColor = { -1 }
+    private val SCOREBOARD_PATTERN = "(?<name>\\w+): (?<score>\\d+)".toPattern()
     private val higherPlayers = hashSetOf<EntityPlayer>()
-    private var scanTick = 0
+    private val scanTimer = TickTimer.withSecond(0.5)
+    override val filter = FeaturePartyGamesHelper.getFilter(this)
 
-    override fun tick() {
-        scanTick = (scanTick + 1) % 10
-        if (scanTick == 0) {
+    init {
+        request<SpecialTickEvent>().filter { scanTimer.update().check() }.subscribe {
             higherPlayers.clear()
 
             val playersInScoreboard = ScoreboardUtils.getSidebarLines(true)
@@ -45,14 +44,14 @@ object HighGroundProcessor : Processor(), ClientTickListener, StencilListener {
                 .filter { it.matches() }
                 .map { it.group("name") to it.group("score").toInt() }
                 .toMutableList()
-            val myScore = playersInScoreboard.find { it.first == mc.thePlayer.name } ?: return // weird
+            val myScore = playersInScoreboard.find { it.first == mc.thePlayer.name } ?: return@subscribe // weird
 
             higherPlayers.addAll((playersInScoreboard - myScore).filter { it.second > myScore.second }
                 .mapNotNull { mc.theWorld.getPlayerEntityByName(it.first) })
         }
-    }
 
-    override fun getOutlineColor(entity: Entity): ColorInfo? {
-        return if (higherPlayers.contains(entity)) ColorInfo(entityColor(), ColorInfo.ColorPriority.HIGH) else null
+        request<OutlineRenderEvent>().filter { entity in higherPlayers }.subscribe {
+            colorInfo = ColorInfo(FeaturePartyGamesHelper.highGroundColor.rgb, ColorInfo.ColorPriority.HIGH)
+        }
     }
 }

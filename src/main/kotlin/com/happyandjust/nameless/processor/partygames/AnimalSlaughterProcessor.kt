@@ -18,19 +18,18 @@
 
 package com.happyandjust.nameless.processor.partygames
 
-import com.happyandjust.nameless.core.ColorInfo
-import com.happyandjust.nameless.features.listener.StencilListener
+import com.happyandjust.nameless.core.info.ColorInfo
+import com.happyandjust.nameless.events.OutlineRenderEvent
+import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
 import com.happyandjust.nameless.processor.Processor
-import net.minecraft.entity.Entity
 
-object AnimalSlaughterProcessor : Processor(), StencilListener {
-    var entityColor = { -1 }
+object AnimalSlaughterProcessor : Processor() {
 
-    override fun getOutlineColor(entity: Entity): ColorInfo? {
-        return if (entity.displayName.unformattedText.contains("-50%")) ColorInfo(
-            entityColor(),
-            ColorInfo.ColorPriority.HIGH
-        ) else null
+    override val filter = FeaturePartyGamesHelper.getFilter(this)
+
+    init {
+        request<OutlineRenderEvent>().filter { "-50%" in entity.displayName.unformattedText }.subscribe {
+            colorInfo = ColorInfo(FeaturePartyGamesHelper.animalColor.rgb, ColorInfo.ColorPriority.HIGH)
+        }
     }
-
 }

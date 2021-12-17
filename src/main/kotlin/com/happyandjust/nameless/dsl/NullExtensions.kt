@@ -16,9 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.listener
+package com.happyandjust.nameless.dsl
 
-interface KeyInputListener {
+inline fun <T, A : Any, B : Any> instanceOrNull(param1: A?, param2: B?, constructor: (A, B) -> T): T? {
+    return constructor(param1 ?: return null, param2 ?: return null)
+}
 
-    fun onKeyInput()
+inline fun <T, A : Any, B : Any, C : Any> instanceOrNull(
+    param1: A?,
+    param2: B?,
+    param3: C?,
+    constructor: (A, B, C) -> T
+): T? {
+    return constructor(param1 ?: return null, param2 ?: return null, param3 ?: return null)
 }

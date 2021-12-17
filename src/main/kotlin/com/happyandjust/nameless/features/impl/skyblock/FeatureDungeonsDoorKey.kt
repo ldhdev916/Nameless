@@ -18,17 +18,15 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.dsl.contains
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.stripControlCodes
-import com.happyandjust.nameless.dsl.toVec3
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.value.toChromaColor
+import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.events.HypixelServerChangeEvent
+import com.happyandjust.nameless.events.SpecialOverlayEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.RenderOverlayListener
-import com.happyandjust.nameless.features.listener.ServerChangeListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
@@ -43,51 +41,39 @@ object FeatureDungeonsDoorKey : SimpleFeature(
     "dungeonsdoorkey",
     "Render Pointing Arrow to Blood/Wither Key",
     "Renders an arrow on your screen which is pointing to wither/blood key in hypixel skyblock dungeons. So you can find those keys easily"
-), RenderOverlayListener, ClientTickListener, ServerChangeListener {
+) {
 
     private var keyPosition: Vec3? = null
-    private var scanTick = 0
-
-    init {
-        parameters["color"] = FeatureParameter(
-            0,
-            "dungeonsdoorkey",
-            "color",
-            "Direction Arrow Color",
-            "",
-            Color.red.toChromaColor(),
-            CChromaColor
-        )
-    }
+    private val scanTimer = TickTimer.withSecond(0.5)
+    private var color by FeatureParameter(
+        0,
+        "dungeonsdoorkey",
+        "color",
+        "Direction Arrow Color",
+        "",
+        Color.red.toChromaColor(),
+        CChromaColor
+    )
 
     private fun checkForRequirement() =
         enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty(PropertyKey.DUNGEON)
 
-
-    override fun tick() {
-        if (!checkForRequirement()) return
-
-        scanTick = (scanTick + 1) % 10
-        if (scanTick != 0) return
-
-        keyPosition = mc.theWorld.getEntitiesWithinAABB(
-            EntityArmorStand::class.java,
-            mc.thePlayer.entityBoundingBox.expand(16.0, 5.0, 16.0)
-        )
-            .find { it.displayName.unformattedText.stripControlCodes() in "Wither Key" to "Blood Key" }
-            ?.toVec3()
-
-    }
-
-    override fun renderOverlay(partialTicks: Float) {
-        if (!checkForRequirement()) return
-
-        keyPosition?.let {
-            RenderUtils.drawDirectionArrow(it, getParameterValue<Color>("color").rgb)
+    init {
+        on<SpecialTickEvent>().filter { checkForRequirement() && scanTimer.update().check() }.subscribe {
+            keyPosition = mc.theWorld.getEntitiesWithinAABB(
+                EntityArmorStand::class.java,
+                mc.thePlayer.entityBoundingBox.expand(16.0, 5.0, 16.0)
+            )
+                .find { it.displayName.unformattedText.stripControlCodes() in "Wither Key" to "Blood Key" }
+                ?.toVec3()
         }
-    }
 
-    override fun onServerChange(server: String) {
-        keyPosition = null
+        on<SpecialOverlayEvent>().filter { checkForRequirement() }.subscribe {
+            keyPosition?.let {
+                RenderUtils.drawDirectionArrow(it, color.rgb)
+            }
+        }
+
+        on<HypixelServerChangeEvent>().subscribe { keyPosition = null }
     }
 }

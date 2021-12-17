@@ -18,21 +18,19 @@
 
 package com.happyandjust.nameless.processor.partygames
 
-import com.happyandjust.nameless.core.ColorInfo
-import com.happyandjust.nameless.features.listener.StencilListener
+import com.happyandjust.nameless.core.info.ColorInfo
+import com.happyandjust.nameless.events.OutlineRenderEvent
+import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
 import com.happyandjust.nameless.processor.Processor
-import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 
-object RPG16Processor : Processor(), StencilListener {
+object RPG16Processor : Processor() {
 
-    var playerColor = { -1 }
+    override val filter = FeaturePartyGamesHelper.getFilter(this)
 
-    override fun getOutlineColor(entity: Entity): ColorInfo? {
-        return if (entity is EntityPlayer && entity.health <= 2.1F) ColorInfo(
-            playerColor(),
-            ColorInfo.ColorPriority.HIGH
-        ) else null
+    init {
+        request<OutlineRenderEvent>().filter { entity is EntityPlayer && entity.health <= 2.1f }.subscribe {
+            colorInfo = ColorInfo(FeaturePartyGamesHelper.rpg16Color.rgb, ColorInfo.ColorPriority.HIGH)
+        }
     }
-
 }

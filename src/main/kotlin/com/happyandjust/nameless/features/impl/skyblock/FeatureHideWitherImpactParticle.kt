@@ -18,12 +18,10 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.dsl.getSkyBlockID
-import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.PacketListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import net.minecraft.entity.player.EntityPlayer
@@ -37,7 +35,7 @@ object FeatureHideWitherImpactParticle : SimpleFeature(
     "hidewitherimpactparticle",
     "Hide Wither Impact Particle",
     "Hide only wither impact's explosion particle(can be inaccurate)"
-), PacketListener {
+) {
 
     private val SWORDS = arrayOf("VALKYRIE", "HYPERION", "ASTRAEA", "SCYLLA")
     private val distanceToPlayer: S2APacketParticles.(player: EntityPlayer) -> Double = {
@@ -46,21 +44,15 @@ object FeatureHideWitherImpactParticle : SimpleFeature(
 
     private fun findWitherSwordsPlayers() = mc.theWorld.playerEntities.filter { it.heldItem.getSkyBlockID() in SWORDS }
 
-    override fun onSendingPacket(e: PacketEvent.Sending) {
+    init {
+        on<PacketEvent.Received>().filter { enabled && Hypixel.currentGame == GameType.SKYBLOCK }.subscribe {
+            packet.withInstance<S2APacketParticles> {
+                if (particleType == EnumParticleTypes.EXPLOSION_LARGE && isLongDistance && particleArgs.none() && particleCount == 8 && particleSpeed == 8f) {
+                    val players = findWitherSwordsPlayers().ifEmpty { return@subscribe }
 
-    }
-
-    override fun onReceivedPacket(e: PacketEvent.Received) {
-        if (!enabled || Hypixel.currentGame != GameType.SKYBLOCK) return
-        val msg = e.packet
-
-        if (msg is S2APacketParticles && msg.particleType == EnumParticleTypes.EXPLOSION_LARGE) {
-            if (msg.isLongDistance && msg.particleArgs.isEmpty() && msg.particleCount == 8 && msg.particleSpeed == 8f) {
-                val players = findWitherSwordsPlayers()
-                if (players.isEmpty()) return
-
-                if (players.minOf { msg.distanceToPlayer(it) } < 15) {
-                    e.isCanceled = true
+                    if (players.minOf { distanceToPlayer(it) } < 15) {
+                        cancel()
+                    }
                 }
             }
         }

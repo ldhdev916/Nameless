@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.utils
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.core.InventorySlotInfo
+import com.happyandjust.nameless.core.info.InventorySlotInfo
 import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.mc
 import net.minecraft.block.material.Material

@@ -16,14 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.listener
+package com.happyandjust.nameless.features
 
-import com.happyandjust.nameless.core.ColorInfo
-import net.minecraft.entity.Entity
+@Target(AnnotationTarget.PROPERTY)
+annotation class SubParameterOf(val parameterProperty: String)
 
-interface StencilListener {
-
-    fun getOutlineColor(entity: Entity): ColorInfo?
-
-    fun getEntityColor(entity: Entity): ColorInfo? = null
-}
+@Target(AnnotationTarget.PROPERTY)
+annotation class InCategory(val inCategory: String)

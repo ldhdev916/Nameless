@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.features.FeatureRegistry;
+import com.happyandjust.nameless.features.impl.qol.FeatureCharm;
 import com.happyandjust.nameless.mixinhooks.EntityRendererHook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
@@ -71,5 +72,12 @@ public class MixinEntityRenderer {
     @Inject(method = "hurtCameraEffect", at = @At("HEAD"), cancellable = true)
     public void noHurtCam(float entitylivingbase, CallbackInfo ci) {
         if (FeatureRegistry.INSTANCE.getNO_HURTCAM().getEnabled()) ci.cancel();
+    }
+
+    @Inject(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;renderEntities(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", ordinal = 1, shift = At.Shift.AFTER))
+    public void renderCharm(int pass, float partialTicks, long finishTimeNano, CallbackInfo ci) {
+        if (FeatureCharm.INSTANCE.getEnabled()) {
+            FeatureCharm.INSTANCE.render(partialTicks);
+        }
     }
 }

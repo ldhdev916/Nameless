@@ -16,8 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.serialization.converters
+package com.happyandjust.nameless.core.enums
 
-import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
+enum class OutlineMode {
 
-object CItemRarity : CEnum<ItemRarity>(ItemRarity::valueOf)
+    BOX, OUTLINE
+}

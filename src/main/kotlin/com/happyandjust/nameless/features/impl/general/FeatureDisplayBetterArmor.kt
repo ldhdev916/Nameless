@@ -18,14 +18,16 @@
 
 package com.happyandjust.nameless.features.impl.general
 
-import com.happyandjust.nameless.core.toChromaColor
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.drawOnSlot
 import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.dsl.withInstance
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.BackgroundDrawnListener
-import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.serialization.converters.CChromaColor
@@ -46,34 +48,32 @@ object FeatureDisplayBetterArmor : SimpleFeature(
     "displaybetterarmor",
     "Display Better Armor",
     "In SkyWars, if there's a better armor than a one you're equipping, Draw box on item if it's in your inventory, make bigger if it's in ground. If mutltiple, only show the highest"
-), ClientTickListener, BackgroundDrawnListener {
+) {
 
-    init {
-        parameters["color"] = FeatureParameter(
-            0,
-            "betterarmor",
-            "color",
-            "Inventory Box Color",
-            "",
-            Color.green.withAlpha(80).toChromaColor(),
-            CChromaColor
-        )
-        parameters["scale"] = FeatureParameter(
-            0,
-            "betterarmor",
-            "scale",
-            "Dropped Item Scale",
-            "",
-            3.0,
-            CDouble
-        ).apply {
-            minValue = 1.5
-            maxValue = 7.0
-        }
+    private var color by FeatureParameter(
+        0,
+        "betterarmor",
+        "color",
+        "Inventory Box Color",
+        "",
+        Color.green.withAlpha(80).toChromaColor(),
+        CChromaColor
+    )
+
+    var scale by FeatureParameter(
+        0,
+        "betterarmor",
+        "scale",
+        "Dropped Item Scale",
+        "",
+        3.0,
+        CDouble
+    ).apply {
+        minValue = 1.5
+        maxValue = 7.0
     }
 
-    private var scanTick = 0
-
+    private val scanTimer = TickTimer(7)
     private val drawSlots = arrayListOf<Slot>()
     val scaledItems = arrayListOf<EntityItem>()
 
@@ -115,15 +115,13 @@ object FeatureDisplayBetterArmor : SimpleFeature(
 
     }
 
-    override fun tick() {
-        if (!enabled || Hypixel.currentGame != GameType.SKYWARS) return
-
-        scanTick = (scanTick + 1) % 7
-
-        if (scanTick != 0) return
-
-        scanInventory()
-        scanEntityItem()
+    init {
+        on<SpecialTickEvent>()
+            .filter { enabled && Hypixel.currentGame == GameType.SKYWARS }
+            .filter { scanTimer.update().check() }.subscribe {
+                scanInventory()
+                scanEntityItem()
+            }
     }
 
     private fun scanForBetterItem(itemsToScan: Iterable<ItemStack>): List<ItemStack> {
@@ -170,17 +168,16 @@ object FeatureDisplayBetterArmor : SimpleFeature(
         drawSlots.addAll(scanForBetterItem(items.keys).mapNotNull { items[it] })
     }
 
-    override fun onBackgroundDrawn(e: GuiScreenEvent.BackgroundDrawnEvent) {
-
-        if (!enabled || Hypixel.currentGame != GameType.SKYWARS) return
-
-        val gui = e.gui
-
-        if (gui is GuiInventory) {
-            for (slot in drawSlots) {
-                gui.drawOnSlot(slot, getParameterValue<Color>("color").rgb)
+    init {
+        on<GuiScreenEvent.BackgroundDrawnEvent>().filter { enabled && Hypixel.currentGame == GameType.SKYWARS }
+            .subscribe {
+                gui.withInstance<GuiInventory> {
+                    val color = color.rgb
+                    for (slot in drawSlots) {
+                        drawOnSlot(slot, color)
+                    }
+                }
             }
-        }
     }
 
 }

@@ -18,56 +18,57 @@
 
 package com.happyandjust.nameless.processor.partygames
 
-import com.happyandjust.nameless.core.Overlay
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.matrix
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.setup
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.RenderOverlayListener
+import com.happyandjust.nameless.events.SpecialOverlayEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
+import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.Utils
 import net.minecraft.init.Blocks
 import net.minecraft.util.BlockPos
 import java.awt.Color
 
-object LabEscapeProcessor : Processor(), ClientTickListener, RenderOverlayListener {
+object LabEscapeProcessor : Processor() {
 
     lateinit var overlay: () -> Overlay
     private val keys = arrayListOf<String>()
-    private var tick = 0
+    private val timer = TickTimer(7)
+    override val filter = FeaturePartyGamesHelper.getFilter(this)
 
-    override fun tick() {
-        tick = (tick + 1) % 7 // im pretty sure that you can't break block every 7 ticks
-        keys.clear()
+    init {
+        request<SpecialTickEvent>().filter { timer.update().check() }.subscribe {
+            keys.clear()
 
-        val world = mc.theWorld
-        val base = BlockPos(mc.thePlayer)
+            val world = mc.theWorld
+            val base = BlockPos(mc.thePlayer)
 
-        val keyBindingMap = Utils.getKeyBindingNameInEverySlot()
+            val keyBindingMap = Utils.getKeyBindingNameInEverySlot()
 
-        val shovel = keyBindingMap[0]!!.keyName
-        val pickaxe = keyBindingMap[1]!!.keyName
-        val axe = keyBindingMap[2]!!.keyName
+            val shovel = keyBindingMap[0]!!.keyName
+            val pickaxe = keyBindingMap[1]!!.keyName
+            val axe = keyBindingMap[2]!!.keyName
 
-        for (i in 1..5) {
-            keys.add(
-                when (world.getBlockAtPos(base.down(i))) {
-                    Blocks.dirt -> shovel
-                    Blocks.stone -> pickaxe
-                    Blocks.planks -> axe
-                    else -> continue
-                }
-            )
+            for (i in 1..5) {
+                keys.add(
+                    when (world.getBlockAtPos(base.down(i))) {
+                        Blocks.dirt -> shovel
+                        Blocks.stone -> pickaxe
+                        Blocks.planks -> axe
+                        else -> continue
+                    }
+                )
+            }
+        }
+        request<SpecialOverlayEvent>().subscribe {
+            matrix {
+                setup(overlay())
+                mc.fontRendererObj.drawSplitString(keys.joinToString("\n"), 0, 0, Int.MAX_VALUE, Color.red.rgb)
+            }
         }
     }
-
-    override fun renderOverlay(partialTicks: Float) {
-        matrix {
-            setup(overlay())
-            mc.fontRendererObj.drawSplitString(keys.joinToString("\n"), 0, 0, Int.MAX_VALUE, Color.red.rgb)
-        }
-    }
-
-
 }

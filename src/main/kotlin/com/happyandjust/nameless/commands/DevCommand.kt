@@ -22,7 +22,8 @@ import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 
 object DevCommand : Command("devtest") {
+    private val error = { error("You're not developer!") }
 
     @DefaultHandler
-    fun handle() = Unit
+    fun handle(): Nothing = error()
 }

@@ -20,53 +20,46 @@ package com.happyandjust.nameless.processor.partygames
 
 import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.WorldRenderListener
+import com.happyandjust.nameless.events.SpecialTickEvent
+import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.init.Blocks
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
+import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 
-object DiveProcessor : Processor(), ClientTickListener, WorldRenderListener {
-
-    var boxColor = { -1 }
+object DiveProcessor : Processor() {
 
     private var axisAlignedBB: AxisAlignedBB? = null
     private var isCollide = false
+    override val filter = FeaturePartyGamesHelper.getFilter(this)
 
-    override fun tick() {
+    init {
+        request<SpecialTickEvent>().subscribe {
+            val aabb = mc.thePlayer.entityBoundingBox
 
-        val aabb = mc.thePlayer.entityBoundingBox
-
-        axisAlignedBB = AxisAlignedBB(aabb.minX, 14.0, aabb.minZ, aabb.maxX, 15.0, aabb.maxZ).also {
-            val w = mc.theWorld
-
-            if (w.getBlockAtPos(BlockPos(it.minX, it.minY, it.minZ)) != Blocks.water) {
-                isCollide = true
-                return@also
+            axisAlignedBB = AxisAlignedBB(aabb.minX, 14.0, aabb.minZ, aabb.maxX, 15.0, aabb.maxZ).also {
+                val w = mc.theWorld
+                isCollide = sequence {
+                    for (x in arrayOf(it.minX, it.maxX)) {
+                        for (z in arrayOf(it.minZ, it.maxZ)) {
+                            yield(BlockPos(x, it.minY, z))
+                        }
+                    }
+                }.any { pos -> w.getBlockAtPos(pos) != Blocks.water }
             }
-            if (w.getBlockAtPos(BlockPos(it.maxX, it.minY, it.minZ)) != Blocks.water) {
-                isCollide = true
-                return@also
-            }
-            if (w.getBlockAtPos(BlockPos(it.maxX, it.minY, it.maxZ)) != Blocks.water) {
-                isCollide = true
-                return@also
-            }
-            if (w.getBlockAtPos(BlockPos(it.minX, it.minY, it.maxZ)) != Blocks.water) {
-                isCollide = true
-                return@also
-            }
-            isCollide = false
-
         }
-    }
 
-    override fun renderWorld(partialTicks: Float) {
-        axisAlignedBB?.let {
-            RenderUtils.drawBox(it, if (isCollide) Color.red.rgb else boxColor(), partialTicks)
+        request<RenderWorldLastEvent>().subscribe {
+            axisAlignedBB?.let {
+                RenderUtils.drawBox(
+                    it,
+                    if (isCollide) Color.red.rgb else FeaturePartyGamesHelper.diveColor.rgb,
+                    partialTicks
+                )
+            }
         }
     }
 }

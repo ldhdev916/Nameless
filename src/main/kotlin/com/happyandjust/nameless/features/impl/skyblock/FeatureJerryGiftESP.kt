@@ -19,19 +19,15 @@
 package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.core.JERRY_GIFT
-import com.happyandjust.nameless.core.toChromaColor
-import com.happyandjust.nameless.dsl.getAxisAlignedBB
-import com.happyandjust.nameless.dsl.getMD5
-import com.happyandjust.nameless.dsl.getSkullOwner
-import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.value.toChromaColor
+import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.PacketEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.PacketListener
-import com.happyandjust.nameless.features.listener.ServerChangeListener
-import com.happyandjust.nameless.features.listener.WorldRenderListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
@@ -41,68 +37,52 @@ import gg.essential.elementa.utils.withAlpha
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.network.play.client.C02PacketUseEntity
 import net.minecraft.util.BlockPos
+import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 
-object FeatureJerryGiftESP : SimpleFeature(Category.SKYBLOCK, "jerrygiftesp", "Jerry Workshop Gift ESP"),
-    ClientTickListener, WorldRenderListener, ServerChangeListener, PacketListener {
+object FeatureJerryGiftESP : SimpleFeature(Category.SKYBLOCK, "jerrygiftesp", "Jerry Workshop Gift ESP") {
 
-    private var gifts = hashSetOf<EntityArmorStand>()
+    private val gifts = hashSetOf<EntityArmorStand>()
     private val foundGifts = hashSetOf<EntityArmorStand>()
-    private var scanTick = 0
-
-
-    init {
-        parameters["color"] = FeatureParameter(
-            0,
-            "jerrygiftesp",
-            "color",
-            "Box Color",
-            "",
-            Color.green.withAlpha(64).toChromaColor(),
-            CChromaColor
-        )
-    }
+    private val scanTimer = TickTimer.withSecond(1)
+    private var color by FeatureParameter(
+        0,
+        "jerrygiftesp",
+        "color",
+        "Box Color",
+        "",
+        Color.green.withAlpha(64).toChromaColor(),
+        CChromaColor
+    )
 
     private fun checkForRequirements() =
         enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty<String>(PropertyKey.ISLAND) == "winter"
 
-    override fun tick() {
-        if (!checkForRequirements()) return
-        scanTick = (scanTick + 1) % 20
-
-        if (scanTick != 0) return
-        gifts = mc.theWorld.loadedEntityList.filterIsInstance<EntityArmorStand>()
-            .filter { it.getEquipmentInSlot(4)?.getSkullOwner()?.getMD5() == JERRY_GIFT }
-            .toHashSet()
-    }
-
-    override fun renderWorld(partialTicks: Float) {
-        if (!checkForRequirements()) return
-
-        val color = getParameterValue<Color>("color").rgb
-
-        for (gift in gifts - foundGifts) {
-            RenderUtils.drawBox(BlockPos(gift).up(2).getAxisAlignedBB(), color, partialTicks)
+    init {
+        on<SpecialTickEvent>().filter { checkForRequirements() && scanTimer.update().check() }.subscribe {
+            gifts.clear()
+            gifts.addAll(mc.theWorld.loadedEntityList.filterIsInstance<EntityArmorStand>()
+                .filter { it.getEquipmentInSlot(4)?.getSkullOwner()?.getMD5() == JERRY_GIFT })
         }
-    }
 
-    override fun onSendingPacket(e: PacketEvent.Sending) {
-        val msg = e.packet
-
-        if (msg is C02PacketUseEntity) {
-            val entity = msg.getEntityFromWorld(mc.theWorld) as? EntityArmorStand ?: return
-
-            if (entity in gifts) foundGifts.add(entity)
+        on<RenderWorldLastEvent>().filter { checkForRequirements() }.subscribe {
+            for (gift in gifts - foundGifts) {
+                RenderUtils.drawBox(BlockPos(gift).up(2).getAxisAlignedBB(), color.rgb, partialTicks)
+            }
         }
-    }
 
-    override fun onReceivedPacket(e: PacketEvent.Received) {
+        on<PacketEvent.Sending>().subscribe {
+            packet.withInstance<C02PacketUseEntity> {
+                val entity = getEntityFromWorld(mc.theWorld) as? EntityArmorStand ?: return@subscribe
 
-    }
+                if (entity in gifts) foundGifts.add(entity)
+            }
+        }
 
-    override fun onServerChange(server: String) {
-        foundGifts.clear()
-        gifts = hashSetOf()
+        on<HypixelServerChangeEvent>().subscribe {
+            foundGifts.clear()
+            gifts.clear()
+        }
     }
 
 }

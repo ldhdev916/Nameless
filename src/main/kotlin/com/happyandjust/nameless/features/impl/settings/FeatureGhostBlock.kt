@@ -20,11 +20,12 @@ package com.happyandjust.nameless.features.impl.settings
 
 import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.events.KeyPressEvent
 import com.happyandjust.nameless.events.PacketEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SettingFeature
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.PacketListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
@@ -45,61 +46,61 @@ object FeatureGhostBlock : SettingFeature(
     "ghostblock",
     "Ghost Block",
     "Make client-side air where you are looking at"
-), ClientTickListener, PacketListener {
+) {
 
     private val ghostBlocks = hashMapOf<BlockPos, BlockInfo>()
 
-    init {
-        parameters["restore"] = FeatureParameter(
-            0,
-            "ghostblock",
-            "restore",
-            "Restore Seconds",
-            "after the seconds you selected, block you made client-side air will be restored back\n-1 for not restoring back",
-            10,
-            CInt
-        ).apply {
-            minValue = -1.0
-            maxValue = 60.0
-        }
-        parameters["ignore"] = FeatureParameter(
-            1,
-            "ghostblock",
-            "ignoresecret",
-            "Ignore Dungeons Secrets",
-            "Prevent making skyblock dungeons secrets ghost-block",
-            true,
-            CBoolean
-        )
+    private var restore by FeatureParameter(
+        0,
+        "ghostblock",
+        "restore",
+        "Restore Seconds",
+        "after the seconds you selected, block you made client-side air will be restored back\n-1 for not restoring back",
+        10,
+        CInt
+    ).apply {
+        minValue = -1.0
+        maxValue = 60.0
     }
 
-    override fun tick() {
-        if (mc.inGameHasFocus && KeyBindingCategory.GHOST_BLOCK.getKeyBinding().isKeyDown) {
+    private var ignoreSecret by FeatureParameter(
+        1,
+        "ghostblock",
+        "ignoresecret",
+        "Ignore Dungeons Secrets",
+        "Prevent making skyblock dungeons secrets ghost-block",
+        true,
+        CBoolean
+    )
+
+    init {
+        on<KeyPressEvent>().filter { !inGui && keyBindingCategory == KeyBindingCategory.GHOST_BLOCK }.subscribe {
             mc.objectMouseOver?.takeIf { it.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK }?.let {
                 makeGhostBlock(it.blockPos)
             }
         }
 
-        if (ghostBlocks.isEmpty()) return
+        on<SpecialTickEvent>().filter { ghostBlocks.isNotEmpty() }.subscribe {
 
-        val iterator = ghostBlocks.iterator()
+            val iterator = ghostBlocks.iterator()
 
-        for ((pos, blockInfo) in iterator) {
-            if (mc.theWorld.getBlockAtPos(pos) != Blocks.air) { // did the pos state changed by server?
-                iterator.remove()
-                continue
+            for ((pos, blockInfo) in iterator) {
+                if (mc.theWorld.getBlockAtPos(pos) != Blocks.air) { // did the pos state changed by server?
+                    iterator.remove()
+                    continue
+                }
+                if (blockInfo.tick == 0) { // restore
+                    mc.theWorld.setBlockState(pos, blockInfo.blockState)
+                    iterator.remove()
+                }
+
+                blockInfo.tick--
             }
-            if (blockInfo.tick == 0) { // restore
-                mc.theWorld.setBlockState(pos, blockInfo.blockState)
-                iterator.remove()
-            }
-
-            blockInfo.tick--
         }
     }
 
     private fun makeGhostBlock(pos: BlockPos) {
-        if (Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty(PropertyKey.DUNGEON) && getParameterValue("ignore")) {
+        if (Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty(PropertyKey.DUNGEON) && ignoreSecret) {
             when (mc.theWorld.getBlockAtPos(pos)) {
                 is BlockChest, is BlockLever, is BlockSkull -> return
             }
@@ -110,24 +111,22 @@ object FeatureGhostBlock : SettingFeature(
     }
 
     class BlockInfo(var blockState: IBlockState) {
-        var tick = getParameterValue<Int>("restore") * 20
+        var tick = restore * 20
     }
 
-    override fun onSendingPacket(e: PacketEvent.Sending) {
+    init {
+        on<PacketEvent.Received>().filter { ghostBlocks.isNotEmpty() }.subscribe {
 
-    }
+            when (val msg = packet) {
+                is S22PacketMultiBlockChange -> {
+                    val data =
+                        msg.changedBlocks.find { it.pos in ghostBlocks && it.blockState != null } ?: return@subscribe
+                    ghostBlocks[data.pos]?.blockState = data.blockState
 
-    override fun onReceivedPacket(e: PacketEvent.Received) {
-        if (ghostBlocks.isEmpty()) return
-
-        when (val msg = e.packet) {
-            is S22PacketMultiBlockChange -> {
-                val data = msg.changedBlocks.find { it.pos in ghostBlocks && it.blockState != null } ?: return
-                ghostBlocks[data.pos]?.blockState = data.blockState
-
-            }
-            is S23PacketBlockChange -> {
-                ghostBlocks[msg.blockPosition]?.blockState = msg.blockState ?: return
+                }
+                is S23PacketBlockChange -> {
+                    ghostBlocks[msg.blockPosition]?.blockState = msg.blockState ?: return@subscribe
+                }
             }
         }
     }

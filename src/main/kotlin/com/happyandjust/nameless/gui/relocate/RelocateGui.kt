@@ -18,23 +18,40 @@
 
 package com.happyandjust.nameless.gui.relocate
 
-import com.happyandjust.nameless.core.Overlay
+import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.features.IRelocateAble
 import com.happyandjust.nameless.gui.feature.ColorCache
 import gg.essential.elementa.WindowScreen
+import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.constraints.CenterConstraint
-import gg.essential.elementa.dsl.childOf
-import gg.essential.elementa.dsl.constrain
-import gg.essential.elementa.dsl.constraint
-import gg.essential.elementa.dsl.pixels
+import gg.essential.elementa.dsl.*
 import java.awt.Point
 
 class RelocateGui(relocateAbleList: List<IRelocateAble>) : WindowScreen(drawDefaultBackground = false) {
 
-    private val map = relocateAbleList.associateWith { RelocateComponent(window, it).childOf(window) }
+    private val map = relocateAbleList.associateWith { RelocateComponent(this, it).childOf(window) }
+    val yCenterLine = UIBlock(ColorCache.accent).constrain {
+
+        y = CenterConstraint()
+
+        width = 100.percent()
+        height = 0.5.pixel()
+    } childOf window
+    val xCenterLine = UIBlock(ColorCache.accent).constrain {
+        x = CenterConstraint()
+
+        width = 0.5.pixel()
+        height = 100.percent()
+    } childOf window
+    val centerX
+        get() = window.getWidth() / 2
+    val centerY
+        get() = window.getHeight() / 2
 
     init {
+        xCenterLine.hide()
+        yCenterLine.hide()
 
         UIText("Drag element to change position, scroll to scale Up/Down").constrain {
             x = CenterConstraint()
@@ -49,7 +66,7 @@ class RelocateGui(relocateAbleList: List<IRelocateAble>) : WindowScreen(drawDefa
         super.onScreenClose()
 
         for ((relocateAble, component) in map) {
-            relocateAble.overlayPoint.value = Overlay(
+            relocateAble.overlayPoint = Overlay(
                 Point(component.getLeft().toInt(), component.getTop().toInt()),
                 component.currentScale
             )

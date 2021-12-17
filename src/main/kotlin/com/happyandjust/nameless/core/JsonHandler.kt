@@ -50,7 +50,7 @@ class JsonHandler(inputStream: InputStream? = null, val outputStream: () -> Outp
     }
 
     fun <T : JsonElement> read(defaultValue: T): T =
-        runCatching { gson.fromJson(jsonData, defaultValue::class.java) }.getOrDefault(defaultValue)
+        runCatching { gson.fromJson(jsonData, defaultValue::class.java) ?: defaultValue }.getOrDefault(defaultValue)
 
     fun write(write: JsonElement) = apply {
         outputStream()?.run {

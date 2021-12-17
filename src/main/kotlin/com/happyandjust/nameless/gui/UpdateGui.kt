@@ -30,9 +30,9 @@ import gg.essential.elementa.dsl.*
 import gg.essential.elementa.effects.OutlineEffect
 import gg.essential.elementa.markdown.MarkdownComponent
 import gg.essential.universal.GuiScale
+import gg.essential.universal.UDesktop
 import net.minecraftforge.fml.common.FMLCommonHandler
 import java.awt.Color
-import java.awt.Desktop
 import java.io.File
 import java.net.URI
 import java.net.URL
@@ -73,7 +73,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
         height = FillConstraint(false)
     } childOf window
 
-    private val updateMessage = UIText("").constrain {
+    private val updateMessage = UIText().constrain {
         x = CenterConstraint()
         y = CenterConstraint()
 
@@ -122,7 +122,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
                 }
             }.onFailure {
                 updateMessage.setText("§cException Occurred while downloading old file deleter jar.")
-                Desktop.getDesktop().open(jarFile.parentFile)
+                UDesktop.open(jarFile.parentFile)
                 Thread.sleep(2000L)
             }
 
@@ -130,7 +130,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
                 downloadFile(jarFile, downloadURL)
             }.onFailure {
                 updateMessage.setText("§cException Occurred while downloading latest mod file")
-                Desktop.getDesktop().browse(htmlURL)
+                UDesktop.browse(htmlURL)
             }
             EssentialAPI.getShutdownHookUtil().register {
                 Utils.deleteOldJar()

@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.gui.feature
 
-import com.happyandjust.nameless.core.ChromaColor
+import com.happyandjust.nameless.core.value.ChromaColor
 import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
 import com.happyandjust.nameless.gui.feature.components.toChromaColorComponent

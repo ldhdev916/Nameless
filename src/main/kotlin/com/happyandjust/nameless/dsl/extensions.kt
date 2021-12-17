@@ -41,6 +41,7 @@ import net.minecraft.util.StringUtils
 import net.minecraft.util.Vec3
 import net.minecraft.world.World
 import net.minecraftforge.common.util.Constants
+import net.minecraftforge.fml.common.eventhandler.Event
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.awt.Toolkit
@@ -215,4 +216,14 @@ inline fun <T> repeat0(times: Int, action: (Int) -> T): List<T> {
     }
 
     return list
+}
+
+inline fun <reified E> Any?.withInstance(action: E.() -> Unit) {
+    if (this is E) {
+        action()
+    }
+}
+
+fun Event.cancel() = apply {
+    isCanceled = true
 }

@@ -18,13 +18,9 @@
 
 package com.happyandjust.nameless.features.impl.misc
 
-import com.happyandjust.nameless.dsl.copyToClipboard
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.sendPrefixMessage
-import com.happyandjust.nameless.dsl.stripControlCodes
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.ScreenMouseInputListener
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiNewChat
 import net.minecraft.client.gui.GuiChat
 import net.minecraft.client.gui.GuiNewChat
@@ -41,20 +37,20 @@ object FeatureClickCopyChat : SimpleFeature(
     "clickcopychat",
     "Click Copy Chat",
     "Right click to copy chat, ctrl + right click to copy chat with color codes"
-), ScreenMouseInputListener {
+) {
 
-    override fun onMouseInputPre(e: GuiScreenEvent.MouseInputEvent.Pre) {
-        if (enabled && Mouse.getEventButton() == 1 && Mouse.getEventButtonState() && e.gui is GuiChat) {
+    init {
+        on<GuiScreenEvent.MouseInputEvent.Pre>().filter { enabled && Mouse.getEventButton() == 1 && Mouse.getEventButtonState() && gui is GuiChat }
+            .subscribe {
+                val isCtrlDown = GuiScreen.isCtrlKeyDown()
 
-            val isCtrlDown = GuiScreen.isCtrlKeyDown()
+                val chat = mc.ingameGUI.chatGUI.getFullChatComponent(Mouse.getX(), Mouse.getY()) ?: return@subscribe
 
-            val chat = mc.ingameGUI.chatGUI.getFullChatComponent(Mouse.getX(), Mouse.getY()) ?: return
+                (if (isCtrlDown) chat.formattedText else chat.unformattedText.stripControlCodes()).copyToClipboard()
+                sendPrefixMessage("Chat copied to your clipboard")
 
-            (if (isCtrlDown) chat.formattedText else chat.unformattedText.stripControlCodes()).copyToClipboard()
-            sendPrefixMessage("Chat copied to your clipboard")
-
-            e.isCanceled = true
-        }
+                isCanceled = true
+            }
     }
 
     // I hate minecraft's code
@@ -76,8 +72,5 @@ object FeatureClickCopyChat : SimpleFeature(
         }
 
         return null
-    }
-
-    override fun onMouseInputPost(e: GuiScreenEvent.MouseInputEvent.Post) {
     }
 }

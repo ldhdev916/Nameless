@@ -18,19 +18,20 @@
 
 package com.happyandjust.nameless.commands
 
-import com.happyandjust.nameless.dsl.sendClientMessage
-import com.happyandjust.nameless.dsl.sendPrefixMessage
+import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.impl.skyblock.FeatureChangeHelmetTexture
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
+import com.happyandjust.nameless.mixins.accessors.AccessorGuiChat
 import com.happyandjust.nameless.utils.SkyblockUtils
 import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.commands.DisplayName
+import net.minecraft.network.play.server.S3APacketTabComplete
 
 object ChangeHelmetTextureCommand : Command("helmettexture") {
 
-    private fun getSkins(id: String) =
-        SkyblockUtils.allItems.values.filter { it.skin.isNotBlank() }.map { it.id }.filter { id.uppercase() in it }
+    private val pattern = "/helmettexture (?<id>\\w*)".toPattern()
 
     @DefaultHandler
     fun handle(@DisplayName("SkyBlock ID") id: String) {
@@ -41,20 +42,28 @@ object ChangeHelmetTextureCommand : Command("helmettexture") {
             return
         }
 
-        skyBlockItem ?: run {
-            sendClientMessage(getSkins(id).joinToString("\n"))
-            return
-        }
-
         FeatureChangeHelmetTexture.setCurrentHelmetTexture(skyBlockItem)
         sendPrefixMessage("§aChanged Helmet Texture to ${skyBlockItem.id}")
     }
 
-    private fun getSkyBlockItemByID(id: String): SkyBlockItem? {
-        val skyBlockItem = SkyblockUtils.getItemFromId(id) ?: return null
+    private fun getSkyBlockItemByID(id: String): SkyBlockItem {
+        val skyBlockItem = SkyblockUtils.getItemFromId(id) ?: error("§cNo Such SkyBlock Item $id")
         return if (skyBlockItem.skin.isBlank()) {
-            throw IllegalArgumentException("§c${skyBlockItem.id} doesn't have skin")
+            error("§c${skyBlockItem.id} doesn't have skin")
         } else skyBlockItem
+    }
+
+    init {
+        on<PacketEvent.Received>().filter { packet is S3APacketTabComplete }.subscribe {
+            mc.currentScreen.withInstance<AccessorGuiChat> {
+                pattern.matchesMatcher(inputField.text) { matcher ->
+                    packet = S3APacketTabComplete(SkyblockUtils.allItems.values.filter {
+                        it.skin.isNotBlank() &&
+                                it.id.contains(matcher.group("id"), true)
+                    }.map { it.id }.toTypedArray())
+                }
+            }
+        }
     }
 
 

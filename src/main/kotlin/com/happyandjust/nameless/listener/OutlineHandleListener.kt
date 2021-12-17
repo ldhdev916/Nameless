@@ -19,20 +19,18 @@
 package com.happyandjust.nameless.listener
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.core.ColorInfo
-import com.happyandjust.nameless.core.OutlineMode
-import com.happyandjust.nameless.core.checkAndReplace
+import com.happyandjust.nameless.core.enums.OutlineMode
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.FeatureRegistry
-import com.happyandjust.nameless.features.listener.StencilListener
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.events.OutlineRenderEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.mixinhooks.RenderGlobalHook
 import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraftforge.client.event.RenderLivingEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent
+import net.minecraftforge.common.MinecraftForge
 
 object OutlineHandleListener {
 
@@ -40,75 +38,42 @@ object OutlineHandleListener {
     private val outlineEntityCache = hashMapOf<Entity, Int>()
     private val changeColorEntityCache = hashMapOf<Entity, Int>()
 
-    @SubscribeEvent
-    fun onClientTick(e: TickEvent.ClientTickEvent) {
-        if (e.phase == TickEvent.Phase.START) return
-        if (mc.theWorld == null) return
+    init {
+        on<SpecialTickEvent>().subscribe {
+            outlineEntityCache.clear()
+            changeColorEntityCache.clear()
 
-        outlineEntityCache.clear()
-        changeColorEntityCache.clear()
+            for (entity in mc.theWorld.loadedEntityList) {
+                val event = OutlineRenderEvent(entity)
+                MinecraftForge.EVENT_BUS.post(event)
 
-        val stencilFeatures = FeatureRegistry.features.filterIsInstance<StencilListener>()
-        val stencilProcessers = FeatureRegistry.features
-            .asSequence()
-            .filter { it.enabled }
-            .map { it.processors.filter { entry -> entry.value() } }
-            .map { it.keys }
-            .flatten()
-            .filterIsInstance<StencilListener>()
-        val stencilListeners = stencilFeatures + stencilProcessers
-
-        for (entity in mc.theWorld.loadedEntityList) {
-            var outlineColorInfo: ColorInfo? = null
-            var entityColorInfo: ColorInfo? = null
-
-            for (stencilListener in stencilListeners) {
-                stencilListener.getOutlineColor(entity)?.let {
-                    outlineColorInfo = outlineColorInfo.checkAndReplace(it)
-                }
-                stencilListener.getEntityColor(entity)?.let {
-                    entityColorInfo = entityColorInfo.checkAndReplace(it)
-                }
-            }
-
-            outlineColorInfo?.let {
-                outlineEntityCache[entity] = it.color
-            }
-
-            entityColorInfo?.let {
-                changeColorEntityCache[entity] = it.color
+                outlineEntityCache[entity] = event.colorInfo?.color ?: continue
             }
         }
-    }
+        on<RenderWorldLastEvent>().subscribe {
+            for (entity in mc.theWorld.loadedEntityList) {
 
-    @SubscribeEvent
-    fun onWorldRender(e: RenderWorldLastEvent) {
-
-        for (entity in mc.theWorld.loadedEntityList) {
-            if (entity == mc.renderViewEntity) continue
-
-            changeColorEntityCache[entity]?.let {
-                manualRendering = true
-                RenderUtils.changeEntityColor(entity, it, e.partialTicks)
-                manualRendering = false
-            }
-
-
-            if (!RenderGlobalHook.canDisplayOutline() || Nameless.selectedOutlineMode == OutlineMode.BOX) {
-                outlineEntityCache[entity]?.let {
-                    RenderUtils.drawOutlinedBox(entity.entityBoundingBox, it, e.partialTicks)
+                changeColorEntityCache[entity]?.let {
+                    manualRendering = true
+                    RenderUtils.changeEntityColor(entity, it, partialTicks)
+                    manualRendering = false
                 }
-            }
 
+                if (!RenderGlobalHook.canDisplayOutline() || Nameless.selectedOutlineMode == OutlineMode.BOX) {
+                    outlineEntityCache[entity]?.let {
+                        RenderUtils.drawOutlinedBox(entity.entityBoundingBox, it, partialTicks)
+                    }
+                }
+
+            }
+        }
+
+        on<RenderLivingEvent.Specials.Pre<EntityLivingBase>>().subscribe {
+            if (manualRendering) {
+                isCanceled = true
+            }
         }
     }
 
     fun getOutlineColorForEntity(entity: Entity) = outlineEntityCache[entity]
-
-    @SubscribeEvent
-    fun onRenderName(e: RenderLivingEvent.Specials.Pre<EntityLivingBase>) {
-        if (manualRendering) {
-            e.isCanceled = true
-        }
-    }
 }

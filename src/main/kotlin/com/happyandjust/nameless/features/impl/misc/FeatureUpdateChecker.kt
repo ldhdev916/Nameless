@@ -23,17 +23,17 @@ import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.VERSION
 import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.Request
-import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.ClientTickListener
-import com.happyandjust.nameless.features.listener.ScreenOpenListener
 import com.happyandjust.nameless.gui.UpdateGui
+import gg.essential.api.utils.GuiUtil
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.minecraft.client.gui.GuiMainMenu
 import net.minecraftforge.client.event.GuiOpenEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion
 import java.io.File
 import java.net.URI
@@ -45,7 +45,7 @@ object FeatureUpdateChecker : SimpleFeature(
     "Auto Update Checker",
     "Automatically checks if currently loaded mod version is latest version",
     true
-), ScreenOpenListener, ClientTickListener {
+) {
 
     private var updateGui: () -> UpdateGui? = { null }
     private var shown = false
@@ -85,23 +85,18 @@ object FeatureUpdateChecker : SimpleFeature(
         }
     }
 
-    override fun onGuiOpen(e: GuiOpenEvent) {
-        if (e.gui is GuiMainMenu && enabled && needUpdate && !shown) {
+    init {
+        on<GuiOpenEvent>().filter { gui is GuiMainMenu && enabled && needUpdate && !shown }.subscribe {
             shouldShow = true
         }
-    }
 
-    override fun tick() {
+        on<TickEvent.ClientTickEvent>().filter { phase == TickEvent.Phase.END && shouldShow && !shown && enabled }
+            .subscribe {
+                shown = true
+                shouldShow = false
 
-    }
-
-    override fun tickWorldNull() {
-        if (shouldShow && !shown && enabled) {
-            shown = true
-            shouldShow = false
-
-            mc.displayGuiScreen(updateGui())
-        }
+                GuiUtil.open(updateGui() ?: return@subscribe)
+            }
     }
 
 }

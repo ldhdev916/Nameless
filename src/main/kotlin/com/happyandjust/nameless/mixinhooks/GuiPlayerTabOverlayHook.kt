@@ -25,7 +25,6 @@ import com.happyandjust.nameless.dsl.translate
 import com.happyandjust.nameless.features.impl.qol.FeatureShowPingInTab
 import net.minecraft.client.network.NetworkPlayerInfo
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
-import java.awt.Color
 
 object GuiPlayerTabOverlayHook {
 
@@ -47,7 +46,7 @@ object GuiPlayerTabOverlayHook {
                     networkPlayerInfoIn.responseTime.toString(),
                     0f,
                     -(mc.fontRendererObj.FONT_HEIGHT / 2f),
-                    FeatureShowPingInTab.getParameter<Color>("color").value.rgb
+                    FeatureShowPingInTab.color.rgb
                 )
             }
 

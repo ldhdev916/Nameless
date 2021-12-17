@@ -18,22 +18,20 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.dsl.cancel
+import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.EnderTeleportListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import net.minecraft.entity.monster.EntityEnderman
 import net.minecraftforge.event.entity.living.EnderTeleportEvent
 
 object FeatureDisableEndermanTeleportation :
-    SimpleFeature(Category.SKYBLOCK, "disableendermanteleportation", "Disable Enderman Teleportation in SkyBlock"),
-    EnderTeleportListener {
+    SimpleFeature(Category.SKYBLOCK, "disableendermanteleportation", "Disable Enderman Teleportation in SkyBlock") {
 
-
-    override fun onEnderTeleport(e: EnderTeleportEvent) {
-        if (enabled && Hypixel.currentGame == GameType.SKYBLOCK && e.entity is EntityEnderman) {
-            e.isCanceled = true
-        }
+    init {
+        on<EnderTeleportEvent>().filter { enabled && Hypixel.currentGame == GameType.SKYBLOCK && entity is EntityEnderman }
+            .subscribe { cancel() }
     }
 }

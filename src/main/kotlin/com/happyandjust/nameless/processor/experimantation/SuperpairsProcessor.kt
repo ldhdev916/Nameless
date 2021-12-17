@@ -18,11 +18,8 @@
 
 package com.happyandjust.nameless.processor.experimantation
 
-import com.happyandjust.nameless.dsl.drawOnSlot
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.stripControlCodes
-import com.happyandjust.nameless.features.listener.BackgroundDrawnListener
-import com.happyandjust.nameless.features.listener.ItemTooltipListener
+import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.features.impl.skyblock.FeatureExperimentationTableHelper
 import com.happyandjust.nameless.processor.Processor
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.init.Blocks
@@ -39,7 +36,7 @@ import java.awt.Color
  * https://github.com/bowser0000/SkyblockMod/blob/master/LICENSE
  * @author bowser0000
  */
-object SuperpairsProcessor : Processor(), BackgroundDrawnListener, ItemTooltipListener {
+object SuperpairsProcessor : Processor() {
 
     val itemBySlotNumber = hashMapOf<Int, ItemStack>()
     private val colors = arrayOf(
@@ -58,75 +55,74 @@ object SuperpairsProcessor : Processor(), BackgroundDrawnListener, ItemTooltipLi
         Color(217, 252, 140, 100),
         Color(255, 82, 82, 100)
     )
+    override val filter
+        get() = FeatureExperimentationTableHelper.processors[this]!!
 
-    override fun onBackgroundDrawn(e: GuiScreenEvent.BackgroundDrawnEvent) {
-        val gui = e.gui
+    init {
+        request<GuiScreenEvent.BackgroundDrawnEvent>().subscribe {
+            gui.withInstance<GuiChest> {
+                val containerChest = inventorySlots as ContainerChest
+                val slots = containerChest.inventorySlots.filter { it.inventory != mc.thePlayer.inventory }
 
-        if (gui is GuiChest) {
-            val containerChest = gui.inventorySlots as ContainerChest
-            val slots = containerChest.inventorySlots.filter { it.inventory != mc.thePlayer.inventory }
-
-            slots.filter { it.hasStack }
-                .filter {
-                    it.stack.item !in arrayOf(
-                        Item.getItemFromBlock(Blocks.stained_glass),
-                        Item.getItemFromBlock(Blocks.stained_glass_pane)
-                    )
+                slots.filter {
+                    it.hasStack && it.stack.item !in
+                            Item.getItemFromBlock(Blocks.stained_glass) to
+                            Item.getItemFromBlock(Blocks.stained_glass_pane) &&
+                            arrayOf("Instant Find", "Gained +").none(it.stack.displayName::contains) &&
+                            it.slotNumber !in itemBySlotNumber
                 }
-                .filter { arrayOf("Instant Find", "Gained +").none(it.stack.displayName::contains) }
-                .filter { !itemBySlotNumber.contains(it.slotNumber) }
-                .forEach {
-                    itemBySlotNumber[it.slotNumber] =
-                        it.stack.copy().setStackDisplayName(it.stack.displayName.let { name ->
-                            if (name.contains("Enchanted Book"))
-                                it.stack.getTooltip(mc.thePlayer, false)[3]
-                            else if (it.stack.stackSize > 1) "${it.stack.stackSize} $name"
-                            else name
-                        })
-                }
-
-            fun ItemStack.keyName() = "$displayName$unlocalizedName"
-
-            val matches = itemBySlotNumber.entries.groupBy({ it.value.keyName() }) { it.key }
-
-            var currentIndex = 0
-
-            val getColor = { colors[currentIndex % colors.size] }
-
-            matches.values
-                .toSet()
-                .filter { it.size >= 2 }
-                .forEach {
-                    it.forEach { index ->
-                        gui.drawOnSlot(gui.inventorySlots.getSlot(index), getColor().rgb)
+                    .forEach {
+                        itemBySlotNumber[it.slotNumber] =
+                            it.stack.copy().setStackDisplayName(it.stack.displayName.run {
+                                if ("Enchanted Book" in this)
+                                    it.stack.getTooltip(mc.thePlayer, false)[3]
+                                else if (it.stack.stackSize > 1) "${it.stack.stackSize} $this"
+                                else this
+                            })
                     }
-                    currentIndex++
-                }
 
-        }
-    }
+                fun ItemStack.keyName() = "$displayName$unlocalizedName"
 
-    override fun onItemTooltip(e: ItemTooltipEvent) {
-        val itemStack = e.itemStack
+                val matches = itemBySlotNumber.entries.groupBy({ it.value.keyName() }) { it.key }
 
-        val gui = mc.currentScreen as? GuiChest ?: return
+                var currentIndex = 0
 
-        if (arrayOf(
-                "Click any button",
-                "Click a second button",
-                "Next button is instantly rewarded",
-                "Stained Glass"
-            ).any { itemStack.displayName.contains(it) }
-        ) {
-            val target = itemBySlotNumber[gui.slotUnderMouse.slotNumber] ?: return
-            val itemName = target.displayName
+                val getColor = { colors[currentIndex % colors.size] }
 
-            if (e.toolTip.any { it.stripControlCodes() == itemName.stripControlCodes() }) return
-            e.toolTip.removeIf {
-                it.stripControlCodes().let { strip -> strip == "minecraft:stained_glass" || strip.startsWith("NBT: ") }
+                matches.values
+                    .toSet()
+                    .filter { it.size >= 2 }
+                    .forEach {
+                        it.forEach { index ->
+                            drawOnSlot(containerChest.getSlot(index), getColor().rgb)
+                        }
+                        currentIndex++
+                    }
+
             }
-            e.toolTip.add(itemName)
-            e.toolTip.add(target.item.registryName)
+        }
+
+        request<ItemTooltipEvent>().subscribe {
+            mc.currentScreen.withInstance<GuiChest> {
+                if (arrayOf(
+                        "Click any button",
+                        "Click a second button",
+                        "Next button is instantly rewarded",
+                        "Stained Glass"
+                    ).any { itemStack.displayName.contains(it) }
+                ) {
+                    val target = itemBySlotNumber[slotUnderMouse.slotNumber] ?: return@subscribe
+                    val itemName = target.displayName
+
+                    if (toolTip.any { it.stripControlCodes() == itemName.stripControlCodes() }) return@subscribe
+                    toolTip.removeIf {
+                        it.stripControlCodes()
+                            .let { strip -> strip == "minecraft:stained_glass" || strip.startsWith("NBT: ") }
+                    }
+                    toolTip.add(itemName)
+                    toolTip.add(target.item.registryName)
+                }
+            }
         }
     }
 }

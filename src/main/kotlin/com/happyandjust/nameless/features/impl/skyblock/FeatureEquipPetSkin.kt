@@ -22,18 +22,16 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 import com.happyandjust.nameless.core.JsonHandler
-import com.happyandjust.nameless.dsl.getMD5
-import com.happyandjust.nameless.dsl.getSkullOwner
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.stripControlCodes
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.features.listener.ClientTickListener
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.skyblock.PetSkinType
-import com.happyandjust.nameless.serialization.converters.CPetSkinType
+import com.happyandjust.nameless.serialization.converters.getEnumConverter
 import com.happyandjust.nameless.utils.SkyblockUtils
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
@@ -50,13 +48,13 @@ object FeatureEquipPetSkin : SimpleFeature(
     "equippetskin",
     "Equip Pet Skin",
     "Equip existing pet skin on SkyBlock §ethis only changes 'SKIN'§r, mod gets nearest possible pet and changes its skin so it might be inaccurate"
-), ClientTickListener {
+) {
 
     /**
      * key: md5, value: pet name
      */
     private val pets = hashMapOf<String, PetInfo>()
-    private var scanTick = 0
+    private val scanTimer = TickTimer.withSecond(1.5)
     private var currentModifiedPet: EntityArmorStand? = null
         set(value) {
             if (field != value) {
@@ -100,14 +98,14 @@ object FeatureEquipPetSkin : SimpleFeature(
                 petName,
                 "Pet Skins of $petName",
                 PetSkinType.DEFAULT,
-                CPetSkinType
-            ).also {
-                it.allEnumList = petSkinTypes + PetSkinType.DEFAULT
-                it.enumName = { enum ->
+                getEnumConverter()
+            ).apply {
+                allEnumList = petSkinTypes + PetSkinType.DEFAULT
+                enumName = { enum ->
                     (enum as PetSkinType).prettyName
                 }
 
-                it.onValueChange = { petSkinType ->
+                onValueChange = { petSkinType ->
                     currentModifiedPet?.let { armorStand ->
                         if (pets[armorStand.getPetItem().getSkullOwner().getMD5()]!!.petName == petName) {
                             changePetSkin(armorStand.getPetItem(), petSkinType)
@@ -130,13 +128,11 @@ object FeatureEquipPetSkin : SimpleFeature(
         })
     }
 
-    override fun tick() {
-        if (enabled && Hypixel.currentGame == GameType.SKYBLOCK) {
-            scanTick = (scanTick + 1) % 30
-
-            if (scanTick == 0) {
-                currentModifiedPet = getNearestPossiblePet()
-            }
+    init {
+        on<SpecialTickEvent>().filter {
+            enabled && Hypixel.currentGame == GameType.SKYBLOCK && scanTimer.update().check()
+        }.subscribe {
+            currentModifiedPet = getNearestPossiblePet()
         }
     }
 

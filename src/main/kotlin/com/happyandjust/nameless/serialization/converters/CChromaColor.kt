@@ -20,7 +20,7 @@ package com.happyandjust.nameless.serialization.converters
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.ChromaColor
+import com.happyandjust.nameless.core.value.ChromaColor
 import com.happyandjust.nameless.serialization.Converter
 
 object CChromaColor : Converter<ChromaColor> {

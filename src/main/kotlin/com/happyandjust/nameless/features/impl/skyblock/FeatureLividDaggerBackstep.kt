@@ -19,23 +19,22 @@
 package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.core.Overlay
-import com.happyandjust.nameless.dsl.getSkyBlockID
-import com.happyandjust.nameless.dsl.matrix
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.setup
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.value.Overlay
+import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.OverlayFeature
-import com.happyandjust.nameless.features.listener.ClientTickListener
+import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.serialization.converters.COverlay
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIText
+import gg.essential.elementa.dsl.basicTextScaleConstraint
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.constraint
-import gg.essential.elementa.dsl.pixels
 import net.minecraft.entity.Entity
 import net.minecraft.util.MovingObjectPosition
 import java.awt.Color
@@ -45,10 +44,10 @@ object FeatureLividDaggerBackstep : OverlayFeature(
     "lividdaggerbackstep",
     "Livid Dagger Backstep Notifier",
     "Draw HUD on screen when you hold livid dagger. Whether you'll backstep monster you're looking at or not. This could be inaccurate"
-), ClientTickListener {
-    override val overlayPoint = ConfigValue("lividdagger", "overlay", Overlay.DEFAULT, COverlay)
+) {
+    override var overlayPoint by ConfigValue("lividdagger", "overlay", Overlay.DEFAULT, COverlay)
     private var text: String? = null
-    private var checkTick = 0
+    private val checkTimer = TickTimer.withSecond(0.25)
 
     override fun shouldDisplayInRelocateGui(): Boolean {
         return checkForRequirement()
@@ -59,34 +58,27 @@ object FeatureLividDaggerBackstep : OverlayFeature(
 
         text?.let {
             matrix {
-                setup(overlayPoint.value)
+                setup(overlayPoint)
                 mc.fontRendererObj.drawString(it, 0, 0, Color.green.rgb)
             }
         }
     }
 
-    override fun tick() {
-        if (!checkForRequirement()) return
-        val objectMouseOver = mc.objectMouseOver ?: return
+    init {
+        on<SpecialTickEvent>().filter { checkForRequirement() && checkTimer.update().check() }.subscribe {
+            val objectMouseOver = mc.objectMouseOver ?: return@subscribe
 
-        checkTick = (checkTick + 1) % 5
-
-        if (checkTick != 0) return
-
-        text = if (objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY) {
-            if (detectBackstep(objectMouseOver.entityHit)) "Backstep!" else null
-        } else null
+            text = if (objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY) {
+                if (detectBackstep(objectMouseOver.entityHit)) "Backstep!" else null
+            } else null
+        }
     }
 
     override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
         return UIText("Backstep!").constrain {
             color = Color.green.constraint
 
-            textScale = relocateComponent.currentScale.pixels()
-
-            relocateComponent.onScaleChange {
-                textScale = it.pixels()
-            }
+            textScale = basicTextScaleConstraint { relocateComponent.currentScale.toFloat() }.fixed()
         }
     }
 

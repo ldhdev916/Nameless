@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.features
 
 import com.happyandjust.nameless.MOD_ID
-import com.happyandjust.nameless.core.toChromaColor
+import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.features.impl.general.*
 import com.happyandjust.nameless.features.impl.misc.FeatureClickCopyChat
 import com.happyandjust.nameless.features.impl.misc.FeatureDisguiseNickname
@@ -34,11 +34,15 @@ import com.happyandjust.nameless.features.impl.skyblock.*
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CChromaColor
-import com.happyandjust.nameless.serialization.converters.CDamageIndicateType
 import com.happyandjust.nameless.serialization.converters.CInt
+import com.happyandjust.nameless.serialization.converters.getEnumConverter
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.ModContainer
 import java.awt.Color
+import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.isAccessible
 
 object FeatureRegistry {
 
@@ -58,6 +62,35 @@ object FeatureRegistry {
         if (featuresByKey.put(key, this) != null) {
             throw RuntimeException("Duplicate Feature Key")
         }
+
+        parseParameters()
+    }
+
+    private fun <T : SimpleFeature> T.parseParameters() {
+
+        val processSubParameters = hashSetOf<() -> Unit>()
+
+        for (property in this::class.memberProperties.filterIsInstance<KMutableProperty1<T, *>>()
+            .onEach { it.isAccessible = true }) {
+            val delegate = property.getDelegate(this)
+            if (delegate is FeatureParameter<*>) {
+                property.findAnnotation<InCategory>()?.let {
+                    delegate.inCategory = it.inCategory
+                }
+
+                val subParameterOf = property.findAnnotation<SubParameterOf>()
+
+                if (subParameterOf != null) {
+                    processSubParameters.add {
+                        parameters[subParameterOf.parameterProperty]!!.parameters[property.name] = delegate
+                    }
+                } else {
+                    parameters[property.name] = delegate
+                }
+            }
+        }
+
+        processSubParameters.forEach { it() }
     }
 
     fun <T : SimpleFeature> getFeatureByKey(key: String): T {
@@ -71,9 +104,9 @@ object FeatureRegistry {
         "removenegativeeffects",
         "Remove Negative Effects",
         "Support Blindness, Nausea"
-    ).also {
-        it.parameters["blindness"] = FeatureParameter(0, "effects", "blindness", "Blindness", "", true, CBoolean)
-        it.parameters["nausea"] = FeatureParameter(1, "effects", "nausea", "Nausea", "", true, CBoolean)
+    ).apply {
+        parameters["blindness"] = FeatureParameter(0, "effects", "blindness", "Blindness", "", true, CBoolean)
+        parameters["nausea"] = FeatureParameter(1, "effects", "nausea", "Nausea", "", true, CBoolean)
     }.register("Visual")
     val BEDWARS_ESP = FeatureBedwarsESP.register("Visual")
     val HIDE_NPC = FeatureHideNPC.register("Lobby")
@@ -84,12 +117,11 @@ object FeatureRegistry {
         "removemodid",
         "Remove Certain Mod ID Sent to Server",
         enabled_ = true
-    ).also {
-        val mods = Loader::class.java.getDeclaredField("mods").also { field ->
-            field.isAccessible = true
-        }[Loader.instance()] as List<ModContainer>
+    ).apply {
+        val mods = Loader::class.java.getDeclaredField("mods")
+            .apply { isAccessible = true }[Loader.instance()] as List<ModContainer>
         for (mod in mods) {
-            it.parameters[mod.modId] = FeatureParameter(
+            parameters[mod.modId] = FeatureParameter(
                 0,
                 "removemodid",
                 mod.modId,
@@ -124,8 +156,8 @@ object FeatureRegistry {
         "Change Nickname Color",
         "Customize your nickname color",
         false
-    ).also {
-        it.parameters["color"] = FeatureParameter(
+    ).apply {
+        parameters["color"] = FeatureParameter(
             0,
             "nickname",
             "color",
@@ -147,8 +179,8 @@ object FeatureRegistry {
             "changefishparticlecolor",
             "Change Fishing Particle Color",
             ""
-        ).also {
-            it.parameters["color"] = FeatureParameter(
+        ).apply {
+            parameters["color"] = FeatureParameter(
                 0,
                 "fishparticlecolor",
                 "color",
@@ -164,11 +196,11 @@ object FeatureRegistry {
         "changeleatherarmorcolor",
         "Change Leather Armor Color",
         "Customize leather armor color"
-    ).also {
+    ).apply {
         val parameter: (Int, String) -> Unit = { ordinal, name ->
             val key = name.lowercase()
 
-            it.parameters[key] = FeatureParameter(
+            parameters[key] = FeatureParameter(
                 ordinal,
                 "leatherarmorcolor",
                 key,
@@ -176,8 +208,8 @@ object FeatureRegistry {
                 "",
                 true,
                 CBoolean
-            ).also { featureParameter ->
-                featureParameter.parameters["color"] = FeatureParameter(
+            ).apply {
+                parameters["color"] = FeatureParameter(
                     0,
                     "leatherarmorcolor",
                     "${key}_color",
@@ -204,8 +236,8 @@ object FeatureRegistry {
         "changedamagedentitycolor",
         "Change Damaged Entity Color",
         ""
-    ).also {
-        it.parameters["color"] = FeatureParameter(
+    ).apply {
+        parameters["color"] = FeatureParameter(
             0,
             "damagedentity",
             "color",
@@ -250,20 +282,17 @@ object FeatureRegistry {
         "damageindicator",
         "Damage Indicator",
         "Transform damage into K or M or B"
-    ).also {
-        it.parameters["type"] = FeatureParameter(
+    ).apply {
+        parameters["type"] = FeatureParameter(
             0,
             "damageindicator",
             "type",
             "Damage Indicate Type",
             "K, M, B, SMART",
             DamageIndicateType.SMART,
-            CDamageIndicateType
-        ).also { featureParameter ->
-            featureParameter.allEnumList = DamageIndicateType.values().toList()
-        }
-
-        it.parameters["precision"] = FeatureParameter(
+            getEnumConverter()
+        )
+        parameters["precision"] = FeatureParameter(
             0,
             "damageindicator",
             "precision",
@@ -271,9 +300,9 @@ object FeatureRegistry {
             "",
             1,
             CInt
-        ).also { featureParameter ->
-            featureParameter.minValue = 0.0
-            featureParameter.maxValue = 7.0
+        ).apply {
+            minValue = 0.0
+            maxValue = 7.0
         }
     }.register("SkyBlock")
     val DUNGEON_DOOR_KEY = FeatureDungeonsDoorKey.register("Dungeons")
@@ -297,6 +326,5 @@ object FeatureRegistry {
     val HYPIXEL_API_KEY = FeatureHypixelAPIKey.register("Settings")
     val OUTLINE_MODE = FeatureOutlineMode.register("Settings")
     val RELOCATE_GUI = FeatureRelocateGui.register("Settings")
-
 
 }

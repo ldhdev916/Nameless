@@ -16,13 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.listener
+package com.happyandjust.nameless.core.info
 
-import net.minecraftforge.client.event.RenderPlayerEvent
+data class ColorInfo(val color: Int, val priority: ColorPriority) {
 
-interface RenderPlayerListener {
+    operator fun compareTo(other: ColorInfo?) = priority.compareTo(other?.priority)
 
-    fun onRenderPlayerPre(e: RenderPlayerEvent.Pre)
+    enum class ColorPriority(val number: Int) {
+        HIGHEST(5), HIGH(4), NORMAL(3), LOW(2), LOWEST(1);
 
-    fun onRenderPlayerPost(e: RenderPlayerEvent.Post)
+        operator fun compareTo(other: ColorPriority?) = number.compareTo(other?.number ?: -1)
+    }
 }
+
+fun ColorInfo?.checkAndReplace(other: ColorInfo): ColorInfo {
+    this ?: return other
+    return if (other >= this) other else this
+}
+
+fun ColorInfo?.checkAndReplace(color: Int, priority: ColorInfo.ColorPriority) =
+    checkAndReplace(ColorInfo(color, priority))

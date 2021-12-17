@@ -27,8 +27,6 @@ import com.happyandjust.nameless.serialization.Converter
 
 object CFairySoulProfile : Converter<FairySoulProfile> {
 
-    private val cFairySoul = CFairySoul
-
     override fun serialize(t: FairySoulProfile): JsonElement {
 
         val jsonObject = JsonObject()
@@ -41,7 +39,7 @@ object CFairySoulProfile : Converter<FairySoulProfile> {
             val array = JsonArray()
 
             for (fairySoul in foundFairySouls) {
-                array.add(cFairySoul.serialize(fairySoul))
+                array.add(CFairySoul.serialize(fairySoul))
             }
 
             islands.add(island, array)
@@ -65,7 +63,7 @@ object CFairySoulProfile : Converter<FairySoulProfile> {
             val fairySouls = arrayListOf<FairySoul>()
 
             for (fairySoul in foundFairySouls) {
-                fairySouls.add(cFairySoul.deserialize(fairySoul))
+                fairySouls.add(CFairySoul.deserialize(fairySoul))
             }
 
             fairySoulMap[island] = fairySouls

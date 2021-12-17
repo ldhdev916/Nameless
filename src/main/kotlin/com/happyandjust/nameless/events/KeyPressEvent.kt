@@ -16,12 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.core
+package com.happyandjust.nameless.events
 
-import java.awt.Point
+import com.happyandjust.nameless.keybinding.KeyBindingCategory
+import net.minecraftforge.fml.common.eventhandler.Event
 
-data class Overlay(val point: Point, val scale: Double) {
-    companion object {
-        val DEFAULT = Overlay(Point(0, 0), 1.0)
-    }
-}
+class KeyPressEvent(val keyBindingCategory: KeyBindingCategory, val isNew: Boolean, val inGui: Boolean) : Event()

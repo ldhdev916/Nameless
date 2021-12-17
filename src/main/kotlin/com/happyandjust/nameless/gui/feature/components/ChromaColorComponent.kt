@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.gui.feature.components
 
-import com.happyandjust.nameless.core.toChromaColor
+import com.happyandjust.nameless.core.value.toChromaColor
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIImage
