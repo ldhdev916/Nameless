@@ -35,7 +35,7 @@ object FeatureCancelCertainBlockRendering :
                 runCatching { ItemStack(block).displayName }.getOrDefault(block.registryName.split(":")[1])
 
             parameters[block.registryName] = FeatureParameter(
-                0,
+                1,
                 "cancelblock",
                 block.registryName,
                 displayName,
@@ -43,7 +43,12 @@ object FeatureCancelCertainBlockRendering :
                 false,
                 CBoolean
             ).apply {
-                onValueChange = { mc.renderGlobal.loadRenderers() }
+                if (value) ordinal = 0
+                onValueChange = {
+                    mc.renderGlobal.loadRenderers()
+
+                    ordinal = if (it) 0 else 1
+                }
             }
         }
     }

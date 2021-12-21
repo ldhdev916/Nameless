@@ -18,6 +18,7 @@
     "MixinRenderGlobal",
     "MixinRenderManager",
     "MixinTileEntityItemStackRenderer",
+    "MixinTileEntitySkullRenderer",
     "accessors.AccessorAbstractClientPlayer",
     "accessors.AccessorEntityFX",
     "accessors.AccessorGuiChat",

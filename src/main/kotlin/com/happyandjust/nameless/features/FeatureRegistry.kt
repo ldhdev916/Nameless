@@ -261,12 +261,13 @@ object FeatureRegistry {
     val GTB_HELPER = FeatureGTBHelper.register("Hypixel")
     val PARTY_GAMES_HELPER = FeaturePartyGamesHelper.register("Hypixel")
     val AUTO_ACCEPT_PARTY = FeatureAutoAcceptParty.register("Hypixel")
-    val AFK_MODE = FeatureAFKMode.register("In Game")
     val HIDE_TIP_MESSAGE = FeatureHideTipMessage.register("Hypixel")
     val CANCEL_CERTAIN_BLOCK_RENDERING = FeatureCancelCertainBlockRendering.register("In Game")
     val PIXEL_PARTY_HELPER = FeaturePixelPartyHelper.register("Hypixel")
     val IN_GAME_STAT_VIEWER = FeatureInGameStatViewer.register("Hypixel")
     val CHARM = FeatureCharm.register("In Game")
+    val GIFT_ESP = FeatureGiftESP.register("In Game")
+    val DROPPER_HELPER = FeatureDropperHelper.register("In Game")
 
     //SKYBLOCK
     val FAIRY_SOUL_WAYPOINT = FeatureFairySoulWaypoint.register("SkyBlock")
@@ -300,7 +301,6 @@ object FeatureRegistry {
         }
     }.register("SkyBlock")
     val DUNGEON_DOOR_KEY = FeatureDungeonsDoorKey.register("Dungeons")
-    val JERRY_GIFT_ESP = FeatureJerryGiftESP.register("SkyBlock")
     val GEMSTONE_ESP = FeatureGemstoneESP.register("Mining")
     val GLOW_DROPPED_ITEM = FeatureGlowDroppedItem.register("SkyBlock")
     val LIVID_DAGGER_BACKSTEP_NOTIFIER = FeatureLividDaggerBackstep.register("SkyBlock")

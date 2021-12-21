@@ -21,5 +21,3 @@ package com.happyandjust.nameless.core
 const val FAIRY_SOUL = "57a4c8dc9b8e5d4180daa608901a6147"
 
 const val VOIDGLOOM_SKULL = "159dcb0174e3282cc7d63afa022fb379"
-
-const val JERRY_GIFT = "7732c5e41800bb90270f727d2969254b"

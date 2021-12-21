@@ -38,7 +38,6 @@ Unless, You can't use rendering outline on entity
 <details>
   <summary>Quality of Life</summary>
 
-  - AFK Mode
   - Auto Accept Party
   - Cancel Certain Block Rendering
   - F5 Fix
@@ -65,6 +64,8 @@ Unless, You can't use rendering outline on entity
   - Tab Complete /play commands in hypixel
   - Trajectory Preview
   - Charm
+  - Gift ESP
+  - Dropper Helper
 </details>
 <details>
   <summary>SkyBlock</summary>
@@ -82,7 +83,6 @@ Unless, You can't use rendering outline on entity
   - Glow Dropped Item
   - Glow Dungeons Teammates
   - Glow Star Dungeon Mobs
-  - Jerry Workshop Gift ESP
   - Livid Dagger Backstep Notifier
   - Render Pointing Arrow to Wither/Blood Key
   - Show Wither Shield CoolTime

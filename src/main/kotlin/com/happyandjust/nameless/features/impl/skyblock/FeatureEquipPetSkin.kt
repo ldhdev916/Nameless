@@ -49,11 +49,6 @@ object FeatureEquipPetSkin : SimpleFeature(
     "Equip Pet Skin",
     "Equip existing pet skin on SkyBlock §ethis only changes 'SKIN'§r, mod gets nearest possible pet and changes its skin so it might be inaccurate"
 ) {
-
-    /**
-     * key: md5, value: pet name
-     */
-    private val pets = hashMapOf<String, PetInfo>()
     private val scanTimer = TickTimer.withSecond(1.5)
     private var currentModifiedPet: EntityArmorStand? = null
         set(value) {
@@ -75,14 +70,17 @@ object FeatureEquipPetSkin : SimpleFeature(
     private val gson = Gson()
     var currentPetSkinChangeInfo: PetSkinChangeInfo? = null
 
-    fun fetchPetSkinData() {
-        pets.putAll(
-            JsonHandler(ResourceLocation("nameless", "pets.json"))
-                .read(JsonObject())
-                .entrySet()
-                .map { it.key to gson.fromJson(it.value, PetInfo::class.java) }
-        )
+    /**
+     * key: md5, value: pet name
+     */
+    private val pets by lazy {
+        JsonHandler(ResourceLocation("nameless", "pets.json"))
+            .read(JsonObject())
+            .entrySet()
+            .associate { it.key to gson.fromJson(it.value, PetInfo::class.java) }
+    }
 
+    fun fetchPetSkinData() {
         val petSkins = JsonHandler(ResourceLocation("nameless", "petskins.json"))
             .read(JsonObject())
             .entrySet()

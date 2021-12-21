@@ -105,7 +105,7 @@ object FeatureMurdererFinder : SimpleFeature(
     private var alpha: String? = null
         set(value) {
             if (field != value && value != null && value != mc.thePlayer.name) {
-                sendPrefixMessage("§aAlpha: $value")
+                sendPrefixMessage("§cAlpha: $value")
             }
             field = value
         }
@@ -118,12 +118,12 @@ object FeatureMurdererFinder : SimpleFeature(
     private var targetName: String? = null
     private var prevTargetName: String? = null
 
-    private val assassinMapHash = hashMapOf<String, String>()
-
-    fun fetchAssassinData() {
-        val json = JsonHandler(ResourceLocation("nameless", "assassins.json")).read(JsonObject())
-        assassinMapHash.putAll(json.entrySet().map { it.key to it.value.asString })
+    private val assassinMapHash by lazy {
+        JsonHandler(ResourceLocation("nameless", "assassins.json")).read(JsonObject()).entrySet()
+            .associate { it.key to it.value.asString }
     }
+
+    fun fetchAssassinData() = assassinMapHash
 
     private var glowGold by FeatureParameter(
         0,
@@ -300,7 +300,7 @@ object FeatureMurdererFinder : SimpleFeature(
                     heldItem = msg.itemStack
                 }
                 is S09PacketHeldItemChange -> {
-                    entityPlayer = mc.thePlayer
+                    entityPlayer = mc.thePlayer ?: return@subscribe
                     heldItem = mc.thePlayer.inventory.getStackInSlot(msg.heldItemHotbarIndex)
                 }
                 else -> return@subscribe

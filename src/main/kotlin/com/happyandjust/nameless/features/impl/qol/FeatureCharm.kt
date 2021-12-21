@@ -18,21 +18,33 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.dsl.clear
-import com.happyandjust.nameless.dsl.disableEntityShadow
-import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
+import net.minecraft.util.BlockPos
 import org.lwjgl.opengl.GL11
 
 object FeatureCharm : SimpleFeature(Category.QOL, "charm", "Charm", "Allow you to look players through walls") {
-
     fun render(partialTicks: Float) {
         clear(GL11.GL_DEPTH_BUFFER_BIT)
+
         disableEntityShadow {
-            for (player in mc.theWorld.playerEntities - mc.renderViewEntity) {
+            mc.entityRenderer.enableLightmap()
+            blendFunc(770, 771)
+            enableCull()
+            bindTexture(0)
+            color(-1f, -1f, -1f, -1f)
+
+            for (player in mc.theWorld.playerEntities.filter {
+                (it != mc.renderViewEntity || mc.gameSettings.thirdPersonView != 0 || it.isPlayerSleeping) &&
+                        (it.posY !in 0.0..256.0 || mc.theWorld.isBlockLoaded(BlockPos(it)))
+            }) {
                 mc.renderManager.renderEntitySimple(player, partialTicks)
             }
+            mc.entityRenderer.disableLightmap()
         }
+
+        disableCull()
+        color(1f, 1f, 1f, 0.5f)
     }
 }

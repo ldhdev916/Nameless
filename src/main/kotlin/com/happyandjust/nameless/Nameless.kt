@@ -38,10 +38,7 @@ import com.happyandjust.nameless.listener.WaypointListener
 import com.happyandjust.nameless.serialization.converters.getEnumConverter
 import com.happyandjust.nameless.utils.SkyblockUtils
 import gg.essential.api.commands.Command
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
@@ -76,11 +73,15 @@ object Nameless {
             mc.framebuffer.enableStencil()
         }
 
-        FeatureRegistry // init
-        FeatureGui() // init
+        FeatureGui()
+        val scope = CoroutineScope(Dispatchers.Default)
 
-        GlobalScope.launch {
+        val job = scope.launch {
+            FeatureRegistry
+        }
 
+        scope.launch(Dispatchers.IO) {
+            job.join()
             async { FeatureMurdererFinder.fetchAssassinData() }
 
             async { FeatureGTBHelper.fetchWordsData() }

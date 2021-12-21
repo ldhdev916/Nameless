@@ -19,7 +19,6 @@
 package com.happyandjust.nameless.utils
 
 import com.google.gson.Gson
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.Request
@@ -30,7 +29,6 @@ import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
-import com.happyandjust.nameless.serialization.converters.CFairySoul
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.nbt.CompressedStreamTools
@@ -46,41 +44,30 @@ import java.util.regex.Pattern
 import kotlin.math.pow
 
 object SkyblockUtils {
-    private val fairySoulMap = hashMapOf<String, List<FairySoul>>()
     private val gson = Gson()
-    val allItems = hashMapOf<String, SkyBlockItem>()
+    private val fairySoulMap by lazy {
+        JsonHandler(ResourceLocation("nameless", "fairysouls.json")).read(JsonObject())
+            .entrySet()
+            .associate { (key, value) ->
+                key to value.asJsonArray.map {
+                    val jsonObject = it.asJsonObject
+                    FairySoul(jsonObject["x"].asInt, jsonObject["y"].asInt, jsonObject["z"].asInt, key)
+                }
+            }
+    }
+    val allItems by lazy {
+        JsonHandler(Request.get("https://api.hypixel.net/resources/skyblock/items")).read(JsonObject())["items"].asJsonArray.associate {
+            val item = gson.fromJson(it, SkyBlockItem::class.java)
+
+            item.id to item
+        }
+    }
 
     fun getItemFromId(id: String) = allItems[id.uppercase()]
 
     fun fetchSkyBlockData() {
-        val handler = JsonHandler(ResourceLocation("nameless", "fairysouls.json"))
-
-        val souls = handler.read(JsonObject())
-
-        for ((island, fairySouls) in souls.entrySet()) {
-            if (fairySouls is JsonArray) {
-                val list = arrayListOf<FairySoul>()
-
-                for (coord in fairySouls) {
-                    if (coord is JsonObject) {
-                        // in json they don't have island property
-                        list.add(CFairySoul.deserialize(coord.apply { addProperty("island", island) }))
-                    }
-                }
-                fairySoulMap[island] = list
-            }
-        }
-
-        val s = Request.get("https://api.hypixel.net/resources/skyblock/items")
-
-        val json = JsonHandler(s).read(JsonObject())
-
-        val items = json["items"].asJsonArray
-
-        for (item in items) {
-            val skyBlockItem = gson.fromJson(item, SkyBlockItem::class.java)
-            allItems[skyBlockItem.id] = skyBlockItem
-        }
+        fairySoulMap
+        allItems
     }
 
     fun getAllFairySoulsByEntity(island: String): List<FairySoul> {

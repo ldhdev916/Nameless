@@ -18,10 +18,12 @@
 
 package com.happyandjust.nameless.features.impl.misc
 
+import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.gui.feature.PropertyData
+import com.happyandjust.nameless.serialization.converters.CInt
 import kotlin.reflect.KMutableProperty0
 
 object FeatureNoHurtCam : SimpleFeature(
@@ -31,7 +33,7 @@ object FeatureNoHurtCam : SimpleFeature(
     "Adjust the hurt animation when being hit(default 14)"
 ) {
 
-    var hurtCamModifier = 14
+    var hurtCamModifier by ConfigValue("hurtcam", "value", 14, CInt)
 
     override fun getComponentType(): ComponentType {
         return ComponentType.SLIDER

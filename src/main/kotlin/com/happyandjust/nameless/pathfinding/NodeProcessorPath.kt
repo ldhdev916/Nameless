@@ -55,7 +55,7 @@ class NodeProcessorPath(private val canFly: Boolean) : NodeProcessor() {
             timerTask {
                 shouldEnd = true
             },
-            800
+            300
         )
     }
 

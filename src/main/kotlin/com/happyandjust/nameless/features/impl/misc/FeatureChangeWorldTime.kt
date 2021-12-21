@@ -23,7 +23,6 @@ import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.serialization.converters.CInt
 import com.happyandjust.nameless.serialization.converters.getEnumConverter
-import gg.essential.vigilance.gui.Setting
 
 object FeatureChangeWorldTime : SimpleFeature(
     Category.MISCELLANEOUS,

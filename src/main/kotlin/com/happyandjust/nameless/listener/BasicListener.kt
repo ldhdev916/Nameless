@@ -69,7 +69,7 @@ object BasicListener {
                 MinecraftForge.EVENT_BUS.post(SpecialTickEvent())
             }
 
-        on<RenderGameOverlayEvent>().filter { type == RenderGameOverlayEvent.ElementType.BOSSHEALTH }.subscribe {
+        on<RenderGameOverlayEvent.Post>().filter { type == RenderGameOverlayEvent.ElementType.ALL }.subscribe {
             MinecraftForge.EVENT_BUS.post(SpecialOverlayEvent(partialTicks))
             color(1f, 1f, 1f, 1f)
         }

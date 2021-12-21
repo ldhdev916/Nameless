@@ -60,12 +60,12 @@ object FeatureGTBHelper : OverlayFeature(
 ) {
 
     // english, korean
-    private val words = hashMapOf<String, String>()
-
-    fun fetchWordsData() {
-        val jsonArray = JsonHandler(ResourceLocation("nameless", "words.json")).read(JsonArray())
-        words.putAll(jsonArray.map { it.asJsonObject }.map { it["english"].asString to it["korean"].asString })
+    private val words by lazy {
+        JsonHandler(ResourceLocation("nameless", "words.json")).read(JsonArray()).map { it.asJsonObject }
+            .associate { it["english"].asString to it["korean"].asString }
     }
+
+    fun fetchWordsData() = words
 
     private var translate by FeatureParameter(
         0,

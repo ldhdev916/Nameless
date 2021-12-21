@@ -41,18 +41,14 @@ object FeaturePlayTabComplete : SimpleFeature(
     true
 ) {
 
-    private val gameMap = hashMapOf<String, String>()
-    private val games = arrayListOf<String>()
-
-    fun fetchGameDataList() {
-        val json =
-            JsonHandler(Request.get("https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw")).read(
-                JsonObject()
-            )
-
-        gameMap.putAll(json.entrySet().map { it.key to it.value.asString })
-        games.addAll(gameMap.keys + gameMap.values)
+    private val gameMap by lazy {
+        JsonHandler(
+            Request.get("https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw")
+        ).read(JsonObject()).entrySet().associate { it.key to it.value.asString }
     }
+    private val games by lazy { gameMap.keys + gameMap.values }
+
+    fun fetchGameDataList() = games
 
     private val PLAY = "/play (?<msg>.*)".toPattern()
 

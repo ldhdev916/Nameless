@@ -26,6 +26,7 @@ import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockMonster
 import com.happyandjust.nameless.utils.SkyblockUtils
+import com.mojang.authlib.GameProfile
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import net.minecraft.block.Block
@@ -174,10 +175,11 @@ fun Throwable.notifyException() {
 fun ItemStack.getSkullOwner(): String {
 
     return if (hasTagCompound() && tagCompound.hasKey("SkullOwner")) {
-        NBTUtil.readGameProfileFromNBT(tagCompound.getCompoundTag("SkullOwner")).properties["textures"].find { it.name == "textures" }?.value
-            ?: ""
+        NBTUtil.readGameProfileFromNBT(tagCompound.getCompoundTag("SkullOwner")).getSkullOwner()
     } else ""
 }
+
+fun GameProfile.getSkullOwner() = properties["textures"]?.find { it.name == "textures" }?.value ?: ""
 
 suspend fun scanAuction(task: (List<AuctionInfo>) -> Unit) = coroutineScope {
     (0 until SkyblockUtils.getMaxAuctionPage())

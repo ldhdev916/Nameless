@@ -28,7 +28,15 @@ import java.awt.Color
 
 object FeatureChangeSkyColor : SimpleFeature(Category.MISCELLANEOUS, "changeskycolor", "Change Sky Color") {
 
-    var skyColor by FeatureParameter(0, "skycolor", "color", "Sky Color", "Alpha is not allowed", Color.black.toChromaColor(), CChromaColor)
+    var skyColor by FeatureParameter(
+        0,
+        "skycolor",
+        "color",
+        "Sky Color",
+        "Alpha is not allowed",
+        Color.black.toChromaColor(),
+        CChromaColor
+    )
     val convert
         get() = Vec3(skyColor.red / 255.0, skyColor.green / 255.0, skyColor.blue / 255.0)
 }

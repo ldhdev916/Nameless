@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
+import com.happyandjust.nameless.features.impl.qol.FeatureGiftESP;
 import com.happyandjust.nameless.features.impl.skyblock.FeatureChangeHelmetTexture;
 import com.happyandjust.nameless.features.impl.skyblock.FeatureEquipPetSkin;
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem;
@@ -63,5 +64,10 @@ public class MixinLayerCustomHead {
             GlStateManager.popMatrix();
             ci.cancel();
         }
+    }
+
+    @Inject(method = "doRenderLayer", at = @At("RETURN"))
+    public void espGifts(EntityLivingBase entitylivingbaseIn, float p_177141_2_, float p_177141_3_, float partialTicks, float p_177141_5_, float p_177141_6_, float p_177141_7_, float scale, CallbackInfo ci) {
+        FeatureGiftESP.checkAndRender(entitylivingbaseIn, partialTicks);
     }
 }

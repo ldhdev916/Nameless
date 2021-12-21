@@ -184,6 +184,7 @@ fun Rectangle.drawChromaRect(direction: Direction, startHue: Float = 0F, alpha: 
 
     disableTexture2D()
     enableBlend()
+    enableDepth()
     disableCull()
     shadeModel(GL11.GL_SMOOTH)
     tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO)

@@ -34,11 +34,17 @@ import com.happyandjust.nameless.hypixel.skyblock.Gemstone
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CInt
 import com.happyandjust.nameless.utils.RenderUtils
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.minecraft.init.Blocks
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
 import net.minecraftforge.client.event.RenderWorldLastEvent
+import kotlin.math.max
+import kotlin.math.min
 
+@OptIn(DelicateCoroutinesApi::class)
 object FeatureGemstoneESP : SimpleFeature(
     Category.SKYBLOCK,
     "gemstoneesp",
@@ -50,7 +56,7 @@ object FeatureGemstoneESP : SimpleFeature(
         enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty<String>(PropertyKey.ISLAND) == "crystal_hollows"
 
     private val scanTimer = TickTimer.withSecond(2)
-    private val gemstoneBlocks = hashMapOf<AxisAlignedBB, Int>()
+    private var gemstoneBlocks = mapOf<AxisAlignedBB, Int>()
     private val gemstoneBlockMap = Gemstone.values().associateBy { it.metadata }.toMap()
 
     private var radius by FeatureParameter(
@@ -63,7 +69,7 @@ object FeatureGemstoneESP : SimpleFeature(
         CInt
     ).also {
         it.minValue = 10.0
-        it.maxValue = 200.0
+        it.maxValue = 100.0
     }
 
     init {
@@ -84,31 +90,28 @@ object FeatureGemstoneESP : SimpleFeature(
         }
 
         on<SpecialTickEvent>().filter { checkForRequirement() && scanTimer.update().check() }.subscribe {
+            GlobalScope.launch {
+                val current = BlockPos(mc.thePlayer)
 
-            val current = BlockPos(mc.thePlayer)
+                val curX = current.x
+                val curY = current.y
+                val curZ = current.z
 
-            val curX = current.x
-            val curY = current.y
-            val curZ = current.z
+                val from = BlockPos(curX - radius, max(curY - radius, 0), curZ - radius)
+                val to = BlockPos(curX + radius, min(curY + radius, 255), curZ + radius)
+                gemstoneBlocks = buildMap {
+                    for (pos in BlockPos.getAllInBox(from, to)) {
+                        val blockState = mc.theWorld.getBlockState(pos)
+                        val block = blockState.block
 
-            val from = BlockPos.MutableBlockPos(curX - radius, curY - radius, curZ - radius)
-            val to = BlockPos.MutableBlockPos(curX + radius, curY + radius, curZ + radius)
-
-            if (from.y < 0) from.set(from.x, 0, from.z)
-            if (to.y > 255) to.set(to.x, 255, to.z)
-
-            gemstoneBlocks.clear()
-            for (pos in BlockPos.getAllInBox(from, to)) {
-                val blockState = mc.theWorld.getBlockState(pos)
-                val block = blockState.block
-
-                if (block in Blocks.stained_glass_pane to Blocks.stained_glass) {
-                    gemstoneBlocks[pos.getAxisAlignedBB()] =
-                        (gemstoneBlockMap[block.getMetaFromState(blockState)]
-                            ?.takeIf { getParameterValue(it.name.lowercase()) }
-                            ?: continue).color
+                        if (block in Blocks.stained_glass_pane to Blocks.stained_glass) {
+                            this[pos.getAxisAlignedBB()] =
+                                (gemstoneBlockMap[block.getMetaFromState(blockState)]
+                                    ?.takeIf { getParameterValue(it.name.lowercase()) }
+                                    ?: continue).color
+                        }
+                    }
                 }
-
             }
         }
 

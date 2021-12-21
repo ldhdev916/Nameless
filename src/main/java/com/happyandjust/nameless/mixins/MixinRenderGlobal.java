@@ -19,14 +19,14 @@
 package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.features.impl.misc.FeatureChangeSkyColor;
-import com.happyandjust.nameless.features.impl.qol.FeatureAFKMode;
+import com.happyandjust.nameless.features.impl.qol.FeatureCharm;
 import com.happyandjust.nameless.mixinhooks.RenderGlobalHook;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.culling.ICamera;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.EnumWorldBlockLayer;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -73,61 +73,10 @@ public class MixinRenderGlobal {
         return FeatureChangeSkyColor.INSTANCE.getEnabled() ? FeatureChangeSkyColor.INSTANCE.getConvert() : instance.getSkyColor(entity, partialTicks);
     }
 
-
-    // AFK
-
-    @Inject(method = "renderEntities", at = @At("HEAD"), cancellable = true)
-    public void stopRenderEntities(Entity renderViewEntity, ICamera camera, float partialTicks, CallbackInfo ci) {
-        if (FeatureAFKMode.INSTANCE.getEnabled()) ci.cancel();
+    @Redirect(method = "renderEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/RenderManager;renderEntitySimple(Lnet/minecraft/entity/Entity;F)Z", ordinal = 2))
+    public boolean cancelRendering(RenderManager instance, Entity entityIn, float partialTicks) {
+        if (!(entityIn instanceof EntityPlayer)) return instance.renderEntitySimple(entityIn, partialTicks);
+        return !FeatureCharm.INSTANCE.getEnabled() && instance.renderEntitySimple(entityIn, partialTicks);
     }
 
-    @Inject(method = "setupTerrain", at = @At("HEAD"), cancellable = true)
-    public void stopRenderBlocks(Entity viewEntity, double partialTicks, ICamera camera, int frameCount, boolean playerSpectator, CallbackInfo ci) {
-        if (FeatureAFKMode.INSTANCE.getEnabled()) ci.cancel();
-    }
-
-    @Inject(method = "renderStars", at = @At("HEAD"), cancellable = true)
-    public void stopRenderingStar(WorldRenderer worldRendererIn, CallbackInfo ci) {
-        if (FeatureAFKMode.INSTANCE.getEnabled()) ci.cancel();
-    }
-
-    @Inject(method = "renderClouds", at = @At("HEAD"), cancellable = true)
-    public void stopRenderingClouds(float partialTicks, int pass, CallbackInfo ci) {
-        if (FeatureAFKMode.INSTANCE.getEnabled()) ci.cancel();
-    }
-
-    @Inject(method = "renderSky(FI)V", at = @At("HEAD"), cancellable = true)
-    public void stopRenderingSky1(float partialTicks, int pass, CallbackInfo ci) {
-        if (FeatureAFKMode.INSTANCE.getEnabled()) ci.cancel();
-    }
-
-    @Inject(method = "renderSky(Lnet/minecraft/client/renderer/WorldRenderer;FZ)V", at = @At("HEAD"), cancellable = true)
-    public void stopRenderingSky2(WorldRenderer worldRendererIn, float posY, boolean reverseX, CallbackInfo ci) {
-        if (FeatureAFKMode.INSTANCE.getEnabled()) ci.cancel();
-    }
-
-    @Inject(method = "renderBlockLayer(Lnet/minecraft/util/EnumWorldBlockLayer;DILnet/minecraft/entity/Entity;)I", at = @At("HEAD"), cancellable = true)
-    public void stopRenderingBlockLayer1(EnumWorldBlockLayer blockLayerIn, double partialTicks, int pass, Entity entityIn, CallbackInfoReturnable<Integer> cir) {
-        if (FeatureAFKMode.INSTANCE.getEnabled()) cir.setReturnValue(0);
-    }
-
-    @Inject(method = "renderBlockLayer(Lnet/minecraft/util/EnumWorldBlockLayer;)V", at = @At("HEAD"), cancellable = true)
-    public void stopRenderingBlockLayer2(EnumWorldBlockLayer blockLayerIn, CallbackInfo ci) {
-        if (FeatureAFKMode.INSTANCE.getEnabled()) ci.cancel();
-    }
-
-    @Inject(method = "generateSky", at = @At("HEAD"), cancellable = true)
-    public void stopGeneratingSky(CallbackInfo ci) {
-        if (FeatureAFKMode.INSTANCE.getEnabled()) ci.cancel();
-    }
-
-    @Inject(method = "generateSky2", at = @At("HEAD"), cancellable = true)
-    public void stopGeneratingSky2(CallbackInfo ci) {
-        if (FeatureAFKMode.INSTANCE.getEnabled()) ci.cancel();
-    }
-
-    @Inject(method = "generateStars", at = @At("HEAD"), cancellable = true)
-    public void stopGeneratingStars(CallbackInfo ci) {
-        if (FeatureAFKMode.INSTANCE.getEnabled()) ci.cancel();
-    }
 }

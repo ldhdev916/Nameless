@@ -25,12 +25,14 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import kotlin.reflect.KClass
+import kotlin.reflect.full.memberFunctions
+import kotlin.reflect.full.staticProperties
+import kotlin.reflect.jvm.isAccessible
 
 private val createdHandlers = hashMapOf<KClass<out Event>, Handler<out Event>>()
-
 private val classLoader =
-    ASMEventHandler::class.java.getDeclaredField("LOADER").apply { isAccessible = true }[null] as ClassLoader
-//private val defineMethod = classLoader.javaClass.getDeclaredMethod("define", String::class.java, ByteArray::class.java)
+    ASMEventHandler::class.staticProperties.first { it.name == "LOADER" }.apply { isAccessible = true }
+        .call() as ClassLoader
 
 class SubscriptionBuilder<T : Event>(private val eventClass: KClass<T>) {
 
@@ -159,16 +161,12 @@ class Handler<T : Event>(private val eventClass: Class<T>) {
 
 object ASMClassLoader : ClassLoader(classLoader) {
 
-    private val defineClassMethod = ClassLoader::class.java.getDeclaredMethod(
-        "defineClass",
-        String::class.java,
-        ByteArray::class.java,
-        Int::class.java,
-        Int::class.java
-    ).apply { isAccessible = true }
+    private val defineClassMethod = ClassLoader::class.memberFunctions.first {
+        it.name == "defineClass" && it.parameters.size == 5
+    }.apply { isAccessible = true }
 
     fun define(name: String, data: ByteArray): Class<*> =
-        defineClassMethod(classLoader, name, data, 0, data.size) as Class<*>
+        defineClassMethod.call(classLoader, name, data, 0, data.size) as Class<*>
 }
 
 inline fun <reified T : Event> on() = SubscriptionBuilder(T::class)
