@@ -18,17 +18,17 @@
 
 package com.happyandjust.nameless.commands
 
-import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.getNameHistory
+import com.happyandjust.nameless.dsl.getUUID
 import com.happyandjust.nameless.dsl.sendClientMessage
 import com.happyandjust.nameless.dsl.sendPrefixMessage
-import gg.essential.api.EssentialAPI
 import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.commands.DisplayName
+import gg.essential.api.utils.Multithreading
 import gg.essential.api.utils.mojang.Name
+import gg.essential.elementa.dsl.width
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.util.*
 
 object NameHistoryCommand : Command("name") {
@@ -59,27 +59,23 @@ object NameHistoryCommand : Command("name") {
     @OptIn(DelicateCoroutinesApi::class)
     @DefaultHandler
     fun handle(@DisplayName("Player Name") name: String) {
-        GlobalScope.launch {
-            val uuid = EssentialAPI.getMojangAPI().getUUID(name)?.get() ?: run {
+        Multithreading.runAsync {
+            val uuid = name.getUUID() ?: run {
                 sendPrefixMessage("§cFailed to get $name's uuid")
-                return@launch
+                return@runAsync
             }
 
-            val nameHistories = EssentialAPI.getMojangAPI().getNameHistory(uuid) ?: run {
+            val nameHistories = uuid.getNameHistory() ?: run {
                 sendPrefixMessage("§cFailed to get $name's Name History")
-                return@launch
+                return@runAsync
             }
 
-            val fontRenderer = mc.fontRendererObj
-
-            val nameHistoryTexts = nameHistories.filterNotNull().map(transformNameHistoryToString)
-
-            if (nameHistoryTexts.isEmpty()) {
+            val nameHistoryTexts = nameHistories.map(transformNameHistoryToString).ifEmpty {
                 sendPrefixMessage("§cSomething went wrong! Try again")
-                return@launch
+                return@runAsync
             }
 
-            val dash = "§6${getDashAsLongestString(nameHistoryTexts.maxOf { fontRenderer.getStringWidth(it) })}"
+            val dash = "§6${getDashAsLongestString(nameHistoryTexts.maxOf(String::width))}"
 
             sendClientMessage(dash)
             sendClientMessage(nameHistoryTexts.joinToString("\n"))
@@ -88,15 +84,5 @@ object NameHistoryCommand : Command("name") {
         }
     }
 
-    private fun getDashAsLongestString(longestWidth: Int): String {
-        val builder = StringBuilder()
-
-        val fontRenderer = mc.fontRendererObj
-
-        while (fontRenderer.getStringWidth(builder.toString()) <= longestWidth) {
-            builder.append("-")
-        }
-
-        return builder.toString()
-    }
+    private fun getDashAsLongestString(longestWidth: Float) = "-".repeat((longestWidth / "-".width()).toInt())
 }

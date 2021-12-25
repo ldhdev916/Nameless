@@ -18,42 +18,50 @@
 
 package com.happyandjust.nameless.gui
 
-import com.happyandjust.nameless.gui.feature.ColorCache
-import gg.essential.elementa.components.UIBlock
-import gg.essential.elementa.components.UIText
+import gg.essential.elementa.components.UIContainer
+import gg.essential.elementa.components.UIImage
+import gg.essential.elementa.constraints.AspectConstraint
 import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.constraints.animation.Animations
 import gg.essential.elementa.dsl.*
 import gg.essential.elementa.effects.OutlineEffect
 import gg.essential.elementa.utils.withAlpha
 import gg.essential.vigilance.utils.onLeftClick
+import java.awt.Color
 
+class RemoveButton(action: () -> Unit) : UIContainer() {
 
-class ActionButton(text: String, action: ActionButton.() -> Unit) :
-    UIBlock(ColorCache.brightDivider.withAlpha(0.2f)) {
+    private val image = UIImage.ofResource("/nameless/xmark.png").constrain {
+        x = CenterConstraint()
+        y = CenterConstraint()
+
+        width = 80.percent()
+        height = AspectConstraint()
+
+        color = Color.red.withAlpha(0.7f).constraint
+    } childOf this
 
     init {
-        effect(OutlineEffect(ColorCache.accent, 1f))
 
-        UIText(text).constrain {
-            x = CenterConstraint()
-            y = CenterConstraint()
-        } childOf this
+        constrain {
+            width = 20.pixels()
+            height = 20.pixels()
+        }
+
+        effect(OutlineEffect(Color.red, 1f))
+
+        onLeftClick { action() }
 
         onMouseEnter {
-            animate {
-                setColorAnimation(Animations.OUT_EXP, .5f, ColorCache.brightDivider.withAlpha(0.8f).constraint)
+            image.animate {
+                setColorAnimation(Animations.OUT_EXP, .5f, Color.red.constraint)
             }
         }
 
         onMouseLeave {
-            animate {
-                setColorAnimation(Animations.OUT_EXP, .5f, ColorCache.brightDivider.withAlpha(0.2f).constraint)
+            image.animate {
+                setColorAnimation(Animations.OUT_EXP, .5f, Color.red.withAlpha(0.7f).constraint)
             }
-        }
-
-        onLeftClick {
-            action()
         }
     }
 }

@@ -19,56 +19,46 @@
 package com.happyandjust.nameless.commands
 
 import com.google.gson.Gson
-import com.google.gson.JsonArray
-import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.dsl.repeat0
+import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.gui.shortcmd.ShortCommandGui
-import com.happyandjust.nameless.serialization.Converter
-import gg.essential.api.EssentialAPI
+import com.happyandjust.nameless.serialization.converters.CList
 import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
+import gg.essential.api.utils.GuiUtil
 import net.minecraft.network.play.client.C01PacketChatMessage
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import java.util.regex.Pattern
 
 object ShortCommand : Command("shortcommand") {
 
     private val gson = Gson()
-    var shortCommandInfos by ConfigValue("shortcommand", "list", emptyList(), CShortCommandInfoList)
+    var shortCommandInfos by ConfigValue("shortcommand", "list", emptyList(), CList<ShortCommandInfo>({
+        gson.fromJson(gson.toJson(it), JsonObject::class.java)
+    }) { gson.fromJson(it, ShortCommandInfo::class.java) })
 
     override val commandAliases = hashSetOf(Alias("shortcmd"))
 
     init {
-        MinecraftForge.EVENT_BUS.register(this)
+        on<PacketEvent.Sending>().subscribe {
+            packet.withInstance<C01PacketChatMessage> {
+                val (shortCommandInfo, matcher) = shortCommandInfos.map { it to it.pair.first.matcher(message) }
+                    .find { it.second.matches() } ?: return@subscribe
+
+                val groups = repeat0(shortCommandInfo.pair.second) { matcher.group("g$it") }
+                val newText = groups.fold(shortCommandInfo.origin) { acc, s -> acc.replaceFirst("{}", s) }
+                packet = C01PacketChatMessage(newText)
+            }
+        }
     }
 
     @DefaultHandler
     fun handle() {
-        EssentialAPI.getGuiUtil().openScreen(ShortCommandGui())
-    }
-
-    @SubscribeEvent
-    fun onPacketSending(e: PacketEvent.Sending) {
-        val msg = e.packet
-
-        if (msg is C01PacketChatMessage) {
-            val (shortCommandInfo, matcher) = shortCommandInfos.map { it to it.pair.first.matcher(msg.message) }
-                .find { it.second.matches() } ?: return
-
-            val groups = (0 until shortCommandInfo.pair.second).map { matcher.group("g$it") }
-            var newString = shortCommandInfo.origin
-
-            for (group in groups) {
-                newString = newString.replaceFirst("{}", group)
-            }
-
-            e.packet = C01PacketChatMessage(newString)
-
-        }
+        GuiUtil.open(ShortCommandGui())
     }
 
     data class ShortCommandInfo(
@@ -86,31 +76,6 @@ object ShortCommand : Command("shortcommand") {
 
                 return newString.toPattern() to index
             }
-    }
-
-    object CShortCommandInfoList : Converter<List<ShortCommandInfo>> {
-
-        override fun serialize(t: List<ShortCommandInfo>): JsonElement {
-            val jsonArray = JsonArray()
-
-            for (shortCommandInfo in t) {
-                jsonArray.add(gson.fromJson(gson.toJson(shortCommandInfo), JsonObject::class.java))
-            }
-
-            return jsonArray
-        }
-
-        override fun deserialize(jsonElement: JsonElement): List<ShortCommandInfo> {
-            val list = arrayListOf<ShortCommandInfo>()
-
-            for (jsonObject in jsonElement.asJsonArray) {
-                list.add(gson.fromJson(jsonObject, ShortCommandInfo::class.java))
-            }
-
-            return list
-        }
-
-
     }
 
 }

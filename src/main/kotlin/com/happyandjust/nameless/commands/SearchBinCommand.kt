@@ -18,15 +18,11 @@
 
 package com.happyandjust.nameless.commands
 
-import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.scanAuction
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.gui.auction.AuctionGui
 import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
-import gg.essential.api.commands.Command
-import gg.essential.api.commands.DefaultHandler
-import gg.essential.api.commands.DisplayName
-import gg.essential.api.commands.Greedy
+import gg.essential.api.commands.*
 import gg.essential.api.utils.GuiUtil
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -35,9 +31,6 @@ import net.minecraft.event.ClickEvent
 import net.minecraft.event.HoverEvent
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.ChatStyle
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent
 
 object SearchBinCommand : Command("searchbin") {
 
@@ -45,15 +38,7 @@ object SearchBinCommand : Command("searchbin") {
 
     @OptIn(DelicateCoroutinesApi::class)
     @DefaultHandler
-    fun handle(@DisplayName("Item Name") @Greedy name: String?) {
-        name ?: run {
-            openGui?.let {
-                GuiUtil.open(it())
-                return
-            }
-            sendPrefixMessage("§cUsage: /searchbin [Item Name]")
-            return
-        }
+    fun handle(@DisplayName("Item Name") @Greedy name: String) {
         sendPrefixMessage("§aSearching $name...")
 
         GlobalScope.launch {
@@ -79,7 +64,7 @@ object SearchBinCommand : Command("searchbin") {
                     val hoverText = ChatComponentText("§aClick Here to View Items!")
 
                     chatStyle = ChatStyle()
-                        .setChatClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/searchbin"))
+                        .setChatClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/searchbin opengui"))
                         .setChatHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))
                 }
 
@@ -89,10 +74,12 @@ object SearchBinCommand : Command("searchbin") {
         }
     }
 
-    @SubscribeEvent
-    fun onRenderTick(e: TickEvent.RenderTickEvent) {
-        mc.displayGuiScreen(openGui?.invoke())
-        MinecraftForge.EVENT_BUS.unregister(this)
+    @SubCommand("opengui")
+    fun openGui() {
+        openGui?.let {
+            GuiUtil.open(it())
+            return
+        }
     }
 
 }

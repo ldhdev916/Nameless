@@ -264,6 +264,12 @@ object FeaturePartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper",
 
             partyGameType = type
         }
+
+        runCatching {
+            getFilter(object : Processor() {
+                override val filter = { false }
+            }) // weird but this is the way to initialize all processors
+        }
     }
 
     fun getFilter(processor: Processor) = when (processor) {

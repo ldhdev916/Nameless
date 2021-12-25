@@ -18,8 +18,18 @@
 
 package com.happyandjust.nameless.features
 
-abstract class AbstractDefaultFeature(val key: String, val title: String, val desc: String) : IHasComponentType {
+import com.happyandjust.nameless.gui.feature.ComponentType
+import com.happyandjust.nameless.gui.feature.PropertyData
+import kotlin.reflect.KMutableProperty0
+
+abstract class AbstractDefaultFeature(val key: String, val title: String, val desc: String) {
     val parameters = hashMapOf<String, FeatureParameter<*>>()
+
+    abstract fun getComponentType(): ComponentType?
+
+    abstract fun getProperty(): KMutableProperty0<*>
+
+    abstract fun toPropertyData(): PropertyData<*>
 
     init {
         allDefaultFeatures.add(this)

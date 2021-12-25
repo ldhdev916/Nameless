@@ -22,7 +22,6 @@ import java.io.DataOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
-import java.net.MalformedURLException
 import java.net.URL
 
 object Request {
@@ -64,20 +63,8 @@ object Request {
         }
     }
 
-    private fun connect(url: String): HttpURLConnection = try {
-        URL(url).openConnection() as HttpURLConnection
-    } catch (e: MalformedURLException) {
-        throw RuntimeException(e)
-    } catch (e: IOException) {
-        throw RuntimeException(e)
-    }
+    private fun connect(url: String) = URL(url).openConnection() as HttpURLConnection
 
-    private fun readBody(body: InputStream): String {
-        return try {
-            body.bufferedReader().readLines().joinToString("\n")
-        } catch (e: IOException) {
-            throw RuntimeException(e)
-        }
-    }
+    private fun readBody(body: InputStream) = body.bufferedReader().readLines().joinToString("\n")
 
 }

@@ -28,7 +28,6 @@ import com.happyandjust.nameless.features.impl.qol.FeatureGTBHelper
 import com.happyandjust.nameless.features.impl.qol.FeatureMurdererFinder
 import com.happyandjust.nameless.features.impl.qol.FeaturePlayTabComplete
 import com.happyandjust.nameless.features.impl.skyblock.FeatureEquipPetSkin
-import com.happyandjust.nameless.gui.feature.FeatureGui
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.keybinding.NamelessKeyBinding
 import com.happyandjust.nameless.listener.BasicListener
@@ -73,10 +72,9 @@ object Nameless {
             mc.framebuffer.enableStencil()
         }
 
-        FeatureGui()
         val scope = CoroutineScope(Dispatchers.Default)
 
-        val job = scope.launch {
+        val job = scope.launch { // init async as it takes long (KReflection)
             FeatureRegistry
         }
 
@@ -101,7 +99,8 @@ object Nameless {
             WaypointCommand,
             ViewStatCommand,
             ChangeHelmetTextureCommand,
-            ShortCommand
+            ShortCommand,
+            PathFindCommand
         )
 
         BasicListener

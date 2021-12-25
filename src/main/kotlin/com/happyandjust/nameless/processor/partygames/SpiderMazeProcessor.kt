@@ -19,6 +19,8 @@
 package com.happyandjust.nameless.processor.partygames
 
 import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.dsl.getBlockAtPos
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.PartyGameChangeEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
@@ -27,6 +29,7 @@ import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.pathfinding.ModPathFinding
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
+import net.minecraft.block.BlockWeb
 import net.minecraft.util.BlockPos
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
@@ -41,7 +44,11 @@ object SpiderMazeProcessor : Processor() {
 
     init {
         request<SpecialTickEvent>().filter { pathTimer.update().check() }.subscribe {
-            mazePath = mazeEnds.map { ModPathFinding(it, false).findPath() }.minByOrNull { it.size }!!
+            mazePath = mazeEnds.map {
+                ModPathFinding(it, false, additionalValidCheck = { pos ->
+                    mc.theWorld.getBlockAtPos(pos) !is BlockWeb
+                }).findPath()
+            }.minByOrNull { it.size }!!
         }
 
         request<RenderWorldLastEvent>().subscribe {

@@ -37,6 +37,9 @@ import com.happyandjust.nameless.pathfinding.ModPathFinding
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.utils.RenderUtils
 import com.happyandjust.nameless.utils.SkyblockUtils
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.network.play.client.C02PacketUseEntity
 import net.minecraft.util.BlockPos
@@ -44,6 +47,7 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 
+@OptIn(DelicateCoroutinesApi::class)
 object FeatureFairySoulWaypoint : SimpleFeature(
     Category.SKYBLOCK,
     "fairysoulwaypoint",
@@ -103,13 +107,14 @@ object FeatureFairySoulWaypoint : SimpleFeature(
                     FairySoulProfileCache.currentlyLoadedProfile.foundFairySouls[currentSkyblockIsland] ?: emptyList()
 
                 if (showPath && pathTimer.update().check()) {
-                    currentIslandFairySouls
-                        .filter { fairySoul -> fairySoul !in foundFairySoulsInThisProfile }
+                    (currentIslandFairySouls - foundFairySoulsInThisProfile.toSet())
                         .takeIf { list -> list.any() && !pathFreezed }
                         ?.map(FairySoul::toBlockPos)
                         ?.minByOrNull(mc.thePlayer::getDistanceSq)
                         ?.let { blockPos ->
-                            fairySoulPaths = ModPathFinding(blockPos, true).findPath()
+                            GlobalScope.launch {
+                                fairySoulPaths = ModPathFinding(blockPos, true).findPath()
+                            }
                         }
                 }
             } ?: run {
@@ -138,8 +143,7 @@ object FeatureFairySoulWaypoint : SimpleFeature(
                     val entity = getEntityFromWorld(mc.theWorld)
                     if (entity is EntityArmorStand && entity.isFairySoul()) {
                         FairySoulProfileCache.currentlyLoadedProfile.addFoundFairySoul(
-                            currentSkyblockIsland ?: return@subscribe,
-                            BlockPos(entity.posX, entity.posY + 2, entity.posZ)
+                            entity.getNearestPossibleFairySoul() ?: return@subscribe
                         )
                     }
                 }
@@ -156,5 +160,10 @@ object FeatureFairySoulWaypoint : SimpleFeature(
                 }
             }
     }
+
+    private fun EntityArmorStand.getNearestPossibleFairySoul() =
+        currentIslandFairySouls.sortedBy { getDistanceSq(it.toBlockPos()) }.firstOrNull {
+            getDistanceSq(it.toBlockPos()) < 4
+        }
 
 }

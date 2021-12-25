@@ -30,4 +30,7 @@ public interface AccessorGuiContainer {
 
     @Accessor
     int getGuiTop();
+
+    @Accessor
+    int getYSize();
 }

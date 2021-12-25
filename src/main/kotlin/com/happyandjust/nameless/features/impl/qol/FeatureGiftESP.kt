@@ -23,6 +23,7 @@ import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.PacketEvent
+import com.happyandjust.nameless.events.SpecialOverlayEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
@@ -84,6 +85,16 @@ object FeatureGiftESP : SimpleFeature(Category.QOL, "giftesp", "Gift ESP") {
 
     private var murderMystery by FeatureParameter(1, "giftesp", "murder", "Enable Murder Mystery", "", false, CBoolean)
 
+    private var renderDirectionArrow by FeatureParameter(
+        0,
+        "giftesp",
+        "direction",
+        "Render Direction Arrow to Nearest Gift",
+        "",
+        false,
+        CBoolean
+    )
+
     private var currentGiftGameType: GiftGameType? = null
 
     private val giftArmorStands = hashSetOf<EntityArmorStand>()
@@ -137,6 +148,18 @@ object FeatureGiftESP : SimpleFeature(Category.QOL, "giftesp", "Gift ESP") {
         on<HypixelServerChangeEvent>().subscribe {
             foundGiftsPositions.clear()
         }
+
+        on<SpecialOverlayEvent>().filter { enabled && renderDirectionArrow }.subscribe {
+            val targets = when (currentGiftGameType) {
+                GiftGameType.JERRY_WORKSHOP -> giftArmorStands.map { BlockPos(it).up(2) }
+                GiftGameType.GRINCH_SIMULATOR, GiftGameType.MURDER_MYSTERY, GiftGameType.LOBBY -> giftTileEntities.map { it.pos }
+                else -> return@subscribe
+            } - foundGiftsPositions
+
+            RenderUtils.drawDirectionArrow(
+                targets.minByOrNull(mc.thePlayer::getDistanceSq)?.toVec3() ?: return@subscribe, Color.red.rgb
+            )
+        }//  196 7 -17
     }
 
     private fun check(skullOwner: String?) =

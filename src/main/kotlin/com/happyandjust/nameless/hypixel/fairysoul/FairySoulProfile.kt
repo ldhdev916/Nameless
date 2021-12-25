@@ -20,23 +20,20 @@ package com.happyandjust.nameless.hypixel.fairysoul
 
 import com.happyandjust.nameless.config.ConfigHandler
 import com.happyandjust.nameless.serialization.converters.CFairySoulProfile
-import net.minecraft.util.BlockPos
 
 class FairySoulProfile(val name: String, val foundFairySouls: HashMap<String, List<FairySoul>>) {
 
-    fun addFoundFairySoul(island: String, fairySoulPosition: BlockPos) {
+    fun addFoundFairySoul(fairySoul: FairySoul) {
 
-        if (island == "dungeon") return
+        if (fairySoul.island == "dungeon") return
 
-        val existing = foundFairySouls[island]?.toMutableList() ?: arrayListOf()
+        val existing = foundFairySouls[fairySoul.island]?.toMutableList() ?: arrayListOf()
 
-        val fairySoul = FairySoul(fairySoulPosition.x, fairySoulPosition.y, fairySoulPosition.z, island)
-
-        if (existing.contains(fairySoul)) return
+        if (fairySoul in existing) return
 
         existing.add(fairySoul)
 
-        foundFairySouls[island] = existing
+        foundFairySouls[fairySoul.island] = existing
 
         ConfigHandler.write("profiles", name, this, CFairySoulProfile)
     }

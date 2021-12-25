@@ -118,7 +118,7 @@ object FeatureBedwarsRayTraceBed : OverlayFeature(
                     )) {
                         val block = mc.theWorld.getBlockAtPos(pos)
 
-                        if (!blackListBlock.contains(block)) {
+                        if (block !in blackListBlock) {
                             block.collisionRayTrace(mc.theWorld, pos, start, end)?.let {
                                 collides.add(pos)
                             }

@@ -18,8 +18,7 @@
 
 package com.happyandjust.nameless.gui
 
-import com.happyandjust.nameless.dsl.formatDouble
-import com.happyandjust.nameless.dsl.transformToPrecision
+import com.happyandjust.nameless.dsl.transformToPrecisionString
 import com.happyandjust.nameless.gui.feature.ColorCache
 import com.happyandjust.nameless.utils.Utils
 import gg.essential.api.EssentialAPI
@@ -55,6 +54,14 @@ class UpdateGui(markDownText: String) : WindowScreen(
         height = 75.percent()
     } childOf window
 
+    private val buttonContainer = UIContainer().constrain {
+        width = 100.percent()
+
+        y = SiblingConstraint()
+
+        height = FillConstraint(false)
+    } childOf window
+
     private val scroller = ScrollComponent(customScissorBoundingBox = markDownContainer).constrain {
         width = 100.percent()
         height = 100.percent()
@@ -64,14 +71,6 @@ class UpdateGui(markDownText: String) : WindowScreen(
         x = SiblingConstraint()
         width = 3.pixels()
     } childOf markDownContainer
-
-    private val buttonContainer = UIContainer().constrain {
-        width = 100.percent()
-
-        y = SiblingConstraint()
-
-        height = FillConstraint(false)
-    } childOf window
 
     private val updateMessage = UIText().constrain {
         x = CenterConstraint()
@@ -197,8 +196,8 @@ class UpdateGui(markDownText: String) : WindowScreen(
             set(value) {
                 field = value.coerceIn(0.0, 1.0)
 
-                progressBar.constraints.width = (field * 100).percent()
-                progressText.setText("${(field * 100).transformToPrecision(2).formatDouble()}%")
+                progressBar.constraints.width = RelativeConstraint(field.toFloat())
+                progressText.setText("${(field * 100).transformToPrecisionString(2)}%")
             }
 
 

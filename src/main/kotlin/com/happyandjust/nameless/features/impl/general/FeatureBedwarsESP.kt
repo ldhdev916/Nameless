@@ -22,6 +22,7 @@ import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.dsl.instanceOrNull
 import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.dsl.withAlpha
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
@@ -66,10 +67,7 @@ object FeatureBedwarsESP : SimpleFeature(
                     val item = chestplate.item
 
                     if (item !is ItemArmor || item.armorMaterial != ItemArmor.ArmorMaterial.LEATHER) continue
-
-                    val color = item.getColor(chestplate) or 0xFF000000.toInt()
-
-                    teamColorCache[player] = color
+                    teamColorCache[player] = item.getColor(chestplate).withAlpha(1f)
                 }
             }
 

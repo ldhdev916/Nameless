@@ -84,6 +84,9 @@ class ArrowTrajectoryPreview : TrajectoryPreview() {
                 posY += motionY / num
                 posZ += motionZ / num
             }
+            repeat(1) {
+
+            }
 
             val f4 = if (isInWater()) 0.6F else 0.99F
 

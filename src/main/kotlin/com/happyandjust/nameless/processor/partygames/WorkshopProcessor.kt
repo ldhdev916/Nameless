@@ -85,9 +85,7 @@ object WorkshopProcessor : Processor() {
     override val filter = FeaturePartyGamesHelper.getFilter(this)
 
     private inline fun firstTask(action: WorkshopTask.() -> Unit) {
-        if (tasks.isNotEmpty()) {
-            tasks[0].action()
-        }
+        tasks.firstOrNull()?.action()
     }
 
     init {

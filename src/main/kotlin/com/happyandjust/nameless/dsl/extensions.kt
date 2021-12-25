@@ -24,15 +24,14 @@ import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
-import com.happyandjust.nameless.hypixel.skyblock.SkyBlockMonster
 import com.happyandjust.nameless.utils.SkyblockUtils
 import com.mojang.authlib.GameProfile
+import gg.essential.api.EssentialAPI
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import net.minecraft.block.Block
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTUtil
@@ -88,32 +87,6 @@ fun ItemStack?.getSkyBlockRarity(): ItemRarity? {
 
 fun String.getMD5() =
     md5Cache.getOrPut(this) { md.digest(toByteArray()).joinToString("") { String.format("%02x", it) } }
-
-fun <T : EntityLivingBase> T.toSkyBlockMonster(): SkyBlockMonster<T>? {
-    val identification = SkyblockUtils.getIdentifyArmorStand(this) ?: return null
-
-    val matcher = SkyblockUtils.matchesName(identification, SkyblockUtils.getDefaultPattern())
-
-    val convertHealth: String.() -> Int = {
-        when {
-            endsWith("k") -> dropLast(1).toInt() * 1000
-            endsWith("M") -> dropLast(1).toInt() * 100_0000
-            else -> toInt()
-        }
-    }
-
-    if (matcher.matches()) {
-        return SkyBlockMonster(
-            matcher.group("name"),
-            matcher.group("level").toInt(),
-            matcher.group("current").convertHealth(),
-            matcher.group("health").convertHealth(),
-            this,
-            identification
-        )
-    }
-    return null
-}
 
 fun String.copyToClipboard() =
     Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(this), null)
@@ -182,10 +155,11 @@ fun ItemStack.getSkullOwner(): String {
 fun GameProfile.getSkullOwner() = properties["textures"]?.find { it.name == "textures" }?.value ?: ""
 
 suspend fun scanAuction(task: (List<AuctionInfo>) -> Unit) = coroutineScope {
-    (0 until SkyblockUtils.getMaxAuctionPage())
-        .map {
-            async { runCatching { SkyblockUtils.getAuctionDataInPage(it) }.getOrDefault(emptyList()) }
+    repeat0(SkyblockUtils.getMaxAuctionPage()) {
+        async {
+            runCatching { SkyblockUtils.getAuctionDataInPage(it) }.getOrDefault(emptyList())
         }
+    }
         .map { it.await() }
         .flatten()
         .let(task)
@@ -229,3 +203,8 @@ inline fun <reified E> Any?.withInstance(action: E.() -> Unit) {
 fun Event.cancel() = apply {
     isCanceled = true
 }
+
+fun String.getUUID() = runCatching { EssentialAPI.getMojangAPI().getUUID(this)?.get() }.getOrNull()
+
+fun UUID.getNameHistory() =
+    runCatching { EssentialAPI.getMojangAPI().getNameHistory(this) }.getOrNull()?.filterNotNull()

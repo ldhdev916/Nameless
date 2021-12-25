@@ -21,18 +21,17 @@ package com.happyandjust.nameless.commands
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.Request
+import com.happyandjust.nameless.dsl.getUUID
 import com.happyandjust.nameless.dsl.notifyException
 import com.happyandjust.nameless.dsl.sendClientMessage
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.features.impl.qol.FeatureInGameStatViewer
 import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
-import gg.essential.api.EssentialAPI
 import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.commands.DisplayName
+import gg.essential.api.utils.Multithreading
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import net.minecraft.util.EnumChatFormatting
 
 object ViewStatCommand : Command("viewstat") {
@@ -40,14 +39,13 @@ object ViewStatCommand : Command("viewstat") {
     @OptIn(DelicateCoroutinesApi::class)
     @DefaultHandler
     fun handle(@DisplayName("Name") name: String) {
-        GlobalScope.launch {
-            val uuid = EssentialAPI.getMojangAPI().getUUID(name)?.get() ?: run {
+        Multithreading.runAsync {
+            val uuid = name.getUUID() ?: run {
                 sendPrefixMessage("§cFailed to get uuid of $name")
-                return@launch
+                return@runAsync
             }
 
-            val identifiers = FeatureInGameStatViewer.order.map { it }
-                .filter { it.supportGame.shouldDisplay() }
+            val identifiers = FeatureInGameStatViewer.order.filter { it.supportGame.shouldDisplay() }
 
             runCatching {
                 val s = Request.get("https://api.hypixel.net/player?key=${FeatureHypixelAPIKey.apiKey}&uuid=$uuid")

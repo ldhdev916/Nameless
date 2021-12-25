@@ -29,7 +29,8 @@ enum class KeyBindingCategory(val desc: String, val key: Int) {
     GHOST_BLOCK("Ghost Block", Keyboard.KEY_X),
     ACCEPT_PARTY("Accept Party", Keyboard.KEY_Y),
     DENY_PARTY("Deny Party", Keyboard.KEY_N),
-    FREEZE_WAYPOINT_PATH("Freeze Waypoint Paths", Keyboard.KEY_NONE);
+    FREEZE_WAYPOINT_PATH("Freeze Waypoint Paths", Keyboard.KEY_NONE),
+    BLOCK_MOVEMENT_PACKET("Block Movement Packet", Keyboard.KEY_NONE);
 
     fun getKeyBinding() = Nameless.keyBindings[this]!!
 }

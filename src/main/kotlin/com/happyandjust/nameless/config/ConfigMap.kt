@@ -28,37 +28,31 @@ open class ConfigMap<V>(
     private val category: String,
     defaultValue: V,
     private val converter: Converter<V>
-) : HashMap<String, V>() {
+) {
 
-    init {
-        for (key in ConfigHandler.getKeys(category)) {
-            super.put(key, ConfigHandler.get(category, key, defaultValue, converter))
-        }
-    }
+    private val internalMap =
+        ConfigHandler.getKeys(category).associateWith { ConfigHandler.get(category, it, defaultValue, converter) }
+            .toMutableMap()
 
-    override fun remove(key: String): V? {
-        ConfigHandler.deleteKey(category, key)
-        return super.remove(key)
-    }
-
-    override fun remove(key: String, value: V): Boolean {
-        ConfigHandler.deleteKey(category, key)
-        return super.remove(key, value)
-    }
-
-    override fun put(key: String, value: V): V? {
-        ConfigHandler.write(category, key, value, converter)
-        return super.put(key, value)
-    }
-
-    override fun clear() {
+    fun clear() {
         ConfigHandler.deleteCategory(category)
-        super.clear()
+        internalMap.clear()
     }
 
-    override fun putAll(from: Map<out String, V>) {
-        from.forEach(::put)
+    fun remove(key: String): V? {
+        ConfigHandler.deleteKey(category, key)
+
+        return internalMap.remove(key)
     }
+
+    operator fun get(key: String) = internalMap[key]
+
+    operator fun set(key: String, value: V) {
+        ConfigHandler.write(category, key, value, converter)
+        internalMap[key] = value
+    }
+
+    fun getOrPut(key: String, defaultValue: () -> V) = internalMap.getOrPut(key, defaultValue)
 
     class DoubleConfigMap(category: String) :
         ConfigMap<Double>(

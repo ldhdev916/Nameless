@@ -130,6 +130,7 @@ object FeatureRegistry {
         }
     }.register("Mod")
     val INDICATE_PARTICLES = FeatureIndicateParticles.register("In Game")
+    val BLOCK_MOVEMENT_PACKET = FeatureBlockMovementPacket.register("Blatant")
 
     //MISC
     val UPDATE_CHECKER = FeatureUpdateChecker.register("Miscellaneous")
@@ -314,6 +315,7 @@ object FeatureRegistry {
     val CHANGE_HELMET_TEXTURE = FeatureChangeHelmetTexture.register("SkyBlock")
     val EXPERIMENTAL_TABLE_HELPER = FeatureExperimentationTableHelper.register("SkyBlock")
     val HIDE_WITHER_IMPACT_PARTICLE = FeatureHideWitherImpactParticle.register("SkyBlock")
+    val BAZAAR_HELPER = FeatureBazaarHelper.register("SkyBlock")
 
     //SETTINGS
     val GHOST_BLOCK = FeatureGhostBlock.register("Settings")

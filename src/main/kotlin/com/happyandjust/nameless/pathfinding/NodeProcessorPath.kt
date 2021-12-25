@@ -35,7 +35,13 @@ import net.minecraft.world.pathfinder.NodeProcessor
 import java.util.*
 import kotlin.concurrent.timerTask
 
-class NodeProcessorPath(private val canFly: Boolean) : NodeProcessor() {
+class NodeProcessorPath(
+    private val canFly: Boolean,
+    private val timeout: Long,
+    private val cache: Boolean,
+    private val additionalValidCheck: (BlockPos) -> Boolean
+) :
+    NodeProcessor() {
 
     companion object {
         private val directionVectors = hashSetOf(
@@ -47,6 +53,11 @@ class NodeProcessorPath(private val canFly: Boolean) : NodeProcessor() {
     }
 
     private var shouldEnd = false
+    private val passableMap = hashMapOf<BlockPos, Boolean>()
+
+    private fun BlockPos.isPassable() = if (cache) {
+        passableMap.getOrPut(this) { mc.theWorld.getBlockAtPos(this).isPassable(mc.theWorld, this) }
+    } else mc.theWorld.getBlockAtPos(this).isPassable(mc.theWorld, this)
 
     override fun initProcessor(iblockaccessIn: IBlockAccess?, entityIn: Entity?) {
         super.initProcessor(iblockaccessIn, entityIn)
@@ -55,7 +66,7 @@ class NodeProcessorPath(private val canFly: Boolean) : NodeProcessor() {
             timerTask {
                 shouldEnd = true
             },
-            300
+            timeout
         )
     }
 
@@ -69,10 +80,8 @@ class NodeProcessorPath(private val canFly: Boolean) : NodeProcessor() {
         return state.getValue(BlockFenceGate.OPEN)
     }
 
-    private fun isValid(pos: BlockPos): Boolean {
-        val b = mc.theWorld.getBlockAtPos(pos)
-        return if (!canFly && !jumpCheck(pos.down())) false else b != Blocks.web && b.isPassable(mc.theWorld, pos)
-    }
+    private fun isValid(pos: BlockPos) =
+        if (!canFly && !jumpCheck(pos.down())) false else pos.isPassable() && additionalValidCheck(pos)
 
 
     override fun getPathPointTo(entityIn: Entity): PathPoint = openPoint(
@@ -106,7 +115,7 @@ class NodeProcessorPath(private val canFly: Boolean) : NodeProcessor() {
             val newX = currentPoint.xCoord + dir.x
             val newY = currentPoint.yCoord + dir.y
             val newZ = currentPoint.zCoord + dir.z
-            if (newY < 0) continue
+            if (newY !in 0..255) continue
 
             val current = BlockPos(newX, newY, newZ)
             val up = BlockPos(newX, newY + 1, newZ)

@@ -34,6 +34,7 @@ Unless, You can't use rendering outline on entity
   - Remove Certain Mod ID Sent to Server
   - Remove Negative Effects (blindness, nausea)
   - Indicate Particles
+  - Block Movement Packet
 </details>
 <details>
   <summary>Quality of Life</summary>
@@ -87,6 +88,7 @@ Unless, You can't use rendering outline on entity
   - Render Pointing Arrow to Wither/Blood Key
   - Show Wither Shield CoolTime
   - Hide Wither Impact Particle
+  - Bazaar Helper
 </details>
 <details>
  <summary>Miscellaneous</summary>
@@ -127,4 +129,5 @@ Unless, You can't use rendering outline on entity
   - /viewstat - View someone's stats
   - /waypoint - Show paths to given coordinate
   - /shortcommand, /shortcmd - Open short command gui
+  - /pathfind - Do pathfind
 </details>

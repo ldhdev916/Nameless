@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.gui.waypoint
 
 import com.happyandjust.nameless.core.value.ChromaColor
+import com.happyandjust.nameless.gui.RemoveButton
 import com.happyandjust.nameless.gui.feature.ColorCache
 import com.happyandjust.nameless.gui.feature.components.toChromaColorComponent
 import com.happyandjust.nameless.listener.WaypointListener
@@ -30,15 +31,12 @@ import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.constraints.ChildBasedMaxSizeConstraint
 import gg.essential.elementa.constraints.ChildBasedSizeConstraint
 import gg.essential.elementa.constraints.SiblingConstraint
-import gg.essential.elementa.constraints.animation.Animations
 import gg.essential.elementa.dsl.*
 import gg.essential.elementa.effects.OutlineEffect
-import gg.essential.elementa.utils.withAlpha
 import gg.essential.vigilance.gui.settings.CheckboxComponent
 import gg.essential.vigilance.gui.settings.ColorComponent
 import gg.essential.vigilance.utils.onLeftClick
 import net.minecraft.util.BlockPos
-import java.awt.Color
 
 abstract class WaypointComponent : UIContainer() {
     init {
@@ -65,10 +63,9 @@ class DummyWaypointComponent : WaypointComponent() {
 }
 
 class SetWaypointComponent(
-    private val parentGui: WaypointManagerGui,
-    private val waypointInfo: WaypointListener.WaypointInfo
-) :
-    WaypointComponent() {
+    val parentGui: WaypointManagerGui,
+    val waypointInfo: WaypointListener.WaypointInfo
+) : WaypointComponent() {
 
     init {
         setupTextComponents(
@@ -89,7 +86,7 @@ class SetWaypointComponent(
                     setText("$x, $y, $z")
 
                     onFocusLost {
-                        val split = getText().filter { it.isDigit() || it == ',' }.trim(',').split(",")
+                        val split = getText().filter { it.isDigit() || it == ',' || it == '-' }.trim(',').split(",")
                         if (split.size == 3) {
                             waypointInfo.targetPos = BlockPos(split[0].toInt(), split[1].toInt(), split[2].toInt())
                         }
@@ -120,45 +117,7 @@ class SetWaypointComponent(
                 }
             }
         )
-        enableEffect(OutlineEffect(ColorCache.accent, 1f))
-    }
-
-    inner class RemoveComponent : UIContainer() {
-        init {
-
-            constrain {
-                width = 20.pixels()
-                height = 20.pixels()
-            }
-
-            effect(OutlineEffect(Color.red, 1f))
-
-            onLeftClick {
-                WaypointListener.waypointInfos.remove(waypointInfo)
-                parentGui.scroller.removeChild(this@SetWaypointComponent)
-            }
-
-            onMouseEnter {
-                text.animate {
-                    setColorAnimation(Animations.OUT_EXP, .5f, Color.red.constraint)
-                }
-            }
-
-            onMouseLeave {
-                text.animate {
-                    setColorAnimation(Animations.OUT_EXP, .5f, Color.red.withAlpha(0.7f).constraint)
-                }
-            }
-        }
-
-        private val text = UIText("X").constrain {
-            x = CenterConstraint()
-            y = CenterConstraint()
-
-            textScale = 1.3.pixels()
-
-            color = Color.red.withAlpha(0.7f).constraint
-        } childOf this
+        effect(OutlineEffect(ColorCache.accent, 1f))
     }
 }
 
@@ -205,7 +164,10 @@ private fun WaypointComponent.setupTextComponents(
     } childOf container
 
     if (this is SetWaypointComponent) {
-        RemoveComponent().constrain {
+        RemoveButton {
+            WaypointListener.waypointInfos.remove(waypointInfo)
+            parentGui.scroller.removeChild(this)
+        }.constrain {
             x = SiblingConstraint(5f)
             y = CenterConstraint()
         } childOf container

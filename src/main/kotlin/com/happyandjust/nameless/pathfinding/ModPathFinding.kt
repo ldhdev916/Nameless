@@ -19,13 +19,20 @@
 package com.happyandjust.nameless.pathfinding
 
 import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.repeat0
 import com.happyandjust.nameless.utils.Utils
 import net.minecraft.pathfinding.PathFinder
 import net.minecraft.util.BlockPos
 
-class ModPathFinding(private val target: BlockPos, private val canFly: Boolean) {
+class ModPathFinding(
+    private val target: BlockPos,
+    private val canFly: Boolean,
+    timeout: Long = 300,
+    cache: Boolean = true,
+    additionalValidCheck: (BlockPos) -> Boolean = { true }
+) {
 
-    private val nodeProcessorPath = NodeProcessorPath(canFly)
+    private val nodeProcessorPath = NodeProcessorPath(canFly, timeout, cache, additionalValidCheck)
     private val pathFinder = PathFinder(nodeProcessorPath)
 
     fun findPath(): List<BlockPos> {
@@ -38,7 +45,7 @@ class ModPathFinding(private val target: BlockPos, private val canFly: Boolean) 
             Int.MAX_VALUE.toFloat()
         ) ?: return emptyList()
 
-        list.addAll((0 until latest.currentPathLength).map {
+        list.addAll(repeat0(latest.currentPathLength) {
             val pathPoint = latest.getPathPointFromIndex(it)
             BlockPos(pathPoint.xCoord, pathPoint.yCoord, pathPoint.zCoord)
         })
