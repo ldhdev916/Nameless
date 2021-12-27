@@ -19,11 +19,13 @@
 package com.happyandjust.nameless
 
 import com.happyandjust.nameless.commands.*
+import com.happyandjust.nameless.config.ConfigHandler
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.enums.OutlineMode
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.impl.misc.FeatureUpdateChecker
+import com.happyandjust.nameless.features.impl.qol.FeatureAutoRequeue
 import com.happyandjust.nameless.features.impl.qol.FeatureGTBHelper
 import com.happyandjust.nameless.features.impl.qol.FeatureMurdererFinder
 import com.happyandjust.nameless.features.impl.qol.FeaturePlayTabComplete
@@ -39,6 +41,7 @@ import com.happyandjust.nameless.utils.SkyblockUtils
 import gg.essential.api.commands.Command
 import kotlinx.coroutines.*
 import net.minecraftforge.fml.client.registry.ClientRegistry
+import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
@@ -62,6 +65,7 @@ object Nameless {
     @Mod.EventHandler
     fun preInit(e: FMLPreInitializationEvent) {
         modFile = e.sourceFile
+        ConfigHandler.file = File(e.modConfigurationDirectory, "Nameless.json")
         FeatureUpdateChecker.checkForUpdate()
     }
 
@@ -80,6 +84,11 @@ object Nameless {
 
         scope.launch(Dispatchers.IO) {
             job.join()
+
+            FeatureAutoRequeue.isAutoGGLoaded = Loader.isModLoaded("autogg")
+
+            async { FeatureAutoRequeue.fetchGameEndData() }
+
             async { FeatureMurdererFinder.fetchAssassinData() }
 
             async { FeatureGTBHelper.fetchWordsData() }

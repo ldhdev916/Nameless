@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.dsl
 
+import com.happyandjust.nameless.features.impl.settings.FeatureDebug
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.IChatComponent
 import net.minecraftforge.client.event.ClientChatReceivedEvent
@@ -49,4 +50,20 @@ fun sendClientMessage(chatComponent: IChatComponent?) {
             addChatMessage(chatComponent)
         }
     } ?: LOGGER.info("[CHAT] ${chatComponent.unformattedText}")
+}
+
+fun sendDebugMessage(o: Any?) {
+    sendDebugMessage(ChatComponentText(o.toString()))
+}
+
+fun sendDebugMessage(chatComponent: IChatComponent?) {
+    if (!FeatureDebug.enabled) return
+    chatComponent ?: run {
+        sendDebugMessage("null")
+        return
+    }
+
+    mc.thePlayer?.run {
+        addChatMessage(ChatComponentText("§6[§3Debug§6]§r ").appendSibling(chatComponent))
+    } ?: LOGGER.info("[DEBUG] ${chatComponent.unformattedText}")
 }

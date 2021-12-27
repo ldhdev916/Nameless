@@ -67,6 +67,7 @@ Unless, You can't use rendering outline on entity
   - Charm
   - Gift ESP
   - Dropper Helper
+  - Auto Requeue
 </details>
 <details>
   <summary>SkyBlock</summary>
@@ -118,6 +119,7 @@ Unless, You can't use rendering outline on entity
   - Ghost Block
   - Open Gui
   - Perspective
+  - Block Movement Packet
 </details>
 <details>
   <summary>Commands</summary>

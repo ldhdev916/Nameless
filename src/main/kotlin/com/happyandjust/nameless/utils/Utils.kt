@@ -20,11 +20,8 @@ package com.happyandjust.nameless.utils
 
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.info.InventorySlotInfo
-import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.mc
-import net.minecraft.block.material.Material
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.BlockPos
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
 import java.io.File
@@ -48,17 +45,6 @@ object Utils {
 
                 slot to InventorySlotInfo(slot, Keyboard.getKeyName(it.keyCode), inventory.getStackInSlot(slot))
             }
-    }
-
-    fun getHighestGround(pos: BlockPos, shouldBeValid: Boolean): BlockPos {
-        var pos = pos
-        val world = mc.theWorld
-        while (world.getBlockAtPos(pos).run { isPassable(world, pos) && material != Material.water }) {
-            pos = pos.down()
-            if (pos.y <= 0) return pos
-        }
-
-        return if (shouldBeValid) pos.up() else pos
     }
 
     fun getPlayersInTab(): List<EntityPlayer> {

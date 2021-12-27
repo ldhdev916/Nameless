@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.commands
 
 import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.dsl.sendDebugMessage
 import com.happyandjust.nameless.pathfinding.ModPathFinding
 import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.api.commands.Command
@@ -29,6 +30,7 @@ import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 import java.util.*
 import kotlin.concurrent.thread
+import kotlin.system.measureTimeMillis
 
 object PathFindCommand : Command("pathfind") {
 
@@ -46,7 +48,10 @@ object PathFindCommand : Command("pathfind") {
     fun handle(x: Int, y: Int, z: Int, timeout: Int?) {
         thread {
             paths.clear()
-            paths.addAll(ModPathFinding(BlockPos(x, y, z), true, (timeout ?: 10) * 1000L).findPath())
+            val time = measureTimeMillis {
+                paths.addAll(ModPathFinding(BlockPos(x, y, z), true, (timeout ?: 10) * 1000L).findPath())
+            }
+            sendDebugMessage("Path Finding took §a${time / 1000.0}s")
         }
     }
 

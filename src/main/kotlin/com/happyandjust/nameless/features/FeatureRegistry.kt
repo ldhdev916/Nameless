@@ -23,10 +23,7 @@ import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.features.impl.general.*
 import com.happyandjust.nameless.features.impl.misc.*
 import com.happyandjust.nameless.features.impl.qol.*
-import com.happyandjust.nameless.features.impl.settings.FeatureGhostBlock
-import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
-import com.happyandjust.nameless.features.impl.settings.FeatureOutlineMode
-import com.happyandjust.nameless.features.impl.settings.FeatureRelocateGui
+import com.happyandjust.nameless.features.impl.settings.*
 import com.happyandjust.nameless.features.impl.skyblock.*
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
 import com.happyandjust.nameless.serialization.converters.CBoolean
@@ -269,6 +266,7 @@ object FeatureRegistry {
     val CHARM = FeatureCharm.register("In Game")
     val GIFT_ESP = FeatureGiftESP.register("In Game")
     val DROPPER_HELPER = FeatureDropperHelper.register("In Game")
+    val AUTO_REQUEUE = FeatureAutoRequeue.register("Hypixel")
 
     //SKYBLOCK
     val FAIRY_SOUL_WAYPOINT = FeatureFairySoulWaypoint.register("SkyBlock")
@@ -322,5 +320,6 @@ object FeatureRegistry {
     val HYPIXEL_API_KEY = FeatureHypixelAPIKey.register("Settings")
     val OUTLINE_MODE = FeatureOutlineMode.register("Settings")
     val RELOCATE_GUI = FeatureRelocateGui.register("Settings")
+    val DEBUG = FeatureDebug.register("Settings")
 
 }

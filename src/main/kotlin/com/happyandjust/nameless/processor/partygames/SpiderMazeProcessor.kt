@@ -29,11 +29,16 @@ import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.pathfinding.ModPathFinding
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import net.minecraft.block.BlockWeb
 import net.minecraft.util.BlockPos
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 
+@OptIn(DelicateCoroutinesApi::class)
 object SpiderMazeProcessor : Processor() {
 
     private var mazePath = emptyList<BlockPos>()
@@ -44,11 +49,16 @@ object SpiderMazeProcessor : Processor() {
 
     init {
         request<SpecialTickEvent>().filter { pathTimer.update().check() }.subscribe {
-            mazePath = mazeEnds.map {
-                ModPathFinding(it, false, additionalValidCheck = { pos ->
-                    mc.theWorld.getBlockAtPos(pos) !is BlockWeb
-                }).findPath()
-            }.minByOrNull { it.size }!!
+            GlobalScope.launch {
+                mazePath = mazeEnds.map {
+                    async {
+                        ModPathFinding(
+                            it,
+                            false,
+                            additionalValidCheck = { pos -> mc.theWorld.getBlockAtPos(pos) !is BlockWeb }).findPath()
+                    }
+                }.minByOrNull { it.await().size }!!.await()
+            }
         }
 
         request<RenderWorldLastEvent>().subscribe {

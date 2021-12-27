@@ -35,7 +35,7 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent
 
 object BasicListener {
 
-    private val prevPressed = hashMapOf<KeyBindingCategory, Boolean>()
+    private val prevPressed = hashMapOf<KeyBindingCategory, Boolean>().withDefault { false }
 
     init {
         on<KeyPressEvent>().filter { isNew && !inGui && keyBindingCategory == KeyBindingCategory.OPEN_GUI }
@@ -50,7 +50,7 @@ object BasicListener {
                     MinecraftForge.EVENT_BUS.post(
                         KeyPressEvent(
                             keyBindingCategory,
-                            !(prevPressed[keyBindingCategory] ?: false),
+                            !prevPressed.getValue(keyBindingCategory),
                             mc.currentScreen != null
                         )
                     )

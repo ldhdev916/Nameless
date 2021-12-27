@@ -26,7 +26,7 @@ import com.happyandjust.nameless.serialization.Converter
 import java.io.File
 
 object ConfigHandler {
-    private val file = File("config/Nameless.json")
+    var file = File("config/Nameless.json")
     private val handler: JsonHandler
         get() = JsonHandler(file)
     private val config: JsonObject

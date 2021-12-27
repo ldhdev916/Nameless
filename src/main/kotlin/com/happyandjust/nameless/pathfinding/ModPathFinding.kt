@@ -20,13 +20,12 @@ package com.happyandjust.nameless.pathfinding
 
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.repeat0
-import com.happyandjust.nameless.utils.Utils
 import net.minecraft.pathfinding.PathFinder
 import net.minecraft.util.BlockPos
 
 class ModPathFinding(
     private val target: BlockPos,
-    private val canFly: Boolean,
+    canFly: Boolean,
     timeout: Long = 300,
     cache: Boolean = true,
     additionalValidCheck: (BlockPos) -> Boolean = { true }
@@ -41,7 +40,7 @@ class ModPathFinding(
         val latest = pathFinder.createEntityPathTo(
             mc.theWorld,
             mc.thePlayer,
-            if (!canFly) Utils.getHighestGround(target, false) else target,
+            target,
             Int.MAX_VALUE.toFloat()
         ) ?: return emptyList()
 

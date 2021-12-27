@@ -93,6 +93,8 @@ object FeatureBlockMovementPacket : BlatantFeature(
         override fun renderOverlay0(partialTicks: Float) {
             if (enabled && value) window.draw()
         }
+
+        override fun getDisplayName() = this@FeatureBlockMovementPacket.title
     }
 
     init {

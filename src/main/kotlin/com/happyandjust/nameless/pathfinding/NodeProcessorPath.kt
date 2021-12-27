@@ -20,20 +20,22 @@ package com.happyandjust.nameless.pathfinding
 
 import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.utils.Utils
+import net.minecraft.block.Block
 import net.minecraft.block.BlockFence
 import net.minecraft.block.BlockFenceGate
+import net.minecraft.block.BlockLadder
+import net.minecraft.block.material.Material
 import net.minecraft.entity.Entity
 import net.minecraft.init.Blocks
 import net.minecraft.pathfinding.PathPoint
 import net.minecraft.util.BlockPos
-import net.minecraft.util.EnumFacing
 import net.minecraft.util.MathHelper
 import net.minecraft.util.Vec3i
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.pathfinder.NodeProcessor
 import java.util.*
 import kotlin.concurrent.timerTask
+import kotlin.math.abs
 
 class NodeProcessorPath(
     private val canFly: Boolean,
@@ -44,20 +46,32 @@ class NodeProcessorPath(
     NodeProcessor() {
 
     companion object {
-        private val directionVectors = hashSetOf(
-            Vec3i(-1, 0, -1) to true,
-            Vec3i(-1, 0, 1) to true,
-            Vec3i(1, 0, -1) to true,
-            Vec3i(1, 0, 1) to true
-        ) + EnumFacing.values().map { it.directionVec to false }
+        private val directionVectors = buildSet {
+            for (x in -1..1) {
+                for (y in -1..1) {
+                    for (z in -1..1) {
+                        if (x == 0 && y == 0 && z == 0) continue
+                        val diagonal = abs(x) + abs(y) + abs(z) != 1
+
+                        add(Vec3i(x, y, z) to diagonal)
+                    }
+                }
+            }
+        }
     }
 
     private var shouldEnd = false
     private val passableMap = hashMapOf<BlockPos, Boolean>()
+    private val blockMap = hashMapOf<BlockPos, Block>()
 
     private fun BlockPos.isPassable() = if (cache) {
-        passableMap.getOrPut(this) { mc.theWorld.getBlockAtPos(this).isPassable(mc.theWorld, this) }
-    } else mc.theWorld.getBlockAtPos(this).isPassable(mc.theWorld, this)
+        passableMap.getOrPut(this) {
+            mc.theWorld.isBlockLoaded(this, false) && getBlockAtPos(this).isPassable(mc.theWorld, this)
+        }
+    } else getBlockAtPos(this).isPassable(mc.theWorld, this)
+
+    private fun getBlockAtPos(pos: BlockPos) =
+        if (cache) blockMap.getOrPut(pos) { mc.theWorld.getBlockAtPos(pos) } else mc.theWorld.getBlockAtPos(pos)
 
     override fun initProcessor(iblockaccessIn: IBlockAccess?, entityIn: Entity?) {
         super.initProcessor(iblockaccessIn, entityIn)
@@ -120,14 +134,12 @@ class NodeProcessorPath(
             val current = BlockPos(newX, newY, newZ)
             val up = BlockPos(newX, newY + 1, newZ)
 
-            if (!canFly && dir.y >= 0) {
-                if (entityIn.worldObj.getBlockAtPos(current) != Blocks.ladder && entityIn.worldObj.getBlockAtPos(up) != Blocks.ladder) {
-                    val highestGround = Utils.getHighestGround(current, false)
+            if (!canFly && dir.y > 0 && getBlockAtPos(current) != Blocks.ladder) {
+                val highestGround =
+                    getHighestGround(BlockPos(currentPoint.xCoord, currentPoint.yCoord, currentPoint.zCoord))
 
-                    if (newY - highestGround.y > 2) {
-                        continue
-                    }
-
+                if (newY - highestGround.y > 2) {
+                    continue
                 }
             }
 
@@ -140,17 +152,15 @@ class NodeProcessorPath(
 
             val pathPoint = openPoint(newX, newY, newZ)
 
-            if (pathPoint.xCoord == targetPoint.xCoord && pathPoint.yCoord == targetPoint.yCoord && pathPoint.zCoord == targetPoint.zCoord) {
+            if (pathPoint == targetPoint) {
                 pathOptions[i++] = pathPoint
                 continue
             }
 
-            if (pathPoint.distanceTo(targetPoint) <= 1.5) {
-                if (isValid(current)) {
-                    if (pathPoint.visited) continue
-                    pathOptions[i++] = pathPoint
-                    continue
-                }
+            if (pathPoint.distanceTo(targetPoint) <= 1.5 && isValid(current)) {
+                if (pathPoint.visited) continue
+                pathOptions[i++] = pathPoint
+                continue
             }
 
             if (isValid(current) && isValid(up)) {
@@ -160,5 +170,17 @@ class NodeProcessorPath(
         }
 
         return i
+    }
+
+    private fun getHighestGround(pos: BlockPos): BlockPos {
+        var pos = pos
+        while (getBlockAtPos(pos).run {
+                isPassable(mc.theWorld, pos) && material != Material.water && this !is BlockLadder
+            }) {
+            pos = pos.down()
+            if (pos.y <= 0) return pos
+        }
+
+        return pos
     }
 }
