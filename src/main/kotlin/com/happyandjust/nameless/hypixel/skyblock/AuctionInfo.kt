@@ -18,44 +18,26 @@
 
 package com.happyandjust.nameless.hypixel.skyblock
 
-import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 
-class AuctionInfo {
-
-    @SerializedName("uuid")
-    var auctionId = ""
-
-    @SerializedName("item_name")
-    var item_name = ""
-
-    @SerializedName("starting_bid")
-    var price = 0
-
-    @SerializedName("item_bytes")
-    var item_bytes = ""
-
-    @SerializedName("bin")
-    var bin = false
-
-    @SerializedName("bids")
-    var bids = JsonArray()
-
-    @SerializedName("tier")
-    var tier_string = ""
-
+class AuctionInfo(
+    @SerializedName("uuid") val auctionId: String,
+    val item_name: String,
+    @SerializedName("starting_bid") val price: Int,
+    val item_bytes: String,
+    val bin: Boolean,
+    val bids: List<JsonObject>,
+    @SerializedName("tier") val tier_string: String,
+    @SerializedName("item_lore") val lore: String,
+    val claimed: Boolean
+) {
     var rarity = ItemRarity.COMMON
 
     var skyBlockId = ""
 
-    @SerializedName("item_lore")
-    var lore = ""
 
-    @SerializedName("claimed")
-    var claimed = false
-
-
-    fun isBuyableBinAuction() = bin && bids.size() == 0 && !claimed
+    fun isBuyableBinAuction() = bin && bids.isEmpty() && !claimed
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

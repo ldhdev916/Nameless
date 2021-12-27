@@ -19,12 +19,7 @@
 package com.happyandjust.nameless.features.impl.qol
 
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.JsonHandler
-import com.happyandjust.nameless.core.Request
-import com.happyandjust.nameless.dsl.matchesMatcher
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.dsl.withInstance
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
@@ -42,9 +37,8 @@ object FeaturePlayTabComplete : SimpleFeature(
 ) {
 
     private val gameMap by lazy {
-        JsonHandler(
-            Request.get("https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw")
-        ).read(JsonObject()).entrySet().associate { it.key to it.value.asString }
+        "https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw".handler().read(JsonObject())
+            .entrySet().associate { it.key to it.value.asString }
     }
     private val games by lazy { gameMap.keys + gameMap.values }
 

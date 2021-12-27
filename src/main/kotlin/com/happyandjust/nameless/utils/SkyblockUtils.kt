@@ -21,7 +21,7 @@ package com.happyandjust.nameless.utils
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JsonHandler
-import com.happyandjust.nameless.core.Request
+import com.happyandjust.nameless.dsl.handler
 import com.happyandjust.nameless.dsl.isFairySoul
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.notifyException
@@ -51,7 +51,7 @@ object SkyblockUtils {
             }
     }
     val allItems by lazy {
-        JsonHandler(Request.get("https://api.hypixel.net/resources/skyblock/items")).read(JsonObject())["items"].asJsonArray.associate {
+        "https://api.hypixel.net/resources/skyblock/items".handler().read(JsonObject())["items"].asJsonArray.associate {
             val item = gson.fromJson(it, SkyBlockItem::class.java)
 
             item.id to item
@@ -91,9 +91,7 @@ object SkyblockUtils {
     }
 
     fun getAuctionDataInPage(page: Int): List<AuctionInfo> {
-        val s = Request.get("https://api.hypixel.net/skyblock/auctions?page=$page")
-
-        val json = JsonHandler(s).read(JsonObject())
+        val json = "https://api.hypixel.net/skyblock/auctions?page=$page".handler().read(JsonObject())
 
         if (!json["success"].asBoolean) return emptyList()
 
@@ -116,9 +114,7 @@ object SkyblockUtils {
     }
 
     fun getMaxAuctionPage(): Int {
-        val s = Request.get("https://api.hypixel.net/skyblock/auctions")
-
-        val json = JsonHandler(s).read(JsonObject())
+        val json = "https://api.hypixel.net/skyblock/auctions".handler().read(JsonObject())
 
         if (!json["success"].asBoolean) return 0
 

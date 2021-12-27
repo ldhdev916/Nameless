@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.features.impl.qol
 
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.JsonHandler
+import com.happyandjust.nameless.dsl.handler
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.stripControlCodes
@@ -32,9 +32,9 @@ import com.happyandjust.nameless.serialization.converters.CInt
 import com.happyandjust.nameless.serialization.converters.CString
 import gg.essential.api.EssentialAPI
 import gg.essential.api.utils.Multithreading
-import gg.essential.api.utils.WebUtil
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import java.util.concurrent.TimeUnit
+import kotlin.properties.Delegates
 
 object FeatureAutoRequeue : SimpleFeature(
     Category.QOL,
@@ -66,11 +66,9 @@ object FeatureAutoRequeue : SimpleFeature(
         true,
         CBoolean
     )
-    var isAutoGGLoaded = false
-        get() = true
+    var isAutoGGLoaded by Delegates.notNull<Boolean>()
     private val triggers by lazy {
-        val json =
-            JsonHandler(WebUtil.fetchString("https://static.sk1er.club/autogg/regex_triggers_3.json")!!).read(JsonObject())
+        val json = "https://static.sk1er.club/autogg/regex_triggers_3.json".handler().read(JsonObject())
         json["servers"].asJsonArray[0].asJsonObject["triggers"].asJsonArray.mapNotNull {
             if (it.asJsonObject["type"].asInt == 0) it.asJsonObject["pattern"].asString.toPattern() else null
         }

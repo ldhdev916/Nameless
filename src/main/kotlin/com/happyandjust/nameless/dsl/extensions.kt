@@ -20,6 +20,7 @@ package com.happyandjust.nameless.dsl
 
 import com.happyandjust.nameless.config.ConfigMap
 import com.happyandjust.nameless.core.FAIRY_SOUL
+import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
@@ -27,6 +28,7 @@ import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.utils.SkyblockUtils
 import com.mojang.authlib.GameProfile
 import gg.essential.api.EssentialAPI
+import gg.essential.api.utils.WebUtil
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import net.minecraft.block.Block
@@ -208,3 +210,7 @@ fun String.getUUID() = runCatching { EssentialAPI.getMojangAPI().getUUID(this)?.
 
 fun UUID.getNameHistory() =
     runCatching { EssentialAPI.getMojangAPI().getNameHistory(this) }.getOrNull()?.filterNotNull()
+
+fun String.fetch() = WebUtil.fetchString(this)
+
+fun String.handler() = JsonHandler(fetch())

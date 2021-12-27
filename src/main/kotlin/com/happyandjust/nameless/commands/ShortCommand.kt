@@ -20,7 +20,6 @@ package com.happyandjust.nameless.commands
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import com.google.gson.annotations.SerializedName
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.repeat0
@@ -61,10 +60,7 @@ object ShortCommand : Command("shortcommand") {
         GuiUtil.open(ShortCommandGui())
     }
 
-    data class ShortCommandInfo(
-        @SerializedName("short") var short: String,
-        @SerializedName("origin") var origin: String
-    ) {
+    data class ShortCommandInfo(var short: String, var origin: String) {
         val pair: Pair<Pattern, Int>
             get() {
                 var index = 0

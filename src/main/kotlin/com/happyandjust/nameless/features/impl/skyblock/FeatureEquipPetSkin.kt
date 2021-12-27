@@ -176,13 +176,10 @@ object FeatureEquipPetSkin : SimpleFeature(
         }
     }
 
-    class PetInfo {
-        @SerializedName("name")
-        var petName = ""
-
-        @SerializedName("origin")
-        var originSkullOwner = ""
-    }
+    data class PetInfo(
+        @SerializedName("name") val petName: String,
+        @SerializedName("origin") val originSkullOwner: String
+    )
 
     private fun EntityArmorStand.getPetItem() = heldItem ?: getEquipmentInSlot(4)
 

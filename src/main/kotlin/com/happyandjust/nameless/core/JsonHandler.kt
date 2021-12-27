@@ -39,7 +39,7 @@ class JsonHandler(inputStream: InputStream? = null, val outputStream: () -> Outp
 
     constructor(file: File) : this(if (file.isFile) file.inputStream().buffered() else null, { file.outputStream() })
 
-    constructor(jsonString: String) : this() {
+    constructor(jsonString: String?) : this() {
         jsonData = runCatching { parser.parse(jsonString) }.getOrNull()
     }
 

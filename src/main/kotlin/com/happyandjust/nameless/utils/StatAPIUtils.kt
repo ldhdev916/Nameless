@@ -19,8 +19,7 @@
 package com.happyandjust.nameless.utils
 
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.JsonHandler
-import com.happyandjust.nameless.core.Request
+import com.happyandjust.nameless.dsl.handler
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.features.impl.qol.FeatureInGameStatViewer
 import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
@@ -84,10 +83,8 @@ object StatAPIUtils {
                     if (uuid.version() != 4) {
                         return@launch
                     }
-
-                    val s = Request.get("https://api.hypixel.net/player?key=$api&uuid=$uuid")
-
-                    playerJSONCache[player] = JsonHandler(s).read(JsonObject())["player"].asJsonObject
+                    playerJSONCache[player] = "https://api.hypixel.net/player?key=$api&uuid=$uuid".handler()
+                        .read(JsonObject())["player"].asJsonObject
 
                     processingRequest.remove(player)
                 }

@@ -21,8 +21,7 @@ package com.happyandjust.nameless.features.impl.misc
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.VERSION
-import com.happyandjust.nameless.core.JsonHandler
-import com.happyandjust.nameless.core.Request
+import com.happyandjust.nameless.dsl.handler
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
@@ -57,9 +56,7 @@ object FeatureUpdateChecker : SimpleFeature(
         if (!enabled) return
 
         GlobalScope.launch {
-            val json =
-                JsonHandler(Request.get("https://api.github.com/repos/HappyAndJust/Nameless/releases/latest"))
-                    .read(JsonObject())
+            val json = "https://api.github.com/repos/HappyAndJust/Nameless/releases/latest".handler().read(JsonObject())
             val latestTag = json["tag_name"].asString.drop(1)
 
             val currentVersion = DefaultArtifactVersion(VERSION)

@@ -36,7 +36,8 @@ object FeatureChangeHelmetTexture : SimpleFeature(
     "Change your current helmet. only works if you're wearing skull in SkyBlock. To select helmet texture, type /helmettexture [SkyBlock ID]"
 ) {
 
-    private val currentlyEquipedTextureConfig = ConfigValue("helmettexture", "current", SkyBlockItem(), CSkyBlockItem)
+    private val currentlyEquipedTextureConfig =
+        ConfigValue("helmettexture", "current", SkyBlockItem("", "", "", ""), CSkyBlockItem)
     var currentlyEquipedTexture: Pair<SkyBlockItem, GameProfile>? = null
         get() = if (Hypixel.currentGame != GameType.SKYBLOCK) null else field
         set(value) {

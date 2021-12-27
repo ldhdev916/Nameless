@@ -19,11 +19,7 @@
 package com.happyandjust.nameless.features.impl.misc
 
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.JsonHandler
-import com.happyandjust.nameless.core.Request
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.dsl.withInstance
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.Category
@@ -37,7 +33,6 @@ import com.happyandjust.nameless.serialization.converters.CString
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.minecraft.MinecraftProfileTexture
 import com.mojang.authlib.properties.Property
-import gg.essential.api.EssentialAPI
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -93,15 +88,13 @@ object FeatureDisguiseNickname : SimpleFeature(
         if (username.equals(currentlyLoadedUsername, true)) return
         GlobalScope.launch {
             currentlyLoadedUsername = username
-            val uuid = EssentialAPI.getMojangAPI().getUUID(username)?.get() ?: run {
+            val uuid = username.getUUID() ?: run {
                 invalidUsernames.add(username)
                 currentlyLoadedUsername = null
                 return@launch
             }
 
-            val json =
-                JsonHandler(Request.get("https://sessionserver.mojang.com/session/minecraft/profile/$uuid"))
-                    .read(JsonObject())
+            val json = "https://sessionserver.mojang.com/session/minecraft/profile/$uuid".handler().read(JsonObject())
 
             mc.skinManager.loadProfileTextures(
                 GameProfile(UUID.randomUUID(), username).apply {

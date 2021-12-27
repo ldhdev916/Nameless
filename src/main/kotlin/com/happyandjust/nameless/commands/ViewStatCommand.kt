@@ -19,12 +19,7 @@
 package com.happyandjust.nameless.commands
 
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.JsonHandler
-import com.happyandjust.nameless.core.Request
-import com.happyandjust.nameless.dsl.getUUID
-import com.happyandjust.nameless.dsl.notifyException
-import com.happyandjust.nameless.dsl.sendClientMessage
-import com.happyandjust.nameless.dsl.sendPrefixMessage
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.features.impl.qol.FeatureInGameStatViewer
 import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
 import gg.essential.api.commands.Command
@@ -48,8 +43,8 @@ object ViewStatCommand : Command("viewstat") {
             val identifiers = FeatureInGameStatViewer.order.filter { it.supportGame.shouldDisplay() }
 
             runCatching {
-                val s = Request.get("https://api.hypixel.net/player?key=${FeatureHypixelAPIKey.apiKey}&uuid=$uuid")
-                val json = JsonHandler(s).read(JsonObject())["player"].asJsonObject
+                val handler = "https://api.hypixel.net/player?key=${FeatureHypixelAPIKey.apiKey}&uuid=$uuid".handler()
+                val json = handler.read(JsonObject())["player"].asJsonObject
 
                 sendClientMessage("§bStats of ${getPlayerName(json)}")
 

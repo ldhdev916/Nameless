@@ -30,6 +30,7 @@ import gg.essential.elementa.constraints.CopyConstraintFloat
 import gg.essential.elementa.constraints.FillConstraint
 import gg.essential.elementa.constraints.SiblingConstraint
 import gg.essential.elementa.dsl.*
+import gg.essential.elementa.utils.withAlpha
 import gg.essential.universal.GuiScale
 import gg.essential.vigilance.gui.settings.ButtonComponent
 import net.minecraft.util.BlockPos
@@ -42,7 +43,7 @@ class WaypointManagerGui : WindowScreen(
 
     init {
 
-        UIBlock(ColorCache.background).constrain {
+        UIBlock(ColorCache.background.withAlpha(0.3f)).constrain {
             width = 100.percent()
             height = 100.percent()
         } childOf window

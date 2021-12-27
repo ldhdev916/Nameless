@@ -135,12 +135,11 @@ class NodeProcessorPath(
             val up = BlockPos(newX, newY + 1, newZ)
 
             if (!canFly && dir.y > 0 && getBlockAtPos(current) != Blocks.ladder) {
-                val highestGround =
-                    getHighestGround(BlockPos(currentPoint.xCoord, currentPoint.yCoord, currentPoint.zCoord))
-
-                if (newY - highestGround.y > 2) {
-                    continue
-                }
+                if (listOf(
+                        getHighestGround(BlockPos(currentPoint.xCoord, currentPoint.yCoord, currentPoint.zCoord)),
+                        getHighestGround(BlockPos(newX + dir.x, newY + dir.y, newZ + dir.z))
+                    ).any { newY - it.y > 2 }
+                ) continue
             }
 
             if (isDiagonal) {

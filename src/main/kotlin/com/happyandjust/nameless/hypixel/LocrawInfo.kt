@@ -20,24 +20,12 @@ package com.happyandjust.nameless.hypixel
 
 import com.google.gson.annotations.SerializedName
 
-class LocrawInfo {
-
-    @SerializedName("server")
-    var server = ""
-
-    @SerializedName("gametype")
-    var gameType = ""
-
-    /**
-     * Default Lobby
-     */
-    @SerializedName("mode")
-    var mode = "lobby"
-
-    @SerializedName("map")
-    var map = ""
-
-    override fun toString(): String {
-        return "server: $server, gameType: $gameType, mode: $mode, map: $map"
-    }
+data class LocrawInfo(
+    val server: String,
+    @SerializedName("gametype") val gameType: String,
+    @SerializedName("mode") private val mode_: String?,
+    val map: String
+) {
+    val mode
+        get() = mode_ ?: "lobby"
 }
