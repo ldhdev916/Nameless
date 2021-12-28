@@ -37,7 +37,6 @@ import gg.essential.elementa.components.Window
 import gg.essential.elementa.dsl.*
 import gg.essential.elementa.state.BasicState
 import net.minecraft.network.play.client.C03PacketPlayer
-import net.minecraft.util.Vec3
 
 object FeatureBlockMovementPacket : BlatantFeature(
     Category.GENERAL,
@@ -48,7 +47,6 @@ object FeatureBlockMovementPacket : BlatantFeature(
     override var useAccepted by ConfigValue("blockmovementpacket", "accept", false, CBoolean)
     override val reasonForBlatant = "Modifying Packet"
     private var prevOnGround = false
-    private var lastPositition: Vec3? = null
 
     @SubParameterOf("notifyBlocking")
     private var notifyText: String by FeatureParameter(
@@ -110,20 +108,12 @@ object FeatureBlockMovementPacket : BlatantFeature(
                 if (mc.renderViewEntity != mc.thePlayer) {
                     sendPrefixMessage("§cYou're spectating something!")
                     cancel()
-                } else {
-                    lastPositition = mc.thePlayer.toVec3()
                 }
             }
 
-        on<FeatureStateChangeEvent.Post>().filter { feature == this@FeatureBlockMovementPacket }
+        on<FeatureStateChangeEvent.Post>().filter { feature == this@FeatureBlockMovementPacket && enabledAfter }
             .subscribe {
-                if (enabledAfter) {
-                    prevOnGround = mc.thePlayer.onGround
-                } else {
-                    lastPositition?.let {
-                        mc.thePlayer.setPositionAndUpdate(it.xCoord, it.yCoord, it.zCoord)
-                    }
-                }
+                prevOnGround = mc.thePlayer.onGround
             }
 
         on<KeyPressEvent>().filter { keyBindingCategory == KeyBindingCategory.BLOCK_MOVEMENT_PACKET && !inGui && isNew }
