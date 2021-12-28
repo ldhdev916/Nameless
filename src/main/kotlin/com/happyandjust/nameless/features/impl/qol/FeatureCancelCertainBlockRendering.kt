@@ -18,27 +18,24 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.dsl.displayName
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import net.minecraft.block.Block
-import net.minecraft.item.ItemStack
 
 object FeatureCancelCertainBlockRendering :
     SimpleFeature(Category.QOL, "cancelblockrendering", "Cancel Certain Block Rendering") {
 
     init {
         for (block in Block.blockRegistry) {
-            val displayName =
-                runCatching { ItemStack(block).displayName }.getOrDefault(block.registryName.split(":")[1])
-
             parameters[block.registryName] = FeatureParameter(
                 1,
                 "cancelblock",
                 block.registryName,
-                displayName,
+                block.displayName,
                 "",
                 false,
                 CBoolean

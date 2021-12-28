@@ -267,6 +267,7 @@ object FeatureRegistry {
     val GIFT_ESP = FeatureGiftESP.register("In Game")
     val DROPPER_HELPER = FeatureDropperHelper.register("In Game")
     val AUTO_REQUEUE = FeatureAutoRequeue.register("Hypixel")
+    val BLOCK_TRACKER = FeatureBlockTracker.register("In Game")
 
     //SKYBLOCK
     val FAIRY_SOUL_WAYPOINT = FeatureFairySoulWaypoint.register("SkyBlock")

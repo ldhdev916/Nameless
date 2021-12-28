@@ -68,6 +68,7 @@ Unless, You can't use rendering outline on entity
   - Gift ESP
   - Dropper Helper
   - Auto Requeue
+  - Block Tracker
 </details>
 <details>
   <summary>SkyBlock</summary>

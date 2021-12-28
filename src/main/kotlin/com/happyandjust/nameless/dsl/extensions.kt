@@ -214,3 +214,6 @@ fun UUID.getNameHistory() =
 fun String.fetch() = WebUtil.fetchString(this)
 
 fun String.handler() = JsonHandler(fetch())
+
+val Block.displayName: String
+    get() = runCatching { ItemStack(this).displayName }.getOrDefault(registryName.split(":")[1])
