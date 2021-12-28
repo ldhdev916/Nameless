@@ -162,8 +162,7 @@ suspend fun scanAuction(task: (List<AuctionInfo>) -> Unit) = coroutineScope {
             runCatching { SkyblockUtils.getAuctionDataInPage(it) }.getOrDefault(emptyList())
         }
     }
-        .map { it.await() }
-        .flatten()
+        .flatMap { it.await() }
         .let(task)
 }
 
