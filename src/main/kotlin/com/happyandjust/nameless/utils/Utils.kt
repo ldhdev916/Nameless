@@ -21,6 +21,7 @@ package com.happyandjust.nameless.utils
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.info.InventorySlotInfo
 import com.happyandjust.nameless.dsl.mc
+import net.minecraft.client.settings.GameSettings
 import net.minecraft.entity.player.EntityPlayer
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
@@ -43,7 +44,11 @@ object Utils {
             .associate {
                 val slot = it.keyDescription.last().digitToInt() - 1
 
-                slot to InventorySlotInfo(slot, Keyboard.getKeyName(it.keyCode), inventory.getStackInSlot(slot))
+                slot to InventorySlotInfo(
+                    slot,
+                    GameSettings.getKeyDisplayString(it.keyCode),
+                    inventory.getStackInSlot(slot)
+                )
             }
     }
 

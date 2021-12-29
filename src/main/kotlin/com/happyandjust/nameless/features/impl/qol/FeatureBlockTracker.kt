@@ -111,7 +111,7 @@ object FeatureBlockTracker : SimpleFeature(Category.QOL, "blocktracker", "Block 
     private var showPath by FeatureParameter(
         3,
         "blocktracker",
-        "radius",
+        "showpath",
         "Show Path to Nearest Block",
         "",
         false,
