@@ -119,7 +119,6 @@ Unless, You can't use rendering outline on entity
   - Ghost Block
   - Open Gui
   - Perspective
-  - Block Movement Packet
 </details>
 <details>
   <summary>Commands</summary>
