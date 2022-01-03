@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.mixinhooks
 
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.FeatureRegistry
+import com.happyandjust.nameless.features.impl.misc.FeatureDisguiseNickname
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -66,9 +66,7 @@ object FontRendererHook {
     }
 
     private fun getCurrentSessionNickname(): String {
-        val feature = FeatureRegistry.DISGUISE_NICKNAME
-
-        return if (feature.enabled) feature.nick else mc.session.username ?: ""
+        return if (FeatureDisguiseNickname.enabled) FeatureDisguiseNickname.nick else mc.session.username ?: ""
     }
 
 

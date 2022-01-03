@@ -18,11 +18,11 @@
 
 package com.happyandjust.nameless.mixinhooks
 
-import com.happyandjust.nameless.dsl.formatDouble
+import com.happyandjust.nameless.dsl.instanceOrNull
 import com.happyandjust.nameless.dsl.matchesMatcher
 import com.happyandjust.nameless.dsl.stripControlCodes
-import com.happyandjust.nameless.dsl.transformToPrecision
-import com.happyandjust.nameless.features.FeatureRegistry
+import com.happyandjust.nameless.dsl.transformToPrecisionString
+import com.happyandjust.nameless.features.impl.skyblock.FeatureDamageIndicator
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
@@ -33,10 +33,8 @@ object EntityHook {
 
     private val CRIT_DAMAGE = Pattern.compile("✧(?<damage>\\d+)✧")
     private val DAMAGE_REGEX = "\\d+".toRegex()
-    private val transformedDamageCache = hashMapOf<String, ChatComponentText>()
+    val transformedDamageCache = hashMapOf<String, ChatComponentText>()
     private val critDamageColor = arrayOf("§f", "§f", "§e", "§6", "§c", "§c")
-    private var prevIndicateType: DamageIndicateType? = null
-    private var prevPrecision: Int? = null
     private val smartTransform = { damage: Int ->
         when (damage) {
             in 0 until 1000 -> damage.toDouble() to ""
@@ -58,69 +56,40 @@ object EntityHook {
             DamageIndicateType.M -> (damage / 100_0000.0)
             DamageIndicateType.B -> (damage / 10_0000_0000.0)
             DamageIndicateType.SMART -> smartTransform(damage).first
-        }.transformToPrecision(precision).formatDouble() + name
+        }.transformToPrecisionString(precision) + name
     }
 
     fun getCustomDamageName(origin: ChatComponentText): ChatComponentText {
 
-        if (Hypixel.currentGame == GameType.SKYBLOCK && FeatureRegistry.DAMAGE_INDICATOR.enabled) {
+        if (Hypixel.currentGame == GameType.SKYBLOCK && FeatureDamageIndicator.enabled) {
 
-            val unformattedText = origin.unformattedText.replace(",", "") // neu
+            val unformattedText = origin.unformattedText
 
-            //
-            val type = FeatureRegistry.DAMAGE_INDICATOR.getParameterValue<DamageIndicateType>("type")
+            transformedDamageCache.getOrPut(unformattedText) {
+                val (damage, isCritical) = getDamageFromString(unformattedText.stripControlCodes()) ?: return origin
 
-            if (prevIndicateType != type) {
-                transformedDamageCache.clear()
+                val damageText =
+                    transformDamage(damage, FeatureDamageIndicator.type, FeatureDamageIndicator.precision)
+
+                ChatComponentText(
+                    if (isCritical) { // critical
+                        "✧$damageText✧".withIndex().joinToString("") { (index, char) ->
+                            "${critDamageColor[index % 6]}$char"
+                        }
+                    } else {
+                        "§${origin.formattedText[1]}$damageText"
+                    }
+                )
             }
-
-            prevIndicateType = type
-
-            val precision = FeatureRegistry.DAMAGE_INDICATOR.getParameterValue<Int>("precision")
-
-            if (prevPrecision != precision) {
-                transformedDamageCache.clear()
-            }
-
-            prevPrecision = precision
-            //
-
-            if (transformedDamageCache.containsKey(unformattedText)) return transformedDamageCache[unformattedText]!!
-
-            val damagePair = getDamageFromString(unformattedText.stripControlCodes()) ?: return origin
-
-            val damageText = transformDamage(damagePair.first, type, precision)
-
-            val chatComponentText = if (damagePair.second) { // critical
-                val builder = StringBuilder()
-
-                for ((index, char) in "✧$damageText✧".withIndex()) {
-                    builder.append(critDamageColor[index % 6]).append(char)
-                }
-
-                ChatComponentText(builder.toString())
-            } else {
-                val colorCode = origin.formattedText[1]
-                ChatComponentText("§$colorCode$damageText")
-            }
-
-            transformedDamageCache[unformattedText] = chatComponentText
-
-            return chatComponentText
         }
 
         return origin
     }
 
     private fun getDamageFromString(text: String): Pair<Int, Boolean>? {
-        if (text.matches(DAMAGE_REGEX)) return Pair(text.toIntOrNull() ?: return null, false)
-
-        var damage: Pair<Int, Boolean>? = null
-
-        CRIT_DAMAGE.matchesMatcher(text) {
-            damage = Pair(it.group("damage").toIntOrNull() ?: return null, true)
+        if (text.matches(DAMAGE_REGEX)) return instanceOrNull(text.toIntOrNull(), false, ::Pair)
+        return CRIT_DAMAGE.matchesMatcher(text) {
+            instanceOrNull(it.group("damage").toIntOrNull(), true, ::Pair)
         }
-
-        return damage
     }
 }

@@ -18,11 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.FeatureParameter;
-import com.happyandjust.nameless.features.FeatureRegistry;
-import com.happyandjust.nameless.features.SimpleFeature;
-import net.minecraft.client.Minecraft;
-import net.minecraft.init.Items;
+import com.happyandjust.nameless.features.impl.misc.FeatureChangeLeatherArmorColor;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,64 +26,33 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.awt.*;
-
 @Mixin(ItemArmor.class)
 public class MixinItemArmor {
 
     private final ItemArmor $this = (ItemArmor) (Object) this;
 
-    private FeatureParameter<Boolean> getAppropriateParameter(SimpleFeature feature) {
-        if ($this == Items.leather_helmet) return feature.getParameter("helmet");
-        if ($this == Items.leather_chestplate) return feature.getParameter("chestplate");
-        if ($this == Items.leather_leggings) return feature.getParameter("leggings");
-        if ($this == Items.leather_boots) return feature.getParameter("boots");
-        return null;
-    }
-
-    private int getCustomColor(SimpleFeature feature) {
-        if (!feature.getEnabled()) return Integer.MAX_VALUE;
-        FeatureParameter<Boolean> parameter = getAppropriateParameter(feature);
-        if (parameter == null || !parameter.getValue()) return Integer.MAX_VALUE;
-        return parameter.<Color>getParameterValue("color").getRGB();
-    }
-
     @Inject(method = "hasColor", at = @At("HEAD"), cancellable = true)
     public void injectHasColor(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        if (!checkForInventory(stack)) return;
-        SimpleFeature feature = FeatureRegistry.INSTANCE.getCHANGE_LEATHER_ARMOR_COLOR();
-
-        if (feature.getEnabled()) {
-            FeatureParameter<Boolean> parameter = getAppropriateParameter(feature);
-            if (parameter == null) return;
-            if (parameter.getValue()) cir.setReturnValue(true);
+        if (FeatureChangeLeatherArmorColor.getCustomColor($this, stack) != null) {
+            cir.setReturnValue(true);
         }
     }
 
     @Inject(method = "getColor", at = @At("HEAD"), cancellable = true)
     public void customizeColor(ItemStack itemStack, CallbackInfoReturnable<Integer> cir) {
-        if (!checkForInventory(itemStack)) return;
-        int color = getCustomColor(FeatureRegistry.INSTANCE.getCHANGE_LEATHER_ARMOR_COLOR());
+        Integer color = FeatureChangeLeatherArmorColor.getCustomColor($this, itemStack);
 
-        if (color != Integer.MAX_VALUE) {
+        if (color != null) {
             cir.setReturnValue(color);
         }
     }
 
     @Inject(method = "getColorFromItemStack", at = @At("HEAD"), cancellable = true)
     public void customizeArmorColor2(ItemStack stack, int renderPass, CallbackInfoReturnable<Integer> cir) {
-        if (!checkForInventory(stack)) return;
-        int color = getCustomColor(FeatureRegistry.INSTANCE.getCHANGE_LEATHER_ARMOR_COLOR());
+        Integer color = FeatureChangeLeatherArmorColor.getCustomColor($this, stack);
 
-        if (color != Integer.MAX_VALUE) {
+        if (color != null) {
             cir.setReturnValue(color);
         }
-    }
-
-    private boolean checkForInventory(ItemStack stack) {
-        for (ItemStack itemStack : Minecraft.getMinecraft().thePlayer.inventory.armorInventory) {
-            if (stack.equals(itemStack)) return true;
-        }
-        return false;
     }
 }

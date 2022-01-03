@@ -25,7 +25,7 @@ import com.happyandjust.nameless.gui.feature.PropertyData
 import net.minecraftforge.common.MinecraftForge
 import kotlin.reflect.KMutableProperty0
 
-open class SimpleFeature(
+abstract class SimpleFeature(
     val category: Category,
     key: String,
     title: String,

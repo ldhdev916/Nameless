@@ -10,6 +10,7 @@
 - Debug
 - Auto Requeue
 - Block Tracker
+- Join Hypixel Immediately
 ### New Commands
 - /pathfind - Do pathfind
 - /graph - Open graph gui

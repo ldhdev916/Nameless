@@ -18,8 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.FeatureRegistry;
-import com.happyandjust.nameless.features.SimpleFeature;
+import com.happyandjust.nameless.features.impl.misc.FeatureChangeFishParticleColor;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.particle.EntityFishWakeFX;
 import net.minecraft.client.renderer.WorldRenderer;
@@ -29,8 +28,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.awt.*;
 
 @Mixin(EntityFX.class)
 public class MixinEntityFX {
@@ -50,10 +47,10 @@ public class MixinEntityFX {
 
         if (!($this instanceof EntityFishWakeFX)) return;
 
-        SimpleFeature feature = FeatureRegistry.INSTANCE.getCHANGE_FISH_PARTICLE_COLOR();
+        FeatureChangeFishParticleColor feature = FeatureChangeFishParticleColor.INSTANCE;
 
         if (feature.getEnabled()) {
-            int color = feature.<Color>getParameterValue("color").getRGB();
+            int color = feature.getColor().getRGB();
 
             particleRed = (color >> 16 & 255) / 255F;
             particleGreen = (color >> 8 & 255) / 255F;

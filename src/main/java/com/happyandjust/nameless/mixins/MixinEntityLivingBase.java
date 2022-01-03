@@ -18,8 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.FeatureRegistry;
-import com.happyandjust.nameless.features.SimpleFeature;
+import com.happyandjust.nameless.features.impl.general.FeatureRemoveNegativeEffects;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.potion.Potion;
 import org.spongepowered.asm.mixin.Mixin;
@@ -47,11 +46,11 @@ public class MixinEntityLivingBase {
 
     @Unique
     private boolean shouldRemove(int potionId) {
-        SimpleFeature feature = FeatureRegistry.INSTANCE.getREMOVE_NEGATIVE_EFFECTS();
+        FeatureRemoveNegativeEffects feature = FeatureRemoveNegativeEffects.INSTANCE;
         if (!feature.getEnabled()) return false;
 
-        if (potionId == Potion.blindness.id && (boolean) feature.getParameterValue("blindness")) {
+        if (potionId == Potion.blindness.id && feature.getBlindness()) {
             return true;
-        } else return potionId == Potion.confusion.id && (boolean) feature.getParameterValue("nausea");
+        } else return potionId == Potion.confusion.id && feature.getNausea();
     }
 }

@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.FeatureRegistry;
+import com.happyandjust.nameless.features.impl.misc.FeatureStopLogSpamming;
 import net.minecraft.util.Util;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,7 +33,7 @@ public class MixinUtil {
 
     @Inject(method = "runTask", at = @At(value = "INVOKE", target = "Lorg/apache/logging/log4j/Logger;fatal(Ljava/lang/String;Ljava/lang/Throwable;)V", remap = false), cancellable = true)
     private static <V> void stopLogSpamming(FutureTask<V> task, Logger logger, CallbackInfoReturnable<V> cir) {
-        if (FeatureRegistry.INSTANCE.getSTOP_LOG_SPAMMING().getEnabled()) {
+        if (FeatureStopLogSpamming.INSTANCE.getEnabled()) {
             cir.setReturnValue(null);
         }
     }

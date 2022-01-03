@@ -68,6 +68,7 @@ Unless, You can't use rendering outline on entity
   - Dropper Helper
   - Auto Requeue
   - Block Tracker
+  - Join Hypixel Immediately
 </details>
 <details>
   <summary>SkyBlock</summary>

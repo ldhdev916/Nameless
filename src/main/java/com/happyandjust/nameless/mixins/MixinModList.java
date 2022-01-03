@@ -18,8 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.FeatureRegistry;
-import com.happyandjust.nameless.features.SimpleFeature;
+import com.happyandjust.nameless.features.impl.general.FeatureRemoveCertainModID;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.network.handshake.FMLHandshakeMessage;
@@ -41,7 +40,7 @@ public class MixinModList {
     @Inject(method = "<init>(Ljava/util/List;)V", at = @At("RETURN"))
     public void removeModList(List<ModContainer> modList, CallbackInfo ci) {
         if (Minecraft.getMinecraft().isSingleplayer()) return;
-        SimpleFeature feature = FeatureRegistry.INSTANCE.getREMOVE_CERTAIN_MOD_ID();
+        FeatureRemoveCertainModID feature = FeatureRemoveCertainModID.INSTANCE;
         if (!feature.getEnabled()) return;
 
         modTags.keySet().removeIf(s -> feature.hasParameter(s) && feature.<Boolean>getParameterValue(s));

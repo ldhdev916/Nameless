@@ -18,9 +18,9 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.FeatureRegistry;
 import com.happyandjust.nameless.features.impl.misc.FeatureNoHurtCam;
 import com.happyandjust.nameless.features.impl.qol.FeatureCharm;
+import com.happyandjust.nameless.features.impl.qol.FeatureF5Fix;
 import com.happyandjust.nameless.mixinhooks.EntityRendererHook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
@@ -59,7 +59,7 @@ public class MixinEntityRenderer {
 
     @ModifyVariable(method = "orientCamera", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/client/multiplayer/WorldClient;rayTraceBlocks(Lnet/minecraft/util/Vec3;Lnet/minecraft/util/Vec3;)Lnet/minecraft/util/MovingObjectPosition;"))
     public MovingObjectPosition f5fix(MovingObjectPosition value) {
-        if (FeatureRegistry.INSTANCE.getF5_FIX().getEnabled()) {
+        if (FeatureF5Fix.INSTANCE.getEnabled()) {
             return null;
         } else {
             return value;

@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.FeatureRegistry;
+import com.happyandjust.nameless.features.impl.misc.FeatureHideFishHook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderFish;
 import net.minecraft.entity.projectile.EntityFishHook;
@@ -32,7 +32,7 @@ public class MixinRenderFish {
 
     @Inject(method = "doRender(Lnet/minecraft/entity/projectile/EntityFishHook;DDDFF)V", at = @At("HEAD"), cancellable = true)
     public void cancelRendering(EntityFishHook d4, double d6, double d8, double d10, float f10, float l, CallbackInfo ci) {
-        if (FeatureRegistry.INSTANCE.getHIDE_FISH_HOOK().getEnabled()) {
+        if (FeatureHideFishHook.INSTANCE.getEnabled()) {
             if (d4.angler != Minecraft.getMinecraft().thePlayer) ci.cancel();
         }
     }
