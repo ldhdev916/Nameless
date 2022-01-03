@@ -64,7 +64,8 @@ val include: Configuration by configurations.creating {
 dependencies {
     implementation("org.spongepowered:mixin:0.7.11-SNAPSHOT")
     implementation("gg.essential:essential-1.8.9-forge:1655+release-launch")
-    include("gg.essential:loader-launchwrapper:1.1.2")
+    include("gg.essential:loader-launchwrapper:1.1.3")
+    include("net.objecthunter:exp4j:0.4.8")
 
     annotationProcessor("org.spongepowered:mixin:0.7.11-SNAPSHOT")
 }

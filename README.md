@@ -34,7 +34,6 @@ Unless, You can't use rendering outline on entity
   - Remove Certain Mod ID Sent to Server
   - Remove Negative Effects (blindness, nausea)
   - Indicate Particles
-  - Block Movement Packet
 </details>
 <details>
   <summary>Quality of Life</summary>
@@ -133,4 +132,5 @@ Unless, You can't use rendering outline on entity
   - /waypoint - Show paths to given coordinate
   - /shortcommand, /shortcmd - Open short command gui
   - /pathfind - Do pathfind
+  - /graph - Open graph gui
 </details>

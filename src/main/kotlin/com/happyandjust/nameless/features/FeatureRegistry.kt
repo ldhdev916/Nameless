@@ -127,7 +127,6 @@ object FeatureRegistry {
         }
     }.register("Mod")
     val INDICATE_PARTICLES = FeatureIndicateParticles.register("In Game")
-    val BLOCK_MOVEMENT_PACKET = FeatureBlockMovementPacket.register("Blatant")
 
     //MISC
     val UPDATE_CHECKER = FeatureUpdateChecker.register("Miscellaneous")

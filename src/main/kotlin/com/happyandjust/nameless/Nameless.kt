@@ -109,7 +109,8 @@ object Nameless {
             ViewStatCommand,
             ChangeHelmetTextureCommand,
             ShortCommand,
-            PathFindCommand
+            PathFindCommand,
+            GraphCommand
         )
 
         BasicListener

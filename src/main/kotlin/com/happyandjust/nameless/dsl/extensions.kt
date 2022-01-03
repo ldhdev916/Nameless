@@ -185,14 +185,10 @@ fun Double.transformToPrecisionString(precision: Int) = transformToPrecision(pre
 
 operator fun Pair<*, *>.contains(other: Any?) = first == other || second == other
 
-inline fun <T> repeat0(times: Int, action: (Int) -> T): List<T> {
-    val list = arrayListOf<T>()
-
-    for (i in 0 until times) {
-        list.add(action(i))
+inline fun <T> repeat0(times: Int, action: (Int) -> T) = buildList {
+    repeat(times) {
+        add(action(it))
     }
-
-    return list
 }
 
 inline fun <reified E> Any?.withInstance(action: E.() -> Unit) {
