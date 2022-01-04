@@ -36,11 +36,12 @@ object FeatureJoinHypixelImmediately : SimpleFeature(
 ) {
 
     private var firstShown = true
+    var stop = false
 
     init {
         on<GuiOpenEvent>().apply {
             priority = EventPriority.LOWEST
-        }.filter { gui is GuiMainMenu }.subscribe {
+        }.filter { gui is GuiMainMenu && !stop }.subscribe {
             if (firstShown) {
                 firstShown = false
                 if (enabled) {

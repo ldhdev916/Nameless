@@ -127,4 +127,4 @@ object Nameless {
 
 const val MOD_ID = "nameless"
 const val MOD_NAME = "Nameless"
-const val VERSION = "1.0.4"
+const val VERSION = "1.0.4-Pre"

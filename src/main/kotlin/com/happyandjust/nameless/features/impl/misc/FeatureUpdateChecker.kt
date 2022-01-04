@@ -25,6 +25,7 @@ import com.happyandjust.nameless.dsl.handler
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.SimpleFeature
+import com.happyandjust.nameless.features.impl.qol.FeatureJoinHypixelImmediately
 import com.happyandjust.nameless.gui.UpdateGui
 import gg.essential.api.utils.GuiUtil
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -59,11 +60,12 @@ object FeatureUpdateChecker : SimpleFeature(
             val json = "https://api.github.com/repos/HappyAndJust/Nameless/releases/latest".handler().read(JsonObject())
             val latestTag = json["tag_name"].asString.drop(1)
 
-            val currentVersion = DefaultArtifactVersion(VERSION)
+            val fixVersion = VERSION.substringBefore("-Pre")
+
+            val currentVersion = DefaultArtifactVersion(fixVersion)
             val latestVersion = DefaultArtifactVersion(latestTag)
 
-
-            if (currentVersion < latestVersion) {
+            if (currentVersion < latestVersion || (fixVersion == latestTag && "Pre" in VERSION)) {
                 val html_url = json["html_url"].asString
                 val assets = json["assets"].asJsonArray[0].asJsonObject
 
@@ -78,6 +80,7 @@ object FeatureUpdateChecker : SimpleFeature(
                     }
                 }
                 needUpdate = true
+                FeatureJoinHypixelImmediately.stop = true
             }
         }
     }
