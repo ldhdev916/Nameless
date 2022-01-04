@@ -136,6 +136,7 @@ object FeatureRegistry {
             add(FeatureInGameStatViewer)
             add(FeatureAutoRequeue)
             add(FeatureJoinHypixelImmediately)
+            add(FeatureHyChatChannelChanger)
         }
 
         with("Quality Of Life") {

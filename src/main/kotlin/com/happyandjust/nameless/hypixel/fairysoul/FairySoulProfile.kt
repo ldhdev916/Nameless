@@ -21,19 +21,13 @@ package com.happyandjust.nameless.hypixel.fairysoul
 import com.happyandjust.nameless.config.ConfigHandler
 import com.happyandjust.nameless.serialization.converters.CFairySoulProfile
 
-class FairySoulProfile(val name: String, val foundFairySouls: HashMap<String, List<FairySoul>>) {
+class FairySoulProfile(val name: String, val foundFairySouls: MutableMap<String, MutableList<FairySoul>>) {
 
     fun addFoundFairySoul(fairySoul: FairySoul) {
 
         if (fairySoul.island == "dungeon") return
 
-        val existing = foundFairySouls[fairySoul.island]?.toMutableList() ?: arrayListOf()
-
-        if (fairySoul in existing) return
-
-        existing.add(fairySoul)
-
-        foundFairySouls[fairySoul.island] = existing
+        foundFairySouls.getOrPut(fairySoul.island) { arrayListOf() }.add(fairySoul)
 
         ConfigHandler.write("profiles", name, this, CFairySoulProfile)
     }

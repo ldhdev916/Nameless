@@ -11,6 +11,7 @@
 - Auto Requeue
 - Block Tracker
 - Join Hypixel Immediately
+- HyChat Channel Changer
 ### New Commands
 - /pathfind - Do pathfind
 - /graph - Open graph gui
@@ -22,6 +23,7 @@
 - Changed icon of x mark in gui
 - Async pathfinding for fairysoul
 - More diagonal move in pathfinding
+- Add Multi Selector to Gui
 ### Bug Fixes
 - Fixed where exp bottle on trajectory preview doesn't work properly
 - Fixed ConfigHandler causing NPE

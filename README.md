@@ -69,6 +69,7 @@ Unless, You can't use rendering outline on entity
   - Auto Requeue
   - Block Tracker
   - Join Hypixel Immediately
+  - HyChat Channel Changer
 </details>
 <details>
   <summary>SkyBlock</summary>

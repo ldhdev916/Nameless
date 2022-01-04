@@ -18,14 +18,14 @@
 
 package com.happyandjust.nameless.serialization.converters
 
-import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoulProfile
 import com.happyandjust.nameless.serialization.Converter
 
 object CFairySoulProfile : Converter<FairySoulProfile> {
+
+    private val listConverter by lazy { CList(CFairySoul::serialize, CFairySoul::deserialize) }
 
     override fun serialize(t: FairySoulProfile): JsonElement {
 
@@ -36,13 +36,7 @@ object CFairySoulProfile : Converter<FairySoulProfile> {
         val islands = JsonObject()
 
         for ((island, foundFairySouls) in t.foundFairySouls) {
-            val array = JsonArray()
-
-            for (fairySoul in foundFairySouls) {
-                array.add(CFairySoul.serialize(fairySoul))
-            }
-
-            islands.add(island, array)
+            islands.add(island, listConverter.serialize(foundFairySouls))
         }
 
         jsonObject.add("fairySouls", islands)
@@ -55,20 +49,10 @@ object CFairySoulProfile : Converter<FairySoulProfile> {
         val name = jsonObject["name"].asString
         val fairySoulsByIsland = jsonObject["fairySouls"].asJsonObject
 
-        val fairySoulMap = hashMapOf<String, List<FairySoul>>()
-
-        for ((island, foundFairySouls) in fairySoulsByIsland.entrySet()) {
-            foundFairySouls as JsonArray
-
-            val fairySouls = arrayListOf<FairySoul>()
-
-            for (fairySoul in foundFairySouls) {
-                fairySouls.add(CFairySoul.deserialize(fairySoul))
+        return FairySoulProfile(name, buildMap {
+            for ((island, foundFairySouls) in fairySoulsByIsland.entrySet()) {
+                this[island] = listConverter.deserialize(foundFairySouls).toMutableList()
             }
-
-            fairySoulMap[island] = fairySouls
-        }
-
-        return FairySoulProfile(name, fairySoulMap)
+        }.toMutableMap())
     }
 }

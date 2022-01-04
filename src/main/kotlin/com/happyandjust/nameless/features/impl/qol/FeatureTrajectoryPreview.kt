@@ -25,15 +25,14 @@ import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.*
+import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CChromaColor
-import com.happyandjust.nameless.trajectory.ArrowTrajectoryPreview
-import com.happyandjust.nameless.trajectory.FishHookTrajectory
-import com.happyandjust.nameless.trajectory.ThrowableTrajectoryPreview
-import com.happyandjust.nameless.trajectory.TrajectoryCalculateResult
+import com.happyandjust.nameless.serialization.converters.CList
+import com.happyandjust.nameless.serialization.converters.getEnumConverter
+import com.happyandjust.nameless.trajectory.*
 import com.happyandjust.nameless.utils.RenderUtils
-import net.minecraft.init.Items
-import net.minecraft.item.ItemPotion
+import net.minecraft.item.*
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 
@@ -111,105 +110,32 @@ object FeatureTrajectoryPreview : SimpleFeature(
     )
 
     @InCategory("Type")
-    private var bow by FeatureParameter(
+    private var selectedTrajectoryTypes by object : FeatureParameter<List<TrajectoryType>>(
         0,
         "trajectory",
-        "bow",
-        "Enable Trajectory for Bow",
+        "selectedtypes",
+        "Trajectory Types",
         "",
-        true,
-        CBoolean
-    )
+        listOf(
+            TrajectoryType.BOW,
+            TrajectoryType.ENDER_PEARL
+        ),
+        CList(getEnumConverter())
+    ) {
 
-    @InCategory("Type")
-    private var enderPearl by FeatureParameter(
-        0,
-        "trajectory",
-        "enderpearl",
-        "Enable Trajectory for Ender Pearl",
-        "",
-        true,
-        CBoolean
-    )
+        init {
+            allEnumList = TrajectoryType.values().toList()
+            enumName = { (it as TrajectoryType).prettyName }
+        }
 
-    @InCategory("Type")
-    private var egg by FeatureParameter(
-        0,
-        "trajectory",
-        "egg",
-        "Enable Trajectory for Egg",
-        "",
-        true,
-        CBoolean
-    )
-
-    @InCategory("Type")
-    private var snowball by FeatureParameter(
-        0,
-        "trajectory",
-        "snowball",
-        "Enable Trajectory for Snowball",
-        "",
-        true,
-        CBoolean
-    )
-
-    @InCategory("Type")
-    private var potion by FeatureParameter(
-        0,
-        "trajectory",
-        "potion",
-        "Enable Trajectory for Potion",
-        "",
-        false,
-        CBoolean
-    )
-
-    @InCategory("Type")
-    private var expBottle by FeatureParameter(
-        0,
-        "trajectory",
-        "expbottle",
-        "Enable Trajectory for Exp Bottle",
-        "",
-        false,
-        CBoolean
-    )
-
-    @InCategory("Type")
-    private var fishingRod by FeatureParameter(
-        0,
-        "trajectory",
-        "fishingrod",
-        "Enable Trajectory for Fishing Rod",
-        "",
-        false,
-        CBoolean
-    )
+        override fun getComponentType() = ComponentType.MULTI_SELECTOR
+    }
 
     private var trajectoryCalculateResult: TrajectoryCalculateResult? = null
 
     init {
         on<SpecialTickEvent>().filter { enabled }.subscribe {
-            val heldItemStack = mc.thePlayer.heldItem
-
-            val heldItem = heldItemStack?.item ?: run {
-                trajectoryCalculateResult = null
-                return@subscribe
-            }
-
-            val preview = when (heldItem) {
-                Items.snowball -> if (snowball) ThrowableTrajectoryPreview() else null
-                Items.ender_pearl -> if (enderPearl) ThrowableTrajectoryPreview() else null
-                Items.egg -> if (egg) ThrowableTrajectoryPreview() else null
-                Items.bow -> if (mc.thePlayer.itemInUse?.item == Items.bow && bow) ArrowTrajectoryPreview() else null
-                Items.potionitem -> if (potion && ItemPotion.isSplash(heldItemStack.metadata)) ThrowableTrajectoryPreview(
-                    ThrowableTrajectoryPreview.ThrowableType.POTION
-                ) else null
-                Items.experience_bottle -> if (expBottle) ThrowableTrajectoryPreview(ThrowableTrajectoryPreview.ThrowableType.EXP_BOTTLE) else null
-                Items.fishing_rod -> if (fishingRod) FishHookTrajectory() else null
-                else -> null
-            }
+            val preview = selectedTrajectoryTypes.find { it.enabled }?.trajectoryPreview
 
             if (trajectoryCalculateResult == null) { // new
                 preview?.setRandomValue()
@@ -232,7 +158,7 @@ object FeatureTrajectoryPreview : SimpleFeature(
 
                 it.end?.let { end ->
                     val pointColor =
-                        (if (it.entityHit == null) endColor else traceColor).rgb
+                        (if (it.entityHit == null) endColor else targetColor).rgb
 
                     RenderUtils.draw3DPoint(end, pointColor, 4.0, partialTicks)
                 }
@@ -243,5 +169,53 @@ object FeatureTrajectoryPreview : SimpleFeature(
             .subscribe {
                 colorInfo = ColorInfo(glowColor.rgb, ColorInfo.ColorPriority.HIGHEST)
             }
+    }
+
+    enum class TrajectoryType(val prettyName: String) {
+        BOW("Bow") {
+            override val enabled: Boolean
+                get() = mc.thePlayer.itemInUse?.item is ItemBow
+            override val trajectoryPreview: TrajectoryPreview
+                get() = ArrowTrajectoryPreview()
+        },
+        EGG("Egg") {
+            override val enabled: Boolean
+                get() = mc.thePlayer.heldItem?.item is ItemEgg
+            override val trajectoryPreview: TrajectoryPreview
+                get() = ThrowableTrajectoryPreview()
+        },
+        ENDER_PEARL("Ender Pearl") {
+            override val enabled: Boolean
+                get() = mc.thePlayer.heldItem?.item is ItemEnderPearl
+            override val trajectoryPreview: TrajectoryPreview
+                get() = ThrowableTrajectoryPreview()
+        },
+        EXP_BOTTLE("Exp Bottle") {
+            override val enabled: Boolean
+                get() = mc.thePlayer.heldItem?.item is ItemExpBottle
+            override val trajectoryPreview: TrajectoryPreview
+                get() = ThrowableTrajectoryPreview(ThrowableTrajectoryPreview.ThrowableType.EXP_BOTTLE)
+        },
+        FISHING_ROD("Fishing Rod") {
+            override val enabled: Boolean
+                get() = mc.thePlayer.heldItem?.item is ItemFishingRod
+            override val trajectoryPreview: TrajectoryPreview
+                get() = FishHookTrajectory()
+        },
+        POTION("Potion") {
+            override val enabled: Boolean
+                get() = mc.thePlayer.heldItem?.let { it.item is ItemPotion && ItemPotion.isSplash(it.metadata) } == true
+            override val trajectoryPreview: TrajectoryPreview
+                get() = ThrowableTrajectoryPreview(ThrowableTrajectoryPreview.ThrowableType.POTION)
+        },
+        SNOWBALL("Snowball") {
+            override val enabled: Boolean
+                get() = mc.thePlayer.heldItem?.item is ItemSnowball
+            override val trajectoryPreview: TrajectoryPreview
+                get() = ThrowableTrajectoryPreview()
+        };
+
+        abstract val enabled: Boolean
+        abstract val trajectoryPreview: TrajectoryPreview
     }
 }

@@ -25,6 +25,8 @@ import com.happyandjust.nameless.serialization.Converter
 class CList<T>(private val serializer: (T) -> JsonElement, private val deserializer: (JsonElement) -> T) :
     Converter<List<T>> {
 
+    constructor(converter: Converter<T>) : this(converter::serialize, converter::deserialize)
+
     override fun serialize(t: List<T>): JsonElement {
         return JsonArray().apply {
             t.map(serializer).forEach(::add)
@@ -32,7 +34,7 @@ class CList<T>(private val serializer: (T) -> JsonElement, private val deseriali
     }
 
     override fun deserialize(jsonElement: JsonElement): List<T> {
-        return arrayListOf<T>().apply {
+        return buildList {
             addAll(jsonElement.asJsonArray.map(deserializer))
         }
     }

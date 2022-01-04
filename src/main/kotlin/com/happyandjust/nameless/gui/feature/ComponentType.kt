@@ -19,10 +19,7 @@
 package com.happyandjust.nameless.gui.feature
 
 import com.happyandjust.nameless.core.value.ChromaColor
-import com.happyandjust.nameless.gui.feature.components.Identifier
-import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
-import com.happyandjust.nameless.gui.feature.components.toChromaColorComponent
-import com.happyandjust.nameless.gui.feature.components.toFilterTextComponent
+import com.happyandjust.nameless.gui.feature.components.*
 import gg.essential.vigilance.gui.settings.*
 import java.awt.Color
 
@@ -122,6 +119,17 @@ enum class ComponentType {
                     propertyData.property.set(it as T)
                 }
             }
+    },
+    MULTI_SELECTOR {
+        override fun <T> getComponent(propertyData: PropertyData<T>) = MultiSelectorComponent(
+            (propertyData.property() as List<Enum<*>>).map { propertyData.enumName(it) },
+            propertyData.allEnumList.map { propertyData.enumName(it) }
+        ).apply {
+            onValueChange {
+                val indexes = it as List<Int>
+                propertyData.property.set(propertyData.allEnumList.filterIndexed { index, _ -> index in indexes } as T)
+            }
+        }
     };
 
     abstract fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent
