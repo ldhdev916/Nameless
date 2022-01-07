@@ -93,6 +93,8 @@ tasks {
         }
     }
 
+    build.get().dependsOn("shadowJar")
+
     named<Jar>("jar") {
         manifest.attributes(
             mapOf(
@@ -104,7 +106,6 @@ tasks {
         )
         archiveBaseName.set("Nameless")
 
-        dependsOn("shadowJar")
         enabled = false
     }
 

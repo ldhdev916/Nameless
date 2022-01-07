@@ -21,7 +21,6 @@ package com.happyandjust.nameless.gui
 import com.happyandjust.nameless.dsl.transformToPrecisionString
 import com.happyandjust.nameless.gui.feature.ColorCache
 import com.happyandjust.nameless.utils.Utils
-import gg.essential.api.EssentialAPI
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.*
 import gg.essential.elementa.constraints.*
@@ -131,9 +130,9 @@ class UpdateGui(markDownText: String) : WindowScreen(
                 updateMessage.setText("§cException Occurred while downloading latest mod file")
                 UDesktop.browse(htmlURL)
             }
-            EssentialAPI.getShutdownHookUtil().register {
+            Runtime.getRuntime().addShutdownHook(Thread {
                 Utils.deleteOldJar()
-            }
+            })
 
             FMLCommonHandler.instance().exitJava(-1, false)
         }

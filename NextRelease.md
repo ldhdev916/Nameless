@@ -29,6 +29,7 @@
 - Fixed ConfigHandler causing NPE
 - Fixed frame dropping in gemstone esp
 - Fixed waypoint manager doesn't take negative positions
+- Fixed mod not deleting old jar file when auto-updating
 ### Removals
 - No HurtCam - changed to HurtCam Adjuster
 - Jerry Workshop Gift ESP - changed to normal gift esp
