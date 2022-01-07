@@ -49,8 +49,9 @@ public class MixinEntityLivingBase {
         FeatureRemoveNegativeEffects feature = FeatureRemoveNegativeEffects.INSTANCE;
         if (!feature.getEnabled()) return false;
 
-        if (potionId == Potion.blindness.id && feature.getBlindness()) {
+        if (potionId == Potion.blindness.id && feature.getEnabledPotionTypes().contains(FeatureRemoveNegativeEffects.PotionType.BLINDNESS)) {
             return true;
-        } else return potionId == Potion.confusion.id && feature.getNausea();
+        } else
+            return potionId == Potion.confusion.id && feature.getEnabledPotionTypes().contains(FeatureRemoveNegativeEffects.PotionType.NAUSEA);
     }
 }

@@ -21,7 +21,9 @@ package com.happyandjust.nameless.features.impl.general
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
-import com.happyandjust.nameless.serialization.converters.CBoolean
+import com.happyandjust.nameless.gui.feature.ComponentType
+import com.happyandjust.nameless.serialization.converters.CList
+import com.happyandjust.nameless.serialization.converters.getEnumConverter
 
 object FeatureRemoveNegativeEffects : SimpleFeature(
     Category.GENERAL,
@@ -30,6 +32,24 @@ object FeatureRemoveNegativeEffects : SimpleFeature(
     "Support Blindness, Nausea"
 ) {
 
-    var blindness by FeatureParameter(0, "effects", "blindness", "Blindness", "", true, CBoolean)
-    var nausea by FeatureParameter(1, "effects", "nausea", "Nausea", "", true, CBoolean)
+    var enabledPotionTypes by object : FeatureParameter<List<PotionType>>(
+        0, "removenegativeeffects", "potiontypes", "Potion Types", "", PotionType.values().toList(), CList(
+            getEnumConverter()
+        )
+    ) {
+        init {
+            allEnumList = PotionType.values().toList()
+            enumName = {
+                val name = (it as PotionType).name
+
+                "${name[0]}${name.drop(1).lowercase()}"
+            }
+        }
+
+        override fun getComponentType() = ComponentType.MULTI_SELECTOR
+    }
+
+    enum class PotionType {
+        BLINDNESS, NAUSEA
+    }
 }

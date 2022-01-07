@@ -28,11 +28,14 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureParameter
 import com.happyandjust.nameless.features.SimpleFeature
+import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.serialization.converters.CChromaColor
+import com.happyandjust.nameless.serialization.converters.CList
+import com.happyandjust.nameless.serialization.converters.getEnumConverter
 import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.elementa.utils.withAlpha
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -61,30 +64,18 @@ object FeatureGiftESP : SimpleFeature(Category.QOL, "giftesp", "Gift ESP") {
         CChromaColor
     )
 
-    private var jerryWorkshop by FeatureParameter(
-        1,
-        "giftesp",
-        "jerryworkshop",
-        "Enable Jerry Workshop",
-        "",
-        false,
-        CBoolean
-    )
+    private var selectedGiftGameTypes by object :
+        FeatureParameter<List<GiftGameType>>(
+            1, "giftesp", "selectedtypes", "Game Types", "", emptyList(), CList(getEnumConverter())
+        ) {
 
-    private var lobby by FeatureParameter(1, "giftesp", "lobby", "Enable Hypixel Lobby", "", false, CBoolean)
+        init {
+            allEnumList = GiftGameType.values().toList()
+            enumName = { (it as GiftGameType).prettyName }
+        }
 
-    private var grinchSimulator by FeatureParameter(
-        1,
-        "giftesp",
-        "grinch",
-        "Enable Grinch Simulator",
-        "",
-        false,
-        CBoolean
-    )
-
-    private var murderMystery by FeatureParameter(1, "giftesp", "murder", "Enable Murder Mystery", "", false, CBoolean)
-
+        override fun getComponentType() = ComponentType.MULTI_SELECTOR
+    }
     private var renderDirectionArrow by FeatureParameter(
         0,
         "giftesp",
@@ -191,20 +182,21 @@ object FeatureGiftESP : SimpleFeature(Category.QOL, "giftesp", "Gift ESP") {
         RenderUtils.drawBox(boundingBox, color.rgb, partialTicks)
     }
 
-    private fun GiftGameType.shouldRender() = when (this) {
-        GiftGameType.JERRY_WORKSHOP -> jerryWorkshop && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty<String>(
+    private fun GiftGameType.shouldRender() = this in selectedGiftGameTypes && when (this) {
+        GiftGameType.JERRY_WORKSHOP -> Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty<String>(
             PropertyKey.ISLAND
         ) == "winter"
-        GiftGameType.LOBBY -> lobby && Hypixel.inLobby
-        GiftGameType.GRINCH_SIMULATOR -> grinchSimulator && Hypixel.currentGame == GameType.GRINCH_SIMULATOR
-        GiftGameType.MURDER_MYSTERY -> murderMystery && Hypixel.currentGame == GameType.MURDER_MYSTERY
+        GiftGameType.LOBBY -> Hypixel.inLobby
+        GiftGameType.GRINCH_SIMULATOR -> Hypixel.currentGame == GameType.GRINCH_SIMULATOR
+        GiftGameType.MURDER_MYSTERY -> Hypixel.currentGame == GameType.MURDER_MYSTERY
     }
 
 
-    enum class GiftGameType(vararg val giftSkullOwners: String) {
-        JERRY_WORKSHOP("7732c5e41800bb90270f727d2969254b"),
-        LOBBY("8ac1ce8ed5f64ed7f878b3ab8a09db0c", "5b18ac9a1e045516d2a442a1e9c1ae60"),
+    enum class GiftGameType(val prettyName: String, vararg val giftSkullOwners: String) {
+        JERRY_WORKSHOP("Jerry Workshop", "7732c5e41800bb90270f727d2969254b"),
+        LOBBY("Lobby", "8ac1ce8ed5f64ed7f878b3ab8a09db0c", "5b18ac9a1e045516d2a442a1e9c1ae60"),
         GRINCH_SIMULATOR(
+            "Grinch Simulator",
             "305c6132b239864175877f325d2a6265",
             "33868440c80ee12ec2ce2ff9ac85e754",
             "dd5b404213f4455701f705207b87f994",
@@ -232,6 +224,7 @@ object FeatureGiftESP : SimpleFeature(Category.QOL, "giftesp", "Gift ESP") {
             "65e5a5f896b000679ed03890f05e2f46"
         ),
         MURDER_MYSTERY(
+            "Murder Mystery",
             "8378fdb4029341cc448362a155d80f92",
             "2e9b0a209a71e784e84ab63185e919b5",
             "95bad214afc3eb1bd234caac6466ea0d"

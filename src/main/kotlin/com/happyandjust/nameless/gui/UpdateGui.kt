@@ -45,6 +45,14 @@ class UpdateGui(markDownText: String) : WindowScreen(
     lateinit var htmlURL: URI
     lateinit var downloadURL: URL
 
+    private var canceled = false
+
+    private fun check(): Boolean {
+        if (mc.currentScreen !== this) canceled = true
+
+        return canceled
+    }
+
     private val markDownContainer = UIContainer().constrain {
         x = CenterConstraint()
         y = 10.pixels()
@@ -106,6 +114,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
 
     private fun doUpdate() {
         thread {
+            if (check()) return@thread
             runCatching {
                 val configDir = File("config/HappyAndJust/")
                 configDir.mkdirs()
@@ -123,6 +132,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
                 UDesktop.open(jarFile.parentFile)
                 Thread.sleep(2000L)
             }
+            if (check()) return@thread
 
             runCatching {
                 downloadFile(jarFile, downloadURL)
@@ -130,6 +140,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
                 updateMessage.setText("§cException Occurred while downloading latest mod file")
                 UDesktop.browse(htmlURL)
             }
+            if (check()) return@thread
             Runtime.getRuntime().addShutdownHook(Thread {
                 Utils.deleteOldJar()
             })
@@ -164,7 +175,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
         file.outputStream().buffered().use {
 
             for (byte in bytes) {
-
+                if (check()) return
                 count += byte
                 it.write(byte.toInt())
 

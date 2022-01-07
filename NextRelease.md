@@ -24,6 +24,7 @@
 - Async pathfinding for fairysoul
 - More diagonal move in pathfinding
 - Add Multi Selector to Gui
+- Auto cancel update when you close update gui
 ### Bug Fixes
 - Fixed where exp bottle on trajectory preview doesn't work properly
 - Fixed ConfigHandler causing NPE
