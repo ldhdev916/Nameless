@@ -20,11 +20,11 @@ package com.happyandjust.nameless.trajectory
 
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.MathHelper
-import net.minecraft.util.Vec3
 import kotlin.math.PI
 
 class FishHookTrajectory : TrajectoryPreview() {
 
+    override val shouldStop = { super.shouldStop() || isInWater() }
     override fun getAxisAlignedBB() =
         AxisAlignedBB(posX - 0.125, posY, posZ - 0.125, posX + 0.125, posY + 0.25, posZ + 0.125)
 
@@ -68,45 +68,10 @@ class FishHookTrajectory : TrajectoryPreview() {
         this.motionZ = motionZ
     }
 
-    override fun calculate(): TrajectoryCalculateResult {
-
-        val list = arrayListOf<Vec3>()
-        var end: Vec3? = null
-
-        val num = 120
-
-        label@ while (canMove()) {
-
-            for (i in 0 until num) {
-                if (posY < 0) break@label
-
-                if (!canMove()) break@label
-
-                if (checkEntity()) break@label
-
-                // umm always stops if collide with water
-                if (isInWater()) break@label
-
-                list.add(Vec3(posX, posY, posZ))
-                end = Vec3(posX, posY, posZ)
-
-                posX += motionX / num
-                posY += motionY / num
-                posZ += motionZ / num
-            }
-
-            val f6 = 0.92F
-
-            val d11 = -1.0
-
-            motionY += 0.03999999910593033 * d11
-
-            motionX *= f6
-            motionY *= f6
-            motionZ *= f6
-        }
-
-        return TrajectoryCalculateResult(entityHit, end, list)
-
+    override fun calculateMotions() {
+        motionY -= 0.03999999910593033
+        motionX *= 0.92F
+        motionY *= 0.92F
+        motionZ *= 0.92F
     }
 }

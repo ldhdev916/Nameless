@@ -20,7 +20,6 @@ package com.happyandjust.nameless.trajectory
 
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.MathHelper
-import net.minecraft.util.Vec3
 
 class ArrowTrajectoryPreview : TrajectoryPreview() {
     override fun getAxisAlignedBB(): AxisAlignedBB =
@@ -61,42 +60,13 @@ class ArrowTrajectoryPreview : TrajectoryPreview() {
         motionZ = z
     }
 
-    override fun calculate(): TrajectoryCalculateResult {
-        val list = arrayListOf<Vec3>()
-        val f6 = 0.05f
-        val num = 120
-        var end: Vec3? = null
+    override fun calculateMotions() {
+        val speed = if (isInWater()) 0.6f else 0.99f
 
-        label@ while (canMove()) {
-
-            for (i in 0 until num) {
-                if (posY < 0) break@label
-                if (!canMove()) {
-                    break@label
-                }
-                if (checkEntity()) {
-                    break@label
-                }
-
-                list.add(Vec3(posX, posY, posZ))
-                end = Vec3(posX, posY, posZ)
-                posX += motionX / num
-                posY += motionY / num
-                posZ += motionZ / num
-            }
-            repeat(1) {
-
-            }
-
-            val f4 = if (isInWater()) 0.6F else 0.99F
-
-            motionX *= f4.toDouble()
-            motionY *= f4.toDouble()
-            motionZ *= f4.toDouble()
-            motionY -= f6.toDouble()
-        }
-        return TrajectoryCalculateResult(entityHit, end, list)
+        motionX *= speed
+        motionY *= speed
+        motionZ *= speed
+        motionY -= 0.05f
     }
-
 
 }

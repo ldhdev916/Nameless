@@ -22,7 +22,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import com.happyandjust.nameless.serialization.Converter
 
-class CEnum<E : Enum<*>>(private val valueOf: (String) -> E) : Converter<E> {
+class CEnum<E : Enum<E>>(private val valueOf: (String) -> E) : Converter<E> {
 
     override fun serialize(t: E) = JsonPrimitive(t.name)
 

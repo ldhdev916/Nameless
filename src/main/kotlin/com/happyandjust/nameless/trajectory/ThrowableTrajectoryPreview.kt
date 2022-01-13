@@ -20,7 +20,6 @@ package com.happyandjust.nameless.trajectory
 
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.MathHelper
-import net.minecraft.util.Vec3
 
 class ThrowableTrajectoryPreview(private val throwableType: ThrowableType = ThrowableType.ELSE) :
     TrajectoryPreview() {
@@ -84,42 +83,14 @@ class ThrowableTrajectoryPreview(private val throwableType: ThrowableType = Thro
         motionZ = z
     }
 
-    override fun calculate(): TrajectoryCalculateResult {
-        val list = arrayListOf<Vec3>()
+    override fun calculateMotions() {
+        val speed = if (isInWater()) 0.8f else 0.99f
 
-        val f6 = gravityVelocity
-
-        val num = 120
-        var end: Vec3? = null
-
-        label@ while (canMove()) {
-            val f4 = if (isInWater()) 0.8F else 0.99f
-
-            for (i in 0 until num) {
-                if (posY < 0) break@label
-                if (!canMove()) {
-                    break@label
-                }
-                if (checkEntity()) {
-                    break@label
-                }
-
-                list.add(Vec3(posX, posY, posZ))
-                end = Vec3(posX, posY, posZ)
-                posX += motionX / num
-                posY += motionY / num
-                posZ += motionZ / num
-            }
-
-            motionX *= f4.toDouble()
-            motionY *= f4.toDouble()
-            motionZ *= f4.toDouble()
-            motionY -= f6.toDouble()
-        }
-        return TrajectoryCalculateResult(entityHit, end, list)
-
+        motionX *= speed
+        motionY *= speed
+        motionZ *= speed
+        motionY -= gravityVelocity
     }
-
 
     enum class ThrowableType {
         POTION, EXP_BOTTLE, ELSE

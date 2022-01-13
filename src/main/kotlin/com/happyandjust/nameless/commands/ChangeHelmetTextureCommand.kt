@@ -56,10 +56,9 @@ object ChangeHelmetTextureCommand : Command("helmettexture") {
     init {
         on<PacketEvent.Received>().filter { packet is S3APacketTabComplete }.subscribe {
             mc.currentScreen.withInstance<AccessorGuiChat> {
-                pattern.matchesMatcher(inputField.text) { matcher ->
+                pattern.matchesMatcher(inputField.text) {
                     packet = S3APacketTabComplete(SkyblockUtils.allItems.values.filter {
-                        it.skin.isNotBlank() &&
-                                it.id.contains(matcher.group("id"), true)
+                        it.skin.isNotBlank() && it.id.contains(group("id"), true)
                     }.map { it.id }.toTypedArray())
                 }
             }

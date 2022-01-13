@@ -106,7 +106,7 @@ object FeatureAutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", 
 
                 mc.thePlayer.playSound("random.successful_hit", 1F, 0.5F)
 
-                val nickname = it.group("nick")
+                val nickname = group("nick")
 
                 if (press) {
                     currentPartyInfo = PartyInfo(nickname, System.currentTimeMillis() + 5000)

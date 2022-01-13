@@ -48,7 +48,7 @@ object FeatureHypixelAPIKey : SettingFeature("hypixelapikey", "Hypixel API Key",
         on<ClientChatReceivedEvent>().filter { type.toInt() != 2 && EssentialAPI.getMinecraftUtil().isHypixel() }
             .subscribe {
                 API_PATTERN.matchesMatcher(pureText) {
-                    apiKey = it.group("api")
+                    apiKey = group("api")
                     sendPrefixMessage("§aGrabbed Hypixel API!")
                 }
             }

@@ -166,7 +166,7 @@ object FeatureBazaarHelper : SimpleFeature(
         return runCatching {
             val tagList = tagCompound.getCompoundTag("display").getTagList("Lore", Constants.NBT.TAG_STRING)
 
-            repeat0(tagList.tagCount()) { tagList.getStringTagAt(it).trim().stripControlCodes().replace(",", "") }
+            List(tagList.tagCount()) { tagList.getStringTagAt(it).trim().stripControlCodes().replace(",", "") }
         }.getOrElse { emptyList() }
     }
 

@@ -18,19 +18,17 @@
 
 package com.happyandjust.nameless.dsl
 
+import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.happyandjust.nameless.config.ConfigMap
 import com.happyandjust.nameless.core.FAIRY_SOUL
 import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
-import com.happyandjust.nameless.utils.SkyblockUtils
 import com.mojang.authlib.GameProfile
 import gg.essential.api.EssentialAPI
 import gg.essential.api.utils.WebUtil
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import net.minecraft.block.Block
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
@@ -48,6 +46,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
+import java.io.Reader
 import java.security.MessageDigest
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -61,6 +60,8 @@ import kotlin.math.roundToInt
 private val RARITY_PATTERN = Pattern.compile("(§[0-9a-f]§l§ka§r )?([§0-9a-fk-or]+)(?<rarity>[A-Z]+)")
 private val md = MessageDigest.getInstance("MD5")
 private val md5Cache = ConfigMap.StringConfigMap("md5")
+private val decimalFormat =
+    DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)).apply { maximumFractionDigits = 640 }
 
 /**
  * Taken from SkyblockAddons under MIT License
@@ -77,25 +78,22 @@ fun ItemStack?.getSkyBlockRarity(): ItemRarity? {
     val display = getSubCompound("display", false) ?: return null
     if (!display.hasKey("Lore")) return null
     val lore = display.getTagList("Lore", Constants.NBT.TAG_STRING)
+    val values = ItemRarity.values()
 
-    return (0 until lore.tagCount())
-        .map {
-            RARITY_PATTERN.findMatcher(lore.getStringTagAt(it)) {
-                ItemRarity.values().find { itemRarity -> it.group("rarity").startsWith(itemRarity.loreName) }
-            }
+    return List(lore.tagCount()) {
+        RARITY_PATTERN.findMatcher(lore.getStringTagAt(it)) {
+            values.find { rarity -> group("rarity").startsWith(rarity.loreName) }
         }
-        .firstOrNull()
+    }.firstOrNull()
 }
 
 fun String.getMD5() =
-    md5Cache.getOrPut(this) { md.digest(toByteArray()).joinToString("") { String.format("%02x", it) } }
+    md5Cache.getOrPut(this) { md.digest(toByteArray()).joinToString("") { "%02x".format(it) } }
 
 fun String.copyToClipboard() =
     Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(this), null)
 
-fun Double.formatDouble(): String =
-    DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)).apply { maximumFractionDigits = 640 }
-        .format(this)
+fun Double.formatDouble(): String = decimalFormat.format(this)
 
 fun BlockPos.getAxisAlignedBB() =
     AxisAlignedBB(x.toDouble(), y.toDouble(), z.toDouble(), x + 1.0, y + 1.0, z + 1.0)
@@ -156,20 +154,10 @@ fun ItemStack.getSkullOwner(): String {
 
 fun GameProfile.getSkullOwner() = properties["textures"]?.find { it.name == "textures" }?.value ?: ""
 
-suspend fun scanAuction(task: (List<AuctionInfo>) -> Unit) = coroutineScope {
-    repeat0(SkyblockUtils.getMaxAuctionPage()) {
-        async {
-            runCatching { SkyblockUtils.getAuctionDataInPage(it) }.getOrDefault(emptyList())
-        }
-    }
-        .flatMap { it.await() }
-        .let(task)
-}
+inline fun <T> Pattern.matchesMatcher(s: String, block: Matcher.() -> T) =
+    matcher(s).takeIf { it.matches() }?.run(block)
 
-inline fun <T> Pattern.matchesMatcher(s: String, block: (Matcher) -> T) =
-    matcher(s).takeIf { it.matches() }?.let(block)
-
-inline fun <T> Pattern.findMatcher(s: String, block: (Matcher) -> T) = matcher(s).takeIf { it.find() }?.let(block)
+inline fun <T> Pattern.findMatcher(s: String, block: Matcher.() -> T) = matcher(s).takeIf { it.find() }?.run(block)
 
 fun Entity.toVec3() = Vec3(posX, posY, posZ)
 
@@ -184,12 +172,6 @@ fun Double.transformToPrecision(precision: Int): Double {
 fun Double.transformToPrecisionString(precision: Int) = transformToPrecision(precision).formatDouble()
 
 operator fun Pair<*, *>.contains(other: Any?) = first == other || second == other
-
-inline fun <T> repeat0(times: Int, action: (Int) -> T) = buildList {
-    repeat(times) {
-        add(action(it))
-    }
-}
 
 inline fun <reified E> Any?.withInstance(action: E.() -> Unit) {
     if (this is E) {
@@ -212,3 +194,9 @@ fun String.handler() = JsonHandler(fetch())
 
 val Block.displayName: String
     get() = runCatching { ItemStack(this).displayName }.getOrDefault(registryName.split(":")[1])
+
+inline fun <reified T> Gson.fromJson(json: JsonElement): T = fromJson(json, T::class.java)
+
+inline fun <reified T> Gson.fromJson(reader: Reader): T = fromJson(reader, T::class.java)
+
+inline fun <reified T> Gson.fromJson(s: String): T = fromJson(s, T::class.java)

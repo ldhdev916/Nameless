@@ -253,23 +253,23 @@ object FeatureMurdererFinder : SimpleFeature(
             when (Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)) {
                 MurdererMode.INFECTION -> {
                     ALPHA_FOUND.matchesMatcher(pureText) {
-                        alpha = it.group("alpha")
+                        alpha = group("alpha")
                         // this is why I set alpha to String, player may not be loaded when alpha is found
                     }
                     INFECTED.matchesMatcher(pureText) {
-                        val infectedName = it.group("infected")
+                        val infectedName = group("infected")
                         murderers.add(infectedName)
                         survivors.remove(infectedName) // infected cannot be survivor smh
 
                         // same as reason why I set to String
                     }
                     ENVIRONMENT_INFECTED.matchesMatcher(pureText) {
-                        val infectedName = it.group("infected")
+                        val infectedName = group("infected")
                         murderers.add(infectedName)
                         survivors.remove(infectedName)
                     }
                     ALPHA_LEFT.matchesMatcher(pureText) {
-                        alpha = it.group("name")
+                        alpha = group("name")
                     }
                 }
                 MurdererMode.ASSASSIN -> {

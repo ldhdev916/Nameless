@@ -19,14 +19,13 @@
 package com.happyandjust.nameless.commands
 
 import com.google.gson.Gson
-import com.google.gson.JsonObject
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.dsl.repeat0
 import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.gui.shortcmd.ShortCommandGui
 import com.happyandjust.nameless.serialization.converters.CList
+import com.happyandjust.nameless.serialization.toConverter
 import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.utils.GuiUtil
@@ -36,9 +35,12 @@ import java.util.regex.Pattern
 object ShortCommand : Command("shortcommand") {
 
     private val gson = Gson()
-    var shortCommandInfos by ConfigValue("shortcommand", "list", emptyList(), CList<ShortCommandInfo>({
-        gson.fromJson(gson.toJson(it), JsonObject::class.java)
-    }) { gson.fromJson(it, ShortCommandInfo::class.java) })
+    var shortCommandInfos by ConfigValue(
+        "shortcommand",
+        "list",
+        emptyList(),
+        CList<ShortCommandInfo>(gson.toConverter())
+    )
 
     override val commandAliases = hashSetOf(Alias("shortcmd"))
 
@@ -48,7 +50,7 @@ object ShortCommand : Command("shortcommand") {
                 val (shortCommandInfo, matcher) = shortCommandInfos.map { it to it.pair.first.matcher(message) }
                     .find { it.second.matches() } ?: return@subscribe
 
-                val groups = repeat0(shortCommandInfo.pair.second) { matcher.group("g$it") }
+                val groups = List(shortCommandInfo.pair.second) { matcher.group("g$it") }
                 val newText = groups.fold(shortCommandInfo.origin) { acc, s -> acc.replaceFirst("{}", s) }
                 packet = C01PacketChatMessage(newText)
             }

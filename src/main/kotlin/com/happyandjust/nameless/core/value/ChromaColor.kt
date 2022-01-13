@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.core.value
 
+import com.happyandjust.nameless.dsl.withAlpha
 import java.awt.Color
 
 /**
@@ -36,7 +37,7 @@ class ChromaColor(val originRGB: Int) : Color(originRGB, true) {
             (System.currentTimeMillis() % chromaSpeed) / chromaSpeed.toFloat(),
             1f,
             0.8f
-        ) and (super.getRGB() or 0xFFFFFF) // alpha
+        ).withAlpha(super.getRGB() shr 24 and 255)
     }
 
     override fun equals(other: Any?): Boolean {

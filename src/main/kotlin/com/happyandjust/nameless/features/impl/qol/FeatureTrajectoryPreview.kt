@@ -135,14 +135,18 @@ object FeatureTrajectoryPreview : SimpleFeature(
 
     init {
         on<SpecialTickEvent>().filter { enabled }.subscribe {
-            val preview = selectedTrajectoryTypes.find { it.enabled }?.trajectoryPreview
-
-            if (trajectoryCalculateResult == null) { // new
-                preview?.setRandomValue()
+            val preview = selectedTrajectoryTypes.find { it.enabled }?.trajectoryPreview ?: run {
+                trajectoryCalculateResult = null
+                return@subscribe
             }
 
-            preview?.init()
-            trajectoryCalculateResult = preview?.calculate()
+            if (trajectoryCalculateResult == null) { // new
+                preview.setRandomValue()
+            }
+
+            preview.init()
+            trajectoryCalculateResult = preview.calculate()
+
         }
 
         on<RenderWorldLastEvent>().filter { enabled }.subscribe {

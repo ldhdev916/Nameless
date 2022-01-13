@@ -19,7 +19,6 @@
 package com.happyandjust.nameless.pathfinding
 
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.repeat0
 import net.minecraft.pathfinding.PathFinder
 import net.minecraft.util.BlockPos
 
@@ -44,7 +43,7 @@ class ModPathFinding(
             Int.MAX_VALUE.toFloat()
         ) ?: return emptyList()
 
-        list.addAll(repeat0(latest.currentPathLength) {
+        list.addAll(List(latest.currentPathLength) {
             val pathPoint = latest.getPathPointFromIndex(it)
             BlockPos(pathPoint.xCoord, pathPoint.yCoord, pathPoint.zCoord)
         })

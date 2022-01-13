@@ -33,9 +33,5 @@ class CList<T>(private val serializer: (T) -> JsonElement, private val deseriali
         }
     }
 
-    override fun deserialize(jsonElement: JsonElement): List<T> {
-        return buildList {
-            addAll(jsonElement.asJsonArray.map(deserializer))
-        }
-    }
+    override fun deserialize(jsonElement: JsonElement) = jsonElement.asJsonArray.map(deserializer)
 }

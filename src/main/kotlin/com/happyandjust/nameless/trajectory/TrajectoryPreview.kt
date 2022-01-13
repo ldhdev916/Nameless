@@ -24,23 +24,23 @@ import net.minecraft.entity.Entity
 import net.minecraft.init.Blocks
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
-import net.minecraft.util.MovingObjectPosition
 import net.minecraft.util.Vec3
 import java.util.*
 
 abstract class TrajectoryPreview {
 
     protected val entityPlayerSP: EntityPlayerSP = mc.thePlayer
-    protected var posX: Double = 0.0
-    protected var posY: Double = 0.0
-    protected var posZ: Double = 0.0
-    protected var motionX: Double = 0.0
-    protected var motionY: Double = 0.0
-    protected var motionZ: Double = 0.0
+    protected var posX = 0.0
+    protected var posY = 0.0
+    protected var posZ = 0.0
+    protected var motionX = 0.0
+    protected var motionY = 0.0
+    protected var motionZ = 0.0
     protected var entityHit: Entity? = null
-    protected val random = Random()
+    private val random = Random()
     protected var gaussian = 0.0
     protected var bool = false
+    protected open val shouldStop = { posY < 0 || !canMove() || checkEntity() }
 
     fun setRandomValue() {
         gaussian = random.nextGaussian()
@@ -56,7 +56,36 @@ abstract class TrajectoryPreview {
 
     protected abstract fun setInitialLocation()
 
-    abstract fun calculate(): TrajectoryCalculateResult
+    fun calculate(): TrajectoryCalculateResult {
+
+        val traces = arrayListOf<Vec3>()
+        var end: Vec3? = null
+
+        run {
+            while (true) {
+                val addX = motionX / 120
+                val addY = motionY / 120
+                val addZ = motionZ / 120
+
+                repeat(120) {
+                    if (shouldStop()) return@run
+
+                    end = Vec3(posX, posY, posZ)
+                    traces.add(end!!)
+
+                    posX += addX
+                    posY += addY
+                    posZ += addZ
+                }
+
+                calculateMotions()
+            }
+        }
+
+        return TrajectoryCalculateResult(entityHit, end, traces)
+    }
+
+    protected abstract fun calculateMotions()
 
     protected fun canMove() = when (mc.theWorld.getBlockState(BlockPos(posX, posY, posZ)).block) {
         Blocks.air, Blocks.water, Blocks.flowing_water -> true
@@ -72,13 +101,9 @@ abstract class TrajectoryPreview {
     }
 
     protected fun checkEntity(): Boolean {
-        var vec3 = Vec3(posX, posY, posZ)
-        var vec31 = Vec3(posX + motionX, posY + motionY, posZ + motionZ)
-        val movingObjectPosition: MovingObjectPosition? = mc.theWorld.rayTraceBlocks(vec3, vec31)
-        vec3 = Vec3(posX, posY, posZ)
-        vec31 = Vec3(posX + motionX, posY + motionY, posZ + motionZ)
-
-        movingObjectPosition?.let { vec31 = Vec3(it.hitVec.xCoord, it.hitVec.yCoord, it.hitVec.zCoord) }
+        val vectorA = Vec3(posX, posY, posZ)
+        val addVector = vectorA.addVector(motionX, motionY, motionZ)
+        val vectorB = mc.theWorld.rayTraceBlocks(vectorA, addVector)?.hitVec ?: addVector
 
         var entity: Entity? = null
         val aabb = getAxisAlignedBB()
@@ -88,21 +113,15 @@ abstract class TrajectoryPreview {
         )
         var d0 = 0.0
 
-        for (entity1 in list) {
-            if (entity1.canBeCollidedWith()) {
-                val f = 0.3F
-                val axisAlignedBB = entity1.entityBoundingBox.expand(f.toDouble(), f.toDouble(), f.toDouble())
-                val movingObjectPosition1: MovingObjectPosition? = axisAlignedBB.calculateIntercept(vec3, vec31)
+        val f = 0.3
+        list.filter { it.canBeCollidedWith() }.forEach {
+            it.entityBoundingBox.expand(f, f, f).calculateIntercept(vectorA, vectorB)?.run {
+                val d1 = vectorA.squareDistanceTo(hitVec)
 
-                movingObjectPosition1?.let {
-                    val d1 = vec3.squareDistanceTo(it.hitVec)
-
-                    if (d1 < d0 || d0 == 0.0) {
-                        entity = entity1
-                        d0 = d1
-                    }
+                if (d1 < d0 || d0 == 0.0) {
+                    entity = it
+                    d0 = d1
                 }
-
             }
         }
 

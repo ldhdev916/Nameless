@@ -153,10 +153,10 @@ object FeatureFairySoulWaypoint : SimpleFeature(
         on<ClientChatReceivedEvent>().filter { type.toInt() != 2 && Hypixel.currentGame == GameType.SKYBLOCK }
             .subscribe {
                 PROFILE.matchesMatcher(pureText) {
-                    currentSkyBlockProfile = it.group("profile")
+                    currentSkyBlockProfile = group("profile")
                 }
                 PROFILE_CHANGE.matchesMatcher(pureText) {
-                    currentSkyBlockProfile = it.group("profile")
+                    currentSkyBlockProfile = group("profile")
                 }
             }
     }

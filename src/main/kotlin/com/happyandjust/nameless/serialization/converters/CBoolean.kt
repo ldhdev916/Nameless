@@ -25,5 +25,5 @@ import com.happyandjust.nameless.serialization.Converter
 object CBoolean : Converter<Boolean> {
     override fun serialize(t: Boolean): JsonElement = JsonPrimitive(t)
 
-    override fun deserialize(jsonElement: JsonElement): Boolean = jsonElement.asBoolean
+    override fun deserialize(jsonElement: JsonElement) = jsonElement.asBoolean
 }

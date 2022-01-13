@@ -89,7 +89,7 @@ object EntityHook {
     private fun getDamageFromString(text: String): Pair<Int, Boolean>? {
         if (text.matches(DAMAGE_REGEX)) return instanceOrNull(text.toIntOrNull(), false, ::Pair)
         return CRIT_DAMAGE.matchesMatcher(text) {
-            instanceOrNull(it.group("damage").toIntOrNull(), true, ::Pair)
+            instanceOrNull(group("damage").toIntOrNull(), true, ::Pair)
         }
     }
 }

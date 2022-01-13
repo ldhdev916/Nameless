@@ -87,7 +87,7 @@ object Hypixel {
                 for (scoreboard in ScoreboardUtils.getSidebarLines(true)) {
                     DUNGEONS_FLOOR_PATTERN.matchesMatcher(scoreboard.trim()) {
                         currentProperty[PropertyKey.DUNGEON_FLOOR] =
-                            DungeonFloor.getByScoreboardName(it.group("name")) ?: return@matchesMatcher
+                            DungeonFloor.getByScoreboardName(group("name")) ?: return@matchesMatcher
                     }
                 }
             }

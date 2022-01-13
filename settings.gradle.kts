@@ -1,5 +1,3 @@
-import java.net.URI
-
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
  * Copyright (C) 2021 HappyAndJust

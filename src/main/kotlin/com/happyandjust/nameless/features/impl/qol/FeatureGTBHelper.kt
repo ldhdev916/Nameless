@@ -95,7 +95,7 @@ object FeatureGTBHelper : OverlayFeature(
     init {
         on<ClientChatReceivedEvent>().filter { checkForEnabledAndGuessTheBuild() && type.toInt() == 2 }.subscribe {
             THEME.matchesMatcher(pureText) {
-                val word = it.group("word")
+                val word = group("word")
                 if (word != prevWord) {
                     prevWord = word
 

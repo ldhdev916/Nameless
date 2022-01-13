@@ -18,29 +18,16 @@
 
 package com.happyandjust.nameless.serialization.converters
 
+import com.google.gson.Gson
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.serialization.Converter
 
 object CFairySoul : Converter<FairySoul> {
-    override fun serialize(t: FairySoul): JsonElement {
-        return JsonObject().apply {
-            addProperty("x", t.x)
-            addProperty("y", t.y)
-            addProperty("z", t.z)
-            addProperty("island", t.island)
-        }
-    }
 
-    override fun deserialize(jsonElement: JsonElement): FairySoul {
-        val jsonObject = jsonElement.asJsonObject
+    private val gson = Gson()
 
-        return FairySoul(
-            jsonObject["x"].asInt,
-            jsonObject["y"].asInt,
-            jsonObject["z"].asInt,
-            jsonObject["island"].asString
-        )
-    }
+    override fun serialize(t: FairySoul): JsonElement = gson.toJsonTree(t)
+
+    override fun deserialize(jsonElement: JsonElement): FairySoul = gson.fromJson(jsonElement, FairySoul::class.java)
 }

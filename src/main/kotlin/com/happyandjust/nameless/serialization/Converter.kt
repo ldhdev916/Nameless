@@ -18,7 +18,9 @@
 
 package com.happyandjust.nameless.serialization
 
+import com.google.gson.Gson
 import com.google.gson.JsonElement
+import com.happyandjust.nameless.dsl.fromJson
 
 interface Converter<T> {
 
@@ -35,4 +37,10 @@ class DummyConverter<T> : Converter<T> {
     override fun deserialize(jsonElement: JsonElement): T {
         error("You cannot deserialize DummyConverter")
     }
+}
+
+inline fun <reified T> Gson.toConverter() = object : Converter<T> {
+    override fun serialize(t: T) = toJsonTree(t)
+
+    override fun deserialize(jsonElement: JsonElement) = fromJson<T>(jsonElement)
 }

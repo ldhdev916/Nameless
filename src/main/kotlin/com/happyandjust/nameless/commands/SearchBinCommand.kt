@@ -18,15 +18,13 @@
 
 package com.happyandjust.nameless.commands
 
-import com.happyandjust.nameless.dsl.scanAuction
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.gui.auction.AuctionGui
 import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
+import com.happyandjust.nameless.utils.SkyblockUtils
 import gg.essential.api.commands.*
 import gg.essential.api.utils.GuiUtil
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.minecraft.event.ClickEvent
 import net.minecraft.event.HoverEvent
 import net.minecraft.util.ChatComponentText
@@ -72,6 +70,16 @@ object SearchBinCommand : Command("searchbin") {
                 sendPrefixMessage(ChatComponentText("§aFound total ${auctionInfos.size} items!").appendSibling(click))
             }
         }
+    }
+
+    private suspend fun scanAuction(task: (List<AuctionInfo>) -> Unit) = coroutineScope {
+        List(SkyblockUtils.getMaxAuctionPage()) {
+            async {
+                runCatching { SkyblockUtils.getAuctionDataInPage(it) }.getOrDefault(emptyList())
+            }
+        }
+            .flatMap { it.await() }
+            .let(task)
     }
 
     @SubCommand("opengui")

@@ -63,7 +63,6 @@ fun sendDebugMessage(chatComponent: IChatComponent?) {
         return
     }
 
-    mc.thePlayer?.run {
-        addChatMessage(ChatComponentText("§6[§3Debug§6]§r ").appendSibling(chatComponent))
-    } ?: LOGGER.info("[DEBUG] ${chatComponent.unformattedText}")
+    mc.thePlayer?.addChatMessage(ChatComponentText("§6[§3Debug§6]§r ").appendSibling(chatComponent))
+        ?: LOGGER.info("[DEBUG] ${chatComponent.unformattedText}")
 }

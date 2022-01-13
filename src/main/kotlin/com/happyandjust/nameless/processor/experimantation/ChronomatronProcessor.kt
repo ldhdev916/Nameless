@@ -51,11 +51,11 @@ object ChronomatronProcessor : Processor() {
                 val item = timerItem?.item ?: return@subscribe
 
                 if (item == Items.clock) {
-                    timerPattern.matchesMatcher(timerItem.displayName.stripControlCodes()) { matcher ->
+                    timerPattern.matchesMatcher(timerItem.displayName.stripControlCodes()) {
 
                         val round = slots[4].stack?.stackSize ?: return@subscribe
 
-                        if (round != lastRound && matcher.group("sec").toInt() == round + 2) {
+                        if (round != lastRound && group("sec").toInt() == round + 2) {
                             lastRound = round
 
                             val colorName =
@@ -74,7 +74,7 @@ object ChronomatronProcessor : Processor() {
                                 drawOnSlot(it, color)
                             }
 
-                            drawTexts(this)
+                            drawTexts(this@withInstance)
                         }
                     }
                 } else if (item == Item.getItemFromBlock(Blocks.glowstone)) {

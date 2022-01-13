@@ -25,7 +25,7 @@ import com.happyandjust.nameless.serialization.Converter
 
 object CFairySoulProfile : Converter<FairySoulProfile> {
 
-    private val listConverter by lazy { CList(CFairySoul::serialize, CFairySoul::deserialize) }
+    private val listConverter by lazy { CList(CFairySoul) }
 
     override fun serialize(t: FairySoulProfile): JsonElement {
 
