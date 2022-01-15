@@ -40,6 +40,7 @@
     "accessors.AccessorItemAxe",
     "accessors.AccessorItemPickaxe",
     "accessors.AccessorShapedOreRecipe",
+    "sba.MixinEntityOutlineRenderer",
     "sba.MixinRenderGlobalHook"
   ]
 }
