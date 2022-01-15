@@ -18,9 +18,9 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.general.FeatureBedwarsESP;
-import com.happyandjust.nameless.features.impl.general.FeatureGlowAllPlayers;
-import com.happyandjust.nameless.features.impl.skyblock.FeatureGlowStarDungeonMobs;
+import com.happyandjust.nameless.features.impl.general.BedwarsESP;
+import com.happyandjust.nameless.features.impl.general.GlowAllPlayers;
+import com.happyandjust.nameless.features.impl.skyblock.GlowStarDungeonMobs;
 import com.happyandjust.nameless.mixinhooks.EntityHook;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityArmorStand;
@@ -47,9 +47,9 @@ public abstract class MixinEntity {
 
     @Inject(method = "isInvisible", at = @At("HEAD"), cancellable = true)
     public void setInvisible(CallbackInfoReturnable<Boolean> cir) {
-        FeatureBedwarsESP bedwarsESP = FeatureBedwarsESP.INSTANCE;
-        FeatureGlowStarDungeonMobs glowStarDungeonMobs = FeatureGlowStarDungeonMobs.INSTANCE;
-        FeatureGlowAllPlayers glowAllPlayers = FeatureGlowAllPlayers.INSTANCE;
+        BedwarsESP bedwarsESP = BedwarsESP.INSTANCE;
+        GlowStarDungeonMobs glowStarDungeonMobs = GlowStarDungeonMobs.INSTANCE;
+        GlowAllPlayers glowAllPlayers = GlowAllPlayers.INSTANCE;
         if (bedwarsESP.getTeamColorCache().containsKey(this) && bedwarsESP.getEnabled() && bedwarsESP.getInvisible()) {
             cir.setReturnValue(false);
             return;

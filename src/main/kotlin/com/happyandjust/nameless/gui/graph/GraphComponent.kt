@@ -26,6 +26,7 @@ import gg.essential.elementa.dsl.*
 import gg.essential.elementa.effects.ScissorEffect
 import gg.essential.elementa.state.State
 import gg.essential.universal.UGraphics
+import gg.essential.universal.UMatrixStack
 import gg.essential.vigilance.utils.onLeftClick
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -190,8 +191,8 @@ class GraphComponent(window: Window, private var expression: String) : UICompone
         }
     }
 
-    override fun draw() {
-        beforeDraw()
+    override fun draw(matrixStack: UMatrixStack) {
+        beforeDraw(matrixStack)
 
         val left = getLeft().toDouble()
         val top = getTop().toDouble()
@@ -201,7 +202,7 @@ class GraphComponent(window: Window, private var expression: String) : UICompone
         UGraphics.enableBlend()
         UGraphics.disableTexture2D()
         UGraphics.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO)
-        UGraphics.translate(left, top, 0.0)
+        UGraphics.GL.translate(left, top, 0.0)
 
         GL11.glPointSize(1.5f)
         GL11.glLineWidth(2f)
@@ -218,19 +219,19 @@ class GraphComponent(window: Window, private var expression: String) : UICompone
 
             synchronized(points) {
                 for ((x, y) in points) {
-                    wr.pos(x.renderX, y.renderY, 0.0).endVertex()
+                    wr.pos(matrixStack, x.renderX, y.renderY, 0.0).endVertex()
                 }
             }
 
-            UGraphics.draw()
+            wr.drawDirect()
             GL11.glDisable(GL11.GL_POINT_SMOOTH)
         }
 
-        UGraphics.translate(-left, -top, 0.0)
+        UGraphics.GL.translate(-left, -top, 0.0)
         UGraphics.disableBlend()
         UGraphics.enableTexture2D()
 
-        super.draw()
+        super.draw(matrixStack)
     }
 
     private fun UGraphics.drawAxis() {

@@ -18,6 +18,8 @@
 
 package com.happyandjust.nameless.features
 
+import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.impl.general.*
 import com.happyandjust.nameless.features.impl.misc.*
 import com.happyandjust.nameless.features.impl.qol.*
@@ -71,115 +73,116 @@ object FeatureRegistry {
 
     init {
         with("Visual") {
-            add(FeatureGlowAllPlayers)
-            add(FeatureRemoveNegativeEffects)
-            add(FeatureBedwarsESP)
+            add(GlowAllPlayers)
+            add(RemoveNegativeEffects)
+            add(BedwarsESP)
         }
 
         with("Lobby") {
-            add(FeatureHideNPC)
+            add(HideNPC)
         }
 
         with("In Game") {
-            add(FeatureBedwarsRayTraceBed)
-            add(FeatureDisplayBetterArmor)
-            add(FeatureIndicateParticles)
-            add(FeatureTrajectoryPreview)
-            add(FeatureShowPingInTab)
-            add(FeatureCancelCertainBlockRendering)
-            add(FeatureCharm)
-            add(FeatureGiftESP)
-            add(FeatureDropperHelper)
-            add(FeatureBlockTracker)
+            add(BedwarsRayTraceBed)
+            add(DisplayBetterArmor)
+            add(IndicateParticles)
+            add(TrajectoryPreview)
+            add(ShowPingInTab)
+            add(CancelCertainBlockRendering)
+            add(Charm)
+            add(GiftESP)
+            add(DropperHelper)
+            add(BlockTracker)
         }
 
         with("Mod") {
-            add(FeatureRemoveCertainModID)
+            add(RemoveCertainModID)
         }
 
         with("Miscellaneous") {
-            add(FeatureUpdateChecker)
-            add(FeatureHitDelayFix)
-            add(FeatureStopLogSpamming)
-            add(FeatureChangeNicknameColor)
-            add(FeatureTextureOverlay)
-            add(FeatureDisguiseNickname)
-            add(FeatureChangeLeatherArmorColor)
-            add(FeatureClickCopyChat)
-            add(FeatureChangeSkyColor)
-            add(FeatureChangeWorldTime)
+            add(UpdateChecker)
+            add(HitDelayFix)
+            add(StopLogSpamming)
+            add(ChangeNicknameColor)
+            add(TextureOverlay)
+            add(DisguiseNickname)
+            add(ChangeLeatherArmorColor)
+            add(ClickCopyChat)
+            add(ChangeSkyColor)
+            add(ChangeWorldTime)
         }
 
         with("Fishing") {
-            add(FeatureHideFishHook)
-            add(FeatureChangeFishParticleColor)
+            add(HideFishHook)
+            add(ChangeFishParticleColor)
         }
 
         with("Damage") {
-            add(FeatureNoHurtCam)
-            add(FeatureChangeDamagedEntityColor)
+            add(NoHurtCam)
+            add(ChangeDamagedEntityColor)
         }
 
         with("Button") {
-            add(FeatureHypixelButton)
-            add(FeatureReconnectButton)
+            add(AddHypixelButton)
+            add(AddReconnectButton)
         }
 
         with("Hypixel") {
-            add(FeaturePlayTabComplete)
-            add(FeatureMurdererFinder)
-            add(FeatureGTBHelper)
-            add(FeaturePartyGamesHelper)
-            add(FeatureAutoAcceptParty)
-            add(FeatureHideTipMessage)
-            add(FeaturePixelPartyHelper)
-            add(FeatureInGameStatViewer)
-            add(FeatureAutoRequeue)
-            add(FeatureJoinHypixelImmediately)
-            add(FeatureHyChatChannelChanger)
+            add(PlayTabComplete)
+            add(MurdererFinder)
+            add(GTBHelper)
+            add(PartyGamesHelper)
+            add(AutoAcceptParty)
+            add(HideTipMessage)
+            add(PixelPartyHelper)
+            add(InGameStatViewer)
+            add(AutoRequeue)
+            add(JoinHypixelImmediately)
+            add(HyChatChannelChanger)
         }
 
         with("Quality Of Life") {
-            add(FeaturePerspective)
-            add(FeatureF5Fix)
+            add(Perspective)
+            add(F5Fix)
         }
 
         with("SkyBlock") {
-            add(FeatureFairySoulWaypoint)
-            add(FeatureDamageIndicator)
-            add(FeatureGlowDroppedItem)
-            add(FeatureLividDaggerBackstep)
-            add(FeatureShowWitherShieldCoolTime)
-            add(FeatureDisableEndermanTeleportation)
-            add(FeatureEquipPetSkin)
-            add(FeatureChangeHelmetTexture)
-            add(FeatureExperimentationTableHelper)
-            add(FeatureHideWitherImpactParticle)
-            add(FeatureBazaarHelper)
+            add(FairySoulWaypoint)
+            add(DamageIndicator)
+            add(GlowDroppedItem)
+            add(LividDaggerBackstep)
+            add(ShowWitherShieldCoolTime)
+            add(DisableEndermanTeleportation)
+            add(EquipPetSkin)
+            add(ChangeHelmetTexture)
+            add(ExperimentationTableHelper)
+            add(HideWitherImpactParticle)
+            add(BazaarHelper)
         }
 
         with("Dungeons") {
-            add(FeatureGlowStarDungeonMobs)
-            add(FeatureDungeonsDoorKey)
-            add(FeatureGlowBats)
-            add(FeatureGlowDungeonsTeammates)
+            add(GlowStarDungeonMobs)
+            add(ShowDungeonsDoorKey)
+            add(GlowDungeonsBats)
+            add(GlowDungeonsTeammates)
         }
 
         with("Mining") {
-            add(FeatureGemstoneESP)
+            add(GemstoneESP)
         }
 
         with("Slayer") {
-            add(FeatureClickOpenSlayer)
-            add(FeatureEndermanSlayerHelper)
+            add(ClickOpenSlayer)
+            add(EndermanSlayerHelper)
         }
 
         with("Settings") {
-            add(FeatureGhostBlock)
-            add(FeatureHypixelAPIKey)
-            add(FeatureOutlineMode)
-            add(FeatureRelocateGui)
-            add(FeatureDebug)
+            add(GhostBlock)
+            add(HypixelAPIKey)
+            add(OutlineMode)
+            add(OpenRelocateGui)
+            add(Debug)
+            add(DisableSBAGlowing)
         }
     }
 

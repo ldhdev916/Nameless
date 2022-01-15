@@ -20,7 +20,7 @@ package com.happyandjust.nameless.commands
 
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
-import com.happyandjust.nameless.features.impl.skyblock.FeatureChangeHelmetTexture
+import com.happyandjust.nameless.features.impl.skyblock.ChangeHelmetTexture
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiChat
 import com.happyandjust.nameless.utils.SkyblockUtils
@@ -42,7 +42,7 @@ object ChangeHelmetTextureCommand : Command("helmettexture") {
             return
         }
 
-        FeatureChangeHelmetTexture.setCurrentHelmetTexture(skyBlockItem)
+        ChangeHelmetTexture.setCurrentHelmetTexture(skyBlockItem)
         sendPrefixMessage("§aChanged Helmet Texture to ${skyBlockItem.id}")
     }
 

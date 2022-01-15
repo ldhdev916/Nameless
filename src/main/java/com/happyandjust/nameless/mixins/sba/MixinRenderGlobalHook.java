@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.mixins.sba;
 
+import com.happyandjust.nameless.features.impl.settings.DisableSBAGlowing;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Dynamic;
@@ -36,6 +37,6 @@ public abstract class MixinRenderGlobalHook {
     @Dynamic
     @Inject(method = "blockRenderingSkyblockItemOutlines", at = @At("RETURN"), cancellable = true)
     private static void dontBlockRenderOutline(ICamera camera, float partialTicks, double x, double y, double z, List<Entity> entities, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(true);
+        cir.setReturnValue(DisableSBAGlowing.INSTANCE.getEnabled());
     }
 }

@@ -21,6 +21,7 @@ package com.happyandjust.nameless.gui.relocate
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.features.IRelocateAble
 import com.happyandjust.nameless.gui.feature.ColorCache
+import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIText
@@ -28,7 +29,8 @@ import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.dsl.*
 import java.awt.Point
 
-class RelocateGui(relocateAbleList: List<IRelocateAble>) : WindowScreen(drawDefaultBackground = false) {
+class RelocateGui(relocateAbleList: List<IRelocateAble>) :
+    WindowScreen(ElementaVersion.V1, drawDefaultBackground = false) {
 
     private val map = relocateAbleList.associateWith { RelocateComponent(this, it).childOf(window) }
     val yCenterLine = UIBlock(ColorCache.accent).constrain {

@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.misc.FeatureChangeLeatherArmorColor;
+import com.happyandjust.nameless.features.impl.misc.ChangeLeatherArmorColor;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,14 +33,14 @@ public class MixinItemArmor {
 
     @Inject(method = "hasColor", at = @At("HEAD"), cancellable = true)
     public void injectHasColor(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        if (FeatureChangeLeatherArmorColor.getCustomColor($this, stack) != null) {
+        if (ChangeLeatherArmorColor.getCustomColor($this, stack) != null) {
             cir.setReturnValue(true);
         }
     }
 
     @Inject(method = "getColor", at = @At("HEAD"), cancellable = true)
     public void customizeColor(ItemStack itemStack, CallbackInfoReturnable<Integer> cir) {
-        Integer color = FeatureChangeLeatherArmorColor.getCustomColor($this, itemStack);
+        Integer color = ChangeLeatherArmorColor.getCustomColor($this, itemStack);
 
         if (color != null) {
             cir.setReturnValue(color);
@@ -49,7 +49,7 @@ public class MixinItemArmor {
 
     @Inject(method = "getColorFromItemStack", at = @At("HEAD"), cancellable = true)
     public void customizeArmorColor2(ItemStack stack, int renderPass, CallbackInfoReturnable<Integer> cir) {
-        Integer color = FeatureChangeLeatherArmorColor.getCustomColor($this, stack);
+        Integer color = ChangeLeatherArmorColor.getCustomColor($this, stack);
 
         if (color != null) {
             cir.setReturnValue(color);

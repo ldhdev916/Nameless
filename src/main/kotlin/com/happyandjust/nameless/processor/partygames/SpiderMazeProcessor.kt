@@ -24,7 +24,7 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.PartyGameChangeEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
+import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
 import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.pathfinding.ModPathFinding
 import com.happyandjust.nameless.processor.Processor
@@ -45,7 +45,7 @@ object SpiderMazeProcessor : Processor() {
     private val mazeEnds =
         listOf(BlockPos(45, 2, 2099), BlockPos(44, 2, 2098), BlockPos(45, 2, 2098), BlockPos(44, 2, 2099))
     private val pathTimer = TickTimer.withSecond(1.5)
-    override val filter = FeaturePartyGamesHelper.getFilter(this)
+    override val filter = PartyGamesHelper.getFilter(this)
 
     init {
         request<SpecialTickEvent>().filter { pathTimer.update().check() }.subscribe {

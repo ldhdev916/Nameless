@@ -20,17 +20,17 @@ package com.happyandjust.nameless.processor.partygames
 
 import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.events.OutlineRenderEvent
-import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
+import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
 import com.happyandjust.nameless.processor.Processor
 import net.minecraft.entity.player.EntityPlayer
 
 object RPG16Processor : Processor() {
 
-    override val filter = FeaturePartyGamesHelper.getFilter(this)
+    override val filter = PartyGamesHelper.getFilter(this)
 
     init {
         request<OutlineRenderEvent>().filter { entity is EntityPlayer && entity.health <= 2.1f }.subscribe {
-            colorInfo = ColorInfo(FeaturePartyGamesHelper.rpg16Color.rgb, ColorInfo.ColorPriority.HIGH)
+            colorInfo = ColorInfo(PartyGamesHelper.rpg16Color.rgb, ColorInfo.ColorPriority.HIGH)
         }
     }
 }

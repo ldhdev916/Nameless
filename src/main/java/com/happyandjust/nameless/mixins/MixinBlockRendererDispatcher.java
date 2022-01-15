@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.qol.FeatureCancelCertainBlockRendering;
+import com.happyandjust.nameless.features.impl.qol.CancelCertainBlockRendering;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.WorldRenderer;
@@ -34,7 +34,7 @@ public class MixinBlockRendererDispatcher {
 
     @Inject(method = "renderBlock", at = @At("HEAD"), cancellable = true)
     public void cancelRender(IBlockState i, BlockPos crashreport, IBlockAccess crashreportcategory, WorldRenderer throwable, CallbackInfoReturnable<Boolean> cir) {
-        FeatureCancelCertainBlockRendering feature = FeatureCancelCertainBlockRendering.INSTANCE;
+        CancelCertainBlockRendering feature = CancelCertainBlockRendering.INSTANCE;
 
         String key = i.getBlock().getRegistryName();
 

@@ -22,7 +22,7 @@ import com.happyandjust.nameless.dsl.instanceOrNull
 import com.happyandjust.nameless.dsl.matchesMatcher
 import com.happyandjust.nameless.dsl.stripControlCodes
 import com.happyandjust.nameless.dsl.transformToPrecisionString
-import com.happyandjust.nameless.features.impl.skyblock.FeatureDamageIndicator
+import com.happyandjust.nameless.features.impl.skyblock.DamageIndicator
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
@@ -61,7 +61,7 @@ object EntityHook {
 
     fun getCustomDamageName(origin: ChatComponentText): ChatComponentText {
 
-        if (Hypixel.currentGame == GameType.SKYBLOCK && FeatureDamageIndicator.enabled) {
+        if (Hypixel.currentGame == GameType.SKYBLOCK && DamageIndicator.enabled) {
 
             val unformattedText = origin.unformattedText
 
@@ -69,7 +69,7 @@ object EntityHook {
                 val (damage, isCritical) = getDamageFromString(unformattedText.stripControlCodes()) ?: return origin
 
                 val damageText =
-                    transformDamage(damage, FeatureDamageIndicator.type, FeatureDamageIndicator.precision)
+                    transformDamage(damage, DamageIndicator.type, DamageIndicator.precision)
 
                 ChatComponentText(
                     if (isCritical) { // critical

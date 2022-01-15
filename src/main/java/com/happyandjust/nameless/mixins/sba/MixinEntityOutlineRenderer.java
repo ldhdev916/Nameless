@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.mixins.sba;
 
+import com.happyandjust.nameless.features.impl.settings.DisableSBAGlowing;
 import net.minecraft.client.renderer.culling.ICamera;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,6 +34,6 @@ public class MixinEntityOutlineRenderer {
     @Dynamic
     @Inject(method = "renderEntityOutlines", at = @At("RETURN"), cancellable = true)
     private void letMeDrawOutline(ICamera camera, float partialTicks, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(true);
+        cir.setReturnValue(DisableSBAGlowing.INSTANCE.getEnabled());
     }
 }

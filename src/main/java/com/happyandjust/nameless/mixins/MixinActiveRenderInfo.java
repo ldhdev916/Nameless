@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.qol.FeaturePerspective;
+import com.happyandjust.nameless.features.impl.qol.Perspective;
 import com.happyandjust.nameless.mixinhooks.EntityRendererHook;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import org.objectweb.asm.Opcodes;
@@ -33,11 +33,11 @@ public class MixinActiveRenderInfo {
 
     @ModifyVariable(method = "updateRenderInfo", at = @At(value = "STORE", opcode = Opcodes.FSTORE), ordinal = 2)
     private static float modifyPitch(float value) {
-        return FeaturePerspective.INSTANCE.getEnabled() ? hook.getCameraPitch() : value;
+        return Perspective.INSTANCE.getEnabled() ? hook.getCameraPitch() : value;
     }
 
     @ModifyVariable(method = "updateRenderInfo", at = @At(value = "STORE", opcode = Opcodes.FSTORE), ordinal = 3)
     private static float modifyYaw(float value) {
-        return FeaturePerspective.INSTANCE.getEnabled() ? hook.getCameraYaw() : value;
+        return Perspective.INSTANCE.getEnabled() ? hook.getCameraYaw() : value;
     }
 }

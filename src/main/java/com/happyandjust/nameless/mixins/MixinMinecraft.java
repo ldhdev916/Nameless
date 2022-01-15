@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.misc.FeatureHitDelayFix;
-import com.happyandjust.nameless.features.impl.qol.FeaturePerspective;
+import com.happyandjust.nameless.features.impl.misc.HitDelayFix;
+import com.happyandjust.nameless.features.impl.qol.Perspective;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
 import org.objectweb.asm.Opcodes;
@@ -38,13 +38,13 @@ public class MixinMinecraft {
 
     @Inject(method = "clickMouse", at = @At("HEAD"))
     public void onClickMouse(CallbackInfo ci) {
-        if (FeatureHitDelayFix.INSTANCE.getEnabled()) {
+        if (HitDelayFix.INSTANCE.getEnabled()) {
             leftClickCounter = 0;
         }
     }
 
     @Redirect(method = "runTick", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lnet/minecraft/client/settings/GameSettings;thirdPersonView:I"))
     public void blockPerspective(GameSettings gameSettings, int value) {
-        gameSettings.thirdPersonView = FeaturePerspective.INSTANCE.getEnabled() ? 1 : value;
+        gameSettings.thirdPersonView = Perspective.INSTANCE.getEnabled() ? 1 : value;
     }
 }

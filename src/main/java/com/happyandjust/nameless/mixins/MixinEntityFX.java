@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.misc.FeatureChangeFishParticleColor;
+import com.happyandjust.nameless.features.impl.misc.ChangeFishParticleColor;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.particle.EntityFishWakeFX;
 import net.minecraft.client.renderer.WorldRenderer;
@@ -47,7 +47,7 @@ public class MixinEntityFX {
 
         if (!($this instanceof EntityFishWakeFX)) return;
 
-        FeatureChangeFishParticleColor feature = FeatureChangeFishParticleColor.INSTANCE;
+        ChangeFishParticleColor feature = ChangeFishParticleColor.INSTANCE;
 
         if (feature.getEnabled()) {
             int color = feature.getColor().getRGB();

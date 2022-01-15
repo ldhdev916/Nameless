@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.misc.FeatureChangeWorldTime;
+import com.happyandjust.nameless.features.impl.misc.ChangeWorldTime;
 import net.minecraft.world.storage.WorldInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,8 +30,8 @@ public class MixinWorldInfo {
 
     @Inject(method = "getWorldTime", at = @At("HEAD"), cancellable = true)
     public void changeWorldTime(CallbackInfoReturnable<Long> cir) {
-        if (FeatureChangeWorldTime.INSTANCE.getEnabled()) {
-            cir.setReturnValue((long) FeatureChangeWorldTime.INSTANCE.getWorldTime());
+        if (ChangeWorldTime.INSTANCE.getEnabled()) {
+            cir.setReturnValue((long) ChangeWorldTime.INSTANCE.getWorldTime());
         }
     }
 }

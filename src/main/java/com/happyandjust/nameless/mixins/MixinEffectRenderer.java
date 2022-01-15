@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.general.FeatureIndicateParticles;
+import com.happyandjust.nameless.features.impl.general.IndicateParticles;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.particle.IParticleFactory;
@@ -37,18 +37,18 @@ public class MixinEffectRenderer {
         EntityFX entityFX = instance.getEntityFX(i, world, v, v1, v2, v3, v4, v5, ints);
 
         if (entityFX != null) {
-            FeatureIndicateParticles.checkAndAdd(i, entityFX);
+            IndicateParticles.checkAndAdd(i, entityFX);
         }
         return entityFX;
     }
 
     @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/EntityFX;renderParticle(Lnet/minecraft/client/renderer/WorldRenderer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
     public void viewThroughBlocks1(EntityFX instance, WorldRenderer worldRendererIn, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
-        FeatureIndicateParticles.renderParticle(instance, worldRendererIn, entityIn, partialTicks, rotationX, rotationZ, rotationYZ, rotationXY, rotationXZ, true);
+        IndicateParticles.renderParticle(instance, worldRendererIn, entityIn, partialTicks, rotationX, rotationZ, rotationYZ, rotationXY, rotationXZ, true);
     }
 
     @Redirect(method = "renderLitParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/EntityFX;renderParticle(Lnet/minecraft/client/renderer/WorldRenderer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
     public void viewThroughBlocks2(EntityFX instance, WorldRenderer worldRendererIn, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
-        FeatureIndicateParticles.renderParticle(instance, worldRendererIn, entityIn, partialTicks, rotationX, rotationZ, rotationYZ, rotationXY, rotationXZ, false);
+        IndicateParticles.renderParticle(instance, worldRendererIn, entityIn, partialTicks, rotationX, rotationZ, rotationYZ, rotationXY, rotationXZ, false);
     }
 }

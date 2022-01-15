@@ -20,6 +20,7 @@ package com.happyandjust.nameless.gui.waypoint
 
 import com.happyandjust.nameless.gui.feature.ColorCache
 import com.happyandjust.nameless.listener.WaypointListener
+import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.ScrollComponent
 import gg.essential.elementa.components.UIBlock
@@ -36,6 +37,7 @@ import gg.essential.vigilance.gui.settings.ButtonComponent
 import net.minecraft.util.BlockPos
 
 class WaypointManagerGui : WindowScreen(
+    ElementaVersion.V1,
     newGuiScale = GuiScale.scaleForScreenSize().ordinal,
     restoreCurrentGuiOnClose = true,
     drawDefaultBackground = false

@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.mixinhooks
 
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.impl.misc.FeatureDisguiseNickname
+import com.happyandjust.nameless.features.impl.misc.DisguiseNickname
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -66,7 +66,7 @@ object FontRendererHook {
     }
 
     private fun getCurrentSessionNickname(): String {
-        return if (FeatureDisguiseNickname.enabled) FeatureDisguiseNickname.nick else mc.session.username ?: ""
+        return if (DisguiseNickname.enabled) DisguiseNickname.nick else mc.session.username ?: ""
     }
 
 

@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.skyblock.FeatureChangeHelmetTexture;
-import com.happyandjust.nameless.features.impl.skyblock.FeatureEquipPetSkin;
+import com.happyandjust.nameless.features.impl.skyblock.ChangeHelmetTexture;
+import com.happyandjust.nameless.features.impl.skyblock.EquipPetSkin;
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem;
 import com.mojang.authlib.GameProfile;
 import kotlin.Pair;
@@ -39,12 +39,12 @@ public class MixinTileEntityItemStackRenderer {
 
     @Inject(method = "renderByItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/tileentity/TileEntitySkullRenderer;renderSkull(FFFLnet/minecraft/util/EnumFacing;FILcom/mojang/authlib/GameProfile;I)V"), cancellable = true)
     public void changeSkin(ItemStack itemStack, CallbackInfo ci) {
-        FeatureEquipPetSkin feature = FeatureEquipPetSkin.INSTANCE;
-        FeatureChangeHelmetTexture featureChangeHelmetTexture = FeatureChangeHelmetTexture.INSTANCE;
+        EquipPetSkin feature = EquipPetSkin.INSTANCE;
+        ChangeHelmetTexture featureChangeHelmetTexture = ChangeHelmetTexture.INSTANCE;
         GameProfile gameProfile = null;
         if (feature.getEnabled()) {
 
-            FeatureEquipPetSkin.PetSkinChangeInfo info = feature.getCurrentPetSkinChangeInfo();
+            EquipPetSkin.PetSkinChangeInfo info = feature.getCurrentPetSkinChangeInfo();
             if (info != null && info.getItemStack().equals(itemStack)) {
                 gameProfile = info.getGameProfile();
             }

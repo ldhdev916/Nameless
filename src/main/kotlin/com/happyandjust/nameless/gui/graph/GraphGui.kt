@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.gui.graph
 
 import com.happyandjust.nameless.gui.ActionButton
+import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIText
@@ -33,7 +34,11 @@ import gg.essential.elementa.dsl.pixels
 import gg.essential.universal.GuiScale
 import gg.essential.vigilance.utils.onLeftClick
 
-class GraphGui : WindowScreen(restoreCurrentGuiOnClose = true, newGuiScale = GuiScale.scaleForScreenSize().ordinal) {
+class GraphGui : WindowScreen(
+    ElementaVersion.V1,
+    restoreCurrentGuiOnClose = true,
+    newGuiScale = GuiScale.scaleForScreenSize().ordinal
+) {
 
     private val topContainer = UIContainer().constrain {
         width = 100.percent()

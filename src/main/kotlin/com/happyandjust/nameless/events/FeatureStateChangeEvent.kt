@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.events
 
-import com.happyandjust.nameless.features.SimpleFeature
+import com.happyandjust.nameless.features.base.SimpleFeature
 import net.minecraftforge.fml.common.eventhandler.Cancelable
 import net.minecraftforge.fml.common.eventhandler.Event
 

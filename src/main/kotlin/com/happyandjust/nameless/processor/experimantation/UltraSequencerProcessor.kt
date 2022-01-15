@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.processor.experimantation
 
 import com.happyandjust.nameless.dsl.*
-import com.happyandjust.nameless.features.impl.skyblock.FeatureExperimentationTableHelper
+import com.happyandjust.nameless.features.impl.skyblock.ExperimentationTableHelper
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
 import com.happyandjust.nameless.processor.Processor
 import net.minecraft.client.gui.inventory.GuiChest
@@ -34,7 +34,7 @@ object UltraSequencerProcessor : Processor() {
 
     private var ultrasequencerOrders = listOf<Int>()
     override val filter
-        get() = FeatureExperimentationTableHelper.processors[this]!!
+        get() = ExperimentationTableHelper.processors[this]!!
 
     init {
         request<GuiScreenEvent.BackgroundDrawnEvent>().subscribe {

@@ -26,11 +26,16 @@ import com.happyandjust.nameless.serialization.Converter
 import java.io.File
 
 object ConfigHandler {
-    var file = File("config/Nameless.json")
+    var file = File("config/Nameless.json").apply {
+        if (!exists() || readBytes().decodeToString().isBlank()) {
+            parentFile.mkdirs()
+            writeText("{}")
+        }
+    }
     private val handler: JsonHandler
         get() = JsonHandler(file)
     private val config: JsonObject
-        get() = handler.read(JsonObject())
+        get() = handler.read()
 
     private fun readCategory(category: String, config: JsonObject) =
         config[category] as? JsonObject ?: JsonObject()

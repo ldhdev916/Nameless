@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.qol.FeatureGiftESP;
+import com.happyandjust.nameless.features.impl.qol.GiftESP;
 import net.minecraft.client.renderer.tileentity.TileEntitySkullRenderer;
 import net.minecraft.tileentity.TileEntitySkull;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,6 +31,6 @@ public class MixinTileEntitySkullRenderer {
 
     @Inject(method = "renderTileEntityAt(Lnet/minecraft/tileentity/TileEntitySkull;DDDFI)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/tileentity/TileEntitySkullRenderer;renderSkull(FFFLnet/minecraft/util/EnumFacing;FILcom/mojang/authlib/GameProfile;I)V", shift = At.Shift.AFTER))
     public void espSkulls(TileEntitySkull te, double x, double y, double z, float partialTicks, int destroyStage, CallbackInfo ci) {
-        FeatureGiftESP.checkAndRender(te, partialTicks);
+        GiftESP.checkAndRender(te, partialTicks);
     }
 }

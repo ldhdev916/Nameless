@@ -24,7 +24,7 @@ import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PartyGameChangeEvent
 import com.happyandjust.nameless.events.SpecialOverlayEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
+import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
 import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
 import com.happyandjust.nameless.mixins.accessors.AccessorShapedOreRecipe
@@ -82,7 +82,7 @@ object WorkshopProcessor : Processor() {
     }
 
     private val itemRecipeCached = hashMapOf<Item, IRecipe?>()
-    override val filter = FeaturePartyGamesHelper.getFilter(this)
+    override val filter = PartyGamesHelper.getFilter(this)
 
     private inline fun firstTask(action: WorkshopTask.() -> Unit) {
         tasks.firstOrNull()?.action()

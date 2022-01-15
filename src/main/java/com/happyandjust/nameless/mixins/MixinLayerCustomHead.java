@@ -18,9 +18,9 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.qol.FeatureGiftESP;
-import com.happyandjust.nameless.features.impl.skyblock.FeatureChangeHelmetTexture;
-import com.happyandjust.nameless.features.impl.skyblock.FeatureEquipPetSkin;
+import com.happyandjust.nameless.features.impl.qol.GiftESP;
+import com.happyandjust.nameless.features.impl.skyblock.ChangeHelmetTexture;
+import com.happyandjust.nameless.features.impl.skyblock.EquipPetSkin;
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem;
 import com.mojang.authlib.GameProfile;
 import kotlin.Pair;
@@ -41,13 +41,13 @@ public class MixinLayerCustomHead {
 
     @Inject(method = "doRenderLayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/tileentity/TileEntitySkullRenderer;renderSkull(FFFLnet/minecraft/util/EnumFacing;FILcom/mojang/authlib/GameProfile;I)V"), cancellable = true)
     public void changeSkin(EntityLivingBase entitylivingbaseIn, float p_177141_2_, float p_177141_3_, float partialTicks, float p_177141_5_, float p_177141_6_, float p_177141_7_, float scale, CallbackInfo ci) {
-        FeatureEquipPetSkin featureEquipPetSkin = FeatureEquipPetSkin.INSTANCE;
-        FeatureChangeHelmetTexture featureChangeHelmetTexture = FeatureChangeHelmetTexture.INSTANCE;
+        EquipPetSkin featureEquipPetSkin = EquipPetSkin.INSTANCE;
+        ChangeHelmetTexture featureChangeHelmetTexture = ChangeHelmetTexture.INSTANCE;
 
         GameProfile gameProfile = null;
 
         if (featureEquipPetSkin.getEnabled() && entitylivingbaseIn instanceof EntityArmorStand) {
-            FeatureEquipPetSkin.PetSkinChangeInfo info = featureEquipPetSkin.getCurrentPetSkinChangeInfo();
+            EquipPetSkin.PetSkinChangeInfo info = featureEquipPetSkin.getCurrentPetSkinChangeInfo();
 
             if (info != null && info.getItemStack().equals(entitylivingbaseIn.getCurrentArmor(3))) {
                 gameProfile = info.getGameProfile();
@@ -68,6 +68,6 @@ public class MixinLayerCustomHead {
 
     @Inject(method = "doRenderLayer", at = @At("RETURN"))
     public void espGifts(EntityLivingBase entitylivingbaseIn, float p_177141_2_, float p_177141_3_, float partialTicks, float p_177141_5_, float p_177141_6_, float p_177141_7_, float scale, CallbackInfo ci) {
-        FeatureGiftESP.checkAndRender(entitylivingbaseIn, partialTicks);
+        GiftESP.checkAndRender(entitylivingbaseIn, partialTicks);
     }
 }

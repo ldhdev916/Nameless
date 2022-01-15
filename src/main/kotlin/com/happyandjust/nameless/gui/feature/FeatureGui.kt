@@ -20,7 +20,8 @@ package com.happyandjust.nameless.gui.feature
 
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureRegistry
-import com.happyandjust.nameless.features.SimpleFeature
+import com.happyandjust.nameless.features.base.SimpleFeature
+import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.ScrollComponent
@@ -41,6 +42,7 @@ import gg.essential.vigilance.utils.onLeftClick
 import java.util.*
 
 class FeatureGui : WindowScreen(
+    ElementaVersion.V1,
     drawDefaultBackground = false,
     newGuiScale = GuiScale.scaleForScreenSize().ordinal,
     restoreCurrentGuiOnClose = true

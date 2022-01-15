@@ -22,7 +22,7 @@ import com.happyandjust.nameless.dsl.matrix
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.scale
 import com.happyandjust.nameless.dsl.translate
-import com.happyandjust.nameless.features.impl.qol.FeatureShowPingInTab
+import com.happyandjust.nameless.features.impl.qol.ShowPingInTab
 import net.minecraft.client.network.NetworkPlayerInfo
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 
@@ -35,7 +35,7 @@ object GuiPlayerTabOverlayHook {
         networkPlayerInfoIn: NetworkPlayerInfo,
         ci: CallbackInfo
     ) {
-        if (FeatureShowPingInTab.enabled) {
+        if (ShowPingInTab.enabled) {
             val x = p_175245_2_ + p_175245_1_ - 13
             val y = p_175245_3_ + mc.fontRendererObj.FONT_HEIGHT / 2f
 
@@ -46,7 +46,7 @@ object GuiPlayerTabOverlayHook {
                     networkPlayerInfoIn.responseTime.toString(),
                     0f,
                     -(mc.fontRendererObj.FONT_HEIGHT / 2f),
-                    FeatureShowPingInTab.color.rgb
+                    ShowPingInTab.color.rgb
                 )
             }
 

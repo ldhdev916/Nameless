@@ -21,6 +21,7 @@ package com.happyandjust.nameless.gui
 import com.happyandjust.nameless.dsl.transformToPrecisionString
 import com.happyandjust.nameless.gui.feature.ColorCache
 import com.happyandjust.nameless.utils.Utils
+import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.*
 import gg.essential.elementa.constraints.*
@@ -37,6 +38,7 @@ import java.net.URL
 import kotlin.concurrent.thread
 
 class UpdateGui(markDownText: String) : WindowScreen(
+    ElementaVersion.V1,
     newGuiScale = GuiScale.scaleForScreenSize().ordinal,
     restoreCurrentGuiOnClose = true
 ) {

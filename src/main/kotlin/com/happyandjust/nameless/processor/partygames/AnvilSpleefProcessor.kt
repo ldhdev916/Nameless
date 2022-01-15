@@ -23,7 +23,7 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.PartyGameChangeEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
+import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
 import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
@@ -35,7 +35,7 @@ import net.minecraftforge.client.event.RenderWorldLastEvent
 object AnvilSpleefProcessor : Processor() {
 
     private val renderingSet = hashSetOf<EntityFallingBlock>()
-    override val filter = FeaturePartyGamesHelper.getFilter(this)
+    override val filter = PartyGamesHelper.getFilter(this)
 
     init {
         request<SpecialTickEvent>().subscribe {
@@ -51,7 +51,7 @@ object AnvilSpleefProcessor : Processor() {
             for (anvil in renderingSet) {
                 val pos = BlockPos(anvil.posX, 0.0, anvil.posZ)
 
-                RenderUtils.drawBox(pos.getAxisAlignedBB(), FeaturePartyGamesHelper.anvilColor.rgb, partialTicks)
+                RenderUtils.drawBox(pos.getAxisAlignedBB(), PartyGamesHelper.anvilColor.rgb, partialTicks)
             }
         }
 

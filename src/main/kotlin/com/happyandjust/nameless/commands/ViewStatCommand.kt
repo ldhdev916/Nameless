@@ -20,8 +20,8 @@ package com.happyandjust.nameless.commands
 
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.dsl.*
-import com.happyandjust.nameless.features.impl.qol.FeatureInGameStatViewer
-import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
+import com.happyandjust.nameless.features.impl.qol.InGameStatViewer
+import com.happyandjust.nameless.features.impl.settings.HypixelAPIKey
 import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.commands.DisplayName
@@ -40,11 +40,11 @@ object ViewStatCommand : Command("viewstat") {
                 return@runAsync
             }
 
-            val identifiers = FeatureInGameStatViewer.order.filter { it.supportGame.shouldDisplay() }
+            val identifiers = InGameStatViewer.order.filter { it.supportGame.shouldDisplay() }
 
             runCatching {
-                val handler = "https://api.hypixel.net/player?key=${FeatureHypixelAPIKey.apiKey}&uuid=$uuid".handler()
-                val json = handler.read(JsonObject())["player"].asJsonObject
+                val handler = "https://api.hypixel.net/player?key=${HypixelAPIKey.apiKey}&uuid=$uuid".handler()
+                val json = handler.read<JsonObject>()["player"].asJsonObject
 
                 sendClientMessage("§bStats of ${getPlayerName(json)}")
 
@@ -93,10 +93,10 @@ object ViewStatCommand : Command("viewstat") {
         }
     }
 
-    private fun FeatureInGameStatViewer.InformationType.getFormatText(
+    private fun InGameStatViewer.InformationType.getFormatText(
         value: String
     ): String {
-        val format = FeatureInGameStatViewer.getParameter<String>("texts").getParameterValue<String>(name.lowercase())
+        val format = InGameStatViewer.getParameter<String>("texts").getParameterValue<String>(name.lowercase())
 
         return format.replace("{value}", value).replace("&", "§")
     }

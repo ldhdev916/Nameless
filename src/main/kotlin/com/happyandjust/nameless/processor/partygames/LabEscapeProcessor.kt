@@ -26,7 +26,7 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.setup
 import com.happyandjust.nameless.events.SpecialOverlayEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
+import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.Utils
 import net.minecraft.init.Blocks
@@ -38,7 +38,7 @@ object LabEscapeProcessor : Processor() {
     lateinit var overlay: () -> Overlay
     private val keys = arrayListOf<String>()
     private val timer = TickTimer(7)
-    override val filter = FeaturePartyGamesHelper.getFilter(this)
+    override val filter = PartyGamesHelper.getFilter(this)
 
     init {
         request<SpecialTickEvent>().filter { timer.update().check() }.subscribe {

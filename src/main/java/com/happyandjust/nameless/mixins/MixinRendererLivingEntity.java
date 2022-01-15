@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.misc.FeatureChangeDamagedEntityColor;
+import com.happyandjust.nameless.features.impl.misc.ChangeDamagedEntityColor;
 import com.happyandjust.nameless.mixinhooks.RenderGlobalHook;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -77,7 +77,7 @@ public class MixinRendererLivingEntity<T extends EntityLivingBase> {
 
     @Unique
     private Color getColor() {
-        FeatureChangeDamagedEntityColor feature = FeatureChangeDamagedEntityColor.INSTANCE;
+        ChangeDamagedEntityColor feature = ChangeDamagedEntityColor.INSTANCE;
 
         return feature.getEnabled() ? feature.getColor() : null;
     }

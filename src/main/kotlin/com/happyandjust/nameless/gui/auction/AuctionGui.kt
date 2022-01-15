@@ -21,6 +21,7 @@ package com.happyandjust.nameless.gui.auction
 import com.happyandjust.nameless.gui.feature.ColorCache
 import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
+import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIContainer
@@ -36,7 +37,7 @@ import gg.essential.vigilance.gui.settings.SelectorComponent
 import gg.essential.vigilance.utils.onLeftClick
 
 class AuctionGui(auctionInfos: List<AuctionInfo>) :
-    WindowScreen(newGuiScale = GuiScale.scaleForScreenSize().ordinal) {
+    WindowScreen(ElementaVersion.V1, newGuiScale = GuiScale.scaleForScreenSize().ordinal) {
 
     private var miniumRarity = ItemRarity.COMMON
 

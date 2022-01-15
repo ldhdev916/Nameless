@@ -20,6 +20,7 @@ package com.happyandjust.nameless.gui.shortcmd
 
 import com.happyandjust.nameless.commands.ShortCommand
 import com.happyandjust.nameless.gui.ActionButton
+import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.ScrollComponent
 import gg.essential.elementa.components.UIContainer
@@ -33,7 +34,11 @@ import gg.essential.elementa.dsl.pixels
 import gg.essential.universal.GuiScale
 
 class ShortCommandGui :
-    WindowScreen(newGuiScale = GuiScale.scaleForScreenSize().ordinal, restoreCurrentGuiOnClose = true) {
+    WindowScreen(
+        ElementaVersion.V1,
+        newGuiScale = GuiScale.scaleForScreenSize().ordinal,
+        restoreCurrentGuiOnClose = true
+    ) {
 
     init {
         val text = """

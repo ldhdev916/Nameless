@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.qol.FeaturePerspective;
+import com.happyandjust.nameless.features.impl.qol.Perspective;
 import com.happyandjust.nameless.mixinhooks.EntityRendererHook;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -43,7 +43,7 @@ public class MixinRenderManager {
 
     @Inject(method = "cacheActiveRenderInfo", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lnet/minecraft/client/renderer/entity/RenderManager;playerViewX:F", shift = At.Shift.AFTER))
     public void modifyYawPitch(World worldIn, FontRenderer textRendererIn, Entity livingPlayerIn, Entity pointedEntityIn, GameSettings optionsIn, float partialTicks, CallbackInfo ci) {
-        if (FeaturePerspective.INSTANCE.getEnabled()) {
+        if (Perspective.INSTANCE.getEnabled()) {
             playerViewY = hook.getCameraYaw();
             playerViewX = hook.getCameraPitch();
         }

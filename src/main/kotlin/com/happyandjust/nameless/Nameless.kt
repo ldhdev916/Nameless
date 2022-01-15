@@ -24,12 +24,8 @@ import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.enums.OutlineMode
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.FeatureRegistry
-import com.happyandjust.nameless.features.impl.misc.FeatureUpdateChecker
-import com.happyandjust.nameless.features.impl.qol.FeatureAutoRequeue
-import com.happyandjust.nameless.features.impl.qol.FeatureGTBHelper
-import com.happyandjust.nameless.features.impl.qol.FeatureMurdererFinder
-import com.happyandjust.nameless.features.impl.qol.FeaturePlayTabComplete
-import com.happyandjust.nameless.features.impl.skyblock.FeatureEquipPetSkin
+import com.happyandjust.nameless.features.impl.misc.UpdateChecker
+import com.happyandjust.nameless.features.impl.qol.AutoRequeue
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.keybinding.NamelessKeyBinding
 import com.happyandjust.nameless.listener.BasicListener
@@ -66,7 +62,7 @@ object Nameless {
     fun preInit(e: FMLPreInitializationEvent) {
         modFile = e.sourceFile
         ConfigHandler.file = File(e.modConfigurationDirectory, "Nameless.json")
-        FeatureUpdateChecker.checkForUpdate()
+        UpdateChecker.checkForUpdate()
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -76,28 +72,14 @@ object Nameless {
             mc.framebuffer.enableStencil()
         }
 
-        val scope = CoroutineScope(Dispatchers.Default)
-
-        val job = scope.launch { // init async as it takes long (KReflection)
-            FeatureRegistry
-        }
-
-        scope.launch(Dispatchers.IO) {
-            job.join()
-
-            FeatureAutoRequeue.isAutoGGLoaded = Loader.isModLoaded("autogg")
-
-            async { FeatureAutoRequeue.fetchGameEndData() }
-
-            async { FeatureMurdererFinder.fetchAssassinData() }
-
-            async { FeatureGTBHelper.fetchWordsData() }
-
-            async { FeaturePlayTabComplete.fetchGameDataList() }
-
-            async { FeatureEquipPetSkin.fetchPetSkinData() }
-
-            async { SkyblockUtils.fetchSkyBlockData() }
+        GlobalScope.launch {
+            async {
+                FeatureRegistry
+                AutoRequeue.isAutoGGLoaded = Loader.isModLoaded("autogg")
+            }
+            launch(Dispatchers.IO) {
+                async { SkyblockUtils.fetchSkyBlockData() }
+            }
         }
 
         registerCommands(

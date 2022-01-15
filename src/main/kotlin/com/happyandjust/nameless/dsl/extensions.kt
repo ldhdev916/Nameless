@@ -18,17 +18,13 @@
 
 package com.happyandjust.nameless.dsl
 
-import com.google.gson.Gson
-import com.google.gson.JsonElement
 import com.happyandjust.nameless.config.ConfigMap
 import com.happyandjust.nameless.core.FAIRY_SOUL
-import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.mojang.authlib.GameProfile
 import gg.essential.api.EssentialAPI
-import gg.essential.api.utils.WebUtil
 import net.minecraft.block.Block
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
@@ -46,7 +42,6 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
-import java.io.Reader
 import java.security.MessageDigest
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -188,15 +183,5 @@ fun String.getUUID() = runCatching { EssentialAPI.getMojangAPI().getUUID(this)?.
 fun UUID.getNameHistory() =
     runCatching { EssentialAPI.getMojangAPI().getNameHistory(this) }.getOrNull()?.filterNotNull()
 
-fun String.fetch() = WebUtil.fetchString(this)
-
-fun String.handler() = JsonHandler(fetch())
-
 val Block.displayName: String
     get() = runCatching { ItemStack(this).displayName }.getOrDefault(registryName.split(":")[1])
-
-inline fun <reified T> Gson.fromJson(json: JsonElement): T = fromJson(json, T::class.java)
-
-inline fun <reified T> Gson.fromJson(reader: Reader): T = fromJson(reader, T::class.java)
-
-inline fun <reified T> Gson.fromJson(s: String): T = fromJson(s, T::class.java)

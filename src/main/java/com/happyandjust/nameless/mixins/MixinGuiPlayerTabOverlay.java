@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.mixins;
 
 import com.google.common.collect.Collections2;
-import com.happyandjust.nameless.features.impl.qol.FeatureHideNPC;
+import com.happyandjust.nameless.features.impl.qol.HideNPC;
 import com.happyandjust.nameless.mixinhooks.GuiPlayerTabOverlayHook;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -46,6 +46,6 @@ public class MixinGuiPlayerTabOverlay {
     public Collection<NetworkPlayerInfo> filterNPC(NetHandlerPlayClient netHandlerPlayClient) {
         Collection<NetworkPlayerInfo> map = netHandlerPlayClient.getPlayerInfoMap();
 
-        return FeatureHideNPC.INSTANCE.getEnabled() ? Collections2.filter(map, player -> player != null && player.getGameProfile().getId().version() != 2) : map;
+        return HideNPC.INSTANCE.getEnabled() ? Collections2.filter(map, player -> player != null && player.getGameProfile().getId().version() != 2) : map;
     }
 }

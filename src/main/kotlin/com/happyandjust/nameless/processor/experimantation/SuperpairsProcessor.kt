@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.processor.experimantation
 
 import com.happyandjust.nameless.dsl.*
-import com.happyandjust.nameless.features.impl.skyblock.FeatureExperimentationTableHelper
+import com.happyandjust.nameless.features.impl.skyblock.ExperimentationTableHelper
 import com.happyandjust.nameless.processor.Processor
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.init.Blocks
@@ -56,7 +56,7 @@ object SuperpairsProcessor : Processor() {
         Color(255, 82, 82, 100)
     )
     override val filter
-        get() = FeatureExperimentationTableHelper.processors[this]!!
+        get() = ExperimentationTableHelper.processors[this]!!
 
     init {
         request<GuiScreenEvent.BackgroundDrawnEvent>().subscribe {

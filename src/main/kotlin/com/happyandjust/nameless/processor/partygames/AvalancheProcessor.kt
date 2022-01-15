@@ -23,7 +23,7 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.pureText
 import com.happyandjust.nameless.events.PartyGameChangeEvent
-import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
+import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
 import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
@@ -43,7 +43,7 @@ object AvalancheProcessor : Processor() {
 
     private val minPos = BlockPos(-2406, 49, -1893)
     private val maxPos = BlockPos(-2380, 49, -1867)
-    override val filter = FeaturePartyGamesHelper.getFilter(this)
+    override val filter = PartyGamesHelper.getFilter(this)
 
     init {
         request<ClientChatReceivedEvent>().filter { pureText.matches(ROUND_CHANGE) }.subscribe {
@@ -59,7 +59,7 @@ object AvalancheProcessor : Processor() {
         request<RenderWorldLastEvent>().subscribe {
             runCatching {
                 for (slab in slabs) {
-                    RenderUtils.drawOutlinedBox(slab, FeaturePartyGamesHelper.avalancheColor.rgb, partialTicks)
+                    RenderUtils.drawOutlinedBox(slab, PartyGamesHelper.avalancheColor.rgb, partialTicks)
                 }
             }
         }

@@ -22,6 +22,8 @@ import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.SpecialOverlayEvent
+import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.gui.relocate.RelocateGui
 import com.happyandjust.nameless.serialization.Converter

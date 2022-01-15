@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.dsl
 
-import com.happyandjust.nameless.features.impl.settings.FeatureDebug
+import com.happyandjust.nameless.features.impl.settings.Debug
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.IChatComponent
 import net.minecraftforge.client.event.ClientChatReceivedEvent
@@ -57,7 +57,7 @@ fun sendDebugMessage(o: Any?) {
 }
 
 fun sendDebugMessage(chatComponent: IChatComponent?) {
-    if (!FeatureDebug.enabled) return
+    if (!Debug.enabled) return
     chatComponent ?: run {
         sendDebugMessage("null")
         return

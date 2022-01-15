@@ -18,9 +18,9 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.misc.FeatureNoHurtCam;
-import com.happyandjust.nameless.features.impl.qol.FeatureCharm;
-import com.happyandjust.nameless.features.impl.qol.FeatureF5Fix;
+import com.happyandjust.nameless.features.impl.misc.NoHurtCam;
+import com.happyandjust.nameless.features.impl.qol.Charm;
+import com.happyandjust.nameless.features.impl.qol.F5Fix;
 import com.happyandjust.nameless.mixinhooks.EntityRendererHook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
@@ -59,7 +59,7 @@ public class MixinEntityRenderer {
 
     @ModifyVariable(method = "orientCamera", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/client/multiplayer/WorldClient;rayTraceBlocks(Lnet/minecraft/util/Vec3;Lnet/minecraft/util/Vec3;)Lnet/minecraft/util/MovingObjectPosition;"))
     public MovingObjectPosition f5fix(MovingObjectPosition value) {
-        if (FeatureF5Fix.INSTANCE.getEnabled()) {
+        if (F5Fix.INSTANCE.getEnabled()) {
             return null;
         } else {
             return value;
@@ -73,14 +73,14 @@ public class MixinEntityRenderer {
 
     @Redirect(method = "hurtCameraEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;rotate(FFFF)V", ordinal = 2))
     public void noHurtCam(float angle, float x, float y, float z) {
-        GlStateManager.rotate(angle / 14f * FeatureNoHurtCam.INSTANCE.getHurtCamModifier(), x, y, z);
+        GlStateManager.rotate(angle / 14f * NoHurtCam.INSTANCE.getHurtCamModifier(), x, y, z);
 
     }
 
     @Inject(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;renderEntities(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", ordinal = 1, shift = At.Shift.AFTER))
     public void renderCharm(int pass, float partialTicks, long finishTimeNano, CallbackInfo ci) {
-        if (FeatureCharm.INSTANCE.getEnabled()) {
-            FeatureCharm.INSTANCE.render(partialTicks);
+        if (Charm.INSTANCE.getEnabled()) {
+            Charm.INSTANCE.render(partialTicks);
         }
     }
 }

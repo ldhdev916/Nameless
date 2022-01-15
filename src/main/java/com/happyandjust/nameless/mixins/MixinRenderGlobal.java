@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.misc.FeatureChangeSkyColor;
-import com.happyandjust.nameless.features.impl.qol.FeatureCharm;
+import com.happyandjust.nameless.features.impl.misc.ChangeSkyColor;
+import com.happyandjust.nameless.features.impl.qol.Charm;
 import com.happyandjust.nameless.mixinhooks.RenderGlobalHook;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.RenderGlobal;
@@ -70,13 +70,13 @@ public class MixinRenderGlobal {
 
     @Redirect(method = "renderSky(FI)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/WorldClient;getSkyColor(Lnet/minecraft/entity/Entity;F)Lnet/minecraft/util/Vec3;"))
     public Vec3 changeSkyColor(WorldClient instance, Entity entity, float partialTicks) {
-        return FeatureChangeSkyColor.INSTANCE.getEnabled() ? FeatureChangeSkyColor.INSTANCE.getConvert() : instance.getSkyColor(entity, partialTicks);
+        return ChangeSkyColor.INSTANCE.getEnabled() ? ChangeSkyColor.INSTANCE.getConvert() : instance.getSkyColor(entity, partialTicks);
     }
 
     @Redirect(method = "renderEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/RenderManager;renderEntitySimple(Lnet/minecraft/entity/Entity;F)Z", ordinal = 2))
     public boolean cancelRendering(RenderManager instance, Entity entityIn, float partialTicks) {
         if (!(entityIn instanceof EntityPlayer)) return instance.renderEntitySimple(entityIn, partialTicks);
-        return !FeatureCharm.INSTANCE.getEnabled() && instance.renderEntitySimple(entityIn, partialTicks);
+        return !Charm.INSTANCE.getEnabled() && instance.renderEntitySimple(entityIn, partialTicks);
     }
 
 }

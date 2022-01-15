@@ -21,8 +21,8 @@ package com.happyandjust.nameless.utils
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.dsl.handler
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
-import com.happyandjust.nameless.features.impl.qol.FeatureInGameStatViewer
-import com.happyandjust.nameless.features.impl.settings.FeatureHypixelAPIKey
+import com.happyandjust.nameless.features.impl.qol.InGameStatViewer
+import com.happyandjust.nameless.features.impl.settings.HypixelAPIKey
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -70,21 +70,21 @@ object StatAPIUtils {
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    fun getStatValue(player: EntityPlayer, informationType: FeatureInGameStatViewer.InformationType): String {
+    fun getStatValue(player: EntityPlayer, informationType: InGameStatViewer.InformationType): String {
 
         val json = playerJSONCache[player] ?: run {
 
             if (processingRequest.add(player)) {
 
                 GlobalScope.launch {
-                    val api = FeatureHypixelAPIKey.apiKey
+                    val api = HypixelAPIKey.apiKey
 
                     val uuid = player.uniqueID
                     if (uuid.version() != 4) {
                         return@launch
                     }
                     playerJSONCache[player] = "https://api.hypixel.net/player?key=$api&uuid=$uuid".handler()
-                        .read(JsonObject())["player"].asJsonObject
+                        .read<JsonObject>()["player"].asJsonObject
 
                     processingRequest.remove(player)
                 }

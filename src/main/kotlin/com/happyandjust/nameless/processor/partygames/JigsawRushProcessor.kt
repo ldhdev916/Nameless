@@ -24,7 +24,7 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.PartyGameChangeEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
+import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
 import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
@@ -58,7 +58,7 @@ object JigsawRushProcessor : Processor() {
     private val drawInfos = arrayListOf<DrawInfo>()
     private val expandFacings = arrayOf(EnumFacing.EAST, EnumFacing.WEST, EnumFacing.SOUTH, EnumFacing.NORTH)
     private var myCanvas: Canvas? = null
-    override val filter = FeaturePartyGamesHelper.getFilter(this)
+    override val filter = PartyGamesHelper.getFilter(this)
 
     init {
         request<SpecialTickEvent>().filter { drawInfos.isEmpty() }.subscribe {

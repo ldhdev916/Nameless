@@ -21,7 +21,7 @@ package com.happyandjust.nameless.processor.partygames
 import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.impl.qol.FeaturePartyGamesHelper
+import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.init.Blocks
@@ -34,7 +34,7 @@ object DiveProcessor : Processor() {
 
     private var axisAlignedBB: AxisAlignedBB? = null
     private var isCollide = false
-    override val filter = FeaturePartyGamesHelper.getFilter(this)
+    override val filter = PartyGamesHelper.getFilter(this)
 
     init {
         request<SpecialTickEvent>().subscribe {
@@ -56,7 +56,7 @@ object DiveProcessor : Processor() {
             axisAlignedBB?.let {
                 RenderUtils.drawBox(
                     it,
-                    if (isCollide) Color.red.rgb else FeaturePartyGamesHelper.diveColor.rgb,
+                    if (isCollide) Color.red.rgb else PartyGamesHelper.diveColor.rgb,
                     partialTicks
                 )
             }

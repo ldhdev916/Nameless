@@ -18,13 +18,10 @@
 
 package com.happyandjust.nameless.utils
 
-import com.google.gson.Gson
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.happyandjust.nameless.core.JsonHandler
-import com.happyandjust.nameless.dsl.handler
-import com.happyandjust.nameless.dsl.isFairySoul
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.notifyException
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
@@ -33,26 +30,19 @@ import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.nbt.CompressedStreamTools
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.BlockPos
-import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.util.Constants
 import java.io.ByteArrayInputStream
 import java.util.*
 
 object SkyblockUtils {
-    private val gson = Gson()
-    private val fairySoulMap by lazy {
-        JsonHandler(ResourceLocation("nameless", "fairysouls.json")).read(JsonObject())
-            .entrySet()
-            .associate { (key, value) ->
-                key to value.asJsonArray.map {
-                    val jsonObject = it.asJsonObject
-                    FairySoul(jsonObject["x"].asInt, jsonObject["y"].asInt, jsonObject["z"].asInt, key)
-                }
-            }
-    }
+    private val fairySoulMap =
+        JsonHandler("nameless", "fairysouls.json").read<Map<String, List<Map<String, Int>>>>().mapValues {
+            it.value.map { map -> FairySoul(map["x"]!!, map["y"]!!, map["z"]!!, it.key) }
+        }
     val allItems by lazy {
-        "https://api.hypixel.net/resources/skyblock/items".handler().read(JsonObject())["items"].asJsonArray.associate {
-            val item = gson.fromJson(it, SkyBlockItem::class.java)
+        val items = "https://api.hypixel.net/resources/skyblock/items".handler().read<JsonObject>()["items"]
+        globalGson.fromJson<JsonArray>(items).associate {
+            val item = globalGson.fromJson<SkyBlockItem>(it)
 
             item.id to item
         }
@@ -60,10 +50,7 @@ object SkyblockUtils {
 
     fun getItemFromId(id: String) = allItems[id.uppercase()]
 
-    fun fetchSkyBlockData() {
-        fairySoulMap
-        allItems
-    }
+    fun fetchSkyBlockData() = allItems
 
     fun getAllFairySoulsByEntity(island: String): List<FairySoul> {
         return mc.theWorld.loadedEntityList.filter { it is EntityArmorStand && it.isFairySoul() }
@@ -91,7 +78,7 @@ object SkyblockUtils {
     }
 
     fun getAuctionDataInPage(page: Int): List<AuctionInfo> {
-        val json = "https://api.hypixel.net/skyblock/auctions?page=$page".handler().read(JsonObject())
+        val json = "https://api.hypixel.net/skyblock/auctions?page=$page".handler().read<JsonObject>()
 
         if (!json["success"].asBoolean) return emptyList()
 
@@ -100,13 +87,12 @@ object SkyblockUtils {
         val auctions = json["auctions"].asJsonArray
 
         for (auction in auctions) {
-            list.add(gson.fromJson(auction, AuctionInfo::class.java).also {
+            list.add(globalGson.fromJson<AuctionInfo>(auction).apply {
                 runCatching {
-                    it.rarity = ItemRarity.fromString(it.tier_string)
+                    rarity = ItemRarity.fromString(tier_string)
                 }.onFailure(Throwable::notifyException)
-                it.skyBlockId =
-                    readNBTFromItemBytes(it.item_bytes).getCompoundTag("tag").getCompoundTag("ExtraAttributes")
-                        .getString("id")
+                skyBlockId = readNBTFromItemBytes(item_bytes).getCompoundTag("tag").getCompoundTag("ExtraAttributes")
+                    .getString("id")
             })
         }
 
@@ -114,7 +100,7 @@ object SkyblockUtils {
     }
 
     fun getMaxAuctionPage(): Int {
-        val json = "https://api.hypixel.net/skyblock/auctions".handler().read(JsonObject())
+        val json = "https://api.hypixel.net/skyblock/auctions".handler().read<JsonObject>()
 
         if (!json["success"].asBoolean) return 0
 
