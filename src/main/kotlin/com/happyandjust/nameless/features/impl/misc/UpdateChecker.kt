@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,11 @@
 
 package com.happyandjust.nameless.features.impl.misc
 
-import com.google.gson.JsonObject
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.VERSION
-import com.happyandjust.nameless.dsl.handler
+import com.happyandjust.nameless.dsl.fetch
 import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.features.Category
+import com.happyandjust.nameless.dsl.string
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.impl.qol.JoinHypixelImmediately
 import com.happyandjust.nameless.gui.UpdateGui
@@ -31,6 +30,11 @@ import gg.essential.api.utils.GuiUtil
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 import net.minecraft.client.gui.GuiMainMenu
 import net.minecraftforge.client.event.GuiOpenEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
@@ -40,8 +44,7 @@ import java.net.URI
 import java.net.URL
 
 object UpdateChecker : SimpleFeature(
-    Category.MISCELLANEOUS,
-    "updatechecker",
+    "updateChecker",
     "Auto Update Checker",
     "Automatically checks if currently loaded mod version is latest version",
     true
@@ -57,8 +60,9 @@ object UpdateChecker : SimpleFeature(
         if (!enabled) return
 
         GlobalScope.launch {
-            val json = "https://api.github.com/repos/HappyAndJust/Nameless/releases/latest".handler().read<JsonObject>()
-            val latestTag = json["tag_name"].asString.drop(1)
+            val jsonObject =
+                Json.decodeFromString<JsonObject>("https://api.github.com/repos/HappyAndJust/Nameless/releases/latest".fetch())
+            val latestTag = jsonObject["tag_name"]!!.string.drop(1)
 
             val fixVersion = VERSION.substringBefore("-Pre")
 
@@ -66,17 +70,17 @@ object UpdateChecker : SimpleFeature(
             val latestVersion = DefaultArtifactVersion(latestTag)
 
             if (currentVersion < latestVersion || (fixVersion == latestTag && "Pre" in VERSION)) {
-                val html_url = json["html_url"].asString
-                val assets = json["assets"].asJsonArray[0].asJsonObject
+                val html_url = jsonObject["html_url"]!!.string
+                val assets = jsonObject["assets"]!!.jsonArray[0].jsonObject
 
-                val download_url = assets["browser_download_url"].asString
-                val body = json["body"].asString
+                val download_url = assets["browser_download_url"]!!.string
+                val body = jsonObject["body"]!!.string
 
                 updateGui = {
                     UpdateGui(body).apply {
                         htmlURL = URI(html_url)
                         downloadURL = URL(download_url)
-                        jarFile = File(Nameless.modFile.parentFile, assets["name"].asString)
+                        jarFile = File(Nameless.modFile.parentFile, assets["name"]!!.string)
                     }
                 }
                 needUpdate = true

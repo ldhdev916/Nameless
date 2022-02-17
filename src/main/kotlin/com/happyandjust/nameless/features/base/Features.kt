@@ -18,30 +18,22 @@
 
 package com.happyandjust.nameless.features.base
 
-import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.config.configValue
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.gui.feature.ComponentType
-import com.happyandjust.nameless.gui.feature.PropertyData
 import net.minecraftforge.common.MinecraftForge
-import kotlin.reflect.KMutableProperty0
 
 abstract class SimpleFeature(
-    val category: Category,
     key: String,
     title: String,
     desc: String = "",
     enabled_: Boolean = false
-) : AbstractDefaultFeature(key, title, desc) {
+) : BaseFeature<Boolean, Any>(key, title, desc) {
 
-    var inCategory = ""
-    private val enabledConfig = ConfigValue.BooleanConfigValue("features", key, enabled_)
-
-    fun hasParameter(key: String) = parameters.contains(key)
-
-    fun <T> getParameter(key: String) = parameters[key] as FeatureParameter<T>
-
-    fun <T> getParameterValue(key: String) = getParameter<T>(key).value
+    private val enabledConfig = configValue("features", key, enabled_)
+    override var componentType: ComponentType? = ComponentType.SWITCH
+    override val property = ::enabled
 
     var enabled = enabledConfig.value
         set(value) {
@@ -53,23 +45,21 @@ abstract class SimpleFeature(
                 MinecraftForge.EVENT_BUS.post(FeatureStateChangeEvent.Post(this, enabledConfig.value))
             }
         }
+}
 
-    fun invertEnableState() {
-        enabled = !enabled
+abstract class BaseFeature<T : Any, E : Any>(
+    key: String,
+    title: String,
+    desc: String = ""
+) : AbstractDefaultFeature<T, E>() {
+
+    init {
+        this.key = key
+        this.title = title
+        this.desc = desc
     }
 
-    override fun getProperty(): KMutableProperty0<*> = ::enabled
-
-    override fun getComponentType(): ComponentType? = ComponentType.SWITCH
-
-    override fun toPropertyData(): PropertyData<*> = PropertyData(
-        getProperty(),
-        title,
-        desc,
-        getComponentType(),
-    ).also {
-        it.settings = parameters.values.map { featureParameter -> featureParameter.toPropertyData() }
-        it.inCategory = inCategory
-    }
-
+    lateinit var category: Category
+    val categoryInitialized
+        get() = ::category.isInitialized
 }

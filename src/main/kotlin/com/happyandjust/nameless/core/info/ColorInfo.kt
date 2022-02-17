@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ data class ColorInfo(val color: Int, val priority: ColorPriority) {
 
     operator fun compareTo(other: ColorInfo?) = priority.compareTo(other?.priority)
 
-    enum class ColorPriority(val number: Int) {
+    enum class ColorPriority(private val number: Int) {
         HIGHEST(5), HIGH(4), NORMAL(3), LOW(2), LOWEST(1);
 
         operator fun compareTo(other: ColorPriority?) = number.compareTo(other?.number ?: -1)

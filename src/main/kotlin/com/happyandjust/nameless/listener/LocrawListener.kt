@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,24 +18,23 @@
 
 package com.happyandjust.nameless.listener
 
-import com.google.gson.Gson
 import com.happyandjust.nameless.core.TickTimer
-import com.happyandjust.nameless.dsl.matchesMatcher
+import com.happyandjust.nameless.dsl.cancel
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.dsl.pureText
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.hypixel.LocrawInfo
 import gg.essential.api.EssentialAPI
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.event.world.WorldEvent
-import java.util.regex.Pattern
 
 object LocrawListener {
 
     private var sentCommand = false
-    private val JSON = Pattern.compile("\\{.+}")
-    private val gson = Gson()
+    private val JSON = "\\{\"server\".+}".toRegex()
     private val updateTimer = TickTimer.withSecond(2)
     private var locrawTick = 0
 
@@ -52,22 +51,19 @@ object LocrawListener {
         }
 
         on<ClientChatReceivedEvent>().subscribe {
-            val msg = message.unformattedText
-            JSON.matchesMatcher(msg) {
-                Hypixel.apply {
+            if (pureText.matches(JSON)) {
+                with(Hypixel) {
                     if (sentCommand) {
-                        isCanceled = true
+                        cancel()
                     }
                     val prev = locrawInfo
                     runCatching {
-                        locrawInfo = gson.fromJson(msg, LocrawInfo::class.java)
+                        locrawInfo = Json.decodeFromString(pureText)
 
                         updateGame()
                     }.onFailure { locrawInfo = prev }
 
-                    if (sentCommand) {
-                        sentCommand = false
-                    }
+                    sentCommand = false
                 }
             }
         }

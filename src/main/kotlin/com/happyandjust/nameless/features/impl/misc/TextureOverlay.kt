@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,20 +18,16 @@
 
 package com.happyandjust.nameless.features.impl.misc
 
-import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.value.Overlay
+import com.happyandjust.nameless.dsl.dummySerializer
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.OverlayParameter
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.base.OverlayParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.overlayParameter
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.fixed
-import com.happyandjust.nameless.gui.relocate.RelocateComponent
-import com.happyandjust.nameless.serialization.DummyConverter
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.COverlay
 import gg.essential.elementa.ElementaVersion
-import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIImage
 import gg.essential.elementa.components.Window
 import gg.essential.elementa.constraints.ImageAspectConstraint
@@ -42,32 +38,30 @@ import java.nio.file.Files
 import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
 import kotlin.math.max
+import kotlin.random.Random
 
 object TextureOverlay : SimpleFeature(
-    Category.MISCELLANEOUS,
-    "textureoverlay",
+    "textureOverlay",
     "Texture Overlay",
     "Render texture which is under config/NamelessTextureOverlay to your screen. If you want to remove/add texture In Game, after modifying textures reload textures"
 ) {
 
     private val dir = File("config/NamelessTextureOverlay").apply { mkdirs() }
-    private val matrixStack by lazy { UMatrixStack.Compat.get() }
 
     init {
         val callback = {
             reloadTexture()
             mc.displayGuiScreen(null)
         }
-        parameters["reload"] = FeatureParameter(
-            0,
-            "textureoverlay",
-            "reload",
-            "Reload Textures",
-            "",
-            callback,
-            DummyConverter()
-        ).apply {
-            placeHolder = "Reload"
+
+        parameter(callback, dummySerializer()) {
+            matchKeyCategory()
+            key = List(100) { if (Random.nextBoolean()) 'I' else 'l' }.joinToString("")
+            title = "Reload Textures"
+
+            settings {
+                placeHolder = "Reload"
+            }
         }
 
         reloadTexture()
@@ -76,61 +70,43 @@ object TextureOverlay : SimpleFeature(
     private fun reloadTexture() {
         parameters.values.removeIf { it is OverlayParameter }
 
-        val files = (dir.listFiles() ?: emptyArray()).filter {
-            Files.probeContentType(it.toPath()).split("/")[0] == "image"
+        val files = dir.listFiles().orEmpty().filter {
+            Files.probeContentType(it.toPath()).substringBefore("/") == "image"
         }
 
         for (file in files) {
             val name = file.name
-            parameters[name] = object : OverlayParameter<Boolean>(
-                1,
-                "textureoverlay",
-                name,
-                name,
-                "",
-                false,
-                CBoolean
-            ) {
 
-                private val image = ImageIO.read(file)
-                private val window = Window(ElementaVersion.V1)
+            overlayParameter(false) {
+                matchKeyCategory()
+                key = name
+                title = name
 
-                init {
+                val image = ImageIO.read(file)
+                val window = Window(ElementaVersion.V1).apply {
                     UIImage(CompletableFuture.supplyAsync { image }).constrain {
-
-                        x = basicXConstraint { overlayPoint.point.x.toFloat() }.fixed()
-                        y = basicYConstraint { overlayPoint.point.y.toFloat() }.fixed()
+                        x = basicXConstraint { overlayPoint.x.toFloat() }.fixed()
+                        y = basicYConstraint { overlayPoint.y.toFloat() }.fixed()
 
                         width = basicWidthConstraint { image.width * overlayPoint.scale.toFloat() }.fixed()
                         height = ImageAspectConstraint()
-                    } childOf window
+                    } childOf this
                 }
 
-                override var overlayPoint by ConfigValue(
-                    "textureoverlay",
-                    "${name}_position",
-                    Overlay.DEFAULT,
-                    COverlay
-                )
+                wheel = max(image.width, image.height) / 5
 
-                override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
-                    return UIImage(CompletableFuture.supplyAsync { image }).constrain {
-                        width = basicWidthConstraint { image.width * relocateComponent.currentScale.toFloat() }.fixed()
+                config("textureOverlay", "${name}_position", Overlay.DEFAULT)
+
+                component {
+                    UIImage(CompletableFuture.supplyAsync { image }).constrain {
+                        width = basicWidthConstraint { image.width * currentScale.toFloat() }.fixed()
                         height = ImageAspectConstraint()
                     }
                 }
 
-                override fun shouldDisplayInRelocateGui(): Boolean {
-                    return enabled && value
-                }
+                shouldDisplay { enabled && value }
 
-                override fun renderOverlay0(partialTicks: Float) {
-                    if (!enabled || !value) return
-                    window.draw(matrixStack)
-                }
-
-                override fun getWheelSensitive() = max(image.width, image.height) / 5
-
+                render { if (enabled && value) window.draw(UMatrixStack.Compat.get()) }
             }
         }
     }

@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,35 +18,26 @@
 
 package com.happyandjust.nameless.features.impl.misc
 
-import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.features.base.BaseFeature
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.ComponentType
-import com.happyandjust.nameless.gui.feature.PropertyData
-import com.happyandjust.nameless.serialization.converters.CInt
-import kotlin.reflect.KMutableProperty0
 
-object NoHurtCam : SimpleFeature(
-    Category.MISCELLANEOUS,
-    "nohurtcam",
+object NoHurtCam : BaseFeature<Int, Any>(
+    "noHurtCam",
     "HurtCam Adjuster",
     "Adjust the hurt animation when being hit(default 14)"
 ) {
 
-    var hurtCamModifier by ConfigValue("hurtcam", "value", 14, CInt)
+    @JvmStatic
+    var hurtCamModifier by configValue("hurtCam", "value", 14)
+    override var componentType: ComponentType? = ComponentType.SLIDER
+    override val property = ::hurtCamModifier
 
-    override fun getComponentType(): ComponentType {
-        return ComponentType.SLIDER
-    }
-
-    override fun toPropertyData(): PropertyData<*> {
-        return super.toPropertyData().apply {
-            minValue = 0.0
-            maxValue = 50.0
+    init {
+        settings {
+            minValueInt = 0
+            maxValueInt = 50
         }
-    }
-
-    override fun getProperty(): KMutableProperty0<*> {
-        return ::hurtCamModifier
     }
 }

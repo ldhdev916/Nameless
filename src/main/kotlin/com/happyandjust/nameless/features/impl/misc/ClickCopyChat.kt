@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 package com.happyandjust.nameless.features.impl.misc
 
 import com.happyandjust.nameless.dsl.*
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiNewChat
 import net.minecraft.client.gui.GuiChat
@@ -33,8 +32,7 @@ import org.lwjgl.input.Mouse
 import kotlin.math.min
 
 object ClickCopyChat : SimpleFeature(
-    Category.MISCELLANEOUS,
-    "clickcopychat",
+    "clickCopyChat",
     "Click Copy Chat",
     "Right click to copy chat, ctrl + right click to copy chat with color codes"
 ) {
@@ -49,7 +47,7 @@ object ClickCopyChat : SimpleFeature(
                 (if (isCtrlDown) chat.formattedText else chat.unformattedText.stripControlCodes()).copyToClipboard()
                 sendPrefixMessage("Chat copied to your clipboard")
 
-                isCanceled = true
+                cancel()
             }
     }
 

@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,17 @@
 
 package com.happyandjust.nameless.utils
 
-import com.google.gson.JsonObject
-import com.happyandjust.nameless.dsl.handler
+import com.happyandjust.nameless.dsl.fetch
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.features.impl.qol.InGameStatViewer
 import com.happyandjust.nameless.features.impl.settings.HypixelAPIKey
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
@@ -83,8 +86,8 @@ object StatAPIUtils {
                     if (uuid.version() != 4) {
                         return@launch
                     }
-                    playerJSONCache[player] = "https://api.hypixel.net/player?key=$api&uuid=$uuid".handler()
-                        .read<JsonObject>()["player"].asJsonObject
+                    playerJSONCache[player] =
+                        Json.decodeFromString<JsonObject>("https://api.hypixel.net/player?key=$api&uuid=$uuid".fetch())["player"]!!.jsonObject
 
                     processingRequest.remove(player)
                 }

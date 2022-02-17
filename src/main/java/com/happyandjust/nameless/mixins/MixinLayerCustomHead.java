@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,20 +41,17 @@ public class MixinLayerCustomHead {
 
     @Inject(method = "doRenderLayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/tileentity/TileEntitySkullRenderer;renderSkull(FFFLnet/minecraft/util/EnumFacing;FILcom/mojang/authlib/GameProfile;I)V"), cancellable = true)
     public void changeSkin(EntityLivingBase entitylivingbaseIn, float p_177141_2_, float p_177141_3_, float partialTicks, float p_177141_5_, float p_177141_6_, float p_177141_7_, float scale, CallbackInfo ci) {
-        EquipPetSkin featureEquipPetSkin = EquipPetSkin.INSTANCE;
-        ChangeHelmetTexture featureChangeHelmetTexture = ChangeHelmetTexture.INSTANCE;
-
         GameProfile gameProfile = null;
 
-        if (featureEquipPetSkin.getEnabled() && entitylivingbaseIn instanceof EntityArmorStand) {
-            EquipPetSkin.PetSkinChangeInfo info = featureEquipPetSkin.getCurrentPetSkinChangeInfo();
+        if (EquipPetSkin.getEnabledJVM() && entitylivingbaseIn instanceof EntityArmorStand) {
+            EquipPetSkin.PetSkinChangeInfo info = EquipPetSkin.currentPetSkinChangeInfo;
 
             if (info != null && info.getItemStack().equals(entitylivingbaseIn.getCurrentArmor(3))) {
                 gameProfile = info.getGameProfile();
             }
         }
-        if (featureChangeHelmetTexture.getEnabled() && entitylivingbaseIn instanceof EntityPlayerSP) {
-            Pair<SkyBlockItem, GameProfile> pair = featureChangeHelmetTexture.getCurrentlyEquipedTexture();
+        if (ChangeHelmetTexture.getEnabledJVM() && entitylivingbaseIn instanceof EntityPlayerSP) {
+            Pair<SkyBlockItem, GameProfile> pair = ChangeHelmetTexture.getCurrentlyEquipedTexture();
 
             if (pair != null) gameProfile = pair.getSecond();
         }

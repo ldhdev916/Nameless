@@ -19,26 +19,33 @@
 package com.happyandjust.nameless.features.impl.misc
 
 import com.happyandjust.nameless.core.value.toChromaColor
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.serialization.converters.CChromaColor
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.color
 import java.awt.Color
 
 object ChangeDamagedEntityColor : SimpleFeature(
-    Category.MISCELLANEOUS,
-    "changedamagedentitycolor",
+    "changeDamagedEntityColor",
     "Change Damaged Entity Color",
     ""
 ) {
 
-    var color by FeatureParameter(
-        0,
-        "damagedentity",
-        "color",
-        "Damaged Entity Color",
-        "",
-        Color.red.toChromaColor(),
-        CChromaColor
-    )
+    @JvmStatic
+    var colorJVM
+        get() = color
+        set(value) {
+            color = value
+        }
+
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
+
+    init {
+        parameter(Color.red.toChromaColor()) {
+            matchKeyCategory()
+            key = "color"
+            title = "Damaged Entity Color"
+        }
+    }
 }

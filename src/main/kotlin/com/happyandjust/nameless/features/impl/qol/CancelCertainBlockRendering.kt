@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,33 +20,65 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.dsl.displayName
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.serialization.converters.CBoolean
+import com.happyandjust.nameless.features.base.listParameter
+import com.happyandjust.nameless.features.blocks
+import com.happyandjust.nameless.features.settings
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import net.minecraft.block.Block
 
-object CancelCertainBlockRendering :
-    SimpleFeature(Category.QOL, "cancelblockrendering", "Cancel Certain Block Rendering") {
+object CancelCertainBlockRendering : SimpleFeature("cancelBlockRendering", "Cancel Certain Block Rendering") {
+
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
+
+    @JvmStatic
+    var blocksJVM
+        get() = blocks
+        set(value) {
+            blocks = value
+        }
 
     init {
-        for (block in Block.blockRegistry) {
-            parameters[block.registryName] = FeatureParameter(
-                1,
-                "cancelblock",
-                block.registryName,
-                block.displayName,
-                "",
-                false,
-                CBoolean
-            ).apply {
-                if (value) ordinal = 0
-                onValueChange = {
-                    mc.renderGlobal.loadRenderers()
+        listParameter(emptyList(), ListSerializer(BlockSerializer)) {
+            matchKeyCategory()
+            key = "blocks"
+            title = "Blocks"
 
-                    ordinal = if (it) 0 else 1
+            settings {
+                ordinal = -1
+
+                listStringSerializer = { it.displayName }
+                listAllValueList = {
+                    Block.blockRegistry.toList().sortedBy { it.displayName }.sortedWith(compareBy { it !in value })
                 }
             }
+
+            onValueChange {
+                mc.renderGlobal.loadRenderers()
+            }
         }
+    }
+
+    object BlockSerializer : KSerializer<Block> {
+
+        override val descriptor = String.serializer().descriptor
+
+        override fun serialize(encoder: Encoder, value: Block) {
+            encoder.encodeSerializableValue(String.serializer(), value.registryName)
+        }
+
+        override fun deserialize(decoder: Decoder): Block {
+            val registryName = decoder.decodeSerializableValue(String.serializer())
+
+            return Block.getBlockFromName(registryName)
+        }
+
+
     }
 }

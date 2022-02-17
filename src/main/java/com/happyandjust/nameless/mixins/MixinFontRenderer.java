@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ public abstract class MixinFontRenderer {
             List<FontRendererHook.MatchInfo> matchInfos = getMatchInfoForString(text);
 
             if (!matchInfos.isEmpty() && !shadow) {
-                ChromaColor color = ChangeNicknameColor.INSTANCE.getColor();
+                ChromaColor color = ChangeNicknameColor.getColorJVM();
 
                 if (color.getChromaEnabled() && RenderGlobalHook.INSTANCE.canDisplayOutline()) {
                     drawChromaString(text, matchInfos, color.getAlpha());
@@ -125,9 +125,8 @@ public abstract class MixinFontRenderer {
 
     @Unique
     private String replaceDisguisedNickname(String text) {
-        DisguiseNickname feature = DisguiseNickname.INSTANCE;
 
-        return feature.getEnabled() ? text.replaceAll("(?i)" + Minecraft.getMinecraft().getSession().getUsername(), feature.getNick()) : text;
+        return DisguiseNickname.getEnabledJVM() ? text.replaceAll("(?i)" + Minecraft.getMinecraft().getSession().getUsername(), DisguiseNickname.getNicknameJVM()) : text;
 
     }
 

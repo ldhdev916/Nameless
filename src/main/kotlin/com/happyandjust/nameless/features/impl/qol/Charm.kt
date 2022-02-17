@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,12 +19,16 @@
 package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.dsl.*
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 import net.minecraft.util.BlockPos
 import org.lwjgl.opengl.GL11
 
-object Charm : SimpleFeature(Category.QOL, "charm", "Charm", "Allow you to look players through walls") {
+object Charm : SimpleFeature("charm", "Charm", "Allow you to look players through walls") {
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
+
+    @JvmStatic
     fun render(partialTicks: Float) {
         clear(GL11.GL_DEPTH_BUFFER_BIT)
 

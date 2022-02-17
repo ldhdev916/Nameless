@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,14 +26,14 @@ import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.color
+import com.happyandjust.nameless.features.settings
+import com.happyandjust.nameless.features.showFel
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CChromaColor
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.entity.item.EntityItem
@@ -45,32 +45,40 @@ import kotlin.math.abs
 import kotlin.math.pow
 
 object GlowStarDungeonMobs : SimpleFeature(
-    Category.SKYBLOCK,
-    "stardungeonmobs",
+    "starDungeonMobs",
     "Glow Star Dungeon Mobs",
     "Glow Star Dungeons mobs"
 ) {
 
-    private var color by FeatureParameter(
-        0,
-        "stardungeonmobs",
-        "color",
-        "Outline Color",
-        "",
-        Color.yellow.toChromaColor(),
-        CChromaColor
-    )
+    @JvmStatic
+    var showFelJVM
+        get() = showFel
+        set(value) {
+            showFel = value
+        }
 
-    var showFel by FeatureParameter(
-        1,
-        "stardungeonmobs",
-        "fel",
-        "Show Fel",
-        "Make fel visible",
-        false,
-        CBoolean
-    )
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
 
+    init {
+        parameter(Color.yellow.toChromaColor()) {
+            matchKeyCategory()
+            key = "color"
+            title = "Outline Color"
+        }
+
+        parameter(false) {
+            matchKeyCategory()
+            key = "showFel"
+            title = "Show Fel"
+            desc = "Make fel visible"
+
+            settings { ordinal = 1 }
+        }
+    }
+
+    @JvmField
     val checkedDungeonMobs = hashMapOf<EntityArmorStand, Entity>()
     private val ignoreMobs: (Entity) -> Boolean =
         { it is EntityArmorStand || it is EntityItem || it is EntityItemFrame || it is EntityXPOrb || it is EntityFishHook || it == mc.thePlayer }

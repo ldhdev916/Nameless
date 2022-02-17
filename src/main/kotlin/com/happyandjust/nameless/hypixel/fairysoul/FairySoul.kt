@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,10 @@
 
 package com.happyandjust.nameless.hypixel.fairysoul
 
+import kotlinx.serialization.Serializable
 import net.minecraft.util.BlockPos
 
+@Serializable
 data class FairySoul(val x: Int, val y: Int, val z: Int, val island: String) {
     fun toBlockPos() = BlockPos(x, y, z)
 }

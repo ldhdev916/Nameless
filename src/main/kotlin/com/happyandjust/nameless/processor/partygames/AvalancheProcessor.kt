@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.pureText
 import com.happyandjust.nameless.events.PartyGameChangeEvent
+import com.happyandjust.nameless.features.avalanche_color
 import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
 import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.processor.Processor
@@ -59,7 +60,7 @@ object AvalancheProcessor : Processor() {
         request<RenderWorldLastEvent>().subscribe {
             runCatching {
                 for (slab in slabs) {
-                    RenderUtils.drawOutlinedBox(slab, PartyGamesHelper.avalancheColor.rgb, partialTicks)
+                    RenderUtils.drawOutlinedBox(slab, PartyGamesHelper.avalanche_color.rgb, partialTicks)
                 }
             }
         }

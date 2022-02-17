@@ -1,5 +1,9 @@
 /*
- * Nameless - 1.8.9 Hypixel Quality Of Life Mod
+ *var enabledPotionTypes
+get() = this.enabledPotionTypes__273e5a27_8e4c_4c6a_af77_ac19194e43a1.value
+set(value) {
+        this.enabledPotionTypes__273e5a27_8e4c_4c6a_af77_ac19194e43a1.value = value
+    } Nameless - 1.8.9 Hypixel Quality Of Life Mod
  * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,35 +22,39 @@
 
 package com.happyandjust.nameless.features.impl.general
 
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.gui.feature.ComponentType
-import com.happyandjust.nameless.serialization.converters.CList
-import com.happyandjust.nameless.serialization.converters.getEnumConverter
+import com.happyandjust.nameless.features.base.autoFillEnum
+import com.happyandjust.nameless.features.base.listParameter
+import com.happyandjust.nameless.features.enabledPotionTypes
 
 object RemoveNegativeEffects : SimpleFeature(
-    Category.GENERAL,
-    "removenegativeeffects",
+    "removeNegativeEffects",
     "Remove Negative Effects",
     "Support Blindness, Nausea"
 ) {
 
-    var enabledPotionTypes by object : FeatureParameter<List<PotionType>>(
-        0, "removenegativeeffects", "potiontypes", "Potion Types", "", PotionType.values().toList(), CList(
-            getEnumConverter()
-        )
-    ) {
-        init {
-            allEnumList = PotionType.values().toList()
-            enumName = {
-                val name = (it as PotionType).name
+    @JvmStatic
+    var enabledPotionTypesJVM
+        get() = enabledPotionTypes
+        set(value) {
+            enabledPotionTypes = value
+        }
 
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
+
+    init {
+        listParameter(PotionType.values().toList()) {
+            matchKeyCategory()
+            key = "enabledPotionTypes"
+            title = "Potion Types"
+
+            autoFillEnum {
+                val name = it.name
                 "${name[0]}${name.drop(1).lowercase()}"
             }
         }
-
-        override fun getComponentType() = ComponentType.MULTI_SELECTOR
     }
 
     enum class PotionType {

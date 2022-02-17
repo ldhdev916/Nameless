@@ -18,13 +18,16 @@
 
 package com.happyandjust.nameless.features.impl.misc
 
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 
 object HitDelayFix : SimpleFeature(
-    Category.MISCELLANEOUS,
-    "hitdelayfix",
+    "hitDelayFix",
     "Hit Delay Fix",
     "",
     true
-)
+) {
+
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
+}

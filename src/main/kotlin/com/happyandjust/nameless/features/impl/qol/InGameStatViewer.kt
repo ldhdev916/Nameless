@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,193 +18,173 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.OverlayParameter
-import com.happyandjust.nameless.features.SubParameterOf
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.gui.feature.ComponentType
+import com.happyandjust.nameless.features.base.overlayParameter
+import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.gui.feature.components.Identifier
+import com.happyandjust.nameless.gui.feature.components.MultiSelectorComponent
 import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
 import com.happyandjust.nameless.gui.fixed
-import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.serialization.converters.*
 import com.happyandjust.nameless.utils.StatAPIUtils
 import com.happyandjust.nameless.utils.Utils
 import gg.essential.api.EssentialAPI
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIText
+import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.constraints.ChildBasedMaxSizeConstraint
 import gg.essential.elementa.constraints.ChildBasedSizeConstraint
 import gg.essential.elementa.constraints.SiblingConstraint
 import gg.essential.elementa.dsl.*
-import gg.essential.vigilance.gui.settings.SelectorComponent
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.MovingObjectPosition
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
+import kotlin.math.max
 
 object InGameStatViewer : SimpleFeature(
-    Category.QOL,
-    "ingamestatviewer",
+    "inGameStatViewer",
     "In Game Stat Viewer",
     "View someone's stat in game. §eRequires hypixel api key"
 ) {
 
-    private var type by object : OverlayParameter<DisplayType>(
-        0,
-        "ingamestatviewer",
-        "displaytype",
-        "Display Type",
-        DisplayType.values().joinToString("\n") { "${it.name}: ${it.lore}" },
-        DisplayType.OVERLAY,
-        getEnumConverter()
-    ) {
-        override var overlayPoint by ConfigValue("ingamestatviewer", "overlay", Overlay.DEFAULT, COverlay)
+    init {
+        overlayParameter(DisplayType.OVERLAY) {
+            matchKeyCategory()
+            key = "displayType"
+            title = "Display Type"
+            desc = DisplayType.values().joinToString("\n") { "${it.name}: ${it.lore}" }
 
-        override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
-            val container = UIContainer().constrain {
-                width = ChildBasedMaxSizeConstraint()
-                height = ChildBasedSizeConstraint()
+            config("inGameStatViewer", "overlay", Overlay.DEFAULT)
+            component {
+                val container = UIContainer().constrain {
+                    width = ChildBasedMaxSizeConstraint()
+                    height = ChildBasedSizeConstraint()
+                }
+
+                for (text in arrayOf(
+                    "Hypixel Level: 10",
+                    "BedWars Level: 999§e✫",
+                    "BedWars FKDR: 1.0",
+                    "SkyWars Kills: 9999"
+                )) {
+                    UIText(text).constrain {
+                        y = SiblingConstraint()
+
+                        textScale = basicTextScaleConstraint { currentScale.toFloat() }.fixed()
+                    } childOf container
+                }
+
+                container
             }
 
-            for (text in arrayOf(
-                "Hypixel Level: 10",
-                "BedWars Level: 999§e✫",
-                "BedWars FKDR: 1.0",
-                "SkyWars Kills: 9999"
-            )) {
-                UIText(text).constrain {
-                    y = SiblingConstraint()
+            shouldDisplay { enabled && value == DisplayType.OVERLAY }
+            render {
+                if (!enabled || value != DisplayType.OVERLAY) return@render
+                for (player in getPlayersForRender()) {
+                    matrix {
+                        setup(overlayPoint)
 
-                    textScale = basicTextScaleConstraint { relocateComponent.currentScale.toFloat() }.fixed()
-                } childOf container
-            }
+                        mc.fontRendererObj.drawString("§e${player.name}", 0, 0, Color.white.rgb, true)
 
-            return container
-        }
+                        var y = mc.fontRendererObj.FONT_HEIGHT
 
-        override fun shouldDisplayInRelocateGui(): Boolean {
-            return enabled && value == DisplayType.OVERLAY
-        }
-
-        override fun renderOverlay0(partialTicks: Float) {
-            if (!enabled || value != DisplayType.OVERLAY) return
-            for (player in getPlayersForRender()) {
-                matrix {
-                    setup(overlayPoint)
-
-                    mc.fontRendererObj.drawString("§e${player.name}", 0, 0, Color.white.rgb, true)
-
-                    var y = mc.fontRendererObj.FONT_HEIGHT
-
-                    for (identifier in order.filter { it.supportGame.shouldDisplay() }) {
-                        mc.fontRendererObj.drawString(
-                            identifier.informationType.getFormatText(player),
-                            0,
-                            y,
-                            Color.white.rgb,
-                            true
-                        )
-                        y += mc.fontRendererObj.FONT_HEIGHT
+                        for (identifier in order.filter { it.supportGames.any(SupportGame::shouldDisplay) }) {
+                            mc.fontRendererObj.drawString(
+                                identifier.informationType.getFormatText(player),
+                                0,
+                                y,
+                                Color.white.rgb,
+                                true
+                            )
+                            y += mc.fontRendererObj.FONT_HEIGHT
+                        }
                     }
+                }
+            }
+
+            parameter(0.0) {
+                matchKeyCategory()
+                key = "yOffset"
+                title = "Y Offset"
+                desc = "Offset y from player's head (Only for display type 'HEAD')"
+
+                settings {
+                    minValueInt = -5
+                    maxValueInt = 5
+                }
+            }
+
+            parameter(1.0) {
+                matchKeyCategory()
+                key = "scale"
+                title = "Text Scale"
+                desc = "Select text scale (Only for display type 'HEAD')"
+
+                settings {
+                    ordinal = 1
+                    minValue = 0.5
+                    maxValue = 5.0
+                }
+            }
+
+            parameter(true) {
+                matchKeyCategory()
+                key = "onlyLook"
+                title = "Only Looking At"
+                desc =
+                    "Show stats of only a player you're currently looking at instead of everyone (Only for display type 'HEAD')"
+
+                settings {
+                    ordinal = 2
                 }
             }
         }
 
-    }
+        parameter(emptyList<InGameStatIdentifier>()) {
+            matchKeyCategory()
+            key = "order"
+            title = "Stats List"
 
-    @SubParameterOf("type")
-    private var yOffset by FeatureParameter(
-        0,
-        "ingamestatviewer",
-        "yoffset",
-        "Y Offset",
-        "Offset y from player's head (Only for display type 'HEAD')",
-        0.0,
-        CDouble
-    ).apply {
-        minValue = -5.0
-        maxValue = 5.0
-    }
+            settings {
+                ordinal = 3
+                allIdentifiers = InformationType.values().map { InGameStatIdentifier(it, listOf(SupportGame.ALL)) }
+            }
+        }
 
-    @SubParameterOf("type")
-    private var scale by FeatureParameter(
-        1,
-        "ingamestatviewer",
-        "scale",
-        "Text Scale",
-        "Select text scale (Only for display type 'HEAD')",
-        1.0,
-        CDouble
-    ).apply {
-        minValue = 0.5
-        maxValue = 5.0
-    }
+        parameter(Unit) {
+            matchKeyCategory()
+            key = "texts"
+            title = "Each Stat Texts"
+            desc = "{value} is converted to actual value(like level) when rendering and & will be converted to §"
 
-    @SubParameterOf("type")
-    private var onlyLook by FeatureParameter(
-        2,
-        "ingamestatviewer",
-        "onlylook",
-        "Only Looking At",
-        "Show stats of only a player you're currently looking at instead of everyone (Only for display type 'HEAD')",
-        true,
-        CBoolean
-    )
+            componentType = null
 
-    var order by FeatureParameter(
-        2,
-        "ingamestatviewer",
-        "order",
-        "Stats List",
-        "",
-        emptyList(),
-        CList(InGameStatIdentifier::serialize, InGameStatIdentifier::deserialize)
-    ).apply {
-        allIdentifiers = InformationType.values().map { InGameStatIdentifier(it, SupportGame.ALL) }
-    }
+            settings { ordinal = 3 }
 
-    private var texts by object : FeatureParameter<String>(
-        3,
-        "ingamestatviewer",
-        "texts",
-        "Each Stat Texts",
-        "{value} is converted to actual value(like level) when rendering and & will be converted to §",
-        "",
-        CString
-    ) {
-        override fun getComponentType(): ComponentType? = null
-
-        init {
             for (informationType in InformationType.values()) {
                 val informationName = informationType.name.lowercase()
                 val statName = informationType.statName
 
-
-                parameters[informationName] = FeatureParameter(
-                    0,
-                    "ingamestatviewer",
-                    "${informationName}_text",
-                    statName,
-                    "",
-                    "$statName: {value}",
-                    CString
-                )
+                parameter("$statName: {value}") {
+                    matchKeyCategory()
+                    key = "${informationName}_text"
+                    title = statName
+                }
             }
         }
     }
 
     private fun getPlayersForRender(): List<EntityPlayer> {
-        return if (type == DisplayType.OVERLAY || onlyLook) {
+        return if (displayType == DisplayType.OVERLAY || displayType_onlyLook) {
             mc.objectMouseOver?.takeIf { it.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY }?.let {
                 val entity = it.entityHit
                 if (entity is EntityPlayer) arrayListOf(entity) else emptyList()
@@ -215,7 +195,7 @@ object InGameStatViewer : SimpleFeature(
     }
 
     init {
-        on<RenderWorldLastEvent>().filter { enabled && type == DisplayType.HEAD }.subscribe {
+        on<RenderWorldLastEvent>().filter { enabled && displayType == DisplayType.HEAD }.subscribe {
             val render = mc.renderViewEntity
 
             val renderX = render.getRenderPosX(partialTicks)
@@ -227,7 +207,7 @@ object InGameStatViewer : SimpleFeature(
                 matrix {
                     translate(
                         player.posX - renderX,
-                        player.posY + player.getEyeHeight() + yOffset - renderY,
+                        player.posY + player.getEyeHeight() + displayType_yOffset - renderY,
                         player.posZ - renderZ
                     )
                     rotate(-mc.renderManager.playerViewY, 0f, 1f, 0f)
@@ -235,10 +215,10 @@ object InGameStatViewer : SimpleFeature(
 
                     val fontHeight = mc.fontRendererObj.FONT_HEIGHT.toFloat()
 
-                    for (identifier in order.filter { it.supportGame.shouldDisplay() }.reversed()) {
+                    for (identifier in order.filter { it.supportGames.any(SupportGame::shouldDisplay) }.reversed()) {
                         val text = identifier.informationType.getFormatText(player)
 
-                        val fixedScale = scale / wrapScaleTo1Block(text)
+                        val fixedScale = displayType_scale / wrapScaleTo1Block(text)
 
                         matrix {
                             scale(-fixedScale, -fixedScale, -fixedScale)
@@ -258,7 +238,7 @@ object InGameStatViewer : SimpleFeature(
     }
 
     private fun InformationType.getFormatText(entityPlayer: EntityPlayer): String {
-        val format = getParameter<String>("texts").getParameterValue<String>(name.lowercase())
+        val format = getParameterValue<String>("texts/${name.lowercase()}_text")
 
         val value = StatAPIUtils.getStatValue(entityPlayer, this)
 
@@ -266,87 +246,46 @@ object InGameStatViewer : SimpleFeature(
     }
 
 
-    class InGameStatIdentifier(
+    @Serializable
+    data class InGameStatIdentifier(
         val informationType: InformationType,
-        var supportGame: SupportGame
+        var supportGames: List<SupportGame>
     ) : Identifier {
         override fun toUIComponent(gui: VerticalPositionEditableComponent): UIComponent {
 
             val text = UIText(informationType.statName).constrain {
-                textScale = 2.pixels()
-            }
+                y = CenterConstraint()
 
-            val container = UIContainer().constrain {
-                width = ChildBasedSizeConstraint()
-                height = basicHeightConstraint { text.getHeight() }
+                textScale = 1.3.pixels()
             }
-
-            text childOf container
 
             val values = SupportGame.values()
 
-            val selector = SelectorComponent(
-                values.indexOf(supportGame),
-                values.map { it.name }).constrain {
+            val container = UIContainer().constrain {
+                width = ChildBasedSizeConstraint()
+                height = basicHeightConstraint { max(text.getHeight(), 20f) }
+            }
 
+            text childOf container
+            val multiSelector = MultiSelectorComponent(
+                supportGames.map { it.name },
+                values.map { it.name }).constrain {
                 x = SiblingConstraint()
                 y = 0.pixel()
             } childOf container
 
-            selector.onValueChange {
-                supportGame = SupportGame.values()[it as Int]
+            multiSelector.onValueChange {
+                it as List<Int>
+                supportGames = it.map(values::get)
                 gui.saveValue()
             }
-
             return container
-        }
-
-        override fun serialize(): JsonElement {
-            val jsonObject = JsonObject()
-
-            jsonObject.add("game", supportGameConverter.serialize(supportGame))
-            jsonObject.add("information", informationConverter.serialize(informationType))
-
-            return jsonObject
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as InGameStatIdentifier
-
-            if (informationType != other.informationType) return false
-            if (supportGame != other.supportGame) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = informationType.hashCode()
-            result = 31 * result + supportGame.hashCode()
-            return result
         }
 
         override fun areEqual(other: Identifier): Boolean {
             return (other === this) || (other is InGameStatIdentifier && other.informationType === informationType)
         }
 
-
-        companion object {
-
-            private val informationConverter = getEnumConverter<InformationType>()
-            private val supportGameConverter = getEnumConverter<SupportGame>()
-
-            fun deserialize(jsonElement: JsonElement): InGameStatIdentifier {
-                jsonElement as JsonObject
-
-                return InGameStatIdentifier(
-                    informationConverter.deserialize(jsonElement["information"]),
-                    supportGameConverter.deserialize(jsonElement["game"])
-                )
-            }
-        }
     }
 
     enum class SupportGame {
@@ -372,132 +311,132 @@ object InGameStatViewer : SimpleFeature(
     enum class InformationType(val statName: String) {
         HYPIXEL_LEVEL("Hypixel Level") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return StatAPIUtils.networkExpToLevel(runCatching { jsonObject["networkExp"].asDouble }.getOrDefault(0.0))
+                return StatAPIUtils.networkExpToLevel(runCatching { jsonObject["networkExp"]!!.double }.getOrDefault(0.0))
                     .toString()
             }
         },
         BEDWARS_LEVEL("BedWars Level") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject["achievements"].asJsonObject["bedwars_level"].asInt }.getOrDefault(1)
+                return runCatching { jsonObject["achievements"]!!.jsonObject["bedwars_level"]!!.int }.getOrDefault(1)
                     .insertCommaEvery3Character()
             }
         },
         SKYWARS_LEVEL("SkyWars Level") {
             override fun getStatValue(jsonObject: JsonObject): String {
                 return StatAPIUtils.skyWarsExpToLevel(
-                    runCatching { jsonObject["stats"].asJsonObject["SkyWars"].asJsonObject["skywars_experience"].asInt }
+                    runCatching { jsonObject["stats"]!!.jsonObject["SkyWars"]!!.jsonObject["skywars_experience"]!!.int }
                         .getOrDefault(0)
                 ).toString()
             }
         },
         ACHIEVEMENT_POINT("Achievement Point") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject["achievementPoints"].asInt }.getOrDefault(0)
+                return runCatching { jsonObject["achievementPoints"]!!.int }.getOrDefault(0)
                     .insertCommaEvery3Character()
             }
         },
         KARMA("Karma") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject["karma"].asInt }.getOrDefault(0).insertCommaEvery3Character()
+                return runCatching { jsonObject["karma"]!!.int }.getOrDefault(0).insertCommaEvery3Character()
             }
         },
         SKYWARS_KILLS("SkyWars Kills") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject.getGameStat("SkyWars")["kills"].asInt }.getOrDefault(0)
+                return runCatching { jsonObject.getGameStat("SkyWars")["kills"]!!.int }.getOrDefault(0)
                     .insertCommaEvery3Character()
             }
         },
         SKYWARS_DEATHS("SkyWars Deaths") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject.getGameStat("SkyWars")["deaths"].asInt }.getOrDefault(0)
+                return runCatching { jsonObject.getGameStat("SkyWars")["deaths"]!!.int }.getOrDefault(0)
                     .insertCommaEvery3Character()
             }
         },
         SKYWARS_WINS("SkyWars Wins") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject.getGameStat("SkyWars")["wins"].asInt }.getOrDefault(0)
+                return runCatching { jsonObject.getGameStat("SkyWars")["wins"]!!.int }.getOrDefault(0)
                     .insertCommaEvery3Character()
             }
         },
         SKYWARS_LOSSES("SkyWars Losses") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject.getGameStat("SkyWars")["losses"].asInt }.getOrDefault(0)
+                return runCatching { jsonObject.getGameStat("SkyWars")["losses"]!!.int }.getOrDefault(0)
                     .insertCommaEvery3Character()
             }
         },
         SKYWARS_KD("SkyWars K/D") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                val kill = runCatching { jsonObject.getGameStat("SkyWars")["kills"].asInt }.getOrDefault(0)
-                val death = runCatching { jsonObject.getGameStat("SkyWars")["deaths"].asInt }.getOrDefault(0)
+                val kill = runCatching { jsonObject.getGameStat("SkyWars")["kills"]!!.int }.getOrDefault(0)
+                val death = runCatching { jsonObject.getGameStat("SkyWars")["deaths"]!!.int }.getOrDefault(0)
 
                 return (kill.toDouble() / death.coerceAtLeast(1)).transformToPrecisionString(2)
             }
         },
         SKYWARS_WL("SkyWars W/L") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                val win = runCatching { jsonObject.getGameStat("SkyWars")["wins"].asInt }.getOrDefault(0)
-                val loss = runCatching { jsonObject.getGameStat("SkyWars")["deaths"].asInt }.getOrDefault(0)
+                val win = runCatching { jsonObject.getGameStat("SkyWars")["wins"]!!.int }.getOrDefault(0)
+                val loss = runCatching { jsonObject.getGameStat("SkyWars")["deaths"]!!.int }.getOrDefault(0)
 
                 return (win.toDouble() / loss.coerceAtLeast(1)).transformToPrecisionString(2)
             }
         },
         SKYWARS_COINS("SkyWars Coins") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject.getGameStat("SkyWars")["coins"].asInt }.getOrDefault(0)
+                return runCatching { jsonObject.getGameStat("SkyWars")["coins"]!!.int }.getOrDefault(0)
                     .insertCommaEvery3Character()
             }
         },
         BEDWARS_COINS("BedWars Coins") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject.getGameStat("Bedwars")["coins"].asInt }.getOrDefault(0)
+                return runCatching { jsonObject.getGameStat("Bedwars")["coins"]!!.int }.getOrDefault(0)
                     .insertCommaEvery3Character()
             }
         },
         BEDWARS_WINSTREAK("BedWars Winstreak") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject.getGameStat("Bedwars")["winstreak"].asInt }.getOrDefault(0).toString()
+                return runCatching { jsonObject.getGameStat("Bedwars")["winstreak"]!!.int }.getOrDefault(0).toString()
             }
         },
         BEDWARS_KILLS("BedWars Kills") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject.getGameStat("Bedwars")["kills_bedwars"].asInt }.getOrDefault(0)
+                return runCatching { jsonObject.getGameStat("Bedwars")["kills_bedwars"]!!.int }.getOrDefault(0)
                     .insertCommaEvery3Character()
             }
         },
         BEDWARS_DEATHS("BedWars Deaths") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject.getGameStat("Bedwars")["deaths_bedwars"].asInt }.getOrDefault(0)
+                return runCatching { jsonObject.getGameStat("Bedwars")["deaths_bedwars"]!!.int }.getOrDefault(0)
                     .insertCommaEvery3Character()
             }
         },
         BEDWARS_FINAL_KILLS("BedWars Final Kills") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject.getGameStat("Bedwars")["final_kills_bedwars"].asInt }.getOrDefault(0)
+                return runCatching { jsonObject.getGameStat("Bedwars")["final_kills_bedwars"]!!.int }.getOrDefault(0)
                     .insertCommaEvery3Character()
             }
         },
         BEDWARS_FINAL_DEATHS("BedWars Final Deaths") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject.getGameStat("Bedwars")["final_deaths_bedwars"].asInt }.getOrDefault(0)
+                return runCatching { jsonObject.getGameStat("Bedwars")["final_deaths_bedwars"]!!.int }.getOrDefault(0)
                     .insertCommaEvery3Character()
             }
         },
         BEDWARS_WINS("BedWars Wins") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject.getGameStat("Bedwars")["wins_bedwars"].asInt }.getOrDefault(0)
+                return runCatching { jsonObject.getGameStat("Bedwars")["wins_bedwars"]!!.int }.getOrDefault(0)
                     .insertCommaEvery3Character()
             }
         },
         BEDWARS_LOSSES("BedWars Losses") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return runCatching { jsonObject.getGameStat("Bedwars")["losses_bedwars"].asInt }.getOrDefault(0)
+                return runCatching { jsonObject.getGameStat("Bedwars")["losses_bedwars"]!!.int }.getOrDefault(0)
                     .insertCommaEvery3Character()
             }
         },
         BEDWARS_KD("BedWars K/D") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                val kill = runCatching { jsonObject.getGameStat("Bedwars")["kills_bedwars"].asInt }.getOrDefault(0)
-                val death = runCatching { jsonObject.getGameStat("Bedwars")["deaths_bedwars"].asInt }.getOrDefault(0)
+                val kill = runCatching { jsonObject.getGameStat("Bedwars")["kills_bedwars"]!!.int }.getOrDefault(0)
+                val death = runCatching { jsonObject.getGameStat("Bedwars")["deaths_bedwars"]!!.int }.getOrDefault(0)
 
                 return (kill.toDouble() / death.coerceAtLeast(1)).transformToPrecisionString(2)
             }
@@ -505,17 +444,17 @@ object InGameStatViewer : SimpleFeature(
         BEDWARS_FINAL_KD("BedWars Final K/D") {
             override fun getStatValue(jsonObject: JsonObject): String {
                 val final_kill =
-                    runCatching { jsonObject.getGameStat("Bedwars")["final_kills_bedwars"].asInt }.getOrDefault(0)
+                    runCatching { jsonObject.getGameStat("Bedwars")["final_kills_bedwars"]!!.int }.getOrDefault(0)
                 val final_death =
-                    runCatching { jsonObject.getGameStat("Bedwars")["final_deaths_bedwars"].asInt }.getOrDefault(0)
+                    runCatching { jsonObject.getGameStat("Bedwars")["final_deaths_bedwars"]!!.int }.getOrDefault(0)
 
                 return (final_kill.toDouble() / final_death.coerceAtLeast(1)).transformToPrecisionString(2)
             }
         },
         BEDWARS_WL("BedWars W/L") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                val win = runCatching { jsonObject.getGameStat("Bedwars")["wins_bedwars"].asInt }.getOrDefault(0)
-                val loss = runCatching { jsonObject.getGameStat("Bedwars")["losses_bedwars"].asInt }.getOrDefault(0)
+                val win = runCatching { jsonObject.getGameStat("Bedwars")["wins_bedwars"]!!.int }.getOrDefault(0)
+                val loss = runCatching { jsonObject.getGameStat("Bedwars")["losses_bedwars"]!!.int }.getOrDefault(0)
 
                 return (win.toDouble() / loss.coerceAtLeast(1)).transformToPrecisionString(2)
             }
@@ -525,7 +464,7 @@ object InGameStatViewer : SimpleFeature(
         abstract fun getStatValue(jsonObject: JsonObject): String
 
         companion object {
-            private fun JsonObject.getGameStat(gameName: String) = this["stats"].asJsonObject[gameName].asJsonObject
+            private fun JsonObject.getGameStat(gameName: String) = this["stats"]!!.jsonObject[gameName]!!.jsonObject
         }
     }
 

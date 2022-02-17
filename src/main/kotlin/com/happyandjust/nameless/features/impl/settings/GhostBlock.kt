@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,14 +24,16 @@ import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.KeyPressEvent
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.base.FeatureParameter
-import com.happyandjust.nameless.features.base.SettingFeature
+import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.ignoreSecret
+import com.happyandjust.nameless.features.restore
+import com.happyandjust.nameless.features.settings
+import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CInt
 import net.minecraft.block.BlockChest
 import net.minecraft.block.BlockLever
 import net.minecraft.block.BlockSkull
@@ -42,36 +44,42 @@ import net.minecraft.network.play.server.S23PacketBlockChange
 import net.minecraft.util.BlockPos
 import net.minecraft.util.MovingObjectPosition
 
-object GhostBlock : SettingFeature(
-    "ghostblock",
+object GhostBlock : SimpleFeature(
+    "ghostBlock",
     "Ghost Block",
     "Make client-side air where you are looking at"
 ) {
 
     private val ghostBlocks = hashMapOf<BlockPos, BlockInfo>()
 
-    private var restore by FeatureParameter(
-        0,
-        "ghostblock",
-        "restore",
-        "Restore Seconds",
-        "after the seconds you selected, block you made client-side air will be restored back\n-1 for not restoring back",
-        10,
-        CInt
-    ).apply {
-        minValue = -1.0
-        maxValue = 60.0
+    init {
+        parameter(10) {
+            matchKeyCategory()
+            key = "restore"
+            title = "Restore Seconds"
+            desc =
+                "after the seconds you selected, block you made client-side air will be restored back\n-1 for not restoring back"
+
+
+            settings {
+                minValueInt = -1
+                maxValueInt = 60
+            }
+        }
+
+        parameter(true) {
+            matchKeyCategory()
+            key = "ignoreSecret"
+            title = "Ignore Dungeons Secrets"
+            desc = "Prevent making skyblock dungeons secrets ghost-block"
+
+            settings {
+                ordinal = 1
+            }
+        }
     }
 
-    private var ignoreSecret by FeatureParameter(
-        1,
-        "ghostblock",
-        "ignoresecret",
-        "Ignore Dungeons Secrets",
-        "Prevent making skyblock dungeons secrets ghost-block",
-        true,
-        CBoolean
-    )
+    override var componentType: ComponentType? = null
 
     init {
         on<KeyPressEvent>().filter { !inGui && keyBindingCategory == KeyBindingCategory.GHOST_BLOCK }.subscribe {

@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,15 +24,17 @@ import com.happyandjust.nameless.dsl.getAxisAlignedBB
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.autoFillEnum
+import com.happyandjust.nameless.features.base.listParameter
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.radius
+import com.happyandjust.nameless.features.selectedGemstoneTypes
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.hypixel.skyblock.Gemstone
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CInt
 import com.happyandjust.nameless.utils.RenderUtils
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -46,8 +48,7 @@ import kotlin.math.min
 
 @OptIn(DelicateCoroutinesApi::class)
 object GemstoneESP : SimpleFeature(
-    Category.SKYBLOCK,
-    "gemstoneesp",
+    "gemstoneEsp",
     "Gemstone ESP",
     "Render box on gemstones in SkyBlock Crystal Hollows"
 ) {
@@ -59,34 +60,26 @@ object GemstoneESP : SimpleFeature(
     private var gemstoneBlocks = mapOf<AxisAlignedBB, Int>()
     private val gemstoneBlockMap = Gemstone.values().associateBy { it.metadata }.toMap()
 
-    private var radius by FeatureParameter(
-        0,
-        "gemstoneesp",
-        "radius",
-        "Gemstone Scan Radius",
-        "",
-        50,
-        CInt
-    ).also {
-        it.minValue = 10.0
-        it.maxValue = 100.0
-    }
-
     init {
 
-        for (gemstone in Gemstone.values()) {
+        parameter(50) {
+            matchKeyCategory()
+            key = "radius"
+            title = "Gemstone Scan Radius"
 
-            val lowercase = gemstone.name.lowercase()
+            settings {
+                minValueInt = 10
+                maxValueInt = 100
+            }
+        }
 
-            parameters[lowercase] = FeatureParameter(
-                gemstone.ordinal + 1,
-                "gemstoneesp",
-                lowercase,
-                "Enable ${gemstone.readableName} ESP",
-                "",
-                false,
-                CBoolean
-            )
+        listParameter(emptyList<Gemstone>()) {
+            matchKeyCategory()
+            key = "selectedGemstoneTypes"
+            title = "Gemstone Types"
+
+            autoFillEnum { it.readableName }
+            settings { ordinal = 1 }
         }
 
         on<SpecialTickEvent>().filter { checkForRequirement() && scanTimer.update().check() }.subscribe {
@@ -105,10 +98,10 @@ object GemstoneESP : SimpleFeature(
                         val block = blockState.block
 
                         if (block in Blocks.stained_glass_pane to Blocks.stained_glass) {
-                            this[pos.getAxisAlignedBB()] =
-                                (gemstoneBlockMap[block.getMetaFromState(blockState)]
-                                    ?.takeIf { getParameterValue(it.name.lowercase()) }
-                                    ?: continue).color
+                            val gemstone = gemstoneBlockMap[block.getMetaFromState(blockState)] ?: continue
+                            if (gemstone in selectedGemstoneTypes) {
+                                put(pos.getAxisAlignedBB(), gemstone.color)
+                            }
                         }
                     }
                 }

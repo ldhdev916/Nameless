@@ -20,6 +20,7 @@ package com.happyandjust.nameless.gui.feature.components
 
 import com.happyandjust.nameless.gui.feature.ColorCache
 import gg.essential.elementa.components.*
+import gg.essential.elementa.components.input.UITextInput
 import gg.essential.elementa.constraints.*
 import gg.essential.elementa.constraints.animation.Animations
 import gg.essential.elementa.dsl.*
@@ -30,10 +31,11 @@ import gg.essential.vigilance.utils.onLeftClick
 
 class MultiSelectorComponent(selected: List<String>, all: List<String>) : SettingComponent() {
 
-    private val dropDown by MultiDropDown(selected, all, this) childOf this
+    val dropDown by MultiDropDown(selected, all, this) childOf this
 
     init {
         constrain {
+            y = 18.pixels()
             width = ChildBasedSizeConstraint()
             height = ChildBasedSizeConstraint()
         }
@@ -61,10 +63,23 @@ class MultiDropDown(
         height = 20.pixels()
     } childOf this
 
-    private val selectText = UIText("§6Select!").constrain {
+    private val selectText = UITextInput("Filter").constrain {
         x = 5.pixels()
         y = CenterConstraint()
+
+        width = "A".repeat(8).width().pixels()
     } childOf topContainer
+
+    init {
+        selectText.onLeftClick {
+            grabWindowFocus()
+            if (expanded) it.stopPropagation()
+        }.onKeyType { _, _ ->
+            scroller.filterChildren {
+                it !is CheckTextComponent || it.text.contains(selectText.getText(), true)
+            }
+        }
+    }
 
     private val downArrow by UIImage.ofResourceCached(SettingComponent.DOWN_ARROW_PNG).constrain {
         x = 5.pixels(true)
@@ -112,6 +127,7 @@ class MultiDropDown(
         expanded = true
         topContainer.replaceChild(upArrow, downArrow)
 
+        setFloating(true)
         setWidth(expandedWidth)
         topContainer.setWidth(getWidth().pixels())
 
@@ -133,12 +149,13 @@ class MultiDropDown(
 
             onComplete {
                 scrollBoundingBox.hide()
+                setFloating(false)
             }
         }
     }
 
 
-    inner class CheckTextComponent(text: String, index: Int) : UIContainer() {
+    inner class CheckTextComponent(val text: String, index: Int) : UIContainer() {
 
         private val uiText by UIText(text).constrain {
 

@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ public class MixinUtil {
 
     @Inject(method = "runTask", at = @At(value = "INVOKE", target = "Lorg/apache/logging/log4j/Logger;fatal(Ljava/lang/String;Ljava/lang/Throwable;)V", remap = false), cancellable = true)
     private static <V> void stopLogSpamming(FutureTask<V> task, Logger logger, CallbackInfoReturnable<V> cir) {
-        if (StopLogSpamming.INSTANCE.getEnabled()) {
+        if (StopLogSpamming.getEnabledJVM()) {
             cir.setReturnValue(null);
         }
     }

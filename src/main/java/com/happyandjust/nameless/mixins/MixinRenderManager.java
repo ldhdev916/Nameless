@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ public class MixinRenderManager {
 
     @Inject(method = "cacheActiveRenderInfo", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lnet/minecraft/client/renderer/entity/RenderManager;playerViewX:F", shift = At.Shift.AFTER))
     public void modifyYawPitch(World worldIn, FontRenderer textRendererIn, Entity livingPlayerIn, Entity pointedEntityIn, GameSettings optionsIn, float partialTicks, CallbackInfo ci) {
-        if (Perspective.INSTANCE.getEnabled()) {
+        if (Perspective.getEnabledJVM()) {
             playerViewY = hook.getCameraYaw();
             playerViewX = hook.getCameraPitch();
         }

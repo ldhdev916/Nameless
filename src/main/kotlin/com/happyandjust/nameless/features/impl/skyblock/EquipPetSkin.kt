@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,34 +18,40 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.google.gson.annotations.SerializedName
-import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.skyblock.PetSkinType
-import com.happyandjust.nameless.serialization.converters.getEnumConverter
 import com.happyandjust.nameless.utils.SkyblockUtils
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.inventory.ContainerChest
 import net.minecraft.item.ItemSkull
 import net.minecraft.item.ItemStack
+import net.minecraft.util.ResourceLocation
 import java.util.*
 
+@OptIn(ExperimentalSerializationApi::class)
 object EquipPetSkin : SimpleFeature(
-    Category.SKYBLOCK,
-    "equippetskin",
+    "equipPetSkin",
     "Equip Pet Skin",
     "Equip existing pet skin on SkyBlock §ethis only changes 'SKIN'§r, mod gets nearest possible pet and changes its skin so it might be inaccurate"
 ) {
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
     private val scanTimer = TickTimer.withSecond(1.5)
     private var currentModifiedPet: EntityArmorStand? = null
         set(value) {
@@ -57,44 +63,46 @@ object EquipPetSkin : SimpleFeature(
                     }
 
                     val petInfo = pets[value.getPetItem().getSkullOwner().getMD5()]!!
-                    val currentSkin = getParameterValue<PetSkinType>(petInfo.petName.lowercase())
+                    val currentSkin = getParameterValue<PetSkinType>(petInfo.petName)
                     changePetSkin(value.getPetItem(), currentSkin)
                 }
 
                 field = value
             }
         }
+
+    @JvmField
     var currentPetSkinChangeInfo: PetSkinChangeInfo? = null
 
     /**
      * key: md5, value: pet name
      */
-    private val pets = JsonHandler("nameless", "pets.json").read<Map<String, PetInfo>>()
+    private val pets =
+        Json.decodeFromStream<Map<String, PetInfo>>(ResourceLocation("nameless", "pets.json").inputStream())
 
     init {
-        val petSkins = JsonHandler("nameless", "petskins.json").read<Map<String, String>>()
+        val petSkins =
+            Json.decodeFromStream<Map<String, String>>(ResourceLocation("nameless", "petskins.json").inputStream())
 
         val petSkinsByPetName = (PetSkinType.values().toList() - PetSkinType.DEFAULT).groupBy { petSkins[it.name]!! }
 
         for ((petName, petSkinTypes) in petSkinsByPetName) {
-            parameters[petName.lowercase()] = FeatureParameter(
-                0,
-                "equippetskin",
-                petName.lowercase(),
-                petName,
-                "Pet Skins of $petName",
-                PetSkinType.DEFAULT,
-                getEnumConverter()
-            ).apply {
-                allEnumList = petSkinTypes + PetSkinType.DEFAULT
-                enumName = { enum ->
-                    (enum as PetSkinType).prettyName
+
+            parameters[petName.lowercase()] = parameter(PetSkinType.DEFAULT) {
+                matchKeyCategory()
+                key = petName
+                title = petName
+                desc = "Pet Skins of $petName"
+
+                settings {
+                    stringSerializer = { it.prettyName }
+                    allValueList = { petSkinTypes + PetSkinType.DEFAULT }
                 }
 
-                onValueChange = { petSkinType ->
+                onValueChange {
                     currentModifiedPet?.let { armorStand ->
-                        if (pets[armorStand.getPetItem().getSkullOwner().getMD5()]!!.petName == petName) {
-                            changePetSkin(armorStand.getPetItem(), petSkinType)
+                        if (pets[armorStand.getPetItem().getSkullOwner().getMD5()]?.petName == petName) {
+                            changePetSkin(armorStand.getPetItem(), it)
                         }
                     }
                 }
@@ -131,6 +139,7 @@ object EquipPetSkin : SimpleFeature(
             .minByOrNull { it.getDistanceSqToEntity(mc.thePlayer) }
     }
 
+    @JvmStatic
     fun checkIfPetIsInInventory(itemStack: ItemStack): GameProfile? {
         if (Hypixel.currentGame != GameType.SKYBLOCK) return null
         val gui = mc.currentScreen
@@ -152,7 +161,7 @@ object EquipPetSkin : SimpleFeature(
 
         val petInfo = pets[itemStack.getSkullOwner().getMD5()] ?: return null
 
-        val petSkinType = getParameterValue<PetSkinType>(petInfo.petName.lowercase())
+        val petSkinType = getParameterValue<PetSkinType>(petInfo.petName)
 
         return if (petSkinType == PetSkinType.DEFAULT) {
             null
@@ -164,9 +173,10 @@ object EquipPetSkin : SimpleFeature(
         }
     }
 
+    @Serializable
     data class PetInfo(
-        @SerializedName("name") val petName: String,
-        @SerializedName("origin") val originSkullOwner: String
+        @SerialName("name") val petName: String,
+        @SerialName("origin") val originSkullOwner: String
     )
 
     private fun EntityArmorStand.getPetItem() = heldItem ?: getEquipmentInSlot(4)

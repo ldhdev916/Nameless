@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,73 +24,71 @@ import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.SubParameterOf
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.mixins.accessors.AccessorEntity
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.utils.Utils
 import net.minecraft.entity.player.EntityPlayer
 import java.awt.Color
 
 object GlowAllPlayers : SimpleFeature(
-    Category.GENERAL,
-    "glowallplayers",
+    "glowAllPlayers",
     "Glow All Players",
     "Glow all players in selected color except npc(hopefully)"
 ) {
 
-    private var color by FeatureParameter(
-        0,
-        "glowplayers",
-        "color",
-        "Glowing Color",
-        "",
-        Color.red.toChromaColor(),
-        CChromaColor
-    )
+    @JvmStatic
+    var invisibleJVM
+        get() = invisible
+        set(value) {
+            invisible = value
+        }
 
-    var invisible by FeatureParameter(
-        0,
-        "glowplayers",
-        "invisible",
-        "Show Invisible Players",
-        "",
-        false,
-        CBoolean
-    )
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
 
-    @SubParameterOf("invisible")
-    private var override by FeatureParameter(
-        0,
-        "glowplayers",
-        "invisible_override",
-        "Use Different Glowing Color on Invisible Players",
-        "",
-        false,
-        CBoolean
-    )
+    init {
+        parameter(Color.red.toChromaColor()) {
+            matchKeyCategory()
+            key = "color"
+            title = "Glowing Color"
+        }
 
-    @SubParameterOf("invisible")
-    private var invisibleColor by FeatureParameter(
-        1,
-        "glowplayers",
-        "invisible_color",
-        "Color for Invisible Players",
-        "Require 'Use Different Glowing Color on Invisible Players' to be enabled",
-        Color.green.toChromaColor(),
-        CChromaColor
-    )
+        parameter(false) {
+            matchKeyCategory()
+            key = "invisible"
+            title = "Show Invisible Players"
 
+            parameter(false) {
+                matchKeyCategory()
+                key = "override"
+                title = "Use Different Glowing Color on Invisible Players"
+            }
+
+            parameter(Color.green.toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+
+                settings {
+                    ordinal = 1
+                }
+
+                title = "Color for Invisible Players"
+                desc = "Require 'Use Different Glowing Color on Invisible Players' to be enabled"
+            }
+        }
+    }
+
+    @JvmField
     var playersInTab = emptyList<EntityPlayer>()
     private val scanTimer = TickTimer(10)
 
     init {
         on<OutlineRenderEvent>().filter { enabled && entity in playersInTab }.subscribe {
-            val color = if ((entity as AccessorEntity).invokeGetFlag(5) && override) {
-                invisibleColor
+            val color = if ((entity as AccessorEntity).invokeGetFlag(5) && invisible_override) {
+                invisible_color
             } else {
                 color
             }.rgb

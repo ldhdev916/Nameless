@@ -18,11 +18,14 @@
 
 package com.happyandjust.nameless.features.impl.misc
 
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 
 object HideFishHook : SimpleFeature(
-    Category.MISCELLANEOUS,
-    "hideothersfishhook",
+    "hideOthersFishHook",
     "Hide Other Player's Fish Hook"
-)
+) {
+
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
+}

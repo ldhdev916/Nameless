@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,8 @@
 
 package com.happyandjust.nameless.gui.feature
 
-import com.happyandjust.nameless.gui.feature.components.Identifier
+import com.happyandjust.nameless.dsl.contains
+import com.happyandjust.nameless.features.PropertySetting
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIWrappedText
@@ -31,32 +32,16 @@ import gg.essential.vigilance.gui.Setting
 import gg.essential.vigilance.gui.settings.ButtonComponent
 import kotlin.reflect.KMutableProperty0
 
-data class PropertyData<T>(
+data class PropertyData<T : Any, E : Any>(
     val property: KMutableProperty0<T>,
     val title: String,
     val desc: String,
     val componentType: ComponentType?,
-) {
+    val propertySetting: PropertySetting<T, E>,
+    val settings: List<PropertyData<*, *>> = emptyList()
+)
 
-    var ordinal = 0
-
-    var settings: List<PropertyData<*>> = emptyList()
-    var inCategory = ""
-
-    var placeHolder: String? = null
-
-    var validator: (Char) -> Boolean = { true }
-
-    var minValue: Double = 0.0
-    var maxValue: Double = 0.0
-
-    var enumName: (Enum<*>) -> String = { it.name }
-    var allEnumList = emptyList<Enum<*>>()
-
-    var allIdentifiers = emptyList<Identifier>()
-}
-
-class DataComponent<T>(gui: FeatureGui, val data: PropertyData<T>) : Setting() {
+class DataComponent<T : Any>(gui: FeatureGui, val data: PropertyData<T, *>) : Setting() {
 
     private val boundingBox: UIBlock by UIBlock(ColorCache.darkHighlight).constrain {
         x = 1.pixel()
@@ -65,7 +50,7 @@ class DataComponent<T>(gui: FeatureGui, val data: PropertyData<T>) : Setting() {
         width = 100.percent() - 10.pixels()
 
         val bottom =
-            if (data.componentType == ComponentType.SELECTOR) basicHeightConstraint { textBoundingBox.getHeight() } else ChildBasedMaxSizeConstraint()
+            if (data.componentType in ComponentType.SELECTOR to ComponentType.MULTI_SELECTOR) basicHeightConstraint { textBoundingBox.getHeight() } else ChildBasedMaxSizeConstraint()
 
         height = bottom + 15.pixels()
     } childOf this effect OutlineEffect(ColorCache.divider, 1f)

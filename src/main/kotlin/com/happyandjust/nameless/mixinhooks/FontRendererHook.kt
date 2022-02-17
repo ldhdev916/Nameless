@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ package com.happyandjust.nameless.mixinhooks
 
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.impl.misc.DisguiseNickname
+import com.happyandjust.nameless.features.nickname
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -66,7 +67,7 @@ object FontRendererHook {
     }
 
     private fun getCurrentSessionNickname(): String {
-        return if (DisguiseNickname.enabled) DisguiseNickname.nick else mc.session.username ?: ""
+        return if (DisguiseNickname.enabled) DisguiseNickname.nickname else mc.session.username ?: ""
     }
 
 

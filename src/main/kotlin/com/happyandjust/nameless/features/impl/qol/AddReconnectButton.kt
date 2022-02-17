@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,13 +22,12 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.transformToPrecisionString
 import com.happyandjust.nameless.dsl.withInstance
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.SubParameterOf
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.auto
+import com.happyandjust.nameless.features.auto_second
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiDisconnected
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CInt
 import gg.essential.api.utils.GuiUtil
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.gui.GuiDisconnected
@@ -38,8 +37,7 @@ import net.minecraftforge.client.event.GuiScreenEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 
 object AddReconnectButton : SimpleFeature(
-    Category.QOL,
-    "reconnectbutton",
+    "reconnectButton",
     "Add Reconnect Button",
     "Add reconnect button when you got disconnected",
     true
@@ -49,29 +47,26 @@ object AddReconnectButton : SimpleFeature(
     private const val gap = 8
     private var currentDisconnectInfo: DisconnectInfo? = null
 
-    private var auto by FeatureParameter(
-        0,
-        "autoreconnect",
-        "enable",
-        "Enable Auto Reconnect",
-        "If this is enabled, mod will auto reconnect to server in seconds you set",
-        true,
-        CBoolean
-    )
+    init {
+        parameter(true) {
+            matchKeyCategory()
+            key = "auto"
+            title = "Enable Auto Reconnect"
+            desc = "If this is enabled, mod will auto reconnect to server in seconds you set"
 
-    @SubParameterOf("auto")
-    private var autoSecond by FeatureParameter(
-        0,
-        "autoreconnect",
-        "second",
-        "Auto Reconnect Second",
-        "",
-        5,
-        CInt
-    ).apply {
-        minValue = 1.0
-        maxValue = 60.0
+            parameter(5) {
+                matchKeyCategory()
+                key = "second"
+                title = "Auto Reconnect Second"
+
+                settings {
+                    minValueInt = 1
+                    maxValueInt = 60
+                }
+            }
+        }
     }
+
 
     init {
         on<GuiScreenEvent.ActionPerformedEvent.Post>().filter { button.id == 101 && enabled }.subscribe {
@@ -86,7 +81,7 @@ object AddReconnectButton : SimpleFeature(
                     if (enabled && lastServerData != null) {
                         buttonList.find { it.id == 0 }?.let {
                             val text =
-                                if (auto) "Reconnect in: ${getSecondText(autoSecond.toDouble())}" else "Reconnect"
+                                if (auto) "Reconnect in: ${getSecondText(auto_second.toDouble())}" else "Reconnect"
                             buttonList.add(
                                 GuiButton(
                                     101,
@@ -103,7 +98,7 @@ object AddReconnectButton : SimpleFeature(
                                     if (auto) {
                                         currentDisconnectInfo =
                                             DisconnectInfo(
-                                                System.currentTimeMillis() + (autoSecond * 1000),
+                                                System.currentTimeMillis() + (auto_second * 1000),
                                                 this
                                             ) {
                                                 GuiConnecting(
@@ -145,7 +140,7 @@ object AddReconnectButton : SimpleFeature(
      * 4 ~ 10: green
      */
     private fun getSecondText(currentSecond: Double): String {
-        val percent = autoSecond * 0.3
+        val percent = auto_second * 0.3
 
         val colorCode = if (currentSecond <= percent) "§4" else "§a"
 

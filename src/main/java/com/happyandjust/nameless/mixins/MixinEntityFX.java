@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,13 +44,10 @@ public class MixinEntityFX {
 
     @Inject(method = "renderParticle", at = @At("HEAD"))
     public void setColor(WorldRenderer worldRendererIn, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ, CallbackInfo ci) {
-
         if (!($this instanceof EntityFishWakeFX)) return;
 
-        ChangeFishParticleColor feature = ChangeFishParticleColor.INSTANCE;
-
-        if (feature.getEnabled()) {
-            int color = feature.getColor().getRGB();
+        if (ChangeFishParticleColor.getEnabledJVM()) {
+            int color = ChangeFishParticleColor.getColorJVM().getRGB();
 
             particleRed = (color >> 16 & 255) / 255F;
             particleGreen = (color >> 8 & 255) / 255F;

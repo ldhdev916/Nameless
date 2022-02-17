@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     java
     kotlin("jvm") version "1.6.10"
+    kotlin("plugin.serialization") version "1.6.10"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("net.minecraftforge.gradle.forge") version "6f53277"
     id("org.spongepowered.mixin") version "d75e32e"
@@ -63,11 +64,18 @@ val include: Configuration by configurations.creating {
 
 dependencies {
     implementation("org.spongepowered:mixin:0.7.11-SNAPSHOT")
-    implementation("gg.essential:essential-1.8.9-forge:1778")
+    implementation("gg.essential:essential-1.8.9-forge:1854")
     include("gg.essential:loader-launchwrapper:1.1.3")
     include("net.objecthunter:exp4j:0.4.8")
+    include("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") {
+        exclude(module = "kotlin-stdlib")
+        exclude(module = "kotlin-stdlib-common")
+    }
 
-    annotationProcessor("org.spongepowered:mixin:0.7.11-SNAPSHOT")
+    annotationProcessor("org.spongepowered:mixin:0.8.5")
+    annotationProcessor("com.google.code.gson:gson:2.2.4")
+    annotationProcessor("com.google.guava:guava:21.0")
+    annotationProcessor("org.ow2.asm:asm-tree:6.2")
 }
 
 sourceSets.main {

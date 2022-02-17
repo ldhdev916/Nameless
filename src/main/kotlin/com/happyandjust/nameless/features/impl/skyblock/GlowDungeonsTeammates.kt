@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,30 +26,26 @@ import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.color
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
-import com.happyandjust.nameless.serialization.converters.CChromaColor
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.scoreboard.ScorePlayerTeam
 import java.awt.Color
 
-object GlowDungeonsTeammates :
-    SimpleFeature(Category.SKYBLOCK, "glowdungeonsteammates", "Glow Dungeons Teammates", "") {
+object GlowDungeonsTeammates : SimpleFeature("glowdungeonsteammates", "Glow Dungeons Teammates", "") {
 
-    private var color by FeatureParameter(
-        0,
-        "glowteammates",
-        "color",
-        "Teammates Glowing Color",
-        "",
-        Color.green.toChromaColor(),
-        CChromaColor
-    )
+    init {
+        parameter(Color.green.toChromaColor()) {
+            matchKeyCategory()
+            key = "color"
+            title = "Teammates Glowing Color"
+        }
+    }
 
     private val dungeonsTeammates = hashSetOf<EntityPlayer>()
     private val scanTimer = TickTimer.withSecond(1)

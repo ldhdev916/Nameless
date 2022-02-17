@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ public class MixinRenderFish {
 
     @Inject(method = "doRender(Lnet/minecraft/entity/projectile/EntityFishHook;DDDFF)V", at = @At("HEAD"), cancellable = true)
     public void cancelRendering(EntityFishHook d4, double d6, double d8, double d10, float f10, float l, CallbackInfo ci) {
-        if (HideFishHook.INSTANCE.getEnabled()) {
+        if (HideFishHook.getEnabledJVM()) {
             if (d4.angler != Minecraft.getMinecraft().thePlayer) ci.cancel();
         }
     }

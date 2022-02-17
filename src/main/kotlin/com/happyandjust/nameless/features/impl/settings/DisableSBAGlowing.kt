@@ -18,15 +18,14 @@
 
 package com.happyandjust.nameless.features.impl.settings
 
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.gui.feature.ComponentType
 
 object DisableSBAGlowing : SimpleFeature(
-    Category.SETTINGS,
     "disableSbaGlowing",
     "Disable SBA Glowing",
     "It seems that glowing doesn't work with sba, if this feature is enabled this disables sba's glowing and make glowing work"
 ) {
-    override fun getComponentType() = ComponentType.SWITCH
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
 }

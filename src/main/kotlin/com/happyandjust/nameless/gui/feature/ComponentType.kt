@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import java.awt.Color
 enum class ComponentType {
 
     SWITCH {
-        override fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent =
+        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) =
             SwitchComponent(propertyData.property() as Boolean).apply {
                 onValueChange {
                     propertyData.property.set(it as T)
@@ -34,10 +34,10 @@ enum class ComponentType {
             }
     },
     SLIDER_DECIMAL {
-        override fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent = DecimalSliderComponent(
+        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) = DecimalSliderComponent(
             propertyData.property().let { (it as Number).toFloat() },
-            propertyData.minValue.toFloat(),
-            propertyData.maxValue.toFloat()
+            propertyData.propertySetting.minValue.toFloat(),
+            propertyData.propertySetting.maxValue.toFloat()
         ).apply {
             onValueChange {
                 propertyData.property.set(it as T)
@@ -45,10 +45,10 @@ enum class ComponentType {
         }
     },
     SLIDER {
-        override fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent = SliderComponent(
+        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) = SliderComponent(
             propertyData.property() as Int,
-            propertyData.minValue.toInt(),
-            propertyData.maxValue.toInt()
+            propertyData.propertySetting.minValueInt,
+            propertyData.propertySetting.maxValueInt
         ).apply {
             onValueChange {
                 propertyData.property.set(it as T)
@@ -56,14 +56,14 @@ enum class ComponentType {
         }
     },
     TEXT {
-        override fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent = TextComponent(
+        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) = TextComponent(
             propertyData.property() as String,
-            propertyData.placeHolder ?: "",
+            propertyData.propertySetting.placeHolder ?: "",
             false,
             false
         ).toFilterTextComponent().apply {
 
-            validator = propertyData.validator
+            validator = propertyData.propertySetting.validator
 
             onValueChange {
                 propertyData.property.set(it as T)
@@ -71,13 +71,13 @@ enum class ComponentType {
         }
     },
     PASSWORD {
-        override fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent = TextComponent(
+        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) = TextComponent(
             propertyData.property() as String,
-            propertyData.placeHolder ?: "",
+            propertyData.propertySetting.placeHolder ?: "",
             false,
             true
         ).toFilterTextComponent().apply {
-            validator = propertyData.validator
+            validator = propertyData.propertySetting.validator
 
             onValueChange {
                 propertyData.property.set(it as T)
@@ -85,7 +85,7 @@ enum class ComponentType {
         }
     },
     COLOR {
-        override fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent = ColorComponent(
+        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) = ColorComponent(
             propertyData.property() as Color,
             true
         ).toChromaColorComponent((propertyData.property() as ChromaColor).chromaEnabled).apply {
@@ -95,24 +95,27 @@ enum class ComponentType {
         }
     },
     BUTTON {
-        override fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent =
-            ButtonComponent(propertyData.placeHolder, propertyData.property() as () -> Unit)
-
+        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) =
+            ButtonComponent(propertyData.propertySetting.placeHolder, propertyData.property() as () -> Unit)
     },
     SELECTOR {
-        override fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent =
-            SelectorComponent(
-                propertyData.allEnumList.indexOf(propertyData.property() as Enum<*>),
-                propertyData.allEnumList.map { propertyData.enumName(it) }).apply {
-                onValueChange {
-                    propertyData.property.set(propertyData.allEnumList[it as Int] as T)
+        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) =
+            with(propertyData.propertySetting) {
+                val allValue = allValueList()
+                SelectorComponent(
+                    allValue.indexOf(propertyData.property()),
+                    allValue.map(stringSerializer)
+                ).apply {
+                    onValueChange {
+                        propertyData.property.set(allValue[it as Int])
+                    }
                 }
             }
     },
     VERTIAL_MOVE {
-        override fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent =
+        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) =
             VerticalPositionEditableComponent(
-                propertyData.allIdentifiers,
+                propertyData.propertySetting.allIdentifiers,
                 propertyData.property() as List<Identifier>
             ).apply {
                 onValueChange {
@@ -121,16 +124,21 @@ enum class ComponentType {
             }
     },
     MULTI_SELECTOR {
-        override fun <T> getComponent(propertyData: PropertyData<T>) = MultiSelectorComponent(
-            (propertyData.property() as List<Enum<*>>).map { propertyData.enumName(it) },
-            propertyData.allEnumList.map { propertyData.enumName(it) }
-        ).apply {
-            onValueChange {
-                val indexes = it as List<Int>
-                propertyData.property.set(propertyData.allEnumList.filterIndexed { index, _ -> index in indexes } as T)
+        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) =
+            with(propertyData.propertySetting) {
+                val list = propertyData.property() as List<E>
+                val allValue = listAllValueList()
+                MultiSelectorComponent(
+                    list.map(listStringSerializer),
+                    allValue.map(listStringSerializer)
+                ).apply {
+                    onValueChange {
+                        val indexes = it as List<Int>
+                        propertyData.property.set(indexes.map(allValue::get) as T)
+                    }
+                }
             }
-        }
     };
 
-    abstract fun <T> getComponent(propertyData: PropertyData<T>): SettingComponent
+    abstract fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>): SettingComponent
 }

@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,21 +18,19 @@
 
 package com.happyandjust.nameless.features.impl.general
 
-import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.config.configValue
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.OverlayFeature
+import com.happyandjust.nameless.features.base.OverlayFeature
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.mixins.accessors.AccessorItemAxe
 import com.happyandjust.nameless.mixins.accessors.AccessorItemPickaxe
-import com.happyandjust.nameless.serialization.converters.COverlay
 import com.happyandjust.nameless.utils.RenderUtils
 import com.happyandjust.nameless.utils.Utils
 import gg.essential.elementa.UIComponent
@@ -61,10 +59,9 @@ import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
-object BedwarsRayTraceBed : OverlayFeature(
-    Category.GENERAL,
-    "raytracebed",
-    "Bedwars Ray Trace Bed",
+object BedWarsRayTraceBed : OverlayFeature(
+    "rayTraceBed",
+    "BedWars Ray Trace Bed",
     "Ray trace up to your reach(3 blocks) and if there's a bed in your ray trace, Show all keys you should press and break blocks to get bed"
 ) {
 
@@ -83,7 +80,7 @@ object BedwarsRayTraceBed : OverlayFeature(
     private val rayTraceTimer = TickTimer(5)
     private val beds = hashSetOf<BlockPos>()
     private var currentRayTraceInfo: RayTraceInfo? = null
-    override var overlayPoint by ConfigValue("bedwarsoverlay", "overlay", Overlay.DEFAULT, COverlay)
+    override var overlayPoint by configValue("bedWarsOverlay", "overlay", Overlay.DEFAULT)
 
     init {
         on<SpecialTickEvent>().filter { enabled && Hypixel.currentGame == GameType.BEDWARS }.subscribe {

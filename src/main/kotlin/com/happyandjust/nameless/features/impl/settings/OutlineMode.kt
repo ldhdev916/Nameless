@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,20 +20,16 @@ package com.happyandjust.nameless.features.impl.settings
 
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.enums.OutlineMode
-import com.happyandjust.nameless.features.base.SettingFeature
+import com.happyandjust.nameless.features.base.BaseFeature
+import com.happyandjust.nameless.features.base.autoFillEnum
 import com.happyandjust.nameless.gui.feature.ComponentType
-import com.happyandjust.nameless.gui.feature.PropertyData
-import kotlin.reflect.KMutableProperty0
 
-object OutlineMode : SettingFeature("outlinemode", "Outline Mode", "BOX, OUTLINE") {
+object OutlineMode : BaseFeature<OutlineMode, Any>("outlineMode", "Outline Mode", "BOX, OUTLINE") {
 
-    override fun getProperty(): KMutableProperty0<*> = Nameless::selectedOutlineMode
+    override val property = Nameless::selectedOutlineMode
+    override var componentType: ComponentType? = ComponentType.SELECTOR
 
-    override fun getComponentType() = ComponentType.SELECTOR
-
-    override fun toPropertyData(): PropertyData<out Any?> {
-        return super.toPropertyData().also {
-            it.allEnumList = OutlineMode.values().toList()
-        }
+    init {
+        autoFillEnum()
     }
 }

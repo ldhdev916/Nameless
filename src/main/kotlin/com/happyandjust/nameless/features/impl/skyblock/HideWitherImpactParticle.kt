@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -31,8 +30,7 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 object HideWitherImpactParticle : SimpleFeature(
-    Category.SKYBLOCK,
-    "hidewitherimpactparticle",
+    "hideWitherImpactParticle",
     "Hide Wither Impact Particle",
     "Hide only wither impact's explosion particle(can be inaccurate)"
 ) {

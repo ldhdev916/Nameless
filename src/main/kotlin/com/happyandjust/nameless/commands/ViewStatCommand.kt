@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,20 +18,23 @@
 
 package com.happyandjust.nameless.commands
 
-import com.google.gson.JsonObject
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.features.impl.qol.InGameStatViewer
 import com.happyandjust.nameless.features.impl.settings.HypixelAPIKey
+import com.happyandjust.nameless.features.order
 import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.commands.DisplayName
 import gg.essential.api.utils.Multithreading
-import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import net.minecraft.util.EnumChatFormatting
 
 object ViewStatCommand : Command("viewstat") {
 
-    @OptIn(DelicateCoroutinesApi::class)
     @DefaultHandler
     fun handle(@DisplayName("Name") name: String) {
         Multithreading.runAsync {
@@ -40,34 +43,35 @@ object ViewStatCommand : Command("viewstat") {
                 return@runAsync
             }
 
-            val identifiers = InGameStatViewer.order.filter { it.supportGame.shouldDisplay() }
+            val identifiers =
+                InGameStatViewer.order.filter { it.supportGames.any(InGameStatViewer.SupportGame::shouldDisplay) }
 
             runCatching {
-                val handler = "https://api.hypixel.net/player?key=${HypixelAPIKey.apiKey}&uuid=$uuid".handler()
-                val json = handler.read<JsonObject>()["player"].asJsonObject
+                val jsonObject =
+                    Json.decodeFromString<JsonObject>("https://api.hypixel.net/player?key=${HypixelAPIKey.apiKey}&uuid=$uuid".fetch())["player"]!!.jsonObject
 
-                sendClientMessage("§bStats of ${getPlayerName(json)}")
+                sendClientMessage("§bStats of ${getPlayerName(jsonObject)}")
 
                 sendClientMessage(identifiers.joinToString("\n") {
-                    it.informationType.run { getFormatText(getStatValue(json)) }
+                    it.informationType.run { getFormatText(getStatValue(jsonObject)) }
                 })
             }.onFailure { it.notifyException() }
         }
     }
 
     private fun getPlayerName(jsonObject: JsonObject): String {
-        val displayName = jsonObject["displayname"].asString
+        val displayName = jsonObject["displayname"]!!.string
 
         return "${processRank(jsonObject)}$displayName"
     }
 
     private fun processRank(jsonObject: JsonObject): String {
-        if (jsonObject.has("prefix")) { // WTF
-            return "${jsonObject["prefix"].asString} "
+        if ("prefix" in jsonObject) { // WTF
+            return "${jsonObject["prefix"]!!.string} "
         }
 
-        if (jsonObject.has("rank")) {
-            when (jsonObject["rank"].asString) {
+        if ("rank" in jsonObject) {
+            when (jsonObject["rank"]!!.string) {
                 "ADMIN" -> return "§c[ADMIN] "
                 "MODERATOR" -> return "§2[MOD] "
                 "HELPER" -> return "§9[HELPER] "
@@ -75,12 +79,13 @@ object ViewStatCommand : Command("viewstat") {
             }
         }
 
-        return when (runCatching { jsonObject["newPackageRank"].asString }.getOrDefault("NONE")) {
+        return when (runCatching { jsonObject["newPackageRank"]!!.string }.getOrDefault("NONE")) {
             "MVP_PLUS" -> {
-                val plus = if (jsonObject.has("rankPlusColor")) jsonObject["rankPlusColor"].asString else "RED"
+                val plus =
+                    if ("rankPlusColor" in jsonObject) jsonObject["rankPlusColor"]!!.jsonPrimitive.content else "RED"
                 val color = EnumChatFormatting.valueOf(plus)
 
-                if (jsonObject["monthlyPackageRank"].asString == "SUPERSTAR") {
+                if (jsonObject["monthlyPackageRank"]?.string == "SUPERSTAR") {
                     "§6[MVP$color++§6] "
                 } else {
                     "§b[MVP$color+§b] "
@@ -93,10 +98,8 @@ object ViewStatCommand : Command("viewstat") {
         }
     }
 
-    private fun InGameStatViewer.InformationType.getFormatText(
-        value: String
-    ): String {
-        val format = InGameStatViewer.getParameter<String>("texts").getParameterValue<String>(name.lowercase())
+    private fun InGameStatViewer.InformationType.getFormatText(value: String): String {
+        val format = InGameStatViewer.getParameterValue<String>("texts/${name.lowercase()}_text")
 
         return format.replace("{value}", value).replace("&", "§")
     }

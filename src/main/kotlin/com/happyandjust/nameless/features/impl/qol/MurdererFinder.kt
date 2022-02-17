@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,25 +18,23 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.*
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.InCategory
-import com.happyandjust.nameless.features.SubParameterOf
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.MurdererMode
 import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.pathfinding.ModPathFinding
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.utils.RenderUtils
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Blocks
@@ -47,14 +45,14 @@ import net.minecraft.item.ItemStack
 import net.minecraft.network.play.server.S04PacketEntityEquipment
 import net.minecraft.network.play.server.S09PacketHeldItemChange
 import net.minecraft.util.BlockPos
+import net.minecraft.util.ResourceLocation
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 import java.awt.Point
 
 object MurdererFinder : SimpleFeature(
-    Category.QOL,
-    "murdererfinder",
+    "murdererFinder",
     "Murderer Finder",
     "Supports All types of murder mystery in hypixel"
 ) {
@@ -119,104 +117,97 @@ object MurdererFinder : SimpleFeature(
 
     private var targetName: String? = null
     private var prevTargetName: String? = null
-    private val assassinMapHash = JsonHandler("nameless", "assassins.json").read<Map<String, String>>()
 
-    private var glowGold by FeatureParameter(
-        0,
-        "murderer",
-        "glowgold",
-        "Glow Gold Ingot",
-        "Glow gold ingot when you are in murder mystery",
-        false,
-        CBoolean
-    )
+    @OptIn(ExperimentalSerializationApi::class)
+    private val assassinMapHash =
+        Json.decodeFromStream<Map<String, String>>(ResourceLocation("nameless", "assassins.json").inputStream())
 
-    @SubParameterOf("glowGold")
-    private var goldColor by FeatureParameter(
-        0,
-        "murderer",
-        "goldcolor",
-        "Gold Ingot Color",
-        "",
-        Color(255, 128, 0).toChromaColor(),
-        CChromaColor
-    )
+    init {
+        parameter(false) {
+            matchKeyCategory()
+            key = "glowGold"
+            title = "Glow Gold Ingot"
+            desc = "Glow gold ingot when you are in murder mystery"
 
-    private var murdererColor by FeatureParameter(
-        1,
-        "murderer",
-        "murderercolor",
-        "Murderer Color",
-        "",
-        Color.blue.toChromaColor(),
-        CChromaColor
-    )
+            parameter(Color(255, 128, 0).toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Gold Ingot Color"
+            }
+        }
 
-    @InCategory("Infection")
-    private var glowSurvivor by FeatureParameter(
-        0,
-        "murderer",
-        "glowsurvivor",
-        "Glow Survivor",
-        "Glow survivor in hypixel murderer INFECTION",
-        true,
-        CBoolean
-    )
+        parameter(Color.blue.toChromaColor()) {
+            matchKeyCategory()
+            key = "murdererColor"
+            title = "Murderer Color"
 
-    @SubParameterOf("glowSurvivor")
-    private var survivorColor by FeatureParameter(
-        0,
-        "murderer",
-        "survivorcolor",
-        "Survivor Color",
-        "",
-        Color.green.toChromaColor(),
-        CChromaColor
-    )
+            settings { ordinal = 1 }
+        }
 
-    @InCategory("Infection")
-    private var alphaColor by FeatureParameter(
-        1,
-        "murderer",
-        "alphacolor",
-        "Alpha Color",
-        "",
-        Color(128, 0, 128).toChromaColor(),
-        CChromaColor
-    )
+        parameter(true) {
+            matchKeyCategory()
+            key = "glowSurvivor"
+            title = "Glow Survivor"
+            desc = "Glow survivor in hypixel murderer INFECTION"
 
-    @InCategory("Assassin")
-    private var targetColor by FeatureParameter(
-        0,
-        "murderer",
-        "targetcolor",
-        "Target Color",
-        "Target glow color in hypixel murderer ASSASSIN",
-        Color.red.toChromaColor(),
-        CChromaColor
-    )
+            settings {
+                subCategory = "Infection"
+            }
 
-    @InCategory("Assassin")
-    private var targetArrow by FeatureParameter(
-        1,
-        "murderer",
-        "targetarrow",
-        "Render Direction Arrow to Target",
-        "Render arrow shape on your screen which is pointing the target",
-        true,
-        CBoolean
-    )
+            parameter(Color.green.toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Survivor Color"
+                category = ""
+            }
+        }
 
-    @InCategory("Assassin")
-    private var targetPath by FeatureParameter(
-        2,
-        "murderer",
-        "targetpath",
-        "Show Paths to Target",
-        "",
-        false,
-        CBoolean
-    )
+        parameter(Color(128, 0, 128).toChromaColor()) {
+            matchKeyCategory()
+            key = "alphaColor"
+            title = "Alpha Color"
+
+            settings {
+                ordinal = 1
+                subCategory = "Infection"
+            }
+        }
+
+        parameter(Color.red.toChromaColor()) {
+            matchKeyCategory()
+            key = "targetColor"
+            title = "Target Color"
+            desc = "Target glow color in hypixel murderer ASSASSIN"
+
+            settings {
+                subCategory = "Assassin"
+            }
+        }
+
+        parameter(true) {
+            matchKeyCategory()
+            key = "targetArrow"
+            title = "Render Direction Arrow to Target"
+            desc = "Render arrow shape on your screen which is pointing the target"
+
+            settings {
+                ordinal = 1
+                subCategory = "Assassin"
+            }
+        }
+
+        parameter(false) {
+            matchKeyCategory()
+            key = "targetPath"
+            title = "Show Paths to Target"
+
+            settings {
+                ordinal = 2
+                subCategory = "Assassin"
+            }
+        }
+    }
+
 
     init {
         on<SpecialTickEvent>().filter {
@@ -347,7 +338,7 @@ object MurdererFinder : SimpleFeature(
                 val color = when {
                     mode != MurdererMode.ASSASSIN && name in murderers && (mode != MurdererMode.INFECTION || alpha != name) -> murdererColor
                     mode == MurdererMode.INFECTION -> if (name in survivors) {
-                        if (glowSurvivor) survivorColor else return@subscribe
+                        if (glowSurvivor) glowSurvivor_color else return@subscribe
                     } else if (name == alpha) alphaColor else return@subscribe
                     mode == MurdererMode.ASSASSIN && targetName == name.trim() -> targetColor
                     else -> return@subscribe
@@ -358,7 +349,7 @@ object MurdererFinder : SimpleFeature(
             }
             entity.withInstance<EntityItem> {
                 if (entityItem.item == Items.gold_ingot && glowGold) {
-                    colorInfo = ColorInfo(goldColor.rgb, ColorInfo.ColorPriority.HIGH)
+                    colorInfo = ColorInfo(glowGold_color.rgb, ColorInfo.ColorPriority.HIGH)
                 }
             }
         }

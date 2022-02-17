@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,24 +19,28 @@
 package com.happyandjust.nameless.features.impl.misc
 
 import com.happyandjust.nameless.core.value.toChromaColor
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.serialization.converters.CChromaColor
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.skyColor
 import net.minecraft.util.Vec3
 import java.awt.Color
 
-object ChangeSkyColor : SimpleFeature(Category.MISCELLANEOUS, "changeskycolor", "Change Sky Color") {
+object ChangeSkyColor : SimpleFeature("changeSkyColor", "Change Sky Color") {
 
-    var skyColor by FeatureParameter(
-        0,
-        "skycolor",
-        "color",
-        "Sky Color",
-        "Alpha is not allowed",
-        Color.black.toChromaColor(),
-        CChromaColor
-    )
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
+
+    init {
+        parameter(Color.black.toChromaColor()) {
+            matchKeyCategory()
+            key = "skyColor"
+            title = "Sky Color"
+            desc = "Alpha is not allowed"
+        }
+    }
+
+    @JvmStatic
     val convert
         get() = Vec3(skyColor.red / 255.0, skyColor.green / 255.0, skyColor.blue / 255.0)
 }

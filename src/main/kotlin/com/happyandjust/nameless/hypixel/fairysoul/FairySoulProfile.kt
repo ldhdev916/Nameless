@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,16 +19,20 @@
 package com.happyandjust.nameless.hypixel.fairysoul
 
 import com.happyandjust.nameless.config.ConfigHandler
-import com.happyandjust.nameless.serialization.converters.CFairySoulProfile
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-class FairySoulProfile(val name: String, val foundFairySouls: MutableMap<String, MutableList<FairySoul>>) {
+@Serializable
+class FairySoulProfile(
+    val name: String,
+    @SerialName("fairySouls") val foundFairySouls: MutableMap<String, MutableList<FairySoul>>
+) {
 
     fun addFoundFairySoul(fairySoul: FairySoul) {
-
         if (fairySoul.island == "dungeon") return
 
         foundFairySouls.getOrPut(fairySoul.island) { arrayListOf() }.add(fairySoul)
 
-        ConfigHandler.write("profiles", name, this, CFairySoulProfile)
+        ConfigHandler.write("profiles", name, this)
     }
 }

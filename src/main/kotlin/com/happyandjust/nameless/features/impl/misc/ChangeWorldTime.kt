@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,40 +18,52 @@
 
 package com.happyandjust.nameless.features.impl.misc
 
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.serialization.converters.CInt
-import com.happyandjust.nameless.serialization.converters.getEnumConverter
+import com.happyandjust.nameless.features.base.autoFillEnum
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
+import com.happyandjust.nameless.features.time
+import com.happyandjust.nameless.features.timeFormat
 
 object ChangeWorldTime : SimpleFeature(
-    Category.MISCELLANEOUS,
-    "changeworldtime",
+    "changeWorldTime",
     "Change World Time",
     "This changes sky color so requires Change Sky Color to be turned off"
 ) {
 
-    var worldTime: Int by FeatureParameter(1, "worldtime", "time", "Precise World Time", "", 0, CInt).apply {
-        minValue = 0.0
-        maxValue = 23999.0
+    @JvmStatic
+    var timeJVM
+        get() = time
+        set(value) {
+            time = value
+        }
 
-        onValueChange = { time ->
-            worldTimeFormat = WorldTimeFormat.values().first { time in it.ordinal * 1000 until (it.ordinal + 1) * 1000 }
+    init {
+        parameter(0) {
+            matchKeyCategory()
+            key = "time"
+            title = "Precise World Time"
+
+            settings {
+                maxValueInt = 23999
+            }
+
+            onValueChange { time ->
+                timeFormat = WorldTimeFormat.values().single { time in it.ordinal * 1000 until (it.ordinal + 1) * 1000 }
+            }
         }
-    }
-    private var worldTimeFormat by FeatureParameter(
-        0,
-        "worldtime",
-        "timeformat",
-        "World Time Formatted",
-        "",
-        WorldTimeFormat.AM12,
-        getEnumConverter()
-    ).apply {
-        onValueChange = {
-            worldTime = it.ordinal * 1000
+
+        parameter(WorldTimeFormat.AM12) {
+            matchKeyCategory()
+            key = "timeFormat"
+            title = "World Time Formatted"
+
+            autoFillEnum { it.prettyName }
+
+            onValueChange {
+                time = it.ordinal * 1000
+            }
         }
-        enumName = { (it as WorldTimeFormat).prettyName }
     }
 
     enum class WorldTimeFormat(val prettyName: String) {

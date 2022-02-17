@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ public class MixinEntityRenderer {
 
     @ModifyVariable(method = "orientCamera", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/client/multiplayer/WorldClient;rayTraceBlocks(Lnet/minecraft/util/Vec3;Lnet/minecraft/util/Vec3;)Lnet/minecraft/util/MovingObjectPosition;"))
     public MovingObjectPosition f5fix(MovingObjectPosition value) {
-        if (F5Fix.INSTANCE.getEnabled()) {
+        if (F5Fix.getEnabledJVM()) {
             return null;
         } else {
             return value;
@@ -68,19 +68,19 @@ public class MixinEntityRenderer {
 
     @Redirect(method = "updateCameraAndRender", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;inGameHasFocus:Z"))
     public boolean overrideMouse(Minecraft mc) {
-        return EntityRendererHook.INSTANCE.overrideMouse();
+        return EntityRendererHook.overrideMouse();
     }
 
     @Redirect(method = "hurtCameraEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;rotate(FFFF)V", ordinal = 2))
     public void noHurtCam(float angle, float x, float y, float z) {
-        GlStateManager.rotate(angle / 14f * NoHurtCam.INSTANCE.getHurtCamModifier(), x, y, z);
+        GlStateManager.rotate(angle / 14f * NoHurtCam.getHurtCamModifier(), x, y, z);
 
     }
 
     @Inject(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;renderEntities(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", ordinal = 1, shift = At.Shift.AFTER))
     public void renderCharm(int pass, float partialTicks, long finishTimeNano, CallbackInfo ci) {
-        if (Charm.INSTANCE.getEnabled()) {
-            Charm.INSTANCE.render(partialTicks);
+        if (Charm.getEnabledJVM()) {
+            Charm.render(partialTicks);
         }
     }
 }

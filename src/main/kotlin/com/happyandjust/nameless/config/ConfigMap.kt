@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,20 +18,16 @@
 
 package com.happyandjust.nameless.config
 
-import com.happyandjust.nameless.serialization.Converter
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CDouble
-import com.happyandjust.nameless.serialization.converters.CInt
-import com.happyandjust.nameless.serialization.converters.CString
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.serializer
 
 open class ConfigMap<V>(
     private val category: String,
-    defaultValue: V,
-    private val converter: Converter<V>
+    private val serializer: KSerializer<V>
 ) {
 
     private val internalMap =
-        ConfigHandler.getKeys(category).associateWith { ConfigHandler.get(category, it, defaultValue, converter) }
+        ConfigHandler.getKeys(category).associateWith { ConfigHandler.get(category, it, serializer) }
             .toMutableMap()
 
     fun clear() {
@@ -48,38 +44,11 @@ open class ConfigMap<V>(
     operator fun get(key: String) = internalMap[key]
 
     operator fun set(key: String, value: V) {
-        ConfigHandler.write(category, key, value, converter)
+        ConfigHandler.write(category, key, value, serializer)
         internalMap[key] = value
     }
 
     fun getOrPut(key: String, defaultValue: () -> V) = internalMap.getOrPut(key, defaultValue)
-
-    class DoubleConfigMap(category: String) :
-        ConfigMap<Double>(
-            category,
-            0.0,
-            CDouble
-        )
-
-    class IntConfigMap(category: String) :
-        ConfigMap<Int>(
-            category,
-            0,
-            CInt
-        )
-
-
-    class BooleanConfigMap(category: String) :
-        ConfigMap<Boolean>(
-            category,
-            false,
-            CBoolean
-        )
-
-    class StringConfigMap(category: String) :
-        ConfigMap<String>(
-            category,
-            "",
-            CString
-        )
 }
+
+inline fun <reified V> configMap(category: String) = ConfigMap<V>(category, serializer())

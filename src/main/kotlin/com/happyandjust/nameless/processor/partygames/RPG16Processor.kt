@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ package com.happyandjust.nameless.processor.partygames
 import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
+import com.happyandjust.nameless.features.rpg16_color
 import com.happyandjust.nameless.processor.Processor
 import net.minecraft.entity.player.EntityPlayer
 
@@ -30,7 +31,7 @@ object RPG16Processor : Processor() {
 
     init {
         request<OutlineRenderEvent>().filter { entity is EntityPlayer && entity.health <= 2.1f }.subscribe {
-            colorInfo = ColorInfo(PartyGamesHelper.rpg16Color.rgb, ColorInfo.ColorPriority.HIGH)
+            colorInfo = ColorInfo(PartyGamesHelper.rpg16_color.rgb, ColorInfo.ColorPriority.HIGH)
         }
     }
 }

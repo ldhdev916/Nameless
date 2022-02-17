@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,28 +18,26 @@
 
 package com.happyandjust.nameless.commands
 
-import com.google.gson.Gson
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.gui.shortcmd.ShortCommandGui
-import com.happyandjust.nameless.serialization.converters.CList
-import com.happyandjust.nameless.serialization.toConverter
 import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.utils.GuiUtil
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.serializer
 import net.minecraft.network.play.client.C01PacketChatMessage
 import java.util.regex.Pattern
 
 object ShortCommand : Command("shortcommand") {
 
-    private val gson = Gson()
     var shortCommandInfos by ConfigValue(
         "shortcommand",
         "list",
         emptyList(),
-        CList<ShortCommandInfo>(gson.toConverter())
+        serializer<List<ShortCommandInfo>>()
     )
 
     override val commandAliases = hashSetOf(Alias("shortcmd"))
@@ -62,6 +60,7 @@ object ShortCommand : Command("shortcommand") {
         GuiUtil.open(ShortCommandGui())
     }
 
+    @Serializable
     data class ShortCommandInfo(var short: String, var origin: String) {
         val pair: Pair<Pattern, Int>
             get() {

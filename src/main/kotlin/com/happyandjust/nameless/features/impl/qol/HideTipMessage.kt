@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,14 +20,12 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.dsl.cancel
 import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 import gg.essential.api.EssentialAPI
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 
 object HideTipMessage : SimpleFeature(
-    Category.QOL,
-    "hidetipmessage",
+    "hideTipMessage",
     "Hide Tip Message",
     "Hide you tipped SomePlayer in SomeGame! Message in Hypixel"
 ) {

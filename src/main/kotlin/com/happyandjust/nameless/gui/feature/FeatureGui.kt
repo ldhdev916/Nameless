@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package com.happyandjust.nameless.gui.feature
 
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.FeatureRegistry
-import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.BaseFeature
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.WindowScreen
@@ -192,7 +192,7 @@ class FeatureGui : WindowScreen(
     }
 
     @JvmName("selectCategoryByFeatureList")
-    fun selectCategory(list: List<SimpleFeature>, resetText: Boolean = true) {
+    fun selectCategory(list: List<BaseFeature<*, *>>, resetText: Boolean = true) {
         hidePeek()
 
         componentStack.clear()

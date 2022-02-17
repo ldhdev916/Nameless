@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ import gg.essential.vigilance.utils.onLeftClick
 
 class CategoryFeatures(
     private val gui: FeatureGui,
-    private val categoryItems: List<PropertyData<*>>,
+    private val categoryItems: List<PropertyData<*, *>>,
     private val isFeature: Boolean = false
 ) : UIContainer() {
 
@@ -89,12 +89,13 @@ class CategoryFeatures(
         } childOf this
     }
 
-    private fun getItems(categoryItems: List<PropertyData<*>>): List<Setting> {
+    private fun getItems(categoryItems: List<PropertyData<*, *>>): List<Setting> {
 
         val list = arrayListOf<Setting>()
 
         val sortByInCategory =
-            categoryItems.sortedWith(compareBy({ it.ordinal }, { it.title })).groupBy { it.inCategory }
+            categoryItems.sortedWith(compareBy({ it.propertySetting.ordinal }, { it.title }))
+                .groupBy { it.propertySetting.subCategory }
 
         val sortedEntries = sortByInCategory.entries.sortedBy { it.key }
 

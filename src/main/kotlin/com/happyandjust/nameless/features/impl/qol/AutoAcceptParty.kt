@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,21 +18,17 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.config.configValue
 import com.happyandjust.nameless.core.value.Overlay
-import com.happyandjust.nameless.dsl.matchesMatcher
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.dsl.pureText
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.OverlayFeature
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.base.OverlayFeature
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.hide
+import com.happyandjust.nameless.features.press
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.COverlay
 import gg.essential.api.EssentialAPI
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.UIComponent
@@ -54,27 +50,23 @@ import net.minecraftforge.fml.common.gameevent.InputEvent
 import org.lwjgl.input.Keyboard
 import java.awt.Color
 
-object AutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", "Auto Accept Party", "") {
+object AutoAcceptParty : OverlayFeature("autoAcceptParty", "Auto Accept Party") {
 
-    private var hide by FeatureParameter(
-        0,
-        "party",
-        "hide",
-        "Hide Party Request Message",
-        "",
-        true,
-        CBoolean
-    )
+    init {
+        parameter(true) {
+            matchKeyCategory()
+            key = "hide"
+            title = "Hide Party Request Message"
+        }
 
-    private var press by FeatureParameter(
-        0,
-        "party",
-        "press",
-        "Press to Join",
-        "Disable automatically join party and instead, Press Y/N to accept/deny party request\nYou can change the key in ESC -> Settings -> Controls",
-        false,
-        CBoolean
-    )
+        parameter(false) {
+            matchKeyCategory()
+            key = "press"
+            title = "Press to Join"
+            desc =
+                "Disable automatically join party and instead, Press Y/N to accept/deny party request\nYou can change the key in ESC -> Settings -> Controls"
+        }
+    }
 
     private val MESSAGE = """
             -----------------------------
@@ -93,19 +85,16 @@ object AutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", "Auto A
             PartyOverlayContainer.animate(value != null)
         }
     private var shouldDraw = false
-    override var overlayPoint by ConfigValue("party", "overlay", Overlay.DEFAULT, COverlay)
+    override var overlayPoint by configValue("party", "overlay", Overlay.DEFAULT)
 
     private val window = Window(ElementaVersion.V1)
-    private val matrixStack by lazy { UMatrixStack.Compat.get() }
 
     init {
         on<ClientChatReceivedEvent>().filter {
             enabled && EssentialAPI.getMinecraftUtil().isHypixel() && type.toInt() != 2
         }.subscribe {
             MESSAGE.matchesMatcher(pureText) {
-                if (hide) {
-                    isCanceled = true
-                }
+                if (hide) cancel()
 
                 mc.thePlayer.playSound("random.successful_hit", 1F, 0.5F)
 
@@ -145,7 +134,7 @@ object AutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", "Auto A
 
     override fun renderOverlay0(partialTicks: Float) {
         if (shouldDraw) {
-            window.draw(matrixStack)
+            window.draw(UMatrixStack.Compat.get())
         }
     }
 
@@ -192,8 +181,8 @@ object AutoAcceptParty : OverlayFeature(Category.QOL, "autoacceptparty", "Auto A
 
         private val block = UIBlock(Color.white.invisible()).constrain {
 
-            x = basicXConstraint { overlayPoint.point.x.toFloat() }.fixed()
-            y = basicYConstraint { overlayPoint.point.y.toFloat() }.fixed()
+            x = basicXConstraint { overlayPoint.x.toFloat() }.fixed()
+            y = basicYConstraint { overlayPoint.y.toFloat() }.fixed()
 
             width = ChildBasedSizeConstraint()
             height = ChildBasedSizeConstraint() * 2

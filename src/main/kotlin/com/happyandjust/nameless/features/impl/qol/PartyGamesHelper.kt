@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,29 +18,22 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.PartyGameChangeEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.OverlayParameter
-import com.happyandjust.nameless.features.SubParameterOf
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.overlayParameter
+import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.gui.fixed
-import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PartyGamesType
 import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.processor.partygames.*
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CChromaColor
-import com.happyandjust.nameless.serialization.converters.COverlay
-import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.constraints.ChildBasedMaxSizeConstraint
@@ -54,206 +47,144 @@ import gg.essential.elementa.utils.withAlpha
 import net.minecraftforge.common.MinecraftForge
 import java.awt.Color
 
-object PartyGamesHelper : SimpleFeature(Category.QOL, "partygameshelper", "Party Games Helper", "") {
+object PartyGamesHelper : SimpleFeature("partyGamesHelper", "Party Games Helper", "") {
 
-    private var jigsaw by FeatureParameter(
-        0,
-        "partygames",
-        "jigsaw",
-        "Jigsaw Rush",
-        "Render which key to press on your canvas",
-        true,
-        CBoolean
-    )
+    init {
+        parameter(true) {
+            matchKeyCategory()
+            key = "jigsaw"
+            title = "Jigsaw Rush"
+            desc = "Render which key to press on your canvas"
+        }
 
-    private var rpg16 by FeatureParameter(
-        0,
-        "partygames",
-        "rpg16",
-        "RPG 16",
-        "Glow player who is at 1 hearts",
-        true,
-        CBoolean
-    )
+        parameter(true) {
+            matchKeyCategory()
+            key = "rpg16"
+            title = "RPG 16"
+            desc = "Glow player who is at 1 heart"
 
-    @SubParameterOf("rpg16")
-    var rpg16Color by FeatureParameter(
-        0,
-        "partygames",
-        "rpg16color",
-        "Player Color",
-        "",
-        Color.red.toChromaColor(),
-        CChromaColor
-    )
+            parameter(Color.red.toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Player Color"
+            }
+        }
 
-    private var avalanche by FeatureParameter(
-        0,
-        "partygames",
-        "avalanche",
-        "Avalanche",
-        "Render Box under the slabs",
-        true,
-        CBoolean
-    )
+        parameter(true) {
+            matchKeyCategory()
+            key = "avalanche"
+            title = "Avalanche"
+            desc = "Render box under the slabs"
 
-    @SubParameterOf("avalanche")
-    var avalancheColor by FeatureParameter(
-        0,
-        "partygames",
-        "avalanchecolor",
-        "Box Color",
-        "",
-        Color.magenta.toChromaColor(),
-        CChromaColor
-    )
+            parameter(Color.magenta.toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Box Color"
+            }
+        }
 
-    private var animal by FeatureParameter(
-        0,
-        "partygames",
-        "animal",
-        "Animal Slaughter",
-        "Glow -50% entity so you don't hit them",
-        true,
-        CBoolean
-    )
+        parameter(true) {
+            matchKeyCategory()
+            key = "animal"
+            title = "Animal Slaughter"
+            desc = "Glow -50% entity so you don't hit them"
 
-    @SubParameterOf("animal")
-    var animalColor by FeatureParameter(
-        0,
-        "partygames",
-        "animalcolor",
-        "-50% Entity Color",
-        "",
-        Color.red.toChromaColor(),
-        CChromaColor
-    )
+            parameter(Color.red.toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "-50% Entity COlor"
+            }
+        }
 
-    private var anvil by FeatureParameter(
-        0,
-        "partygames",
-        "anvil",
-        "Anvil Spleef",
-        "Render box on where the anvils will land on",
-        true,
-        CBoolean
-    )
+        parameter(true) {
+            matchKeyCategory()
+            key = "anvil"
+            title = "Anvil Spleef"
+            desc = "Render box on where the anvils will land on"
 
-    @SubParameterOf("animal")
-    var anvilColor by FeatureParameter(
-        0,
-        "partygames",
-        "anvilcolor",
-        "Box Color",
-        "",
-        Color.red.withAlpha(0.4f).toChromaColor(),
-        CChromaColor
-    )
+            parameter(Color.red.withAlpha(0.4f).toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Box Color"
+            }
+        }
 
-    private var maze by FeatureParameter(
-        0,
-        "partygames",
-        "maze",
-        "Spider Maze",
-        "Nothing to explain, maze solver",
-        true,
-        CBoolean
-    )
+        parameter(true) {
+            matchKeyCategory()
+            key = "maze"
+            title = "Spizer Maze"
+            desc = "Nothing to explain, maze solver"
+        }
 
-    private var dive by FeatureParameter(
-        0,
-        "partygames",
-        "dive",
-        "Dive",
-        "Render 'Exact Box' on where you'll land on, color will be red if you'll collide with block when you land",
-        true,
-        CBoolean
-    )
+        parameter(true) {
+            matchKeyCategory()
+            key = "dive"
+            title = "Dive"
+            desc =
+                "Render 'Exact Box' on where you'll land on, color will turn into red if you'll collide with block when you land"
 
-    @SubParameterOf("dive")
-    var diveColor by FeatureParameter(
-        0,
-        "partygames",
-        "divecolor",
-        "Box Color",
-        "",
-        Color.blue.toChromaColor(),
-        CChromaColor
-    )
+            parameter(Color.blue.toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Box Color"
+            }
+        }
 
-    var labEscape by object : OverlayParameter<Boolean>(
-        0,
-        "partygames",
-        "labescape",
-        "Lab Escape",
-        "Render what key you have to press on your screen",
-        true,
-        CBoolean
-    ) {
-        override var overlayPoint by ConfigValue("partygames", "labescapeoverlay", Overlay.DEFAULT, COverlay)
+        overlayParameter(true) {
+            matchKeyCategory()
+            key = "labEscape"
+            title = "Lab Escape"
+            desc = "Render what key you have to press on your screen"
 
-        init {
             LabEscapeProcessor.overlay = { overlayPoint }
-        }
 
-        override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
-            val container = UIContainer().constrain {
-                width = ChildBasedMaxSizeConstraint()
-                height = ChildBasedSizeConstraint()
+            config("partyGamesHelper", "labEscapeOverlay", Overlay.DEFAULT)
+
+            component {
+                val container = UIContainer().constrain {
+                    width = ChildBasedMaxSizeConstraint()
+                    height = ChildBasedSizeConstraint()
+                }
+
+                for (text in arrayOf("1", "1", "2", "3", "2")) {
+                    UIText(text).constrain {
+                        y = SiblingConstraint()
+
+                        textScale = basicTextScaleConstraint { currentScale.toFloat() }.fixed()
+
+                        color = Color.red.constraint
+                    } childOf container
+                }
+
+                container
             }
 
-            for (text in arrayOf("1", "1", "2", "3", "2")) {
-                UIText(text).constrain {
-                    y = SiblingConstraint()
+            shouldDisplay { enabled && value && Hypixel.currentGame == GameType.PARTY_GAMES }
 
-                    textScale = basicTextScaleConstraint { relocateComponent.currentScale.toFloat() }.fixed()
+            render { /* LabEscapeProcessor */ }
+        }
 
-                    color = Color.red.constraint
-                } childOf container
+        parameter(true) {
+            matchKeyCategory()
+            key = "workshop"
+            title = "Workshop"
+            desc = "Render what blocks you have to break, and etc"
+        }
+
+        parameter(true) {
+            matchKeyCategory()
+            key = "highGround"
+            title = "High Ground"
+            desc = "Glow players whose score is higher than you(only if player is in scoreboard)"
+
+            parameter(Color.red.toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Glowing Color"
             }
-
-            return container
-        }
-
-        override fun shouldDisplayInRelocateGui(): Boolean {
-            return enabled && Hypixel.currentGame == GameType.PARTY_GAMES
-        }
-
-        override fun renderOverlay0(partialTicks: Float) {
-            // see LabEscapeProcessor
         }
     }
 
-    private var workshop by FeatureParameter(
-        0,
-        "partygames",
-        "workshop",
-        "Workshop",
-        "Render what blocks you have to break, and etc",
-        true,
-        CBoolean
-    )
-
-    private var highGround by FeatureParameter(
-        0,
-        "partygames",
-        "highground",
-        "High Ground",
-        "Glow players whose score is higher than you(only if player is in scoreboard)",
-        true,
-        CBoolean
-    )
-
-    @SubParameterOf("highGround")
-    var highGroundColor by FeatureParameter(
-        0,
-        "partygames",
-        "highground_color",
-        "Glowing Color",
-        "",
-        Color.red.toChromaColor(),
-        CChromaColor
-    )
     private var partyGameType: PartyGamesType? = null
 
     init {

@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,26 +18,20 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.OverlayParameter
-import com.happyandjust.nameless.features.SubParameterOf
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.overlayParameter
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.boxColor
+import com.happyandjust.nameless.features.settings
+import com.happyandjust.nameless.features.showY_yText
 import com.happyandjust.nameless.gui.fixed
-import com.happyandjust.nameless.gui.relocate.RelocateComponent
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CChromaColor
-import com.happyandjust.nameless.serialization.converters.COverlay
-import com.happyandjust.nameless.serialization.converters.CString
 import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.elementa.ElementaVersion
-import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.components.Window
 import gg.essential.elementa.dsl.*
@@ -49,64 +43,62 @@ import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 
 object DropperHelper : SimpleFeature(
-    Category.QOL,
-    "dropperhelper",
+    "dropperHelper",
     "Dropper Helper",
     "Render box on where you'll land"
 ) {
 
     private val textState = BasicState("")
-    private var boxColor by FeatureParameter(
-        0,
-        "dropper",
-        "color",
-        "Box Color",
-        "Box color when NORMAL state",
-        Color.green.toChromaColor(),
-        CChromaColor
-    )
 
-    private var showY by object : OverlayParameter<Boolean>(
-        1,
-        "dropper",
-        "showy",
-        "Display Y Position",
-        "Render y position of where you'll land on your screen",
-        false,
-        CBoolean
-    ) {
-        override var overlayPoint by ConfigValue("dropper", "yposition", Overlay.DEFAULT, COverlay)
-        private val window = Window(ElementaVersion.V1)
-        private val matrixStack by lazy { UMatrixStack.Compat.get() }
+    init {
 
-        init {
-            UIText().constrain {
-                x = basicXConstraint { overlayPoint.point.x.toFloat() }.fixed()
-                y = basicYConstraint { overlayPoint.point.y.toFloat() }.fixed()
-
-                textScale = basicTextScaleConstraint { overlayPoint.scale.toFloat() }.fixed()
-            }.bindText(textState) childOf window
+        parameter(Color.green.toChromaColor()) {
+            matchKeyCategory()
+            key = "boxColor"
+            title = "Box Color"
         }
 
-        override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
-            return UIText(getYText(99)).constrain {
-                textScale = basicTextScaleConstraint { relocateComponent.currentScale.toFloat() }.fixed()
+        overlayParameter(false) {
+            matchKeyCategory()
+            key = "showY"
+            title = "Display Y Position"
+            desc = "Render y position of where you'll land on your screen"
+
+            settings {
+                ordinal = 1
             }
-        }
 
-        override fun shouldDisplayInRelocateGui() = enabled && value
+            config("dropper", "yPosition", Overlay.DEFAULT)
 
-        override fun renderOverlay0(partialTicks: Float) {
-            if (enabled && value) {
-                window.draw(matrixStack)
+            component {
+                UIText(getYText(999)).constrain {
+                    textScale = basicTextScaleConstraint { currentScale.toFloat() }.fixed()
+                }
+            }
+
+            shouldDisplay { enabled && value }
+
+            val window = Window(ElementaVersion.V1).apply {
+                UIText().constrain {
+                    x = basicXConstraint { overlayPoint.x.toFloat() }.fixed()
+                    y = basicYConstraint { overlayPoint.y.toFloat() }.fixed()
+
+                    textScale = basicTextScaleConstraint { overlayPoint.scale.toFloat() }.fixed()
+                }.bindText(textState) childOf this
+            }
+
+            render { if (enabled && value) window.draw(UMatrixStack.Compat.get()) }
+
+
+            parameter("&a{value}") {
+                matchKeyCategory()
+                key = "yText"
+                title = "Y Text"
             }
         }
     }
 
-    @SubParameterOf("showY")
-    private var yText by FeatureParameter(0, "dropper", "ytext", "Y Text", "", "&a{value}", CString)
-
-    private fun getYText(y: Int) = yText.replace("&", "§").replace("{value}", y.toString())
+    private fun getYText(y: Int) = showY_yText.replace("&", "§").replace("{value}", y.toString())
 
     private var axisAlignedBB: AxisAlignedBB? = null
 

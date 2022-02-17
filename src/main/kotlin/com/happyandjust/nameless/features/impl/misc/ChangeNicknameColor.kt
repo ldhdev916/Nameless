@@ -19,27 +19,30 @@
 package com.happyandjust.nameless.features.impl.misc
 
 import com.happyandjust.nameless.core.value.toChromaColor
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.serialization.converters.CChromaColor
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.color
 import java.awt.Color
 
 object ChangeNicknameColor : SimpleFeature(
-    Category.MISCELLANEOUS,
-    "nicknamecolor",
+    "nicknameColor",
     "Change Nickname Color",
     "Customize your nickname color",
     false
 ) {
 
-    var color by FeatureParameter(
-        0,
-        "nickname",
-        "color",
-        "Nickname Color",
-        "",
-        Color.white.toChromaColor(),
-        CChromaColor
-    )
+    @JvmStatic
+    var colorJVM
+        get() = color
+        set(value) {
+            color = value
+        }
+
+    init {
+        parameter(Color.white.toChromaColor()) {
+            matchKeyCategory()
+            key = "color"
+            title = "Nickname Color"
+        }
+    }
 }

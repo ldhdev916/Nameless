@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,16 @@
 package com.happyandjust.nameless.core.value
 
 import com.happyandjust.nameless.dsl.withAlpha
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import java.awt.Color
 
 /**
  * Only use [java.awt.Color.getRGB]
  */
+@Serializable(with = ChromaColorSerializer::class)
 class ChromaColor(val originRGB: Int) : Color(originRGB, true) {
 
     /**
@@ -41,7 +46,7 @@ class ChromaColor(val originRGB: Int) : Color(originRGB, true) {
     }
 
     override fun equals(other: Any?): Boolean {
-        return super.equals(other) && other is ChromaColor && other.chromaEnabled == chromaEnabled
+        return other is ChromaColor && other.originRGB == originRGB && other.chromaEnabled == chromaEnabled
     }
 
     override fun hashCode(): Int {
@@ -51,6 +56,28 @@ class ChromaColor(val originRGB: Int) : Color(originRGB, true) {
         result = 31 * result + chromaEnabled.hashCode()
         return result
     }
+}
+
+@Serializable
+private data class ColorSurrogate(val rgb: Int, val chroma: Boolean)
+
+private object ChromaColorSerializer : KSerializer<ChromaColor> {
+
+    override val descriptor = ColorSurrogate.serializer().descriptor
+
+    override fun serialize(encoder: Encoder, value: ChromaColor) {
+        encoder.encodeSerializableValue(
+            ColorSurrogate.serializer(),
+            ColorSurrogate(value.originRGB, value.chromaEnabled)
+        )
+    }
+
+    override fun deserialize(decoder: Decoder): ChromaColor {
+        val surrogate = decoder.decodeSerializableValue(ColorSurrogate.serializer())
+
+        return ChromaColor(surrogate.rgb).apply { chromaEnabled = surrogate.chroma }
+    }
+
 }
 
 fun Color.toChromaColor(chromaEnabled: Boolean = false) = ChromaColor(rgb).also {

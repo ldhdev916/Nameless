@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,24 +20,23 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiChat
 import gg.essential.api.EssentialAPI
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import net.minecraft.network.play.client.C01PacketChatMessage
 import net.minecraft.network.play.server.S3APacketTabComplete
 
 object PlayTabComplete : SimpleFeature(
-    Category.QOL,
-    "playtabcomplete",
+    "playTabComplete",
     "/play Auto Tab Complete",
     "Automatically gets all hypixel games when you press tab with /play",
     true
 ) {
 
     private val gameMap =
-        "https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw".handler()
-            .read<Map<String, String>>()
+        Json.decodeFromString<Map<String, String>>("https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw".fetch())
     private val games = gameMap.keys + gameMap.values
 
     private val PLAY = "/play (?<msg>.*)".toPattern()

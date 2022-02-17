@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,15 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.dsl.cancel
 import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.hypixel.Hypixel
 import net.minecraftforge.client.event.RenderPlayerEvent
 
-object HideNPC :
-    SimpleFeature(Category.GENERAL, "hidenpc", "Hide NPC in Lobby", "hide npcs in tab, and stop rendering") {
+object HideNPC : SimpleFeature("hideNpc", "Hide NPC in Lobby", "hide npcs in tab, and stop rendering") {
+
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
 
     init {
         on<RenderPlayerEvent.Pre>().filter { enabled && Hypixel.inLobby && entityPlayer.uniqueID.version() == 2 }

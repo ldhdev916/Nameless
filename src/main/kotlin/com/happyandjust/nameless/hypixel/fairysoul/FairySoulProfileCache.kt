@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,24 +18,18 @@
 
 package com.happyandjust.nameless.hypixel.fairysoul
 
-import com.happyandjust.nameless.config.ConfigMap
-import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.config.configMap
+import com.happyandjust.nameless.config.configValue
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.serialization.converters.CFairySoulProfile
 
 object FairySoulProfileCache {
 
     private val defaultProfile = FairySoulProfile("default", hashMapOf())
-    private val generatedFairySoulProfiles = ConfigMap(
-        "profiles",
-        defaultProfile,
-        CFairySoulProfile
-    )
-    var currentlyLoadedProfile by ConfigValue(
+    private val generatedFairySoulProfiles = configMap<FairySoulProfile>("profiles")
+    var currentlyLoadedProfile by configValue(
         "fairysoul",
         "currentprofile",
-        defaultProfile,
-        CFairySoulProfile
+        defaultProfile
     )
 
     fun changeToProfileAndIfNotExistThenCreate(profileName: String) {

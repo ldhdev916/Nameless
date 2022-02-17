@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.features.impl.settings
 
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 
-object Debug : SimpleFeature(Category.SETTINGS, "debug", "Debug", "Enable debug mode")
+object Debug : SimpleFeature("debug", "Debug", "Enable debug mode")

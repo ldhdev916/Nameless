@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,64 +18,49 @@
 
 package com.happyandjust.nameless.features
 
-import com.happyandjust.nameless.features.base.FeatureParameter
-import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.BaseFeature
 import com.happyandjust.nameless.features.impl.general.*
 import com.happyandjust.nameless.features.impl.misc.*
 import com.happyandjust.nameless.features.impl.qol.*
 import com.happyandjust.nameless.features.impl.settings.*
 import com.happyandjust.nameless.features.impl.skyblock.*
-import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.full.findAnnotation
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.isAccessible
+import net.minecraftforge.fml.common.Loader
 
 object FeatureRegistry {
 
-    val features = arrayListOf<SimpleFeature>()
-    val featuresByCategory = hashMapOf<Category, ArrayList<SimpleFeature>>()
+    val features = arrayListOf<BaseFeature<*, *>>()
+    val featuresByCategory = hashMapOf<Category, ArrayList<BaseFeature<*, *>>>()
 
-    private fun String.add(feature: SimpleFeature) {
+    private fun String.add(feature: BaseFeature<*, *>) {
         features.add(feature)
 
-        feature.inCategory = this
+        feature.propertySetting.subCategory = this
 
-        featuresByCategory.getOrPut(feature.category) { arrayListOf() }.add(feature)
         feature.parseParameters()
+        featuresByCategory.getOrPut(feature.category) { arrayListOf() }.add(feature)
     }
 
-    private fun <T : SimpleFeature> T.parseParameters() {
+    private fun <T : BaseFeature<*, *>> T.parseParameters() {
+        if (!categoryInitialized) {
+            val fullName = javaClass.name
 
-        val processSubParameters = hashSetOf<() -> Unit>()
-
-        for (property in this::class.memberProperties.filterIsInstance<KMutableProperty1<T, *>>()
-            .onEach { it.isAccessible = true }) {
-            val delegate = property.getDelegate(this)
-            if (delegate is FeatureParameter<*>) {
-                property.findAnnotation<InCategory>()?.let {
-                    delegate.inCategory = it.inCategory
-                }
-
-                val subParameterOf = property.findAnnotation<SubParameterOf>()
-
-                if (subParameterOf != null) {
-                    processSubParameters.add {
-                        parameters[subParameterOf.parameterProperty]!!.parameters[property.name] = delegate
-                    }
-                } else {
-                    parameters[property.name] = delegate
-                }
+            category = when (val packageName =
+                fullName.substringAfter("com.happyandjust.nameless.features.impl.").substringBefore(".")) {
+                "general" -> Category.GENERAL
+                "misc" -> Category.MISCELLANEOUS
+                "qol" -> Category.QOL
+                "settings" -> Category.SETTINGS
+                "skyblock" -> Category.SKYBLOCK
+                else -> error("Unexpected package name \"$packageName\"")
             }
         }
-
-        processSubParameters.forEach { it() }
     }
 
     init {
         with("Visual") {
             add(GlowAllPlayers)
             add(RemoveNegativeEffects)
-            add(BedwarsESP)
+            add(BedWarsESP)
         }
 
         with("Lobby") {
@@ -83,7 +68,7 @@ object FeatureRegistry {
         }
 
         with("In Game") {
-            add(BedwarsRayTraceBed)
+            add(BedWarsRayTraceBed)
             add(DisplayBetterArmor)
             add(IndicateParticles)
             add(TrajectoryPreview)
@@ -150,7 +135,7 @@ object FeatureRegistry {
             add(FairySoulWaypoint)
             add(DamageIndicator)
             add(GlowDroppedItem)
-            add(LividDaggerBackstep)
+            add(LividDaggerBackStep)
             add(ShowWitherShieldCoolTime)
             add(DisableEndermanTeleportation)
             add(EquipPetSkin)
@@ -182,7 +167,7 @@ object FeatureRegistry {
             add(OutlineMode)
             add(OpenRelocateGui)
             add(Debug)
-            add(DisableSBAGlowing)
+            if (Loader.isModLoaded("skyblockaddons")) add(DisableSBAGlowing)
         }
     }
 

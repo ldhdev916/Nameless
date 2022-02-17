@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,9 +34,8 @@ public class MixinRenderEntityItem {
 
     @Inject(method = "doRender*", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/RenderItem;renderItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/resources/model/IBakedModel;)V"))
     public void modifyScale(EntityItem entity, double x, double y, double z, float entityYaw, float partialTicks, CallbackInfo ci) {
-        DisplayBetterArmor feature = DisplayBetterArmor.INSTANCE;
-        if (feature.getEnabled() && Hypixel.INSTANCE.getCurrentGame() == GameType.SKYWARS && feature.getScaledItems().contains(entity)) {
-            double scale = feature.getScale();
+        if (DisplayBetterArmor.getEnabledJVM() && Hypixel.INSTANCE.getCurrentGame() == GameType.SKYWARS && DisplayBetterArmor.scaledItems.contains(entity)) {
+            double scale = DisplayBetterArmor.getScaleJVM();
 
             GlStateManager.scale(scale, scale, scale);
         }

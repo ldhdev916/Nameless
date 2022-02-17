@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -242,7 +242,7 @@ val Rectangle.bottom
     get() = y + height
 
 fun setup(overlay: Overlay) {
-    translate(overlay.point.x, overlay.point.y, 0)
+    translate(overlay.x, overlay.y, 0)
     scale(overlay.scale, overlay.scale, 1.0)
 }
 

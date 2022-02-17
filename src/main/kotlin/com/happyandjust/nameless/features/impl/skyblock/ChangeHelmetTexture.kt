@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,26 +18,27 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.features.Category
+import com.happyandjust.nameless.config.configValue
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
-import com.happyandjust.nameless.serialization.converters.CSkyBlockItem
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import java.util.*
 
 object ChangeHelmetTexture : SimpleFeature(
-    Category.SKYBLOCK,
-    "changehelmettexture",
+    "changeHelmetTexture",
     "Change Helmet Texture",
     "Change your current helmet. only works if you're wearing skull in SkyBlock. To select helmet texture, type /helmettexture [SkyBlock ID]"
 ) {
 
-    private val currentlyEquipedTextureConfig =
-        ConfigValue("helmettexture", "current", SkyBlockItem("", "", "", ""), CSkyBlockItem)
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
+    private val currentlyEquipedTextureConfig = configValue("helmetTexture", "current", SkyBlockItem("", "", "", ""))
+
+    @JvmStatic
     var currentlyEquipedTexture: Pair<SkyBlockItem, GameProfile>? = null
         get() = if (Hypixel.currentGame != GameType.SKYBLOCK) null else field
         set(value) {

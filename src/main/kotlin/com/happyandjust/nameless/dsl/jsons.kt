@@ -18,21 +18,55 @@
 
 package com.happyandjust.nameless.dsl
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonElement
-import com.happyandjust.nameless.core.JsonHandler
 import gg.essential.api.utils.WebUtil
-import java.io.Reader
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.*
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.int
+import net.minecraft.util.ResourceLocation
+import java.io.File
+import java.io.InputStream
 
-val globalGson: Gson = GsonBuilder().setPrettyPrinting().create()
+fun String.fetch() = WebUtil.fetchString(this)!!
 
-inline fun <reified T> Gson.fromJson(json: JsonElement): T = fromJson(json, T::class.java)
+fun ResourceLocation.inputStream(): InputStream = mc.mcDefaultResourcePack.getInputStream(this)
 
-inline fun <reified T> Gson.fromJson(reader: Reader): T = fromJson(reader, T::class.java)
+val JsonElement.string
+    get() = jsonPrimitive.content
 
-inline fun <reified T> Gson.fromJson(s: String): T = fromJson(s, T::class.java)
+val JsonElement.int
+    get() = jsonPrimitive.int
 
-fun String.fetch() = WebUtil.fetchString(this)
+val JsonElement.boolean
+    get() = jsonPrimitive.boolean
 
-fun String.handler() = JsonHandler(fetch())
+val JsonElement.double: Double
+    get() = jsonPrimitive.double
+
+@OptIn(ExperimentalSerializationApi::class)
+inline fun <reified T> Json.encodeToFile(value: T, file: File) = file.outputStream().buffered().use {
+    encodeToStream(value, it)
+    it.flush()
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+inline fun <reified T> Json.decodeFromFile(file: File): T = file.inputStream().buffered().use(this::decodeFromStream)
+
+inline fun <reified T : Any> dummySerializer() = object : KSerializer<T> {
+    override val descriptor: SerialDescriptor
+        get() = error("You can not serialize ${T::class.java.name}")
+
+    override fun serialize(encoder: Encoder, value: T) {
+        error("You can not serialize ${T::class.java.name}")
+    }
+
+    override fun deserialize(decoder: Decoder): T {
+        error("You can not deserialize ${T::class.java.name}")
+    }
+
+
+}

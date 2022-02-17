@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@ import com.happyandjust.nameless.pathfinding.ModPathFinding
 import com.happyandjust.nameless.utils.RenderUtils
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import net.minecraft.util.BlockPos
 import net.minecraftforge.client.event.RenderWorldLastEvent
@@ -46,7 +45,7 @@ object WaypointListener {
     private fun createPathToPosition() {
         GlobalScope.launch {
             waypointInfos.filter { it.enabled }.forEach {
-                async { it.waypointPaths = ModPathFinding(it.targetPos, it.canFly).findPath() }
+                launch { it.waypointPaths = ModPathFinding(it.targetPos, it.canFly).findPath() }
             }
         }
     }

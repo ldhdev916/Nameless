@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.gui.relocate
 
 import com.happyandjust.nameless.core.value.Overlay
-import com.happyandjust.nameless.features.IRelocateAble
+import com.happyandjust.nameless.features.base.IRelocateAble
 import com.happyandjust.nameless.gui.feature.ColorCache
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
@@ -27,7 +27,6 @@ import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.dsl.*
-import java.awt.Point
 
 class RelocateGui(relocateAbleList: List<IRelocateAble>) :
     WindowScreen(ElementaVersion.V1, drawDefaultBackground = false) {
@@ -69,7 +68,8 @@ class RelocateGui(relocateAbleList: List<IRelocateAble>) :
 
         for ((relocateAble, component) in map) {
             relocateAble.overlayPoint = Overlay(
-                Point(component.getLeft().toInt(), component.getTop().toInt()),
+                component.getLeft().toInt(),
+                component.getTop().toInt(),
                 component.currentScale
             )
         }

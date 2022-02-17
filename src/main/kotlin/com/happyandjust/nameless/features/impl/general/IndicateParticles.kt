@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,13 +23,10 @@ import com.happyandjust.nameless.dsl.disableDepth
 import com.happyandjust.nameless.dsl.enableDepth
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.tessellator
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.mixins.accessors.AccessorEntityFX
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CChromaColor
-import gg.essential.elementa.utils.withAlpha
+import gg.essential.elementa.utils.invisible
 import net.minecraft.client.particle.EntityFX
 import net.minecraft.client.renderer.WorldRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
@@ -40,8 +37,7 @@ import org.lwjgl.opengl.GL11
 import java.awt.Color
 
 object IndicateParticles : SimpleFeature(
-    Category.GENERAL,
-    "indicateparticles",
+    "indicateParticles",
     "Indicate Particles",
     "Indicate certain particle types you selected, set color alpha to 0 if you don't want custom color"
 ) {
@@ -49,31 +45,22 @@ object IndicateParticles : SimpleFeature(
     private val entities = hashMapOf<EntityFX, Color>()
 
     init {
-
         for (particle in EnumParticleTypes.values()) {
 
             val key = particle.particleID.toString()
 
             val name = particle.name.split("_").joinToString(" ") { "${it[0]}${it.drop(1).lowercase()}" }
 
-            parameters[key] = FeatureParameter(
-                0,
-                "indicateparticles",
-                key,
-                name,
-                "",
-                false,
-                CBoolean
-            ).apply {
-                parameters["color"] = FeatureParameter(
-                    0,
-                    "indicateparticles",
-                    "${key}_color",
-                    "Color of Particle",
-                    "",
-                    Color.red.withAlpha(0).toChromaColor(),
-                    CChromaColor
-                )
+            parameter(false) {
+                matchKeyCategory()
+                this.key = key
+                title = name
+
+                parameter(Color.red.invisible().toChromaColor()) {
+                    matchKeyCategory()
+                    this.key = "color"
+                    title = "Color of Particle"
+                }
             }
         }
     }

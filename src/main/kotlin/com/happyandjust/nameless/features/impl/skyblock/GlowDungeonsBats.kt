@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,29 +22,25 @@ import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.OutlineRenderEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.color
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
-import com.happyandjust.nameless.serialization.converters.CChromaColor
 import net.minecraft.entity.passive.EntityBat
 import java.awt.Color
 
-object GlowDungeonsBats : SimpleFeature(Category.SKYBLOCK, "glowbats", "Glow Bats in SkyBlock Dungeons", "") {
-
-    private var color by FeatureParameter(
-        0,
-        "glowbats",
-        "color",
-        "Glowing Color",
-        "",
-        Color.pink.toChromaColor(),
-        CChromaColor
-    )
+object GlowDungeonsBats : SimpleFeature("glowBats", "Glow Bats in SkyBlock Dungeons", "") {
 
     init {
+
+        parameter(Color.pink.toChromaColor()) {
+            matchKeyCategory()
+            key = "color"
+            title = "Glowing Color"
+        }
+
         on<OutlineRenderEvent>().filter {
             enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty(
                 PropertyKey.DUNGEON

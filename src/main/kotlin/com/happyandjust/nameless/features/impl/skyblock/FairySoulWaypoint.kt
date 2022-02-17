@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,9 @@ import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.KeyPressEvent
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.showPath
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
@@ -34,7 +34,6 @@ import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoulProfileCache
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.pathfinding.ModPathFinding
-import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.utils.RenderUtils
 import com.happyandjust.nameless.utils.SkyblockUtils
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -49,8 +48,7 @@ import java.awt.Color
 
 @OptIn(DelicateCoroutinesApi::class)
 object FairySoulWaypoint : SimpleFeature(
-    Category.SKYBLOCK,
-    "fairysoulwaypoint",
+    "fairySoulWaypoint",
     "FairySoul Waypoint",
     "Renders outline box on fairysoul except the ones you've already found"
 ) {
@@ -77,15 +75,14 @@ object FairySoulWaypoint : SimpleFeature(
             }
         }
 
-    private var showPath by FeatureParameter(
-        0,
-        "fairysoulwaypoint",
-        "path",
-        "Fairy Soul Path Finding",
-        "Show path to nearest fairysoul",
-        true,
-        CBoolean
-    )
+    init {
+        parameter(true) {
+            matchKeyCategory()
+            key = "showPath"
+            title = "FairySoul Path Finding"
+            desc = "Show path to nearest fairysoul"
+        }
+    }
 
     init {
         on<RenderWorldLastEvent>().filter { enabled && Hypixel.currentGame == GameType.SKYBLOCK }.subscribe {

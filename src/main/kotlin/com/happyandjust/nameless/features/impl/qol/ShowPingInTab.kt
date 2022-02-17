@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,21 +19,17 @@
 package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.core.value.toChromaColor
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.serialization.converters.CChromaColor
+import com.happyandjust.nameless.features.base.parameter
 import java.awt.Color
 
-object ShowPingInTab : SimpleFeature(Category.QOL, "pingtab", "Show Ping numbers in Tab") {
+object ShowPingInTab : SimpleFeature("pingTab", "Show Ping numbers in Tab") {
 
-    var color by FeatureParameter(
-        0,
-        "pingtab",
-        "color",
-        "Ping Text Color",
-        "",
-        Color.green.toChromaColor(),
-        CChromaColor
-    )
+    init {
+        parameter(Color.green.toChromaColor()) {
+            matchKeyCategory()
+            key = "color"
+            title = "Ping Text Color"
+        }
+    }
 }

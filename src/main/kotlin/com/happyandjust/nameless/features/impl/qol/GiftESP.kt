@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,17 +25,17 @@ import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.events.SpecialOverlayEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.gui.feature.ComponentType
+import com.happyandjust.nameless.features.base.autoFillEnum
+import com.happyandjust.nameless.features.base.listParameter
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.color
+import com.happyandjust.nameless.features.renderDirectionArrow
+import com.happyandjust.nameless.features.selectedTypes
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CChromaColor
-import com.happyandjust.nameless.serialization.converters.CList
-import com.happyandjust.nameless.serialization.converters.getEnumConverter
 import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.elementa.utils.withAlpha
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -49,42 +49,35 @@ import net.minecraft.util.BlockPos
 import java.awt.Color
 
 @OptIn(DelicateCoroutinesApi::class)
-object GiftESP : SimpleFeature(Category.QOL, "giftesp", "Gift ESP") {
+object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
 
     private val scanTimer = TickTimer.withSecond(1)
     private val foundGiftsPositions = hashSetOf<BlockPos>()
 
-    private var color by FeatureParameter(
-        0,
-        "giftesp",
-        "color",
-        "Box Color",
-        "",
-        Color.green.withAlpha(64).toChromaColor(),
-        CChromaColor
-    )
-
-    private var selectedGiftGameTypes by object :
-        FeatureParameter<List<GiftGameType>>(
-            1, "giftesp", "selectedtypes", "Game Types", "", emptyList(), CList(getEnumConverter())
-        ) {
-
-        init {
-            allEnumList = GiftGameType.values().toList()
-            enumName = { (it as GiftGameType).prettyName }
+    init {
+        parameter(Color.green.withAlpha(64).toChromaColor()) {
+            matchKeyCategory()
+            key = "color"
+            title = "Box Color"
         }
 
-        override fun getComponentType() = ComponentType.MULTI_SELECTOR
+        listParameter(GiftGameType.values().toList()) {
+            matchKeyCategory()
+            key = "selectedTypes"
+            title = "Game Types"
+
+            settings { ordinal = 1 }
+            autoFillEnum { it.prettyName }
+        }
+
+        parameter(false) {
+            matchKeyCategory()
+            key = "renderDirectionArrow"
+            title = "Render Direction Arrow to Nearest Gift"
+
+            settings { ordinal = 2 }
+        }
     }
-    private var renderDirectionArrow by FeatureParameter(
-        0,
-        "giftesp",
-        "direction",
-        "Render Direction Arrow to Nearest Gift",
-        "",
-        false,
-        CBoolean
-    )
 
     private var currentGiftGameType: GiftGameType? = null
 
@@ -182,7 +175,7 @@ object GiftESP : SimpleFeature(Category.QOL, "giftesp", "Gift ESP") {
         RenderUtils.drawBox(boundingBox, color.rgb, partialTicks)
     }
 
-    private fun GiftGameType.shouldRender() = this in selectedGiftGameTypes && when (this) {
+    private fun GiftGameType.shouldRender() = this in selectedTypes && when (this) {
         GiftGameType.JERRY_WORKSHOP -> Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty<String>(
             PropertyKey.ISLAND
         ) == "winter"

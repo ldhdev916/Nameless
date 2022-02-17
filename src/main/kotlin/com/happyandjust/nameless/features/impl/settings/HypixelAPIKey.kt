@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,29 +18,28 @@
 
 package com.happyandjust.nameless.features.impl.settings
 
-import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.config.configValue
 import com.happyandjust.nameless.dsl.matchesMatcher
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.pureText
 import com.happyandjust.nameless.dsl.sendPrefixMessage
-import com.happyandjust.nameless.features.base.SettingFeature
+import com.happyandjust.nameless.features.base.BaseFeature
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.ComponentType
-import com.happyandjust.nameless.gui.feature.PropertyData
 import gg.essential.api.EssentialAPI
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 
-object HypixelAPIKey : SettingFeature("hypixelapikey", "Hypixel API Key", "Your hypixel api key") {
+object HypixelAPIKey : BaseFeature<String, Any>("hypixelApiKey", "Hypixel API Key", "Your hypixel api key") {
 
     private val API_PATTERN = "Your new API key is (?<api>.+)".toPattern()
-    var apiKey by ConfigValue.StringConfigValue("hypixel", "apikey", "")
+    var apiKey by configValue("hypixel", "apikey", "")
 
-    override fun getComponentType() = ComponentType.PASSWORD
+    override var componentType: ComponentType? = ComponentType.PASSWORD
+    override val property = ::apiKey
 
-    override fun getProperty() = ::apiKey
-
-    override fun toPropertyData(): PropertyData<out Any?> {
-        return super.toPropertyData().also { propertyData ->
-            propertyData.validator = { it.isLowerCase() || it.isDigit() || it == '-' }
+    init {
+        settings {
+            validator = { it.isLowerCase() || it.isDigit() || it == '-' }
         }
     }
 

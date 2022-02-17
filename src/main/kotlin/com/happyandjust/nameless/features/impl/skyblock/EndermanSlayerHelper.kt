@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.google.gson.JsonElement
-import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.config.configValue
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.VOIDGLOOM_SKULL
 import com.happyandjust.nameless.core.value.Overlay
@@ -27,17 +26,15 @@ import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.OverlayFeature
-import com.happyandjust.nameless.features.SubParameterOf
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.*
+import com.happyandjust.nameless.features.base.OverlayFeature
+import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.serialization.converters.*
 import com.happyandjust.nameless.utils.RenderUtils
 import com.happyandjust.nameless.utils.ScoreboardUtils
 import gg.essential.elementa.UIComponent
@@ -51,6 +48,7 @@ import gg.essential.elementa.dsl.childOf
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.pixels
 import gg.essential.elementa.utils.withAlpha
+import kotlinx.serialization.Serializable
 import net.minecraft.block.BlockBeacon
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.entity.monster.EntityEnderman
@@ -61,10 +59,10 @@ import java.awt.Color
 import kotlin.math.pow
 
 object EndermanSlayerHelper :
-    OverlayFeature(Category.SKYBLOCK, "endermanslayerhelper", "Enderman Slayer Helper", "Display Voidgloom Info") {
+    OverlayFeature("endermanSlayerHelper", "Enderman Slayer Helper", "Display Voidgloom Info") {
 
     private val scanTimer = TickTimer.withSecond(0.5)
-    override var overlayPoint by ConfigValue("endermanslayer", "overlay", Overlay.DEFAULT, COverlay)
+    override var overlayPoint by configValue("endermanSlayer", "overlay", Overlay.DEFAULT)
     private var currentVoidgloomCache: VoidgloomCache? = null
     private val findArmorStand: (EntityEnderman) -> EntityArmorStand? = {
         val aabb = it.entityBoundingBox
@@ -78,77 +76,57 @@ object EndermanSlayerHelper :
             .find { entityArmorStand -> "Voidgloom Seraph" in entityArmorStand.displayName.unformattedText }
     }
 
-    private var highlightBeacon by FeatureParameter(
-        0,
-        "endermanslayer",
-        "highlightbeacon",
-        "Highlight Beacon",
-        "",
-        true,
-        CBoolean
-    )
+    init {
+        parameter(true) {
+            matchKeyCategory()
+            key = "beacon"
+            title = "Highlight Beacon"
 
-    @SubParameterOf("highlightBeacon")
-    private var beaconColor by FeatureParameter(
-        0,
-        "endermanslayer",
-        "color",
-        "Highlight Color",
-        "",
-        Color.red.withAlpha(0.5f).toChromaColor(),
-        CChromaColor
-    )
+            parameter(Color.red.withAlpha(0.5f).toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Highlight Color"
+            }
+        }
 
-    private var directionArrow by FeatureParameter(
-        0,
-        "endermanslayer",
-        "directionarrow",
-        "Render Direction Arrow on Screen",
-        "Render arrow pointing to beacon",
-        false,
-        CBoolean
-    )
+        parameter(false) {
+            matchKeyCategory()
+            key = "directionArrow"
+            title = "Render Direction Arrow on Screen"
+            desc = "Render arrow pointing to beacon"
+        }
 
-    private var notifyBeacon by FeatureParameter(
-        0,
-        "endermanslayer",
-        "beaconnotify",
-        "Notify Beacon",
-        "Display title and play sound when beacon is placed",
-        false,
-        CBoolean
-    )
+        parameter(false) {
+            matchKeyCategory()
+            key = "notifyBeacon"
+            title = "Notify Beacon"
+            desc = "Display title and play sound when beacon is placed"
+        }
 
-    private var highlightSkull by FeatureParameter(
-        1,
-        "endermanslayer",
-        "highlightskull",
-        "Highligh Skulls",
-        "",
-        true,
-        CBoolean
-    )
+        parameter(true) {
+            matchKeyCategory()
+            key = "skull"
+            title = "Highlight Skulls"
 
-    private var skullColor by FeatureParameter(
-        0,
-        "endermanslayer",
-        "skullcolor",
-        "Highlight Color",
-        "",
-        Color.red.withAlpha(0.5f).toChromaColor(),
-        CChromaColor
-    )
+            settings { ordinal = 1 }
 
-    private var order by FeatureParameter(
-        2,
-        "endermanslayer",
-        "order",
-        "Information List",
-        "",
-        VoidgloomInformation.values().map { VoidgloomIdentifier(it) },
-        CList(VoidgloomIdentifier::serialize, VoidgloomIdentifier::deserialize)
-    ).apply {
-        allIdentifiers = VoidgloomInformation.values().map { VoidgloomIdentifier(it) }
+            parameter(Color.red.withAlpha(0.5f).toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Highlight Color"
+            }
+        }
+
+        parameter(VoidgloomInformation.values().map(::VoidgloomIdentifier)) {
+            matchKeyCategory()
+            key = "order"
+            title = "Information List"
+
+            settings {
+                ordinal = 2
+                allIdentifiers = VoidgloomInformation.values().map(::VoidgloomIdentifier)
+            }
+        }
     }
 
     override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
@@ -288,21 +266,21 @@ object EndermanSlayerHelper :
 
     init {
         on<RenderWorldLastEvent>().filter { checkForRequirement() }.subscribe {
-            if (highlightBeacon) {
+            if (beacon) {
                 run {
                     val aabb = getBeaconPos()?.getAxisAlignedBB() ?: return@run
 
                     RenderUtils.drawBox(
                         aabb,
-                        beaconColor.rgb,
+                        beacon_color.rgb,
                         partialTicks
                     )
                 }
             }
 
-            if (highlightSkull) {
+            if (skull) {
                 for (aabb in getSkullPos()) {
-                    RenderUtils.drawBox(aabb, skullColor.rgb, partialTicks)
+                    RenderUtils.drawBox(aabb, skull_color.rgb, partialTicks)
                 }
             }
         }
@@ -367,15 +345,12 @@ object EndermanSlayerHelper :
         }
     }
 
+    @Serializable
     class VoidgloomIdentifier(val information: VoidgloomInformation) : Identifier {
         override fun toUIComponent(gui: VerticalPositionEditableComponent): UIComponent {
             return UIText(information.prettyName).constrain {
                 textScale = 2.pixels()
             }
-        }
-
-        override fun serialize(): JsonElement {
-            return voidgloomInformationConverter.serialize(information)
         }
 
         override fun areEqual(other: Identifier) = this == other
@@ -394,15 +369,6 @@ object EndermanSlayerHelper :
         override fun hashCode(): Int {
             return information.hashCode()
         }
-
-        companion object {
-
-            private val voidgloomInformationConverter = getEnumConverter<VoidgloomInformation>()
-
-            fun deserialize(jsonElement: JsonElement) =
-                VoidgloomIdentifier(voidgloomInformationConverter.deserialize(jsonElement))
-        }
-
     }
 
     enum class VoidgloomInformation(val prettyName: String, val dummyText: String) {

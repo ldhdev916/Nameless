@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,59 +18,71 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.google.gson.JsonObject
-import com.happyandjust.nameless.dsl.handler
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.dsl.stripControlCodes
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CInt
-import com.happyandjust.nameless.serialization.converters.CString
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.command
+import com.happyandjust.nameless.features.delay
+import com.happyandjust.nameless.features.settings
+import com.happyandjust.nameless.features.waitForGG
 import gg.essential.api.EssentialAPI
 import gg.essential.api.utils.Multithreading
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import java.util.concurrent.TimeUnit
 import kotlin.properties.Delegates
 
 object AutoRequeue : SimpleFeature(
-    Category.QOL,
-    "autorequeue",
+    "autoRequeue",
     "Auto Requeue",
     "Auto send /play command you set after game end\n§cMake sure to set hypixel language as English"
 ) {
-    private var playCommand by FeatureParameter(
-        0,
-        "autorq",
-        "playcmd",
-        "Play Command",
-        "The play command mod will send after game end",
-        "/play ranked_normal",
-        CString
-    )
 
-    private var delay by FeatureParameter(1, "autorq", "delay", "Delay", "Send delay in seconds", 0, CInt).apply {
-        minValue = 0.0
-        maxValue = 5.0
+    init {
+        parameter("/play ranked_normal") {
+            matchKeyCategory()
+            key = "command"
+            title = "Play Command"
+            desc = "The play command mod will send after game end"
+        }
+        parameter(0) {
+            matchKeyCategory()
+            key = "delay"
+            title = "Delay"
+            desc = "Send delay in seconds"
+
+            settings {
+                ordinal = 1
+                maxValueInt = 5
+            }
+        }
+
+        parameter(true) {
+            matchKeyCategory()
+            key = "waitForGG"
+            title = "Wait GG"
+            desc = "Wait until AutoGG send gg message then send command"
+
+            settings {
+                ordinal = 2
+            }
+        }
     }
 
-    private var waitForGG by FeatureParameter(
-        2,
-        "autorq",
-        "waitgg",
-        "Wait GG",
-        "Wait until AutoGG send gg message then send command",
-        true,
-        CBoolean
-    )
-    var isAutoGGLoaded by Delegates.notNull<Boolean>()
+    var isAutoGGLoaded by Delegates.observable(false) { _, _, newValue ->
+        if (!newValue) parameters.remove("waitForGG")
+    }
+
     private val triggers = run {
-        val json = "https://static.sk1er.club/autogg/regex_triggers_3.json".handler().read<JsonObject>()
-        json["servers"].asJsonArray[0].asJsonObject["triggers"].asJsonArray.mapNotNull {
-            if (it.asJsonObject["type"].asInt == 0) it.asJsonObject["pattern"].asString.toPattern() else null
+        val jsonObject =
+            Json.decodeFromString<JsonObject>("https://static.sk1er.club/autogg/regex_triggers_3.json".fetch())
+        jsonObject["servers"]!!.jsonArray[0].jsonObject["triggers"]!!.jsonArray.mapNotNull {
+            if (it.jsonObject["type"]?.int == 0) it.jsonObject["pattern"]!!.string.toPattern() else null
         }
     }
 
@@ -108,6 +120,6 @@ object AutoRequeue : SimpleFeature(
     }
 
     private fun sendCommand() {
-        Multithreading.schedule({ mc.thePlayer.sendChatMessage(playCommand) }, delay.toLong(), TimeUnit.SECONDS)
+        Multithreading.schedule({ mc.thePlayer.sendChatMessage(command) }, delay.toLong(), TimeUnit.SECONDS)
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 import gg.essential.api.utils.GuiUtil
 import net.minecraft.client.gui.GuiMainMenu
@@ -29,8 +28,7 @@ import net.minecraft.client.multiplayer.ServerData
 import net.minecraftforge.client.event.GuiScreenEvent
 
 object AddHypixelButton : SimpleFeature(
-    Category.QOL,
-    "hypixelbutton",
+    "hypixelButton",
     "Add Join Hypixel Button",
     "Add join hypixel button in main menu instead of realm button",
     true

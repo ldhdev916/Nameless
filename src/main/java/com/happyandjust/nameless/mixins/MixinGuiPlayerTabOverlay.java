@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,6 @@ public class MixinGuiPlayerTabOverlay {
     public Collection<NetworkPlayerInfo> filterNPC(NetHandlerPlayClient netHandlerPlayClient) {
         Collection<NetworkPlayerInfo> map = netHandlerPlayClient.getPlayerInfoMap();
 
-        return HideNPC.INSTANCE.getEnabled() ? Collections2.filter(map, player -> player != null && player.getGameProfile().getId().version() != 2) : map;
+        return HideNPC.getEnabledJVM() ? Collections2.filter(map, player -> player != null && player.getGameProfile().getId().version() != 2) : map;
     }
 }

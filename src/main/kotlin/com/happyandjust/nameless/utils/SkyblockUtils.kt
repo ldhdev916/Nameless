@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,34 +18,39 @@
 
 package com.happyandjust.nameless.utils
 
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
-import com.happyandjust.nameless.core.JsonHandler
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
-import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.decodeFromStream
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.nbt.CompressedStreamTools
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.BlockPos
+import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.util.Constants
 import java.io.ByteArrayInputStream
 import java.util.*
 
 object SkyblockUtils {
-    private val fairySoulMap =
-        JsonHandler("nameless", "fairysouls.json").read<Map<String, List<Map<String, Int>>>>().mapValues {
-            it.value.map { map -> FairySoul(map["x"]!!, map["y"]!!, map["z"]!!, it.key) }
-        }
+    @OptIn(ExperimentalSerializationApi::class)
+    private val fairySoulMap = Json.decodeFromStream<Map<String, List<FairySoul>>>(
+        ResourceLocation(
+            "nameless",
+            "fairysouls.json"
+        ).inputStream()
+    )
     val allItems by lazy {
-        val items = "https://api.hypixel.net/resources/skyblock/items".handler().read<JsonObject>()["items"]
-        globalGson.fromJson<JsonArray>(items).associate {
-            val item = globalGson.fromJson<SkyBlockItem>(it)
+        val json = Json { ignoreUnknownKeys = true }
+        val items =
+            json.decodeFromString<JsonObject>("https://api.hypixel.net/resources/skyblock/items".fetch())["items"]!!
 
-            item.id to item
-        }
+        json.decodeFromJsonElement<List<SkyBlockItem>>(items).associateBy { it.id }
     }
 
     fun getItemFromId(id: String) = allItems[id.uppercase()]
@@ -78,32 +83,20 @@ object SkyblockUtils {
     }
 
     fun getAuctionDataInPage(page: Int): List<AuctionInfo> {
-        val json = "https://api.hypixel.net/skyblock/auctions?page=$page".handler().read<JsonObject>()
+        val jsonObject =
+            Json.decodeFromString<JsonObject>("https://api.hypixel.net/skyblock/auctions?page=$page".fetch())
 
-        if (!json["success"].asBoolean) return emptyList()
+        if (jsonObject["success"]?.boolean != true) return emptyList()
 
-        val list = arrayListOf<AuctionInfo>()
-
-        val auctions = json["auctions"].asJsonArray
-
-        for (auction in auctions) {
-            list.add(globalGson.fromJson<AuctionInfo>(auction).apply {
-                runCatching {
-                    rarity = ItemRarity.fromString(tier_string)
-                }.onFailure(Throwable::notifyException)
-                skyBlockId = readNBTFromItemBytes(item_bytes).getCompoundTag("tag").getCompoundTag("ExtraAttributes")
-                    .getString("id")
-            })
+        return Json.decodeFromJsonElement<List<AuctionInfo>>(jsonObject["auctions"]!!).onEach {
+            it.skyBlockId = readNBTFromItemBytes(it.item_bytes).getCompoundTag("tag").getCompoundTag("ExtraAttributes")
+                .getString("id")
         }
-
-        return list
     }
 
     fun getMaxAuctionPage(): Int {
-        val json = "https://api.hypixel.net/skyblock/auctions".handler().read<JsonObject>()
+        val json = Json.decodeFromString<JsonObject>("https://api.hypixel.net/skyblock/auctions".fetch())
 
-        if (!json["success"].asBoolean) return 0
-
-        return json["totalPages"].asInt
+        return json["totalPages"]?.int ?: 0
     }
 }

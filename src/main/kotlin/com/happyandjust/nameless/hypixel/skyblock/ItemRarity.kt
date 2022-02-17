@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,23 +20,17 @@ package com.happyandjust.nameless.hypixel.skyblock
 
 import java.awt.Color
 
-enum class ItemRarity(val webName: String, val color: Int, val loreName: String, val colorCode: String) {
+enum class ItemRarity(val color: Int, val colorCode: String) {
 
+    COMMON(Color(0xFFFFFF).rgb, "§f"),
+    UNCOMMON(Color(0x55FF55).rgb, "§a"),
+    RARE(Color(0x5555FF).rgb, "§9"),
+    EPIC(Color(0xAA00AA).rgb, "§5"),
+    LEGENDARY(Color(0xFFAA00).rgb, "§6"),
+    MYTHIC(Color(0xFF55FF).rgb, "§d"),
+    SUPREME(Color(0xAA0000).rgb, "§4"),
+    SPECIAL(Color(0xFF5555).rgb, "§c"),
+    VERY_SPECIAL(Color(0xFF5555).rgb, "§c");
 
-    COMMON("COMMON", Color(0xFFFFFF).rgb, "COMMON", "§f"),
-    UNCOMMON("UNCOMMON", Color(0x55FF55).rgb, "UNCOMMON", "§a"),
-    RARE("RARE", Color(0x5555FF).rgb, "RARE", "§9"),
-    EPIC("EPIC", Color(0xAA00AA).rgb, "EPIC", "§5"),
-    LEGENDARY("LEGENDARY", Color(0xFFAA00).rgb, "LEGENDARY", "§6"),
-    MYTHIC("MYTHIC", Color(0xFF55FF).rgb, "MYTHIC", "§d"),
-    SUPREME("SUPREME", Color(0xAA0000).rgb, "SUPREME", "§4"),
-    SPECIAL("SPECIAL", Color(0xFF5555).rgb, "SPECIAL", "§c"),
-    VERY_SPECIAL("VERY_SPECIAL", Color(0xFF5555).rgb, "VERY SPECIAL", "§c");
-
-    companion object {
-
-        private val values = values()
-
-        fun fromString(name: String) = values.single { it.webName == name }
-    }
+    val loreName = name.replace("_", " ")
 }

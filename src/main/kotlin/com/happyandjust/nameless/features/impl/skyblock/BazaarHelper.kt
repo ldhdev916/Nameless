@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -50,8 +49,7 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 object BazaarHelper : SimpleFeature(
-    Category.SKYBLOCK,
-    "bazaarhelper",
+    "bazaarHelper",
     "Bazaar Helper",
     "Shows some information to your screen while bazaar gui is open"
 ) {
@@ -59,7 +57,6 @@ object BazaarHelper : SimpleFeature(
     private val window = Window(ElementaVersion.V1).apply {
         BazaarContainer childOf this
     }
-    private val matrixStack by lazy { UMatrixStack.Compat.get() }
 
     private val pricePerUnit = "Price per unit: (?<coin>(\\d|\\.)+) coins".toPattern()
     private val buyOrder =
@@ -86,7 +83,7 @@ object BazaarHelper : SimpleFeature(
             }
 
         on<GuiScreenEvent.BackgroundDrawnEvent>().filter { gui.shouldDisplay() }.subscribe {
-            window.draw(matrixStack)
+            window.draw(UMatrixStack.Compat.get())
         }
 
         on<SpecialTickEvent>().subscribe {

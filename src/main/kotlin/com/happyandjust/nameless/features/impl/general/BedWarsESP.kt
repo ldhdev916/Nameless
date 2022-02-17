@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,50 +26,56 @@ import com.happyandjust.nameless.dsl.withAlpha
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.invisible
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.serialization.converters.CBoolean
 import com.happyandjust.nameless.utils.Utils
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemArmor
 
-object BedwarsESP : SimpleFeature(
-    Category.GENERAL,
-    "bedwarsesp",
-    "Bedwars ESP",
+object BedWarsESP : SimpleFeature(
+    "bedWarsEsp",
+    "BedWars ESP",
     "Glow all players in your game according to their team color."
 ) {
 
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
+
+    @JvmStatic
+    var invisibleJVM
+        get() = invisible
+        set(value) {
+            invisible = value
+        }
+
     private fun checkForEnabledAndBedwars() = enabled && Hypixel.currentGame == GameType.BEDWARS
+
+    @JvmField
     val teamColorCache = hashMapOf<EntityPlayer, Int>()
     private val scanTimer = TickTimer.withSecond(2)
-    var invisible by FeatureParameter(
-        0,
-        "bedwarsesp",
-        "invisible",
-        "Glow Invisible Players",
-        "If you turn this on, invisibility on players will be removed",
-        true,
-        CBoolean
-    )
 
     init {
-        on<SpecialTickEvent>()
-            .filter { checkForEnabledAndBedwars() && scanTimer.update().check() }.subscribe {
-                // You know once assigned team color doesn't change, so we don't need to scan every tick
-                // Known bugs: NPC go brrrr
-                for (player in Utils.getPlayersInTab() - teamColorCache.keys) {
-                    val chestplate = player.getEquipmentInSlot(3) ?: continue
+        parameter(true) {
+            matchKeyCategory()
+            key = "invisible"
+            title = "Glow Invisible Players"
+            desc = "If you turn this on, invisibility on players will be removed"
+        }
 
-                    val item = chestplate.item
+        on<SpecialTickEvent>().filter { checkForEnabledAndBedwars() && scanTimer.update().check() }.subscribe {
+            for (player in Utils.getPlayersInTab() - teamColorCache.keys) {
+                val chestplate = player.getEquipmentInSlot(3) ?: continue
 
-                    if (item !is ItemArmor || item.armorMaterial != ItemArmor.ArmorMaterial.LEATHER) continue
-                    teamColorCache[player] = item.getColor(chestplate).withAlpha(1f)
-                }
+                val item = chestplate.item
+
+                if (item !is ItemArmor || item.armorMaterial != ItemArmor.ArmorMaterial.LEATHER) continue
+                teamColorCache[player] = item.getColor(chestplate).withAlpha(1f)
             }
+        }
 
         on<OutlineRenderEvent>().filter { checkForEnabledAndBedwars() }.subscribe {
             colorInfo = instanceOrNull(teamColorCache[entity], ColorInfo.ColorPriority.HIGH, ::ColorInfo)

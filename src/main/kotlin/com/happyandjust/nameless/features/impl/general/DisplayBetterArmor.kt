@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,13 +25,13 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.color
+import com.happyandjust.nameless.features.scale
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.serialization.converters.CChromaColor
-import com.happyandjust.nameless.serialization.converters.CDouble
 import gg.essential.elementa.utils.withAlpha
 import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.entity.item.EntityItem
@@ -44,37 +44,47 @@ import java.awt.Color
 import kotlin.math.pow
 
 object DisplayBetterArmor : SimpleFeature(
-    Category.GENERAL,
-    "displaybetterarmor",
+    "displayBetterArmor",
     "Display Better Armor",
     "In SkyWars, if there's a better armor than a one you're equipping, Draw box on item if it's in your inventory, make bigger if it's in ground. If mutltiple, only show the highest"
 ) {
 
-    private var color by FeatureParameter(
-        0,
-        "betterarmor",
-        "color",
-        "Inventory Box Color",
-        "",
-        Color.green.withAlpha(80).toChromaColor(),
-        CChromaColor
-    )
+    @JvmStatic
+    var scaleJVM
+        get() = scale
+        set(value) {
+            scale = value
+        }
 
-    var scale by FeatureParameter(
-        0,
-        "betterarmor",
-        "scale",
-        "Dropped Item Scale",
-        "",
-        3.0,
-        CDouble
-    ).apply {
-        minValue = 1.5
-        maxValue = 7.0
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
+
+    init {
+        parameter(Color.green.withAlpha(80).toChromaColor()) {
+            matchKeyCategory()
+            key = "color"
+            title = "Inventory Box Color"
+        }
+
+        parameter(3.0) {
+            matchKeyCategory()
+            key = "scale"
+            title = "Dropped Item Scale"
+
+            settings {
+                ordinal = 1
+
+                minValue = 1.5
+                maxValue = 7.0
+            }
+        }
     }
 
     private val scanTimer = TickTimer(7)
     private val drawSlots = arrayListOf<Slot>()
+
+    @JvmField
     val scaledItems = arrayListOf<EntityItem>()
 
     private fun ItemStack.getFinalDamage() = calcDamage(item as ItemArmor, getProtectionLevel(this))

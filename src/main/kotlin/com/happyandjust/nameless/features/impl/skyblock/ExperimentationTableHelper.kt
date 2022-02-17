@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,62 +18,43 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.dsl.stripControlCodes
-import com.happyandjust.nameless.dsl.withInstance
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.gui.feature.ComponentType
+import com.happyandjust.nameless.features.base.autoFillEnum
+import com.happyandjust.nameless.features.base.listParameter
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.processor.experimantation.ChronomatronProcessor
 import com.happyandjust.nameless.processor.experimantation.SuperpairsProcessor
 import com.happyandjust.nameless.processor.experimantation.UltraSequencerProcessor
-import com.happyandjust.nameless.serialization.converters.CList
-import com.happyandjust.nameless.serialization.converters.getEnumConverter
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.inventory.ContainerChest
 import net.minecraftforge.client.event.GuiOpenEvent
 
-object ExperimentationTableHelper :
-    SimpleFeature(Category.SKYBLOCK, "experimentationtablehelper", "Experimentation Table Helper", "") {
+object ExperimentationTableHelper : SimpleFeature("experimentationTableHelper", "Experimentation Table Helper", "") {
 
     private fun checkForRequirement() = enabled && Hypixel.currentGame == GameType.SKYBLOCK
     private var currentExperimentationType: ExperimentationType? = null
     val processors = hashMapOf<Processor, () -> Boolean>()
 
-    private var selectedExperimentationType by object :
-        FeatureParameter<List<ExperimentationType>>(
-            0,
-            "experimentationhelper",
-            "types",
-            "Experimentation Types",
-            "",
-            ExperimentationType.values().toList(),
-            CList(
-                getEnumConverter()
-            )
-        ) {
+    init {
+        listParameter(listEnum<ExperimentationType>()) {
+            matchKeyCategory()
+            key = "types"
+            title = "Experimentation Types"
 
-        init {
-            allEnumList = ExperimentationType.values().toList()
-            enumName = {
-                it as ExperimentationType
+            autoFillEnum {
                 val name = it.name
-
                 "${name[0]}${name.drop(1).lowercase()}"
             }
+
             for (experimentationType in ExperimentationType.values()) {
                 processors[experimentationType.processor] =
                     { checkForRequirement() && mc.currentScreen is GuiChest && currentExperimentationType == experimentationType && experimentationType in value }
             }
         }
-
-        override fun getComponentType() = ComponentType.MULTI_SELECTOR
     }
 
     init {

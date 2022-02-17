@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ import com.happyandjust.nameless.dsl.matrix
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.scale
 import com.happyandjust.nameless.dsl.translate
+import com.happyandjust.nameless.features.color
 import com.happyandjust.nameless.features.impl.qol.ShowPingInTab
 import net.minecraft.client.network.NetworkPlayerInfo
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo

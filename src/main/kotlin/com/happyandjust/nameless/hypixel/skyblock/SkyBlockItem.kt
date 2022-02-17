@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,12 @@
 
 package com.happyandjust.nameless.hypixel.skyblock
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class SkyBlockItem(
     val name: String,
     val id: String,
-    val tier: String,
-    @SerializedName("skin") private val skin_: String?
-) {
-    val skin
-        get() = skin_ ?: ""
-}
+    val tier: String = "COMMON",
+    val skin: String = ""
+)

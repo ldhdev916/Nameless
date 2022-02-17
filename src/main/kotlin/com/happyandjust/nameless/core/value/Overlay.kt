@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,11 @@
 
 package com.happyandjust.nameless.core.value
 
-import java.awt.Point
+import kotlinx.serialization.Serializable
 
-data class Overlay(val point: Point, val scale: Double) {
+@Serializable
+data class Overlay(val x: Int, val y: Int, val scale: Double) {
     companion object {
-        val DEFAULT = Overlay(Point(0, 0), 1.0)
+        val DEFAULT = Overlay(0, 0, 1.0)
     }
 }

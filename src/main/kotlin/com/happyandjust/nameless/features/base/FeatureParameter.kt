@@ -20,102 +20,137 @@ package com.happyandjust.nameless.features.base
 
 import com.happyandjust.nameless.config.ConfigValue
 import com.happyandjust.nameless.core.value.ChromaColor
+import com.happyandjust.nameless.dsl.listEnum
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.ComponentType
-import com.happyandjust.nameless.gui.feature.PropertyData
-import com.happyandjust.nameless.gui.feature.components.Identifier
-import com.happyandjust.nameless.serialization.Converter
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.serializer
+import kotlin.jvm.internal.TypeIntrinsics
+import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty
-import kotlin.reflect.full.functions
 
-open class FeatureParameter<T>(
-    var ordinal: Int,
-    category: String,
-    key: String,
-    title: String,
-    desc: String,
+open class FeatureParameter<T : Any, E : Any>(
     private val defaultValue: T,
-    converter: Converter<T>
-) : AbstractDefaultFeature(key, title, desc), ReadWriteProperty<AbstractDefaultFeature, T> {
-    var inCategory = ""
+    serializer: KSerializer<T>
+) : AbstractDefaultFeature<T, E>() {
+
+    private val jsonSaveKey: String
+        get() = buildList {
+            add(key)
+            var parent = parent
+            while (parent != null) {
+                add(parent.key)
+                parent = parent.parent
+            }
+        }.reversed().joinToString("_")
+
+    lateinit var category: String
+    var subParameterOf: KMutableProperty0<*>? = null
 
     var onValueChange: (T) -> Unit = {}
+        private set
 
-    var enumName: (Enum<*>) -> String = { it.name }
-    var allEnumList = emptyList<Enum<*>>()
-    private val reflectionEnumList by lazy {
-        (defaultValue!!::class.functions.first { it.name == "values" }.call() as Array<Enum<*>>).toList()
-    }
+    private var preferComponentType: ComponentType? = null
+        get() = if (!hasPrefer) error("Unable to find appropriate component type for class ${defaultValue.javaClass.name}") else field
+    private var hasPrefer = false
 
-    var validator: (Char) -> Boolean = { true }
-    var placeHolder = ""
-
-    var minValue: Double = 0.0
-    var maxValue: Double = 0.0
-
-    var allIdentifiers = emptyList<Identifier>()
-
-    private val valueConfig =
-        ConfigValue(category, key, defaultValue, converter)
-    var value = valueConfig.value
+    override var componentType: ComponentType? = null
+        get() = when (defaultValue) {
+            is Int -> ComponentType.SLIDER
+            is Double -> ComponentType.SLIDER_DECIMAL
+            is Boolean -> ComponentType.SWITCH
+            is String -> ComponentType.TEXT
+            is ChromaColor -> ComponentType.COLOR
+            is Enum<*> -> ComponentType.SELECTOR
+            is List<*> -> if (propertySetting.allIdentifiers.isNotEmpty()) ComponentType.VERTIAL_MOVE else ComponentType.MULTI_SELECTOR
+            else -> if (TypeIntrinsics.isFunctionOfArity(defaultValue, 0)) ComponentType.BUTTON else preferComponentType
+        }
         set(value) {
-            if (field != value) {
-                field = value
-                valueConfig.value = value
-
-                onValueChange(value)
-            }
+            field = value
+            preferComponentType = value
+            hasPrefer = true
         }
 
-    fun <T> getParameter(key: String) = parameters[key] as FeatureParameter<T>
+    var value by lazyConfig { ConfigValue(category, jsonSaveKey, defaultValue, serializer) }
 
-    fun <T> getParameterValue(key: String) = getParameter<T>(key).value
+    override val property
+        get() = ::value
 
-    override fun getComponentType(): ComponentType? = when {
-        checkType<Int>() -> ComponentType.SLIDER
-        checkType<Double>() -> ComponentType.SLIDER_DECIMAL
-        checkType<Boolean>() -> ComponentType.SWITCH
-        checkType<String>() -> ComponentType.TEXT
-        checkType<ChromaColor>() -> ComponentType.COLOR
-        checkType<Enum<*>>() -> ComponentType.SELECTOR
-        checkType<List<Identifier>>() -> ComponentType.VERTIAL_MOVE
-        checkType<() -> Unit>() -> ComponentType.BUTTON
-        else -> throw IllegalArgumentException("Unable to find appropriate component type for class ${defaultValue!!.javaClass.name}")
+    fun onValueChange(action: (T) -> Unit) {
+        onValueChange = action
     }
 
-    private inline fun <reified E> checkType() = defaultValue is E
+    fun SimpleFeature.matchKeyCategory() {
+        this@FeatureParameter.category = key
+    }
+}
 
-    override fun getProperty() = ::value
+inline fun <reified T : Any> AbstractDefaultFeature<*, *>.parameter(
+    defaultValue: T,
+    serializer: KSerializer<T> = serializer(),
+    builderAction: FeatureParameter<T, Any>.() -> Unit = {}
+) = FeatureParameter<T, Any>(defaultValue, serializer).apply {
+    builderAction()
 
-    override fun toPropertyData(): PropertyData<*> = PropertyData(
-        getProperty(),
-        title,
-        desc,
-        getComponentType()
-    ).also {
-        it.inCategory = inCategory
+    this@parameter.parameters[key] = this
+}
 
-        it.minValue = minValue
-        it.maxValue = maxValue
+inline fun <E : Any, reified T : List<E>> AbstractDefaultFeature<*, *>.listParameter(
+    defaultValue: T,
+    serializer: KSerializer<T> = serializer(),
+    builderAction: FeatureParameter<T, E>.() -> Unit = {}
+) = FeatureParameter<T, E>(defaultValue, serializer).apply {
+    builderAction()
 
-        it.ordinal = ordinal
+    this@listParameter.parameters[key] = this
+}
 
-        it.validator = validator
+private class LazyConfig<T : Any, E : Any>(getter: () -> ConfigValue<T>) :
+    ReadOnlyProperty<FeatureParameter<T, E>, ConfigValue<T>> {
 
-        it.enumName = enumName
-        it.allEnumList = allEnumList.ifEmpty { if (defaultValue is Enum<*>) reflectionEnumList else emptyList() }
+    val value by lazy(getter)
 
-        it.allIdentifiers = allIdentifiers
+    override fun getValue(thisRef: FeatureParameter<T, E>, property: KProperty<*>): ConfigValue<T> {
+        return value
+    }
+}
 
-        it.placeHolder = placeHolder
-
-        it.settings = parameters.values.map { featureParameter -> featureParameter.toPropertyData() }
+private class LateInitConfigValueDelegate<T : Any, E : Any>(private val lazyConfig: LazyConfig<T, E>) :
+    ReadWriteProperty<FeatureParameter<T, E>, T> {
+    override fun getValue(thisRef: FeatureParameter<T, E>, property: KProperty<*>): T {
+        return lazyConfig.value.value
     }
 
-
-    override fun getValue(thisRef: AbstractDefaultFeature, property: KProperty<*>) = value
-
-    override fun setValue(thisRef: AbstractDefaultFeature, property: KProperty<*>, value: T) {
-        this.value = value
+    override fun setValue(thisRef: FeatureParameter<T, E>, property: KProperty<*>, value: T) {
+        if (thisRef.value != value) {
+            lazyConfig.value.value = value
+            thisRef.onValueChange(value)
+        }
     }
+}
+
+private operator fun <T : Any, E : Any> LazyConfig<T, E>.provideDelegate(
+    thisRef: FeatureParameter<T, E>,
+    property: KProperty<*>
+) = LateInitConfigValueDelegate(this)
+
+private fun <T : Any, E : Any> lazyConfig(getter: () -> ConfigValue<T>) = LazyConfig<T, E>(getter)
+
+inline fun <reified T : Enum<T>, E : Any> AbstractDefaultFeature<T, E>.autoFillEnum(
+    noinline allValueList: () -> List<T> = { listEnum() },
+    noinline stringSerializer: (T) -> String = { it.name }
+) = settings {
+    this.allValueList = allValueList
+    this.stringSerializer = stringSerializer
+}
+
+@JvmName("listAutoFillEnum")
+inline fun <reified E : Enum<E>, T : List<E>> AbstractDefaultFeature<T, E>.autoFillEnum(
+    noinline listAllValueList: () -> List<E> = { listEnum() },
+    noinline listStringSerializer: (E) -> String = { it.name }
+) = settings {
+    this.listAllValueList = listAllValueList
+    this.listStringSerializer = listStringSerializer
 }

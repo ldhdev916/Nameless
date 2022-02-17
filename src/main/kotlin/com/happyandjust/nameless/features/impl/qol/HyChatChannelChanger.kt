@@ -18,27 +18,26 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.config.configValue
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.events.PacketEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.OverlayFeature
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.base.OverlayFeature
+import com.happyandjust.nameless.features.base.autoFillEnum
+import com.happyandjust.nameless.features.base.listParameter
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.exceptionPrefix
+import com.happyandjust.nameless.features.selectedPrefixTypes
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.ColorCache
-import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.gui.relocate.RelocateGui
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.serialization.converters.CList
-import com.happyandjust.nameless.serialization.converters.COverlay
-import com.happyandjust.nameless.serialization.converters.CString
-import com.happyandjust.nameless.serialization.converters.getEnumConverter
 import gg.essential.api.EssentialAPI
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.UIComponent
@@ -60,44 +59,36 @@ import net.minecraftforge.client.event.GuiScreenEvent
 import org.lwjgl.input.Mouse
 
 object HyChatChannelChanger : OverlayFeature(
-    Category.QOL,
-    "hychatchannelchanger",
+    "hyChatChannelChanger",
     "HyChat Channel Changer",
     "Add button where you could select chat channel like party, guild, reply in hypixel"
 ) {
-    override var overlayPoint by ConfigValue("hychat", "overlay", Overlay.DEFAULT, COverlay)
-    private var currentPrefix by ConfigValue("hychat", "currentPrefix", "/ac", CString)
+    override var overlayPoint by configValue("hychat", "overlay", Overlay.DEFAULT)
+    private var currentPrefix by configValue("hychat", "currentPrefix", "/ac")
     private val channelButtons = ChannelsContainer.children.filterIsInstance<ChannelButton>()
     private val window = Window(ElementaVersion.V1).apply { ChannelsContainer childOf this }
-    private val matrixStack by lazy { UMatrixStack.Compat.get() }
 
-    private var exceptionPrefix by FeatureParameter(
-        0,
-        "hychat",
-        "exception",
-        "Exception Prefix",
-        "If you write this prefix at the first of your chat message, that message will be prevented from going to channel you selected\n§lSet this to empty if you don't want this feature",
-        "!",
-        CString
-    ).apply {
-        validator = ChatAllowedCharacters::isAllowedCharacter
-    }
+    init {
+        parameter("!") {
+            matchKeyCategory()
+            key = "exceptionPrefix"
+            title = "Exception Prefix"
+            desc =
+                "If you write this prefix at the first of your chat message, that message will be prevented from going to channel you selected\n§lSet this to empty if you don't want this feature"
 
-    private var selectedPrefixTypes by object : FeatureParameter<List<PrefixType>>(
-        1,
-        "hychat",
-        "selected",
-        "Selected Chat Types",
-        "",
-        PrefixType.values().toList(),
-        CList(getEnumConverter())
-    ) {
-        init {
-            allEnumList = PrefixType.values().toList()
-            enumName = { (it as PrefixType).prettyName }
+            settings {
+                validator = ChatAllowedCharacters::isAllowedCharacter
+            }
         }
 
-        override fun getComponentType() = ComponentType.MULTI_SELECTOR
+        listParameter(PrefixType.values().toList()) {
+            matchKeyCategory()
+            key = "selectedPrefixTypes"
+            title = "Selected Chat Types"
+
+            settings { ordinal = 1 }
+            autoFillEnum { it.prettyName }
+        }
     }
 
     init {
@@ -118,7 +109,7 @@ object HyChatChannelChanger : OverlayFeature(
         on<GuiScreenEvent.DrawScreenEvent.Post>().filter {
             enabled && EssentialAPI.getMinecraftUtil().isHypixel() && gui is GuiChat
         }.subscribe {
-            window.draw(matrixStack)
+            window.draw(UMatrixStack.Compat.get())
         }
 
         on<GuiScreenEvent.MouseInputEvent.Post>().filter {
@@ -170,7 +161,6 @@ object HyChatChannelChanger : OverlayFeature(
     override fun renderOverlay0(partialTicks: Float) = Unit
 
     object ChannelsContainer : UIContainer() {
-
         val buttonsMap = PrefixType.values().associateWith {
             ChannelButton(
                 it.prettyName,
@@ -182,8 +172,8 @@ object HyChatChannelChanger : OverlayFeature(
         init {
 
             constrain {
-                x = basicXConstraint { overlayPoint.point.x.toFloat() }.fixed()
-                y = basicYConstraint { overlayPoint.point.y.toFloat() }.fixed()
+                x = basicXConstraint { overlayPoint.x.toFloat() }.fixed()
+                y = basicYConstraint { overlayPoint.y.toFloat() }.fixed()
 
                 width = ChildBasedSizeConstraint()
                 height = ChildBasedMaxSizeConstraint()

@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
+import com.happyandjust.nameless.features.highGround_color
 import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.ScoreboardUtils
@@ -51,7 +52,7 @@ object HighGroundProcessor : Processor() {
         }
 
         request<OutlineRenderEvent>().filter { entity in higherPlayers }.subscribe {
-            colorInfo = ColorInfo(PartyGamesHelper.highGroundColor.rgb, ColorInfo.ColorPriority.HIGH)
+            colorInfo = ColorInfo(PartyGamesHelper.highGround_color.rgb, ColorInfo.ColorPriority.HIGH)
         }
     }
 }

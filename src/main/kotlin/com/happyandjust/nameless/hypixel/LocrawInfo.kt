@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,13 @@
 
 package com.happyandjust.nameless.hypixel
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class LocrawInfo(
     val server: String,
-    @SerializedName("gametype") val gameType: String,
-    @SerializedName("mode") private val mode_: String?,
-    val map: String
-) {
-    val mode
-        get() = mode_ ?: "lobby"
-}
+    @SerialName("gametype") val gameType: String = "",
+    val mode: String = "lobby",
+    val map: String = ""
+)

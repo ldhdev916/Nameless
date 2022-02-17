@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ package com.happyandjust.nameless.processor.partygames
 import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.events.SpecialTickEvent
+import com.happyandjust.nameless.features.dive_color
 import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.utils.RenderUtils
@@ -56,7 +57,7 @@ object DiveProcessor : Processor() {
             axisAlignedBB?.let {
                 RenderUtils.drawBox(
                     it,
-                    if (isCollide) Color.red.rgb else PartyGamesHelper.diveColor.rgb,
+                    if (isCollide) Color.red.rgb else PartyGamesHelper.dive_color.rgb,
                     partialTicks
                 )
             }

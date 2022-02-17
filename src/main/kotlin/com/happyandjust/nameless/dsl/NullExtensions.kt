@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,4 @@ package com.happyandjust.nameless.dsl
 
 inline fun <T, A : Any, B : Any> instanceOrNull(param1: A?, param2: B?, constructor: (A, B) -> T): T? {
     return constructor(param1 ?: return null, param2 ?: return null)
-}
-
-inline fun <T, A : Any, B : Any, C : Any> instanceOrNull(
-    param1: A?,
-    param2: B?,
-    param3: C?,
-    constructor: (A, B, C) -> T
-): T? {
-    return constructor(param1 ?: return null, param2 ?: return null, param3 ?: return null)
 }

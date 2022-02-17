@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.mixins;
 
-import com.happyandjust.nameless.features.impl.general.BedwarsESP;
+import com.happyandjust.nameless.features.impl.general.BedWarsESP;
 import com.happyandjust.nameless.features.impl.general.GlowAllPlayers;
 import com.happyandjust.nameless.features.impl.skyblock.GlowStarDungeonMobs;
 import com.happyandjust.nameless.mixinhooks.EntityHook;
@@ -47,17 +47,14 @@ public abstract class MixinEntity {
 
     @Inject(method = "isInvisible", at = @At("HEAD"), cancellable = true)
     public void setInvisible(CallbackInfoReturnable<Boolean> cir) {
-        BedwarsESP bedwarsESP = BedwarsESP.INSTANCE;
-        GlowStarDungeonMobs glowStarDungeonMobs = GlowStarDungeonMobs.INSTANCE;
-        GlowAllPlayers glowAllPlayers = GlowAllPlayers.INSTANCE;
-        if (bedwarsESP.getTeamColorCache().containsKey(this) && bedwarsESP.getEnabled() && bedwarsESP.getInvisible()) {
+        if (BedWarsESP.teamColorCache.containsKey(this) && BedWarsESP.getEnabledJVM() && BedWarsESP.getInvisibleJVM()) {
             cir.setReturnValue(false);
             return;
         }
-        if ($this instanceof EntityEnderman && glowStarDungeonMobs.getEnabled() && glowStarDungeonMobs.getCheckedDungeonMobs().containsValue(this) && glowStarDungeonMobs.getShowFel()) {
+        if ($this instanceof EntityEnderman && GlowStarDungeonMobs.getEnabledJVM() && GlowStarDungeonMobs.checkedDungeonMobs.containsValue(this) && GlowStarDungeonMobs.getShowFelJVM()) {
             cir.setReturnValue(false);
         }
-        if (glowAllPlayers.getEnabled() && glowAllPlayers.getInvisible() && glowAllPlayers.getPlayersInTab().contains(this) && $this instanceof EntityPlayer) {
+        if (GlowAllPlayers.getEnabledJVM() && GlowAllPlayers.getInvisibleJVM() && GlowAllPlayers.playersInTab.contains(this) && $this instanceof EntityPlayer) {
             cir.setReturnValue(false);
         }
     }

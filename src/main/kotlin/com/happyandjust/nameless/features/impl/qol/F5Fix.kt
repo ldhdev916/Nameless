@@ -18,13 +18,16 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 
 object F5Fix : SimpleFeature(
-    Category.QOL,
-    "f5fix",
+    "f5Fix",
     "F5 Fix",
     "Allow you to look through blocks when using f5",
     true
-)
+) {
+
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
+}

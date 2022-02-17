@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,8 @@
 
 package com.happyandjust.nameless.config
 
-import com.happyandjust.nameless.serialization.Converter
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CDouble
-import com.happyandjust.nameless.serialization.converters.CInt
-import com.happyandjust.nameless.serialization.converters.CString
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.serializer
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -30,45 +27,16 @@ open class ConfigValue<T>(
     private val category: String,
     private val key: String,
     defaultValue: T,
-    private val converter: Converter<T>
+    private val serializer: KSerializer<T>
 ) : ReadWriteProperty<Any?, T> {
 
-    var value: T = ConfigHandler.get(category, key, defaultValue, converter)
+    var value: T = ConfigHandler.get(category, key, defaultValue, serializer)
         set(value) {
             if (value != null) {
-                ConfigHandler.write(category, key, value, converter)
+                ConfigHandler.write(category, key, value, serializer)
                 field = value
             }
         }
-
-
-    class BooleanConfigValue(category: String, key: String, defaultValue: Boolean) : ConfigValue<Boolean>(
-        category,
-        key,
-        defaultValue,
-        CBoolean
-    )
-
-    class DoubleConfigValue(category: String, key: String, defaultValue: Double) : ConfigValue<Double>(
-        category,
-        key,
-        defaultValue,
-        CDouble
-    )
-
-    class IntConfigValue(category: String, key: String, defaultValue: Int) : ConfigValue<Int>(
-        category,
-        key,
-        defaultValue,
-        CInt
-    )
-
-    class StringConfigValue(category: String, key: String, defaultValue: String) : ConfigValue<String>(
-        category,
-        key,
-        defaultValue,
-        CString
-    )
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): T {
         return value
@@ -78,3 +46,6 @@ open class ConfigValue<T>(
         this.value = value
     }
 }
+
+inline fun <reified T> configValue(category: String, key: String, defaultValue: T) =
+    ConfigValue(category, key, defaultValue, serializer())

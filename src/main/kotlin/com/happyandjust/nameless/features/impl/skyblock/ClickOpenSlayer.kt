@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.withInstance
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -34,8 +33,7 @@ import org.lwjgl.input.Mouse
 import java.util.*
 import kotlin.concurrent.timerTask
 
-object ClickOpenSlayer :
-    SimpleFeature(Category.SKYBLOCK, "clickopenslayer", "Click Anywhere to Open Slayer Menu") {
+object ClickOpenSlayer : SimpleFeature("clickOpenSlayer", "Click Anywhere to Open Slayer Menu") {
 
     private var openMenuComponent: IChatComponent? = null
         set(value) {

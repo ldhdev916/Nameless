@@ -18,49 +18,40 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
 import com.happyandjust.nameless.mixinhooks.EntityHook
-import com.happyandjust.nameless.serialization.converters.CInt
-import com.happyandjust.nameless.serialization.converters.getEnumConverter
 
 object DamageIndicator : SimpleFeature(
-    Category.SKYBLOCK,
-    "damageindicator",
+    "damageIndicator",
     "Damage Indicator",
     "Transform damage into K or M or B"
 ) {
+    init {
+        parameter(DamageIndicateType.SMART) {
+            matchKeyCategory()
+            key = "type"
+            title = "Damage Indicate Type"
 
-    var type by FeatureParameter(
-        0,
-        "damageindicator",
-        "type",
-        "Damage Indicate Type",
-        "K, M, B, SMART",
-        DamageIndicateType.SMART,
-        getEnumConverter()
-    ).apply {
-        onValueChange = {
-            EntityHook.transformedDamageCache.clear()
+            onValueChange {
+                EntityHook.transformedDamageCache.clear()
+            }
         }
-    }
 
-    var precision by FeatureParameter(
-        0,
-        "damageindicator",
-        "precision",
-        "Precision",
-        "",
-        1,
-        CInt
-    ).apply {
-        minValue = 0.0
-        maxValue = 7.0
+        parameter(1) {
+            matchKeyCategory()
+            key = "precision"
+            title = "Floating Point Precision"
 
-        onValueChange = {
-            EntityHook.transformedDamageCache.clear()
+            settings {
+                maxValueInt = 7
+            }
+
+            onValueChange {
+                EntityHook.transformedDamageCache.clear()
+            }
         }
     }
 }

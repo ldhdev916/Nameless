@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.gui.feature.components
 
-import com.google.gson.JsonElement
 import com.happyandjust.nameless.gui.feature.ColorCache
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.*
@@ -68,9 +67,7 @@ class VerticalPositionEditableComponent(
             } childOf container
         }
 
-        val filterAddedIdentifiers =
-            addedIdentifiers.filter { allIdentifiers.any { identifier -> it.areEqual(identifier) } }
-
+        val filterAddedIdentifiers = addedIdentifiers.filter { allIdentifiers.any(it::areEqual) }
 
         allIdentifiers.filter { filterAddedIdentifiers.none { identifier -> it.areEqual(identifier) } }.forEach {
             val component = MoveAbleComponent(it.toUIComponent(this)).constrain {
@@ -121,7 +118,7 @@ class VerticalPositionEditableComponent(
 
         private val container by UIContainer().constrain {
             width = AspectConstraint()
-            height = basicHeightConstraint { child.getHeight() }
+            height = CopyConstraintFloat() boundTo child
         } childOf this
 
         private val threeLinesBlock by UIImage.ofResource("/nameless/threelines.png").constrain {
@@ -251,8 +248,6 @@ class VerticalPositionEditableComponent(
 
 interface Identifier {
     fun toUIComponent(gui: VerticalPositionEditableComponent): UIComponent
-
-    fun serialize(): JsonElement
 
     fun areEqual(other: Identifier): Boolean
 }

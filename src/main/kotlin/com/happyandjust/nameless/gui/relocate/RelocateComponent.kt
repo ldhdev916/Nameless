@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.gui.relocate
 
-import com.happyandjust.nameless.features.IRelocateAble
+import com.happyandjust.nameless.features.base.IRelocateAble
 import com.happyandjust.nameless.gui.feature.ColorCache
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIText
@@ -49,7 +49,7 @@ class RelocateComponent(gui: RelocateGui, relocateAble: IRelocateAble) : UIBlock
     init {
         constrain {
 
-            val point = relocateAble.overlayPoint.point
+            val point = relocateAble.overlayPoint
 
             x = point.x.pixels()
             y = point.y.pixels()

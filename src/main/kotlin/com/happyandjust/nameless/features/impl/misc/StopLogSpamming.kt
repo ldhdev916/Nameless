@@ -18,13 +18,16 @@
 
 package com.happyandjust.nameless.features.impl.misc
 
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 
 object StopLogSpamming : SimpleFeature(
-    Category.MISCELLANEOUS,
-    "stoplogspamming",
+    "stopLogSpamming",
     "Stop Log Spamming",
     "Stops error message spamming in logger when you are in hypixel",
     true
-)
+) {
+
+    @JvmStatic
+    val enabledJVM
+        get() = enabled
+}

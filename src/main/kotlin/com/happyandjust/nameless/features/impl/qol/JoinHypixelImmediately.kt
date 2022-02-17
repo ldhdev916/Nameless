@@ -20,7 +20,6 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 import net.minecraft.client.gui.GuiMainMenu
 import net.minecraft.client.multiplayer.GuiConnecting
@@ -29,8 +28,7 @@ import net.minecraftforge.client.event.GuiOpenEvent
 import net.minecraftforge.fml.common.eventhandler.EventPriority
 
 object JoinHypixelImmediately : SimpleFeature(
-    Category.QOL,
-    "joinhypixelimmediately",
+    "joinHypixelImmediately",
     "Join Hypixel Immediately",
     "Automatically joins hypixel when main menu is shown"
 ) {

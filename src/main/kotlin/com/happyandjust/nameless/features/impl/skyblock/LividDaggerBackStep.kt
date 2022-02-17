@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,18 +18,16 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.config.configValue
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.OverlayFeature
+import com.happyandjust.nameless.features.base.OverlayFeature
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.serialization.converters.COverlay
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.dsl.basicTextScaleConstraint
@@ -39,13 +37,12 @@ import net.minecraft.entity.Entity
 import net.minecraft.util.MovingObjectPosition
 import java.awt.Color
 
-object LividDaggerBackstep : OverlayFeature(
-    Category.SKYBLOCK,
-    "lividdaggerbackstep",
-    "Livid Dagger Backstep Notifier",
+object LividDaggerBackStep : OverlayFeature(
+    "lividDaggerBackStep",
+    "Livid Dagger BackStep Notifier",
     "Draw HUD on screen when you hold livid dagger. Whether you'll backstep monster you're looking at or not. This could be inaccurate"
 ) {
-    override var overlayPoint by ConfigValue("lividdagger", "overlay", Overlay.DEFAULT, COverlay)
+    override var overlayPoint by configValue("lividDagger", "overlay", Overlay.DEFAULT)
     private var text: String? = null
     private val checkTimer = TickTimer.withSecond(0.25)
 

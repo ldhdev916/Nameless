@@ -19,9 +19,6 @@ Instruction Video: https://www.youtube.com/watch?v=bVb9K2GyXc4 <br>
 If you're using Optifine, Please turn off Fast Render, Shaders, Antialiasing<br>
 Unless, You can't use rendering outline on entity
 
-## Incompatibilities
-- ChatTriggers below version 1.3.2 - Crashes due to low kotlin version
-
 ## Features
 <details>
   <summary>General</summary>

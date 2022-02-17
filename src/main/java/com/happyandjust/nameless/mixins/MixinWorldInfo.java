@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ public class MixinWorldInfo {
     @Inject(method = "getWorldTime", at = @At("HEAD"), cancellable = true)
     public void changeWorldTime(CallbackInfoReturnable<Long> cir) {
         if (ChangeWorldTime.INSTANCE.getEnabled()) {
-            cir.setReturnValue((long) ChangeWorldTime.INSTANCE.getWorldTime());
+            cir.setReturnValue((long) ChangeWorldTime.getTimeJVM());
         }
     }
 }

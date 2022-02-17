@@ -19,33 +19,27 @@
 package com.happyandjust.nameless.features.impl.general
 
 import com.happyandjust.nameless.MOD_ID
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.serialization.converters.CBoolean
+import com.happyandjust.nameless.features.base.parameter
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.ModContainer
 
 object RemoveCertainModID : SimpleFeature(
-    Category.GENERAL,
-    "removemodid",
+    "removeModId",
     "Remove Certain Mod ID Sent to Server",
     enabled_ = true
 ) {
 
     init {
         val mods = Loader::class.java.getDeclaredField("mods")
-            .apply { isAccessible = true }[Loader.instance()] as List<ModContainer>
-        for (mod in mods) {
-            parameters[mod.modId] = FeatureParameter(
-                0,
-                "removemodid",
-                mod.modId,
-                "${mod.name} ${mod.version}",
-                "Source File: ${mod.source.absolutePath}",
-                mod.modId == MOD_ID,
-                CBoolean
-            )
+            .apply { isAccessible = true }[Loader.instance()] as List<*>
+        for (mod in mods.filterIsInstance<ModContainer>()) {
+            parameter(mod.modId == MOD_ID) {
+                matchKeyCategory()
+                key = mod.modId
+                title = "${mod.name} ${mod.version}"
+                desc = "Source File: ${mod.source.absolutePath}"
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,10 @@ import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.SubParameterOf
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.gui.feature.ComponentType
+import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.pathfinding.ModPathFinding
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CChromaColor
-import com.happyandjust.nameless.serialization.converters.CInt
-import com.happyandjust.nameless.serialization.converters.CString
 import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.elementa.utils.withAlpha
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -47,136 +41,131 @@ import kotlin.math.max
 import kotlin.math.min
 
 @OptIn(DelicateCoroutinesApi::class)
-object BlockTracker : SimpleFeature(Category.QOL, "blocktracker", "Block Tracker", "") {
+object BlockTracker : SimpleFeature("blockTracker", "Block Tracker", "") {
 
     private val scanBlocks = hashSetOf<Block>()
     private val pathBlocks = hashSetOf<Block>()
 
-    private var blocks by object : FeatureParameter<String>(
-        -1,
-        "blocktracker",
-        "blocks",
-        "Blocks to Scan",
-        "",
-        "",
-        CString
-    ) {
-        init {
-            for (block in Block.blockRegistry) {
-                parameters[block.registryName] = FeatureParameter(
-                    1,
-                    "blocktracker",
-                    block.registryName,
-                    block.displayName,
-                    "",
-                    false,
-                    CBoolean
-                ).apply {
-                    if (value) {
-                        ordinal = 0
-                        scanBlocks.add(block)
-                    }
+    init {
+        parameter(Unit) {
+            matchKeyCategory()
+            key = "blocks"
+            title = "Blocks to Scan"
 
-                    onValueChange = {
-                        ordinal = if (it) {
+            componentType = null
+
+            settings {
+                ordinal = -1
+            }
+
+            for (block in Block.blockRegistry) {
+                parameter(false) {
+                    matchKeyCategory()
+                    key = block.registryName
+                    title = block.displayName
+
+                    settings {
+                        ordinal = if (value) {
                             scanBlocks.add(block)
                             0
-                        } else {
-                            scanBlocks.remove(block)
-                            1
+                        } else 1
+
+                        onValueChange {
+                            ordinal = if (it) {
+                                scanBlocks.add(block)
+                                0
+                            } else {
+                                scanBlocks.remove(block)
+                                1
+                            }
                         }
                     }
 
-                    parameters["color"] = FeatureParameter(
-                        0,
-                        "blocktracker",
-                        "${block.registryName}_box_color",
-                        "Box Color",
-                        "",
-                        Color.white.withAlpha(0.4f).toChromaColor(),
-                        CChromaColor
-                    )
+                    parameter(Color.white.withAlpha(0.4f).toChromaColor()) {
+                        matchKeyCategory()
+                        key = "${block.registryName}_box_color"
+                        title = "Box Color"
+                    }
                 }
             }
         }
 
-        override fun getComponentType(): ComponentType? = null
-    }
+        parameter(50) {
+            matchKeyCategory()
+            key = "scanRadius"
+            title = "Scan Radius"
 
-    private var scanRadius by FeatureParameter(2, "blocktracker", "radius", "Scan Radius", "", 50, CInt).apply {
-        minValue = 5.0
-        maxValue = 150.0
-    }
+            settings {
+                ordinal = 2
+                minValueInt = 5
+                maxValueInt = 150
+            }
+        }
 
-    private var showPath by FeatureParameter(
-        3,
-        "blocktracker",
-        "showpath",
-        "Show Path to Nearest Block",
-        "",
-        false,
-        CBoolean
-    ).apply {
-        for (block in Block.blockRegistry) {
-            parameters[block.registryName] =
-                FeatureParameter(
-                    1,
-                    "blocktracker",
-                    "${block.registryName}_path",
-                    block.displayName,
-                    "",
-                    true,
-                    CBoolean
-                ).apply {
-                    if (value) {
-                        pathBlocks.add(block)
-                        ordinal = 0
-                    }
+        parameter(false) {
+            matchKeyCategory()
+            key = "showPath"
+            title = "Show Path to Nearest Block"
 
-                    onValueChange = {
-                        ordinal = if (it) {
+            settings {
+                ordinal = 3
+            }
+
+            for (block in Block.blockRegistry) {
+                parameter(true) {
+                    matchKeyCategory()
+                    key = "${block.registryName}_path"
+                    title = block.displayName
+
+                    settings {
+                        ordinal = if (value) {
                             pathBlocks.add(block)
                             0
-                        } else {
-                            pathBlocks.remove(block)
-                            1
+                        } else 1
+
+                        onValueChange {
+                            ordinal = if (it) {
+                                pathBlocks.add(block)
+                                0
+                            } else {
+                                pathBlocks.remove(block)
+                                1
+                            }
                         }
                     }
 
-                    parameters["color"] = FeatureParameter(
-                        0,
-                        "blocktracker",
-                        "${block.registryName}_path_color",
-                        "Path Color",
-                        "",
-                        Color.red.toChromaColor(),
-                        CChromaColor
-                    )
+                    parameter(Color.red.toChromaColor()) {
+                        matchKeyCategory()
+                        key = "${block.registryName}_path_color"
+                        title = "Path Color"
+                    }
                 }
+            }
+
+            parameter(true) {
+                matchKeyCategory()
+                key = "canFly"
+                title = "Can Fly"
+                desc = "Whether you can fly or not when path finding"
+
+                settings {
+                    ordinal = -2
+                }
+            }
+
+            parameter(true) {
+                matchKeyCategory()
+                key = "showBeacon"
+                title = "Show Beacon"
+                desc = "Render beacon at nearest block position"
+
+                settings {
+                    ordinal = -1
+                }
+            }
         }
     }
 
-    @SubParameterOf("showPath")
-    private var canFly by FeatureParameter(
-        -2,
-        "blocktracker",
-        "canfly",
-        "Can Fly",
-        "Whether you can fly or not when path finding",
-        true,
-        CBoolean
-    )
-
-    @SubParameterOf("showPath")
-    private var showBeacon by FeatureParameter(
-        -1,
-        "blocktracker",
-        "showbeacon",
-        "Show Beacon",
-        "Render beacon at nearest block position",
-        true,
-        CBoolean
-    )
 
     private val scanTick = TickTimer.withSecond(1.5)
 
@@ -200,13 +189,11 @@ object BlockTracker : SimpleFeature(Category.QOL, "blocktracker", "Block Tracker
                 val blocksForPaths = blocks.filterKeys { it in pathBlocks }
 
                 val boxColor: (Block) -> Color = {
-                    getParameter<String>("blocks").getParameter<Boolean>(it.registryName)
-                        .getParameterValue<Color>("color")
+                    getParameterValue("blocks/${it.registryName}/${it.registryName}_box_color")
                 }
 
                 val pathColor: (Block) -> Color = {
-                    getParameter<Boolean>("showPath").getParameter<Boolean>(it.registryName)
-                        .getParameterValue<Color>("color")
+                    getParameterValue("showPath/${it.registryName}_path/${it.registryName}_path_color")
                 }
 
                 boxColors = blocks.flatMap { (block, posList) ->
@@ -219,7 +206,7 @@ object BlockTracker : SimpleFeature(Category.QOL, "blocktracker", "Block Tracker
                     val near = posList.minByOrNull(mc.thePlayer::getDistanceSq)!!
 
                     Triple(
-                        async { ModPathFinding(near, canFly).findPath() },
+                        async { ModPathFinding(near, showPath_canFly).findPath() },
                         pathColor(block),
                         near
                     )
@@ -235,7 +222,7 @@ object BlockTracker : SimpleFeature(Category.QOL, "blocktracker", "Block Tracker
             if (showPath) {
                 for ((paths, color, destination) in paths) {
                     RenderUtils.drawPath(paths, color.rgb, partialTicks)
-                    if (showBeacon) {
+                    if (showPath_showBeacon) {
                         RenderUtils.renderBeaconBeam(destination.toVec3(), color.rgb, 0.7f, partialTicks)
                     }
                 }

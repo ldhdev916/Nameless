@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,11 @@ import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.SpecialOverlayEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CChromaColor
 import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.elementa.utils.withAlpha
 import kotlinx.coroutines.*
@@ -47,47 +45,40 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 @OptIn(DelicateCoroutinesApi::class)
-object PixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper", "Pixel Party Helper", "") {
+object PixelPartyHelper : SimpleFeature("pixelPartyHelper", "Pixel Party Helper", "") {
 
-    private var boxColor by FeatureParameter(
-        0,
-        "pixelparty",
-        "boxcolor",
-        "Box Color",
-        "",
-        Color.red.withAlpha(64).toChromaColor(),
-        CChromaColor
-    )
+    init {
+        parameter(Color.red.withAlpha(64).toChromaColor()) {
+            matchKeyCategory()
+            key = "boxColor"
+            title = "Box Color"
+        }
 
-    private var beacon by FeatureParameter(
-        1,
-        "pixelparty",
-        "beaconcolor",
-        "Beacon Color",
-        "",
-        Color.blue.withAlpha(0.7f).toChromaColor(),
-        CChromaColor
-    )
+        parameter(Color.blue.withAlpha(0.7f).toChromaColor()) {
+            matchKeyCategory()
+            key = "beaconColor"
+            title = "Beacon Color"
 
-    private var arrow by FeatureParameter(
-        2,
-        "pixelparty",
-        "beaconarrow",
-        "Show Direction Arrow to Beacon",
-        "",
-        true,
-        CBoolean
-    )
+            settings { ordinal = 1 }
+        }
 
-    private var safe by FeatureParameter(
-        3,
-        "pixelparty",
-        "findsafe",
-        "Find Safe Position",
-        "Find position where distance to all kinds of blocks are nearly same\nSo you can go anywhere fast",
-        false,
-        CBoolean
-    )
+        parameter(true) {
+            matchKeyCategory()
+            key = "beaconArrow"
+            title = "Show Direction Arrow to Beacon"
+
+            settings { ordinal = 2 }
+        }
+
+        parameter(false) {
+            matchKeyCategory()
+            key = "findSafe"
+            title = "Find Safe Position"
+            desc = "Find position where distance to all kinds of blocks are nearly same\nSo you can go anywhere fast"
+
+            settings { ordinal = 3 }
+        }
+    }
 
     private var scanTimer = TickTimer(3)
 
@@ -132,7 +123,7 @@ object PixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper", "Pixel
                         }
                     }
                 } ?: run {
-                if (!shouldScanAgain || !safe) return@run
+                if (!shouldScanAgain || !findSafe) return@run
                 val current = BlockPos(mc.thePlayer)
                 if (current.x !in from.x..to.x || current.z !in to.z..from.z) return@run
 
@@ -228,14 +219,14 @@ object PixelPartyHelper : SimpleFeature(Category.QOL, "pixelpartyhelper", "Pixel
             beaconPosition?.let {
                 RenderUtils.renderBeaconBeam(
                     it,
-                    beacon.rgb,
-                    beacon.alpha / 255f,
+                    beaconColor.rgb,
+                    beaconColor.alpha / 255f,
                     partialTicks
                 )
             }
         }
 
-        on<SpecialOverlayEvent>().filter { checkForRequirement() && arrow }.subscribe {
+        on<SpecialOverlayEvent>().filter { checkForRequirement() && beaconArrow }.subscribe {
             beaconPosition?.let {
                 RenderUtils.drawDirectionArrow(it, Color.red.rgb)
             }

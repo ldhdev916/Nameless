@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.dsl
 
-import com.happyandjust.nameless.config.ConfigMap
+import com.happyandjust.nameless.config.configMap
 import com.happyandjust.nameless.core.FAIRY_SOUL
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -54,7 +54,7 @@ import kotlin.math.roundToInt
 
 private val RARITY_PATTERN = Pattern.compile("(§[0-9a-f]§l§ka§r )?([§0-9a-fk-or]+)(?<rarity>[A-Z]+)")
 private val md = MessageDigest.getInstance("MD5")
-private val md5Cache = ConfigMap.StringConfigMap("md5")
+private val md5Cache = configMap<String>("md5")
 private val decimalFormat =
     DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)).apply { maximumFractionDigits = 640 }
 
@@ -185,3 +185,5 @@ fun UUID.getNameHistory() =
 
 val Block.displayName: String
     get() = runCatching { ItemStack(this).displayName }.getOrDefault(registryName.split(":")[1])
+
+inline fun <reified T : Enum<T>> listEnum() = enumValues<T>().toList()

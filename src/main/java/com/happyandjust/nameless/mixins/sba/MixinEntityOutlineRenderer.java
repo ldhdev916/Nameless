@@ -28,12 +28,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Pseudo
-@Mixin(targets = "EntityOutlineRenderer", remap = false)
+@Mixin(targets = "codes.biscuit.skyblockaddons.features.EntityOutlines.EntityOutlineRenderer", remap = false)
 public class MixinEntityOutlineRenderer {
 
     @Dynamic
     @Inject(method = "renderEntityOutlines", at = @At("RETURN"), cancellable = true)
-    private void letMeDrawOutline(ICamera camera, float partialTicks, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(DisableSBAGlowing.INSTANCE.getEnabled());
+    private static void letMeDrawOutline(ICamera camera, float partialTicks, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
+        cir.setReturnValue(DisableSBAGlowing.getEnabledJVM());
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,13 @@
 package com.happyandjust.nameless.features.impl.settings
 
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.IRelocateAble
-import com.happyandjust.nameless.features.base.SettingFeature
+import com.happyandjust.nameless.features.base.BaseFeature
+import com.happyandjust.nameless.features.base.IRelocateAble
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.ComponentType
-import com.happyandjust.nameless.gui.feature.PropertyData
 import com.happyandjust.nameless.gui.relocate.RelocateGui
-import kotlin.reflect.KMutableProperty0
 
-object OpenRelocateGui : SettingFeature("relocategui", "Relocate Gui", "Edit gui position, scale") {
+object OpenRelocateGui : BaseFeature<() -> Unit, Any>("relocateGui", "Relocate Gui", "Edit gui position, scale") {
 
     private var action = {
         mc.displayGuiScreen(
@@ -36,15 +35,12 @@ object OpenRelocateGui : SettingFeature("relocategui", "Relocate Gui", "Edit gui
         )
     }
 
-    override fun getProperty(): KMutableProperty0<*> {
-        return ::action
-    }
+    override val property = ::action
+    override var componentType: ComponentType? = ComponentType.BUTTON
 
-    override fun getComponentType(): ComponentType {
-        return ComponentType.BUTTON
-    }
-
-    override fun toPropertyData(): PropertyData<*> {
-        return super.toPropertyData().also { it.placeHolder = "Relocate" }
+    init {
+        settings {
+            placeHolder = "Relocate"
+        }
     }
 }

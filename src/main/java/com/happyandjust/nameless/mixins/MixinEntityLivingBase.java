@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.List;
+
 @Mixin(EntityLivingBase.class)
 public class MixinEntityLivingBase {
 
@@ -46,12 +48,12 @@ public class MixinEntityLivingBase {
 
     @Unique
     private boolean shouldRemove(int potionId) {
-        RemoveNegativeEffects feature = RemoveNegativeEffects.INSTANCE;
-        if (!feature.getEnabled()) return false;
+        if (!RemoveNegativeEffects.getEnabledJVM()) return false;
 
-        if (potionId == Potion.blindness.id && feature.getEnabledPotionTypes().contains(RemoveNegativeEffects.PotionType.BLINDNESS)) {
+        List<RemoveNegativeEffects.PotionType> enabledPotionTypes = RemoveNegativeEffects.getEnabledPotionTypesJVM();
+        if (potionId == Potion.blindness.id && enabledPotionTypes.contains(RemoveNegativeEffects.PotionType.BLINDNESS)) {
             return true;
         } else
-            return potionId == Potion.confusion.id && feature.getEnabledPotionTypes().contains(RemoveNegativeEffects.PotionType.NAUSEA);
+            return potionId == Potion.confusion.id && enabledPotionTypes.contains(RemoveNegativeEffects.PotionType.NAUSEA);
     }
 }

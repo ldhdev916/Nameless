@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package com.happyandjust.nameless
 
 import com.happyandjust.nameless.commands.*
 import com.happyandjust.nameless.config.ConfigHandler
-import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.config.configValue
 import com.happyandjust.nameless.core.enums.OutlineMode
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.FeatureRegistry
@@ -32,7 +32,6 @@ import com.happyandjust.nameless.listener.BasicListener
 import com.happyandjust.nameless.listener.LocrawListener
 import com.happyandjust.nameless.listener.OutlineHandleListener
 import com.happyandjust.nameless.listener.WaypointListener
-import com.happyandjust.nameless.serialization.converters.getEnumConverter
 import com.happyandjust.nameless.utils.SkyblockUtils
 import gg.essential.api.commands.Command
 import kotlinx.coroutines.*
@@ -49,11 +48,10 @@ object Nameless {
     val keyBindings = KeyBindingCategory.values()
         .associateWith { NamelessKeyBinding(it.desc, it.key).also(ClientRegistry::registerKeyBinding) }
 
-    var selectedOutlineMode by ConfigValue(
+    var selectedOutlineMode by configValue(
         "outline",
         "selected",
-        OutlineMode.OUTLINE,
-        getEnumConverter()
+        OutlineMode.OUTLINE
     )
 
     lateinit var modFile: File
@@ -73,12 +71,12 @@ object Nameless {
         }
 
         GlobalScope.launch {
-            async {
+            launch {
                 FeatureRegistry
                 AutoRequeue.isAutoGGLoaded = Loader.isModLoaded("autogg")
             }
             launch(Dispatchers.IO) {
-                async { SkyblockUtils.fetchSkyBlockData() }
+                launch { SkyblockUtils.fetchSkyBlockData() }
             }
         }
 

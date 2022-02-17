@@ -20,116 +20,91 @@ package com.happyandjust.nameless.features.impl.misc
 
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.SubParameterOf
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CChromaColor
+import com.happyandjust.nameless.features.base.parameter
 import net.minecraft.init.Items
 import net.minecraft.item.ItemArmor
 import net.minecraft.item.ItemStack
 import java.awt.Color
 
 object ChangeLeatherArmorColor : SimpleFeature(
-    Category.MISCELLANEOUS,
-    "changeleatherarmorcolor",
+    "changeLeatherArmorColor",
     "Change Leather Armor Color",
     "Customize leather armor color"
 ) {
 
-    private var helmet by FeatureParameter(
-        0,
-        "leatherarmorcolor",
-        key,
-        "Customize Helmet Color",
-        "",
-        true,
-        CBoolean
-    )
+    init {
+        parameter(true) {
+            matchKeyCategory()
+            key = "helmet"
+            title = "Customize Helmet Color"
 
-    private var chestplate by FeatureParameter(
-        1,
-        "leatherarmorcolor",
-        key,
-        "Customize Chestplate Color",
-        "",
-        true,
-        CBoolean
-    )
+            parameter(Color.white.toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Leather Helmet Color"
+            }
+        }
 
-    private var leggings by FeatureParameter(
-        2,
-        "leatherarmorcolor",
-        key,
-        "Customize Leggings Color",
-        "",
-        true,
-        CBoolean
-    )
+        parameter(true) {
+            matchKeyCategory()
+            key = "chestplate"
+            title = "Customize Chestplate Color"
 
-    private var boots by FeatureParameter(
-        3,
-        "leatherarmorcolor",
-        key,
-        "Customize Boots Color",
-        "",
-        true,
-        CBoolean
-    )
+            settings {
+                ordinal = 1
+            }
 
-    @SubParameterOf("helmet")
-    private var helmetColor by FeatureParameter(
-        0,
-        "leatherarmorcolor",
-        "helmet_color",
-        "Leather Helmet Color",
-        "",
-        Color.white.toChromaColor(),
-        CChromaColor
-    )
+            parameter(Color.white.toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Leather Chestplate Color"
+            }
 
-    @SubParameterOf("chestplate")
-    private var chestplateColor by FeatureParameter(
-        0,
-        "leatherarmorcolor",
-        "chestplate_color",
-        "Leather Chestplate Color",
-        "",
-        Color.white.toChromaColor(),
-        CChromaColor
-    )
+        }
 
-    @SubParameterOf("leggings")
-    private var leggingsColor by FeatureParameter(
-        0,
-        "leatherarmorcolor",
-        "leggings_color",
-        "Leather Leggings Color",
-        "",
-        Color.white.toChromaColor(),
-        CChromaColor
-    )
+        parameter(true) {
+            matchKeyCategory()
+            key = "leggings"
+            title = "Customize Leggings Color"
 
-    @SubParameterOf("boots")
-    private var bootsColor by FeatureParameter(
-        0,
-        "leatherarmorcolor",
-        "boots_color",
-        "Leather Boots Color",
-        "",
-        Color.white.toChromaColor(),
-        CChromaColor
-    )
+            settings {
+                ordinal = 2
+            }
+
+            parameter(Color.white.toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Leather Leggings Color"
+            }
+        }
+
+        parameter(true) {
+            matchKeyCategory()
+            key = "boots"
+            title = "Customize Boots Color"
+
+            settings {
+                ordinal = 3
+            }
+
+            parameter(Color.white.toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Leather Boots Color"
+            }
+        }
+    }
 
     @JvmStatic
     fun ItemArmor.getCustomColor(itemStack: ItemStack): Int? {
         if (!enabled || itemStack !in mc.thePlayer.inventory.armorInventory) return null
         return when (this) {
-            Items.leather_helmet -> if (helmet) helmetColor else null
-            Items.leather_chestplate -> if (chestplate) chestplateColor else null
-            Items.leather_leggings -> if (leggings) leggingsColor else null
-            Items.leather_boots -> if (boots) bootsColor else null
+            Items.leather_helmet -> if (helmet) helmet_color else null
+            Items.leather_chestplate -> if (chestplate) chestplate_color else null
+            Items.leather_leggings -> if (leggings) leggings_color else null
+            Items.leather_boots -> if (boots) boots_color else null
             else -> null
         }?.rgb
     }

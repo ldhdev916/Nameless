@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.dsl.cancel
 import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -28,7 +27,7 @@ import net.minecraft.entity.monster.EntityEnderman
 import net.minecraftforge.event.entity.living.EnderTeleportEvent
 
 object DisableEndermanTeleportation :
-    SimpleFeature(Category.SKYBLOCK, "disableendermanteleportation", "Disable Enderman Teleportation in SkyBlock") {
+    SimpleFeature("disableEndermanTeleportation", "Disable Enderman Teleportation in SkyBlock") {
 
     init {
         on<EnderTeleportEvent>().filter { enabled && Hypixel.currentGame == GameType.SKYBLOCK && entity is EntityEnderman }

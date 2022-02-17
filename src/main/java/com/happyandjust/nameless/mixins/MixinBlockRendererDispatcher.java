@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,11 +34,7 @@ public class MixinBlockRendererDispatcher {
 
     @Inject(method = "renderBlock", at = @At("HEAD"), cancellable = true)
     public void cancelRender(IBlockState i, BlockPos crashreport, IBlockAccess crashreportcategory, WorldRenderer throwable, CallbackInfoReturnable<Boolean> cir) {
-        CancelCertainBlockRendering feature = CancelCertainBlockRendering.INSTANCE;
-
-        String key = i.getBlock().getRegistryName();
-
-        if (feature.hasParameter(key) && (boolean) feature.getParameterValue(key)) {
+        if (CancelCertainBlockRendering.getEnabledJVM() && CancelCertainBlockRendering.getBlocksJVM().contains(i.getBlock())) {
             cir.setReturnValue(false);
         }
     }

@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,13 +38,13 @@ public class MixinMinecraft {
 
     @Inject(method = "clickMouse", at = @At("HEAD"))
     public void onClickMouse(CallbackInfo ci) {
-        if (HitDelayFix.INSTANCE.getEnabled()) {
+        if (HitDelayFix.getEnabledJVM()) {
             leftClickCounter = 0;
         }
     }
 
     @Redirect(method = "runTick", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lnet/minecraft/client/settings/GameSettings;thirdPersonView:I"))
     public void blockPerspective(GameSettings gameSettings, int value) {
-        gameSettings.thirdPersonView = Perspective.INSTANCE.getEnabled() ? 1 : value;
+        gameSettings.thirdPersonView = Perspective.getEnabledJVM() ? 1 : value;
     }
 }

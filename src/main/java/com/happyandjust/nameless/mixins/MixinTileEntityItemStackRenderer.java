@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,22 +39,20 @@ public class MixinTileEntityItemStackRenderer {
 
     @Inject(method = "renderByItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/tileentity/TileEntitySkullRenderer;renderSkull(FFFLnet/minecraft/util/EnumFacing;FILcom/mojang/authlib/GameProfile;I)V"), cancellable = true)
     public void changeSkin(ItemStack itemStack, CallbackInfo ci) {
-        EquipPetSkin feature = EquipPetSkin.INSTANCE;
-        ChangeHelmetTexture featureChangeHelmetTexture = ChangeHelmetTexture.INSTANCE;
         GameProfile gameProfile = null;
-        if (feature.getEnabled()) {
+        if (EquipPetSkin.getEnabledJVM()) {
 
-            EquipPetSkin.PetSkinChangeInfo info = feature.getCurrentPetSkinChangeInfo();
+            EquipPetSkin.PetSkinChangeInfo info = EquipPetSkin.currentPetSkinChangeInfo;
             if (info != null && info.getItemStack().equals(itemStack)) {
                 gameProfile = info.getGameProfile();
             }
             if (gameProfile == null) {
-                gameProfile = feature.checkIfPetIsInInventory(itemStack);
+                gameProfile = EquipPetSkin.checkIfPetIsInInventory(itemStack);
             }
         }
 
-        if (featureChangeHelmetTexture.getEnabled() && itemStack.equals(Minecraft.getMinecraft().thePlayer.getEquipmentInSlot(4))) {
-            Pair<SkyBlockItem, GameProfile> pair = featureChangeHelmetTexture.getCurrentlyEquipedTexture();
+        if (ChangeHelmetTexture.getEnabledJVM() && itemStack.equals(Minecraft.getMinecraft().thePlayer.getEquipmentInSlot(4))) {
+            Pair<SkyBlockItem, GameProfile> pair = ChangeHelmetTexture.getCurrentlyEquipedTexture();
 
             if (pair != null) gameProfile = pair.getSecond();
         }

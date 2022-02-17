@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,16 +24,11 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.InCategory
-import com.happyandjust.nameless.features.SubParameterOf
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.gui.feature.ComponentType
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CChromaColor
-import com.happyandjust.nameless.serialization.converters.CList
-import com.happyandjust.nameless.serialization.converters.getEnumConverter
+import com.happyandjust.nameless.features.base.autoFillEnum
+import com.happyandjust.nameless.features.base.listParameter
+import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.trajectory.*
 import com.happyandjust.nameless.trajectory.TrajectoryPreview
 import com.happyandjust.nameless.utils.RenderUtils
@@ -42,105 +37,86 @@ import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 
 object TrajectoryPreview : SimpleFeature(
-    Category.QOL,
-    "trajectorypreview",
+    "trajectoryPreview",
     "Trajectory Preview",
     "Shows trajectory preview of many projectiles"
 ) {
 
-    @InCategory("Rendering")
-    private var showTrace by FeatureParameter(
-        0,
-        "trajectory",
-        "showtrace",
-        "Enable Showing Trace of Trajectory",
-        "",
-        false,
-        CBoolean
-    )
+    init {
+        parameter(false) {
+            matchKeyCategory()
+            key = "showTrace"
+            title = "Enable Showing Trace of Trajectory"
 
-    @SubParameterOf("showTrace")
-    private var traceColor by FeatureParameter(
-        0,
-        "trajectory",
-        "tracecolor",
-        "Trace Color",
-        "",
-        Color.red.toChromaColor(),
-        CChromaColor
-    )
+            settings { subCategory = "Rendering" }
 
-    @InCategory("Rendering")
-    private var endColor by FeatureParameter(
-        1,
-        "trajectory",
-        "endcolor",
-        "End Point Color",
-        "",
-        Color.green.toChromaColor(),
-        CChromaColor
-    )
-
-    @InCategory("Rendering")
-    private var targetColor by FeatureParameter(
-        2,
-        "trajectory",
-        "targetcolor",
-        "Target Point Color",
-        "Color when end point of trajectory HITS entity",
-        Color.blue.toChromaColor(),
-        CChromaColor
-    )
-
-    @InCategory("Rendering")
-    private var glowTarget by FeatureParameter(
-        3,
-        "trajectory",
-        "glowtarget",
-        "Glow Trajectory Target",
-        "Glow entity which is hit by end point of trajectory",
-        false,
-        CBoolean
-    )
-
-    @SubParameterOf("glowTarget")
-    private var glowColor by FeatureParameter(
-        0,
-        "trajectory",
-        "glowcolor",
-        "Glow Color",
-        "",
-        Color(120, 5, 121).toChromaColor(),
-        CChromaColor
-    )
-
-    @InCategory("Type")
-    private var selectedTrajectoryTypes by object : FeatureParameter<List<TrajectoryType>>(
-        0,
-        "trajectory",
-        "selectedtypes",
-        "Trajectory Types",
-        "",
-        listOf(
-            TrajectoryType.BOW,
-            TrajectoryType.ENDER_PEARL
-        ),
-        CList(getEnumConverter())
-    ) {
-
-        init {
-            allEnumList = TrajectoryType.values().toList()
-            enumName = { (it as TrajectoryType).prettyName }
+            parameter(Color.red.toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Trace Color"
+            }
         }
 
-        override fun getComponentType() = ComponentType.MULTI_SELECTOR
+        parameter(Color.green.toChromaColor()) {
+            matchKeyCategory()
+            key = "endColor"
+            title = "End Point Color"
+
+            settings {
+                ordinal = 1
+                subCategory = "Rendering"
+            }
+        }
+
+        parameter(Color.blue.toChromaColor()) {
+            matchKeyCategory()
+            key = "targetColor"
+            title = "Target Point Color"
+            desc = "Color when end point of trajectory HITS entity"
+
+            settings {
+                ordinal = 2
+                subCategory = "Rendering"
+            }
+        }
+
+        parameter(false) {
+
+            matchKeyCategory()
+            key = "glowTarget"
+            title = "Glow Trajectory Target"
+            desc = "Glow entity which is hit by end point of trajectory"
+
+            settings {
+                ordinal = 3
+                subCategory = "Rendering"
+            }
+
+            parameter(Color(120, 5, 121).toChromaColor()) {
+                matchKeyCategory()
+                key = "color"
+                title = "Glow Color"
+            }
+        }
+
+        listParameter(listOf(TrajectoryType.BOW, TrajectoryType.ENDER_PEARL)) {
+            matchKeyCategory()
+            key = "selectedTypes"
+            title = "Trajectory Types"
+
+            settings {
+                subCategory = "Type"
+            }
+
+            autoFillEnum { it.prettyName }
+        }
     }
 
     private var trajectoryCalculateResult: TrajectoryCalculateResult? = null
 
     init {
         on<SpecialTickEvent>().filter { enabled }.subscribe {
-            val preview = selectedTrajectoryTypes.find { it.enabled }?.trajectoryPreview ?: run {
+            val preview = selectedTypes.find { it.enabled }?.trajectoryPreview ?: run {
                 trajectoryCalculateResult = null
                 return@subscribe
             }
@@ -159,7 +135,7 @@ object TrajectoryPreview : SimpleFeature(
                 if (showTrace) {
                     RenderUtils.drawCurveLine(
                         it.renderTraces,
-                        traceColor.rgb,
+                        showTrace_color.rgb,
                         1.0,
                         partialTicks
                     )
@@ -176,7 +152,7 @@ object TrajectoryPreview : SimpleFeature(
 
         on<OutlineRenderEvent>().filter { enabled && glowTarget && entity == trajectoryCalculateResult?.entityHit }
             .subscribe {
-                colorInfo = ColorInfo(glowColor.rgb, ColorInfo.ColorPriority.HIGHEST)
+                colorInfo = ColorInfo(glowTarget_color.rgb, ColorInfo.ColorPriority.HIGHEST)
             }
     }
 

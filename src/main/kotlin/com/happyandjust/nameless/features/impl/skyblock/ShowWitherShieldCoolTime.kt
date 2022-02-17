@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,86 +18,72 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.config.configValue
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.Category
-import com.happyandjust.nameless.features.OverlayFeature
-import com.happyandjust.nameless.features.base.FeatureParameter
+import com.happyandjust.nameless.features.*
+import com.happyandjust.nameless.features.base.OverlayFeature
+import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.serialization.converters.CBoolean
-import com.happyandjust.nameless.serialization.converters.CInt
-import com.happyandjust.nameless.serialization.converters.COverlay
-import com.happyandjust.nameless.serialization.converters.CString
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.dsl.basicTextScaleConstraint
 import gg.essential.elementa.dsl.constrain
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
 
-object ShowWitherShieldCoolTime :
-    OverlayFeature(Category.SKYBLOCK, "showwithershieldcooltime", "Show Wither Shield CoolTime", "", false) {
+object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Show Wither Shield CoolTime", "", false) {
 
-    private var onlyHeld by FeatureParameter(
-        0,
-        "withershield",
-        "onlyheld",
-        "Show only when you are holding Hyperion, Scylla, Valkyrie, Astraea",
-        "",
-        false,
-        CBoolean
-    )
+    init {
+        parameter(false) {
+            matchKeyCategory()
+            key = "onlyHeld"
+            title = "Show only when you are holding Hyperion, Scylla, Valkyrie, Astraea"
+        }
 
-    private var onlyCooltime by FeatureParameter(
-        0,
-        "withershield",
-        "onlycd",
-        "Show only when wither shield is on cooltime",
-        "",
-        false,
-        CBoolean
-    )
+        parameter(false) {
+            matchKeyCategory()
+            key = "onlyCooltime"
+            title = "Show only when wither shield is on cooltime"
+        }
 
-    private var precision by FeatureParameter(
-        1,
-        "withershield",
-        "precision",
-        "Decimal Point Precision",
-        "Decimal point precision of cooltime",
-        3,
-        CInt
-    ).apply {
-        minValue = 0.0
-        maxValue = 3.0
+        parameter(3) {
+            matchKeyCategory()
+            key = "precision"
+            title = "Decimal Point Precision"
+            desc = "Decimal point precision of cooltime"
+
+            settings {
+                ordinal = 1
+                maxValueInt = 3
+            }
+        }
+
+        parameter("&aShield: Ready") {
+            matchKeyCategory()
+            key = "readyText"
+            title = "Overlay Available Text"
+            desc = "Text when wither shield is ready"
+
+            settings { ordinal = 2 }
+        }
+
+        parameter("&6Shield: {value}s") {
+            matchKeyCategory()
+            key = "text"
+            title = "Overlay Text"
+            desc = "Text when wither shield is on cooltime"
+
+            settings { ordinal = 3 }
+        }
     }
 
-    private var readyText by FeatureParameter(
-        2,
-        "withershield",
-        "availtext",
-        "Overlay Available Text",
-        "Text when wither shield is ready",
-        "&aShield: Ready",
-        CString
-    )
-
-    private var text by FeatureParameter(
-        3,
-        "withershield",
-        "text",
-        "Overlay Text",
-        "Text when wither shield is on cooltime",
-        "&6Shield: {value}s",
-        CString
-    )
-
-    override var overlayPoint by ConfigValue("withershield", "overlay", Overlay.DEFAULT, COverlay)
+    override var overlayPoint by configValue("withershield", "overlay", Overlay.DEFAULT)
     private var lastWitherShieldUse: Long? = null
         get() = field?.takeIf { it + 5000 > System.currentTimeMillis() }
     private val swords = hashSetOf("HYPERION", "VALKYRIE", "SCYLLA", "ASTRAEA")

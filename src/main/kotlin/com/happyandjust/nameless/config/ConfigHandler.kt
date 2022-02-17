@@ -1,6 +1,6 @@
 /*
  * Nameless - 1.8.9 Hypixel Quality Of Life Mod
- * Copyright (C) 2021 HappyAndJust
+ * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,64 +18,75 @@
 
 package com.happyandjust.nameless.config
 
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.google.gson.JsonPrimitive
-import com.happyandjust.nameless.core.JsonHandler
-import com.happyandjust.nameless.serialization.Converter
+import com.happyandjust.nameless.dsl.decodeFromFile
+import com.happyandjust.nameless.dsl.encodeToFile
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.serializer
 import java.io.File
+import kotlin.collections.set
 
 object ConfigHandler {
+    private val customJson = Json { prettyPrint = true }
     var file = File("config/Nameless.json").apply {
         if (!exists() || readBytes().decodeToString().isBlank()) {
             parentFile.mkdirs()
             writeText("{}")
         }
     }
-    private val handler: JsonHandler
-        get() = JsonHandler(file)
+
     private val config: JsonObject
-        get() = handler.read()
+        get() = customJson.decodeFromFile(file)
 
-    private fun readCategory(category: String, config: JsonObject) =
-        config[category] as? JsonObject ?: JsonObject()
+    private fun Map<String, JsonElement>.readCategory(category: String) =
+        get(category) as? JsonObject ?: JsonObject(emptyMap())
 
-    fun <T> get(category: String, key: String, defaultValue: T, converter: Converter<T>): T {
-        val keyObject = (readCategory(category, config)[key] ?: return defaultValue)
+    fun <T> get(category: String, key: String, defaultValue: T, serializer: KSerializer<T>): T {
+        val keyObject = (config.readCategory(category)[key] ?: return defaultValue)
 
-        return converter.deserialize(keyObject)
+        return customJson.decodeFromJsonElement(serializer, keyObject)
     }
+
+    fun <T> get(category: String, key: String, serializer: KSerializer<T>): T {
+        val keyObject = config.readCategory(category)[key]!!
+
+        return customJson.decodeFromJsonElement(serializer, keyObject)
+    }
+
+    inline fun <reified T> get(category: String, key: String, defaultValue: T) =
+        get(category, key, defaultValue, serializer())
+
+    inline fun <reified T> get(category: String, key: String): T = get(category, key, serializer())
 
     fun write(category: String, key: String, write: JsonElement) {
-        handler.write(config.also { it.add(category, readCategory(category, it).apply { add(key, write) }) })
+        val writeMap = config.toMutableMap()
+        val existing = writeMap.readCategory(category).toMutableMap().apply { put(key, write) }
+        writeMap[category] = JsonObject(existing)
+        customJson.encodeToFile(writeMap.toMap(), file)
     }
 
-    fun <T> write(category: String, key: String, write: T, converter: Converter<T>) {
-        write(category, key, converter.serialize(write))
+    fun <T> write(category: String, key: String, write: T, serializer: KSerializer<T>) {
+        write(category, key, customJson.encodeToJsonElement(serializer, write))
     }
 
-    fun write(category: String, key: String, number: Number) {
-        write(category, key, JsonPrimitive(number))
-    }
+    inline fun <reified T> write(category: String, key: String, write: T) = write(category, key, write, serializer())
 
-    fun write(category: String, key: String, boolean: Boolean) {
-        write(category, key, JsonPrimitive(boolean))
-    }
-
-    fun write(category: String, key: String, string: String) {
-        write(category, key, JsonPrimitive(string))
-    }
-
-    fun getKeys(category: String) = readCategory(category, config).entrySet().map { it.key }
+    fun getKeys(category: String) = config.readCategory(category).keys
 
     fun deleteCategory(category: String) {
-        with(config) {
+        with(config.toMutableMap()) {
             remove(category)
-            handler.write(this)
+            customJson.encodeToFile(toMap(), file)
         }
     }
 
     fun deleteKey(category: String, key: String) {
-        handler.write(config.also { it.add(category, readCategory(category, it).apply { remove(key) }) })
+        val writeMap = config.toMutableMap()
+        val existing = writeMap.readCategory(category).toMutableMap().apply { remove(key) }
+        writeMap[category] = JsonObject(existing)
+
+        customJson.encodeToFile(writeMap.toMap(), file)
     }
 }
