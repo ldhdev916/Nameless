@@ -31,7 +31,7 @@ plugins {
     id("org.spongepowered.mixin") version "d75e32e"
 }
 
-version = "1.0.5-Pre"
+version = "1.0.5"
 group = "com.happyandjust"
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8

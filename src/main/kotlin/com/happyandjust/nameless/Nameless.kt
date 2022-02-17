@@ -34,7 +34,10 @@ import com.happyandjust.nameless.listener.OutlineHandleListener
 import com.happyandjust.nameless.listener.WaypointListener
 import com.happyandjust.nameless.utils.SkyblockUtils
 import gg.essential.api.commands.Command
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.Mod
@@ -107,4 +110,4 @@ object Nameless {
 
 const val MOD_ID = "nameless"
 const val MOD_NAME = "Nameless"
-const val VERSION = "1.0.5-Pre"
+const val VERSION = "1.0.5"
