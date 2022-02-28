@@ -104,7 +104,7 @@ object DisguiseNickname : SimpleFeature(
         if (username.equals(currentlyLoadedUsername, true)) return
         GlobalScope.launch {
             currentlyLoadedUsername = username
-            val uuid = username.getUUID() ?: run {
+            val uuid = getUUID(username) ?: run {
                 invalidUsernames.add(username)
                 currentlyLoadedUsername = null
                 return@launch

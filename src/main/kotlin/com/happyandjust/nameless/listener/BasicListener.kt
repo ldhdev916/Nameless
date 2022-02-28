@@ -19,7 +19,6 @@
 package com.happyandjust.nameless.listener
 
 import com.happyandjust.nameless.dsl.LOGGER
-import com.happyandjust.nameless.dsl.color
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.KeyPressEvent
@@ -28,6 +27,7 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.gui.feature.FeatureGui
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import gg.essential.api.utils.GuiUtil
+import net.minecraft.client.renderer.GlStateManager.color
 import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.gameevent.TickEvent

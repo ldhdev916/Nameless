@@ -20,9 +20,11 @@ package com.happyandjust.nameless.mixinhooks
 
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.enums.OutlineMode
-import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.dsl.matrix
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.listener.OutlineHandleListener
 import com.happyandjust.nameless.mixins.accessors.AccessorRenderGlobal
+import net.minecraft.client.renderer.GlStateManager.*
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.client.renderer.culling.ICamera
 import net.minecraft.entity.Entity
@@ -139,10 +141,16 @@ object RenderGlobalHook {
     }
 
     private fun enableOutlineMode(color: Int) {
-        FLOAT_BUFFER.put(0, color.red / 255f)
-        FLOAT_BUFFER.put(1, color.green / 255f)
-        FLOAT_BUFFER.put(2, color.blue / 255f)
-        FLOAT_BUFFER.put(3, color.alpha / 255f)
+
+        val red = color shr 16 and 255
+        val green = color shr 8 and 255
+        val blue = color and 255
+        val alpha = color shr 24 and 255
+
+        FLOAT_BUFFER.put(0, red / 255f)
+        FLOAT_BUFFER.put(1, green / 255f)
+        FLOAT_BUFFER.put(2, blue / 255f)
+        FLOAT_BUFFER.put(3, alpha / 255f)
 
         GL11.glTexEnv(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_COLOR, FLOAT_BUFFER)
         GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL13.GL_COMBINE)

@@ -114,15 +114,13 @@ object WorkshopProcessor : Processor() {
         }
     }
 
-    private suspend fun scanRecipes(
-        workshopRoom: WorkshopRoom,
-    ) = coroutineScope {
+    private suspend fun scanRecipes(workshopRoom: WorkshopRoom) = coroutineScope {
         val outputItem = workshopRoom.outputItemFrame.displayedItem ?: return@coroutineScope
         val sortedPosList = workshopRoom.blockPosList.sortedBy { mc.thePlayer.getDistanceSq(it) }
 
         val breakAbleBlocks =
             workshopRoom.blockPosList.filter { it.toWorkshopBlockType() == WorkshopBlockType.BREAKABLE }
-                .sortedWith(compareBy({ if (it.y in 40 to 42) 41 else 47 }, { mc.thePlayer.getDistanceSq(it) }))
+                .sortedWith(compareBy({ if (it.y in setOf(40, 42)) 41 else 47 }, { mc.thePlayer.getDistanceSq(it) }))
                 .associateWith { mc.theWorld.getBlockState(it) }
                 .toList()
                 .toMutableList()
@@ -135,7 +133,12 @@ object WorkshopProcessor : Processor() {
 
         fun RecipeItem.processLogs() {
             val logs =
-                recipesOfItem.filter { it.item in Item.getItemFromBlock(Blocks.log) to Item.getItemFromBlock(Blocks.log2) }
+                recipesOfItem.filter {
+                    it.item in setOf(
+                        Item.getItemFromBlock(Blocks.log),
+                        Item.getItemFromBlock(Blocks.log2)
+                    )
+                }
                     .toSet()
 
             needPlanksCount += logs.size
@@ -158,7 +161,7 @@ object WorkshopProcessor : Processor() {
 
         val finalRecipeItems = finalRecipes.map { it.item }
 
-        if (finalRecipeItems.any { it in Items.iron_ingot to Items.gold_ingot }) {
+        if (finalRecipeItems.any { it in setOf(Items.iron_ingot, Items.gold_ingot) }) {
             tasks.add(
                 BlockClickTask(
                     sortedPosList.first { it.toWorkshopBlockType() == WorkshopBlockType.FURNACE },

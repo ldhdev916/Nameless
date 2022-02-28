@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.gui.feature
 
-import com.happyandjust.nameless.dsl.contains
 import com.happyandjust.nameless.features.PropertySetting
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIContainer
@@ -50,7 +49,11 @@ class DataComponent<T : Any>(gui: FeatureGui, val data: PropertyData<T, *>) : Se
         width = 100.percent() - 10.pixels()
 
         val bottom =
-            if (data.componentType in ComponentType.SELECTOR to ComponentType.MULTI_SELECTOR) basicHeightConstraint { textBoundingBox.getHeight() } else ChildBasedMaxSizeConstraint()
+            if (data.componentType in setOf(
+                    ComponentType.SELECTOR,
+                    ComponentType.MULTI_SELECTOR
+                )
+            ) basicHeightConstraint { textBoundingBox.getHeight() } else ChildBasedMaxSizeConstraint()
 
         height = bottom + 15.pixels()
     } childOf this effect OutlineEffect(ColorCache.divider, 1f)

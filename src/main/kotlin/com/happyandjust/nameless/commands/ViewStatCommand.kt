@@ -38,7 +38,7 @@ object ViewStatCommand : Command("viewstat") {
     @DefaultHandler
     fun handle(@DisplayName("Name") name: String) {
         Multithreading.runAsync {
-            val uuid = name.getUUID() ?: run {
+            val uuid = getUUID(name) ?: run {
                 sendPrefixMessage("§cFailed to get uuid of $name")
                 return@runAsync
             }
@@ -55,7 +55,10 @@ object ViewStatCommand : Command("viewstat") {
                 sendClientMessage(identifiers.joinToString("\n") {
                     it.informationType.run { getFormatText(getStatValue(jsonObject)) }
                 })
-            }.onFailure { it.notifyException() }
+            }.onFailure {
+                sendClientMessage("§cException Occurred ${it.javaClass.name} ${it.message}")
+                it.printStackTrace()
+            }
         }
     }
 

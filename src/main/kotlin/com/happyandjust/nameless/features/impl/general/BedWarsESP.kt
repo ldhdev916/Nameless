@@ -20,7 +20,6 @@ package com.happyandjust.nameless.features.impl.general
 
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.info.ColorInfo
-import com.happyandjust.nameless.dsl.instanceOrNull
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.withAlpha
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
@@ -78,7 +77,10 @@ object BedWarsESP : SimpleFeature(
         }
 
         on<OutlineRenderEvent>().filter { checkForEnabledAndBedwars() }.subscribe {
-            colorInfo = instanceOrNull(teamColorCache[entity], ColorInfo.ColorPriority.HIGH, ::ColorInfo)
+            val cachedColor = teamColorCache[entity]
+            if (cachedColor != null) {
+                colorInfo = ColorInfo(cachedColor, ColorInfo.ColorPriority.HIGH)
+            }
         }
 
         on<HypixelServerChangeEvent>().subscribe { teamColorCache.clear() }

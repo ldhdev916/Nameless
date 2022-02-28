@@ -18,8 +18,10 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.dsl.disableEntityShadow
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.base.SimpleFeature
+import net.minecraft.client.renderer.GlStateManager.*
 import net.minecraft.util.BlockPos
 import org.lwjgl.opengl.GL11
 

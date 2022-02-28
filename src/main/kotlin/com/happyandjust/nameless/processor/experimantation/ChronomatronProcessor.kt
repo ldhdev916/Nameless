@@ -24,6 +24,7 @@ import com.happyandjust.nameless.features.impl.skyblock.ExperimentationTableHelp
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
 import com.happyandjust.nameless.processor.Processor
 import net.minecraft.client.gui.inventory.GuiChest
+import net.minecraft.client.renderer.GlStateManager.translate
 import net.minecraft.init.Blocks
 import net.minecraft.init.Items
 import net.minecraft.inventory.ContainerChest
@@ -92,13 +93,13 @@ object ChronomatronProcessor : Processor() {
 
         matrix {
             var y = 0
-            translate(left - padding, top, 0)
+            translate((left - padding).toDouble(), top.toDouble(), 0.0)
 
             for (pattern in chronomatronPatterns.subList(chronomatronClicks, chronomatronPatterns.size)) {
                 mc.fontRendererObj.drawString(
                     pattern,
-                    -mc.fontRendererObj.getStringWidth(pattern),
-                    y,
+                    -mc.fontRendererObj.getStringWidth(pattern).toFloat(),
+                    y.toFloat(),
                     0xFFFFFFFF.toInt(),
                     true
                 )
@@ -112,17 +113,21 @@ object ChronomatronProcessor : Processor() {
         request<PacketEvent.Sending>().subscribe {
             packet.withInstance<C0EPacketClickWindow> {
                 mc.currentScreen.withInstance<GuiChest> {
-                    val item = clickedItem?.item
-
-                    if (inventorySlots.inventorySlots[49].stack?.displayName?.stripControlCodes()
-                            ?.matches(timerPattern.toRegex()) == true && item in Item.getItemFromBlock(Blocks.stained_glass) to Item.getItemFromBlock(
-                            Blocks.stained_hardened_clay
-                        )
-                    ) {
+                    if (isUserClick(clickedItem?.item)) {
                         chronomatronClicks++
                     }
                 }
             }
         }
+    }
+
+    private fun GuiChest.isUserClick(item: Item?): Boolean {
+        val stackAtTimerSlot = inventorySlots.inventorySlots[49].stack ?: return false
+        val hasTimer = stackAtTimerSlot.displayName.stripControlCodes().matches(timerPattern.toRegex())
+        val isCorrectBlock = item in setOf(
+            Item.getItemFromBlock(Blocks.stained_glass),
+            Item.getItemFromBlock(Blocks.stained_hardened_clay)
+        )
+        return hasTimer && isCorrectBlock
     }
 }

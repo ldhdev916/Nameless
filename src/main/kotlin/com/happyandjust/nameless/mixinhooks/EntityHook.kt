@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.mixinhooks
 
-import com.happyandjust.nameless.dsl.instanceOrNull
 import com.happyandjust.nameless.dsl.matchesMatcher
 import com.happyandjust.nameless.dsl.stripControlCodes
 import com.happyandjust.nameless.dsl.transformToPrecisionString
@@ -89,9 +88,11 @@ object EntityHook {
     }
 
     private fun getDamageFromString(text: String): Pair<Int, Boolean>? {
-        if (text.matches(DAMAGE_REGEX)) return instanceOrNull(text.toIntOrNull(), false, ::Pair)
+        if (text.matches(DAMAGE_REGEX)) return text.toIntOrNull()?.let { damage -> damage to false }
         return CRIT_DAMAGE.matchesMatcher(text) {
-            instanceOrNull(group("damage").toIntOrNull(), true, ::Pair)
+            group("damage").toIntOrNull()?.let { damage ->
+                damage to true
+            }
         }
     }
 }

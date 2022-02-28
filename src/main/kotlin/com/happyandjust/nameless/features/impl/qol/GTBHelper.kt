@@ -46,6 +46,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import net.minecraft.client.gui.inventory.GuiChest
+import net.minecraft.client.renderer.GlStateManager.disableDepth
+import net.minecraft.client.renderer.GlStateManager.enableDepth
 import net.minecraft.init.Items
 import net.minecraft.network.play.server.S3APacketTabComplete
 import net.minecraft.util.ResourceLocation

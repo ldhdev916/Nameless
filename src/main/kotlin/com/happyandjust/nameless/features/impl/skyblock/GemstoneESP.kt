@@ -19,7 +19,6 @@
 package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.core.TickTimer
-import com.happyandjust.nameless.dsl.contains
 import com.happyandjust.nameless.dsl.getAxisAlignedBB
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
@@ -97,7 +96,7 @@ object GemstoneESP : SimpleFeature(
                         val blockState = mc.theWorld.getBlockState(pos)
                         val block = blockState.block
 
-                        if (block in Blocks.stained_glass_pane to Blocks.stained_glass) {
+                        if (block in setOf(Blocks.stained_glass_pane, Blocks.stained_glass)) {
                             val gemstone = gemstoneBlockMap[block.getMetaFromState(blockState)] ?: continue
                             if (gemstone in selectedGemstoneTypes) {
                                 put(pos.getAxisAlignedBB(), gemstone.color)

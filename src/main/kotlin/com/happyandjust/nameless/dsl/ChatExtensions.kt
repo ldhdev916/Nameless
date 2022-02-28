@@ -53,6 +53,7 @@ fun sendClientMessage(chatComponent: IChatComponent?) {
 }
 
 fun sendDebugMessage(o: Any?) {
+    if (!Debug.enabled) return
     sendDebugMessage(ChatComponentText(o.toString()))
 }
 

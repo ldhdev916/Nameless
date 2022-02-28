@@ -20,7 +20,8 @@ package com.happyandjust.nameless.features.impl.general
 
 import com.happyandjust.nameless.MOD_ID
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.base.listParameter
+import com.happyandjust.nameless.features.settings
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.ModContainer
 
@@ -31,14 +32,19 @@ object RemoveCertainModID : SimpleFeature(
 ) {
 
     init {
-        val mods = Loader::class.java.getDeclaredField("mods")
-            .apply { isAccessible = true }[Loader.instance()] as List<*>
-        for (mod in mods.filterIsInstance<ModContainer>()) {
-            parameter(mod.modId == MOD_ID) {
-                matchKeyCategory()
-                key = mod.modId
-                title = "${mod.name} ${mod.version}"
-                desc = "Source File: ${mod.source.absolutePath}"
+        val mods = (Loader::class.java.getDeclaredField("mods")
+            .apply { isAccessible = true }[Loader.instance()] as List<*>).filterIsInstance<ModContainer>()
+
+        listParameter(mods.filter { it.modId == MOD_ID }) {
+            matchKeyCategory()
+            key = "mods"
+            title = "Mod List"
+
+            settings {
+                listStringSerializer = { "${it.name} ${it.version}" }
+                listAllValueList = {
+                    mods.sortedBy { it !in value }
+                }
             }
         }
     }

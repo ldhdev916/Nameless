@@ -20,7 +20,10 @@ package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.toChromaColor
-import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.dsl.stripControlCodes
+import com.happyandjust.nameless.dsl.toVec3
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.SpecialOverlayEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
@@ -61,7 +64,7 @@ object ShowDungeonsDoorKey : SimpleFeature(
                 EntityArmorStand::class.java,
                 mc.thePlayer.entityBoundingBox.expand(16.0, 5.0, 16.0)
             )
-                .find { it.displayName.unformattedText.stripControlCodes() in "Wither Key" to "Blood Key" }
+                .find { it.displayName.unformattedText.stripControlCodes() in setOf("Wither Key", "Blood Key") }
                 ?.toVec3()
         }
 

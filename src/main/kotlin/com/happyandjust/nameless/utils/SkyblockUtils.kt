@@ -34,7 +34,6 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.BlockPos
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.util.Constants
-import java.io.ByteArrayInputStream
 import java.util.*
 
 object SkyblockUtils {
@@ -66,7 +65,7 @@ object SkyblockUtils {
     }
 
     fun readNBTFromItemBytes(itemBytes: String): NBTTagCompound {
-        val inputStream = ByteArrayInputStream(Base64.getDecoder().decode(itemBytes)).buffered()
+        val inputStream = Base64.getDecoder().decode(itemBytes).inputStream().buffered()
 
         val nbt = CompressedStreamTools.readCompressed(inputStream)
 

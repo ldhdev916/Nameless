@@ -60,12 +60,12 @@ object NameHistoryCommand : Command("name") {
     @DefaultHandler
     fun handle(@DisplayName("Player Name") name: String) {
         Multithreading.runAsync {
-            val uuid = name.getUUID() ?: run {
+            val uuid = getUUID(name) ?: run {
                 sendPrefixMessage("§cFailed to get $name's uuid")
                 return@runAsync
             }
 
-            val nameHistories = uuid.getNameHistory() ?: run {
+            val nameHistories = getNameHistory(uuid) ?: run {
                 sendPrefixMessage("§cFailed to get $name's Name History")
                 return@runAsync
             }

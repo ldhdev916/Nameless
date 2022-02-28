@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.autoFillEnum
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
@@ -38,6 +39,7 @@ object DamageIndicator : SimpleFeature(
             onValueChange {
                 EntityHook.transformedDamageCache.clear()
             }
+            autoFillEnum()
         }
 
         parameter(1) {

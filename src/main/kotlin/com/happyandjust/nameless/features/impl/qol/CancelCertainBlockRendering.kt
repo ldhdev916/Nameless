@@ -55,7 +55,7 @@ object CancelCertainBlockRendering : SimpleFeature("cancelBlockRendering", "Canc
 
                 listStringSerializer = { it.displayName }
                 listAllValueList = {
-                    Block.blockRegistry.toList().sortedBy { it.displayName }.sortedWith(compareBy { it !in value })
+                    Block.blockRegistry.toList().sortedBy { it.displayName }.sortedBy { it !in value }
                 }
             }
 

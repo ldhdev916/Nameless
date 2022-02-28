@@ -24,7 +24,7 @@ import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.inventory.GuiContainer
-import net.minecraft.client.renderer.GlStateManager
+import net.minecraft.client.renderer.GlStateManager.*
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.WorldRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
@@ -33,103 +33,18 @@ import net.minecraft.inventory.Slot
 import org.lwjgl.opengl.GL11
 import java.awt.Color
 import java.awt.Rectangle
-import java.nio.FloatBuffer
 import kotlin.math.max
-
-fun disableAlpha() = GlStateManager.disableAlpha()
-fun enableAlpha() = GlStateManager.enableAlpha()
-fun alphaFunc(func: Int, ref: Float) = GlStateManager.alphaFunc(func, ref)
-fun enableLighting() = GlStateManager.enableLighting()
-fun disableLighting() = GlStateManager.disableLighting()
-fun enableLight(light: Int) = GlStateManager.enableLight(light)
-fun disableLight(light: Int) = GlStateManager.disableLight(light)
-fun enableColorMaterial() = GlStateManager.enableColorMaterial()
-fun disableColorMaterial() = GlStateManager.disableColorMaterial()
-fun colorMaterial(face: Int, mode: Int) = GlStateManager.colorMaterial(face, mode)
-fun disableDepth() = GlStateManager.disableDepth()
-fun enableDepth() = GlStateManager.enableDepth()
-fun depthFunc(depthFunc: Int) = GlStateManager.depthFunc(depthFunc)
-fun depthMask(flagIn: Boolean) = GlStateManager.depthMask(flagIn)
-fun disableBlend() = GlStateManager.disableBlend()
-fun enableBlend() = GlStateManager.enableBlend()
-fun blendFunc(srcFactor: Int, dstFactor: Int) = GlStateManager.blendFunc(srcFactor, dstFactor)
-fun tryBlendFuncSeparate(srcFactor: Int, dstFactor: Int, srcFactorAlpha: Int, dstFactorAlpha: Int) =
-    GlStateManager.tryBlendFuncSeparate(srcFactor, dstFactor, srcFactorAlpha, dstFactorAlpha)
-
-fun enableFog() = GlStateManager.enableFog()
-fun disableFog() = GlStateManager.disableFog()
-fun setFog(param: Int) = GlStateManager.setFog(param)
-fun setFogDensity(param: Float) = GlStateManager.setFogDensity(param)
-fun setFogStart(param: Float) = GlStateManager.setFogStart(param)
-fun setFogEnd(param: Float) = GlStateManager.setFogEnd(param)
-fun enableCull() = GlStateManager.enableCull()
-fun disableCull() = GlStateManager.disableCull()
-fun cullFace(mode: Int) = GlStateManager.cullFace(mode)
-fun enablePolygonOffset() = GlStateManager.enablePolygonOffset()
-fun disablePolygonOffset() = GlStateManager.disablePolygonOffset()
-fun doPolygonOffset(factor: Float, units: Float) = GlStateManager.doPolygonOffset(factor, units)
-fun enableColorLogic() = GlStateManager.enableColorLogic()
-fun disableColorLogic() = GlStateManager.disableColorLogic()
-fun colorLogicOp(opcode: Int) = GlStateManager.colorLogicOp(opcode)
-fun enableTexGenCoord(p_179087_0_: GlStateManager.TexGen) = GlStateManager.enableTexGenCoord(p_179087_0_)
-fun disableTexGenCoord(p_179100_0_: GlStateManager.TexGen) = GlStateManager.disableTexGenCoord(p_179100_0_)
-fun texGen(texGen: GlStateManager.TexGen, param: Int) = GlStateManager.texGen(texGen, param)
-fun texGen(p_179105_0_: GlStateManager.TexGen, pname: Int, params: FloatBuffer) =
-    GlStateManager.texGen(p_179105_0_, pname, params)
-
-fun setActiveTexture(texture: Int) = GlStateManager.setActiveTexture(texture)
-fun enableTexture2D() = GlStateManager.enableTexture2D()
-fun disableTexture2D() = GlStateManager.disableTexture2D()
-fun deleteTexture(texture: Int) = GlStateManager.deleteTexture(texture)
-fun bindTexture(texture: Int) = GlStateManager.bindTexture(texture)
-fun enableNormalize() = GlStateManager.enableNormalize()
-fun disableNormalize() = GlStateManager.disableNormalize()
-fun shadeModel(mode: Int) = GlStateManager.shadeModel(mode)
-fun enableRescaleNormal() = GlStateManager.enableRescaleNormal()
-fun disableRescaleNormal() = GlStateManager.disableRescaleNormal()
-fun viewport(x: Int, y: Int, width: Int, height: Int) = GlStateManager.viewport(x, y, width, height)
-fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean) =
-    GlStateManager.colorMask(red, green, blue, alpha)
-
-fun clearDepth(depth: Double) = GlStateManager.clearDepth(depth)
-fun clearColor(red: Float, green: Float, blue: Float, alpha: Float) =
-    GlStateManager.clearColor(red, green, blue, alpha)
-
-fun clear(mask: Int) = GlStateManager.clear(mask)
-fun matrixMode(mode: Int) = GlStateManager.matrixMode(mode)
-fun loadIdentity() = GlStateManager.loadIdentity()
-fun pushMatrix() = GlStateManager.pushMatrix()
-fun popMatrix() = GlStateManager.popMatrix()
-fun getFloat(pname: Int, params: FloatBuffer) = GlStateManager.getFloat(pname, params)
-fun ortho(left: Double, right: Double, bottom: Double, top: Double, zNear: Double, zFar: Double) =
-    GlStateManager.ortho(left, right, bottom, top, zNear, zFar)
-
-fun rotate(angle: Float, x: Float, y: Float, z: Float) = GlStateManager.rotate(angle, x, y, z)
-fun scale(x: Float, y: Float, z: Float) = GlStateManager.scale(x, y, z)
-fun scale(x: Double, y: Double, z: Double) = GlStateManager.scale(x, y, z)
-fun scale(x: Int, y: Int, z: Int) = GlStateManager.scale(x.toDouble(), y.toDouble(), z.toDouble())
-fun translate(x: Float, y: Float, z: Float) = GlStateManager.translate(x, y, z)
-fun translate(x: Double, y: Double, z: Double) = GlStateManager.translate(x, y, z)
-fun translate(x: Int, y: Int, z: Int) = GlStateManager.translate(x.toDouble(), y.toDouble(), z.toDouble())
-fun multMatrix(matrix: FloatBuffer) = GlStateManager.multMatrix(matrix)
-fun color(colorRed: Float, colorGreen: Float, colorBlue: Float, colorAlpha: Float) =
-    GlStateManager.color(colorRed, colorGreen, colorBlue, colorAlpha)
-
-fun color(colorRed: Float, colorGreen: Float, colorBlue: Float) =
-    GlStateManager.color(colorRed, colorGreen, colorBlue)
-
-fun color(rgb: Int) = GlStateManager.color(rgb.red / 255f, rgb.green / 255f, rgb.blue / 255f, rgb.alpha / 255f)
-
-fun resetColor() = GlStateManager.resetColor()
-fun callList(list: Int) = GlStateManager.callList(list)
 
 val tessellator: Tessellator
     get() = Tessellator.getInstance()
 
-fun WorldRenderer.pos(x: Int, y: Int, z: Int): WorldRenderer = pos(x.toDouble(), y.toDouble(), z.toDouble())
-
-fun FontRenderer.drawString(text: String, x: Int, y: Int, color: Int, dropShadow: Boolean) =
-    drawString(text, x.toFloat(), y.toFloat(), color, dropShadow)
+fun color(rgb: Int) {
+    val red = (rgb shr 16 and 255) / 255f
+    val green = (rgb shr 8 and 255) / 255f
+    val blue = (rgb and 255) / 255f
+    val alpha = (rgb shr 24 and 255) / 255f
+    color(red, green, blue, alpha)
+}
 
 fun FontRenderer.drawCenteredString(text: String, color: Int, dropShadow: Boolean = false) =
     drawString(text, -(getStringWidth(text) / 2F), -(FONT_HEIGHT / 2F), color, dropShadow)
@@ -142,7 +57,13 @@ fun Entity.getRenderPosZ(partialTicks: Float) = lastTickPosZ + (posZ - lastTickP
 
 fun Entity.getRenderYaw(partialTicks: Float) = prevRotationYaw + (rotationYaw - prevRotationYaw) * partialTicks
 
-fun WorldRenderer.color(rgb: Int) = color(rgb.red, rgb.green, rgb.blue, rgb.alpha)
+fun WorldRenderer.color(rgb: Int): WorldRenderer = apply {
+    val red = rgb shr 16 and 255
+    val green = rgb shr 8 and 255
+    val blue = rgb and 255
+    val alpha = rgb shr 24 and 255
+    color(red, green, blue, alpha)
+}
 
 inline fun translate(x: Int, y: Int, z: Int, block: () -> Unit) =
     translate(x.toDouble(), y.toDouble(), z.toDouble(), block)
@@ -242,7 +163,7 @@ val Rectangle.bottom
     get() = y + height
 
 fun setup(overlay: Overlay) {
-    translate(overlay.x, overlay.y, 0)
+    translate(overlay.x.toDouble(), overlay.y.toDouble(), 0.0)
     scale(overlay.scale, overlay.scale, 1.0)
 }
 

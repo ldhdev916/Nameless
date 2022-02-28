@@ -19,16 +19,11 @@
 package com.happyandjust.nameless.dsl
 
 import com.happyandjust.nameless.config.configMap
-import com.happyandjust.nameless.core.FAIRY_SOUL
-import com.happyandjust.nameless.hypixel.GameType
-import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import com.mojang.authlib.GameProfile
 import gg.essential.api.EssentialAPI
 import net.minecraft.block.Block
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
-import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTUtil
 import net.minecraft.util.AxisAlignedBB
@@ -36,8 +31,6 @@ import net.minecraft.util.BlockPos
 import net.minecraft.util.StringUtils
 import net.minecraft.util.Vec3
 import net.minecraft.world.World
-import net.minecraftforge.common.util.Constants
-import net.minecraftforge.fml.common.eventhandler.Event
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.awt.Toolkit
@@ -52,35 +45,16 @@ import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.roundToInt
 
-private val RARITY_PATTERN = Pattern.compile("(§[0-9a-f]§l§ka§r )?([§0-9a-fk-or]+)(?<rarity>[A-Z]+)")
 private val md = MessageDigest.getInstance("MD5")
 private val md5Cache = configMap<String>("md5")
 private val decimalFormat =
     DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)).apply { maximumFractionDigits = 640 }
+inline val mc: Minecraft
+    get() = Minecraft.getMinecraft()
 
-/**
- * Taken from SkyblockAddons under MIT License
- *
- * Modified
- *
- * https://github.com/BiscuitDevelopment/SkyblockAddons/blob/master/LICENSE
- * @author Biscuit
- */
-fun ItemStack?.getSkyBlockRarity(): ItemRarity? {
-    this ?: return null
-    if (!hasTagCompound()) return null
+inline val LOGGER: Logger
+    get() = LogManager.getLogger()
 
-    val display = getSubCompound("display", false) ?: return null
-    if (!display.hasKey("Lore")) return null
-    val lore = display.getTagList("Lore", Constants.NBT.TAG_STRING)
-    val values = ItemRarity.values()
-
-    return List(lore.tagCount()) {
-        RARITY_PATTERN.findMatcher(lore.getStringTagAt(it)) {
-            values.find { rarity -> group("rarity").startsWith(rarity.loreName) }
-        }
-    }.firstOrNull()
-}
 
 fun String.getMD5() =
     md5Cache.getOrPut(this) { md.digest(toByteArray()).joinToString("") { "%02x".format(it) } }
@@ -93,31 +67,7 @@ fun Double.formatDouble(): String = decimalFormat.format(this)
 fun BlockPos.getAxisAlignedBB() =
     AxisAlignedBB(x.toDouble(), y.toDouble(), z.toDouble(), x + 1.0, y + 1.0, z + 1.0)
 
-
-fun EntityArmorStand.isFairySoul(): Boolean {
-    if (Hypixel.currentGame != GameType.SKYBLOCK) return false
-    return getEquipmentInSlot(4)?.getSkullOwner()?.getMD5() == FAIRY_SOUL
-}
-
-fun ItemStack?.getSkyBlockID(): String {
-    this ?: return ""
-    val tagCompound = getSubCompound("ExtraAttributes", false) ?: return ""
-    return tagCompound.getString("id")
-}
-
 fun String.stripControlCodes(): String = StringUtils.stripControlCodes(this)
-
-val Int.red
-    get() = this shr 16 and 255
-
-val Int.green
-    get() = this shr 8 and 255
-
-val Int.blue
-    get() = this and 255
-
-val Int.alpha
-    get() = this shr 24 and 255
 
 fun Int.withAlpha(alpha: Int) = this and ((alpha and 255 shl 24) or 0xFFFFFF)
 
@@ -125,23 +75,13 @@ fun Int.withAlpha(alpha: Float) = withAlpha((alpha * 255).toInt())
 
 fun Int.insertCommaEvery3Character() = toString().reversed().chunked(3).joinToString(",").reversed()
 
-inline val mc: Minecraft
-    get() = Minecraft.getMinecraft()
-
 fun World.getBlockAtPos(pos: BlockPos): Block = getBlockState(pos).block
 
 fun BlockPos.toVec3() = Vec3(x.toDouble(), y.toDouble(), z.toDouble())
 
-inline val LOGGER: Logger
-    get() = LogManager.getLogger()
-
-fun Throwable.notifyException() {
-    sendClientMessage("§cException Occurred ${javaClass.name} $message")
-    printStackTrace()
-}
+fun Entity.toVec3() = Vec3(posX, posY, posZ)
 
 fun ItemStack.getSkullOwner(): String {
-
     return if (hasTagCompound() && tagCompound.hasKey("SkullOwner")) {
         NBTUtil.readGameProfileFromNBT(tagCompound.getCompoundTag("SkullOwner")).getSkullOwner()
     } else ""
@@ -154,8 +94,6 @@ inline fun <T> Pattern.matchesMatcher(s: String, block: Matcher.() -> T) =
 
 inline fun <T> Pattern.findMatcher(s: String, block: Matcher.() -> T) = matcher(s).takeIf { it.find() }?.run(block)
 
-fun Entity.toVec3() = Vec3(posX, posY, posZ)
-
 fun Double.transformToPrecision(precision: Int): Double {
     if (precision == 0) return roundToInt().toDouble()
 
@@ -166,22 +104,16 @@ fun Double.transformToPrecision(precision: Int): Double {
 
 fun Double.transformToPrecisionString(precision: Int) = transformToPrecision(precision).formatDouble()
 
-operator fun Pair<*, *>.contains(other: Any?) = first == other || second == other
-
 inline fun <reified E> Any?.withInstance(action: E.() -> Unit) {
     if (this is E) {
         action()
     }
 }
 
-fun Event.cancel() = apply {
-    isCanceled = true
-}
+fun getUUID(username: String) = runCatching { EssentialAPI.getMojangAPI().getUUID(username)?.get() }.getOrNull()
 
-fun String.getUUID() = runCatching { EssentialAPI.getMojangAPI().getUUID(this)?.get() }.getOrNull()
-
-fun UUID.getNameHistory() =
-    runCatching { EssentialAPI.getMojangAPI().getNameHistory(this) }.getOrNull()?.filterNotNull()
+fun getNameHistory(uuid: UUID) =
+    runCatching { EssentialAPI.getMojangAPI().getNameHistory(uuid) }.getOrNull()?.filterNotNull()
 
 val Block.displayName: String
     get() = runCatching { ItemStack(this).displayName }.getOrDefault(registryName.split(":")[1])

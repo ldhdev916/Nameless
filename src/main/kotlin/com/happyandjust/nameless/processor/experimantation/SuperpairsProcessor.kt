@@ -18,7 +18,10 @@
 
 package com.happyandjust.nameless.processor.experimantation
 
-import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.dsl.drawOnSlot
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.stripControlCodes
+import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.features.impl.skyblock.ExperimentationTableHelper
 import com.happyandjust.nameless.processor.Processor
 import net.minecraft.client.gui.inventory.GuiChest
@@ -66,8 +69,10 @@ object SuperpairsProcessor : Processor() {
 
                 slots.filter {
                     it.hasStack && it.stack.item !in
-                            Item.getItemFromBlock(Blocks.stained_glass) to
-                            Item.getItemFromBlock(Blocks.stained_glass_pane) &&
+                            setOf(
+                                Item.getItemFromBlock(Blocks.stained_glass),
+                                Item.getItemFromBlock(Blocks.stained_glass_pane)
+                            ) &&
                             arrayOf("Instant Find", "Gained +").none(it.stack.displayName::contains) &&
                             it.slotNumber !in itemBySlotNumber
                 }

@@ -73,7 +73,6 @@ object TextureOverlay : SimpleFeature(
         val files = dir.listFiles().orEmpty().filter {
             Files.probeContentType(it.toPath()).substringBefore("/") == "image"
         }
-
         for (file in files) {
             val name = file.name
 
@@ -96,7 +95,6 @@ object TextureOverlay : SimpleFeature(
                 wheel = max(image.width, image.height) / 5
 
                 config("textureOverlay", "${name}_position", Overlay.DEFAULT)
-
                 component {
                     UIImage(CompletableFuture.supplyAsync { image }).constrain {
                         width = basicWidthConstraint { image.width * currentScale.toFloat() }.fixed()

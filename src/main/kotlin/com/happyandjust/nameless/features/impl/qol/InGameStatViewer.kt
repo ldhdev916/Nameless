@@ -44,6 +44,7 @@ import gg.essential.elementa.dsl.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
+import net.minecraft.client.renderer.GlStateManager.*
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.MovingObjectPosition
 import net.minecraftforge.client.event.RenderWorldLastEvent
@@ -93,15 +94,15 @@ object InGameStatViewer : SimpleFeature(
                     matrix {
                         setup(overlayPoint)
 
-                        mc.fontRendererObj.drawString("§e${player.name}", 0, 0, Color.white.rgb, true)
+                        mc.fontRendererObj.drawString("§e${player.name}", 0f, 0f, Color.white.rgb, true)
 
                         var y = mc.fontRendererObj.FONT_HEIGHT
 
                         for (identifier in order.filter { it.supportGames.any(SupportGame::shouldDisplay) }) {
                             mc.fontRendererObj.drawString(
                                 identifier.informationType.getFormatText(player),
-                                0,
-                                y,
+                                0f,
+                                y.toFloat(),
                                 Color.white.rgb,
                                 true
                             )

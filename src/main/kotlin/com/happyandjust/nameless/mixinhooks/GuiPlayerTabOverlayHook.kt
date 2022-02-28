@@ -20,11 +20,11 @@ package com.happyandjust.nameless.mixinhooks
 
 import com.happyandjust.nameless.dsl.matrix
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.scale
-import com.happyandjust.nameless.dsl.translate
 import com.happyandjust.nameless.features.color
 import com.happyandjust.nameless.features.impl.qol.ShowPingInTab
 import net.minecraft.client.network.NetworkPlayerInfo
+import net.minecraft.client.renderer.GlStateManager.scale
+import net.minecraft.client.renderer.GlStateManager.translate
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 
 object GuiPlayerTabOverlayHook {

@@ -26,13 +26,11 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberFunctions
-import kotlin.reflect.full.staticProperties
 import kotlin.reflect.jvm.isAccessible
 
 private val createdHandlers = hashMapOf<KClass<out Event>, Handler<out Event>>()
 private val classLoader =
-    ASMEventHandler::class.staticProperties.first { it.name == "LOADER" }.apply { isAccessible = true }
-        .call() as ClassLoader
+    ASMEventHandler::class.java.getDeclaredField("LOADER").apply { isAccessible = true }[null] as ClassLoader
 
 class SubscriptionBuilder<T : Event>(private val eventClass: KClass<T>) {
 
@@ -173,3 +171,7 @@ inline fun <reified T : Event> on() = SubscriptionBuilder(T::class)
 
 val ClientChatReceivedEvent.pureText
     get() = message.unformattedText.trim().stripControlCodes()
+
+fun Event.cancel() = apply {
+    isCanceled = true
+}

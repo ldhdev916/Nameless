@@ -19,8 +19,6 @@
 package com.happyandjust.nameless.features.impl.general
 
 import com.happyandjust.nameless.core.value.toChromaColor
-import com.happyandjust.nameless.dsl.disableDepth
-import com.happyandjust.nameless.dsl.enableDepth
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.tessellator
 import com.happyandjust.nameless.features.base.SimpleFeature
@@ -28,6 +26,8 @@ import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.mixins.accessors.AccessorEntityFX
 import gg.essential.elementa.utils.invisible
 import net.minecraft.client.particle.EntityFX
+import net.minecraft.client.renderer.GlStateManager.disableDepth
+import net.minecraft.client.renderer.GlStateManager.enableDepth
 import net.minecraft.client.renderer.WorldRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.entity.Entity

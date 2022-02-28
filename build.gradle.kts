@@ -64,7 +64,7 @@ val include: Configuration by configurations.creating {
 
 dependencies {
     implementation("org.spongepowered:mixin:0.7.11-SNAPSHOT")
-    implementation("gg.essential:essential-1.8.9-forge:1854")
+    implementation("gg.essential:essential-1.8.9-forge:1933")
     include("gg.essential:loader-launchwrapper:1.1.3")
     include("net.objecthunter:exp4j:0.4.8")
     include("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") {
@@ -101,7 +101,9 @@ tasks {
         }
     }
 
-    build.get().dependsOn("shadowJar")
+    build {
+        dependsOn("shadowJar")
+    }
 
     named<Jar>("jar") {
         manifest.attributes(

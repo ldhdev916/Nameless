@@ -21,6 +21,7 @@ package com.happyandjust.nameless.utils
 import com.happyandjust.nameless.Location
 import com.happyandjust.nameless.dsl.*
 import net.minecraft.client.gui.ScaledResolution
+import net.minecraft.client.renderer.GlStateManager.*
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.entity.Entity
@@ -72,9 +73,9 @@ object RenderUtils {
 
         val d1 = MathHelper.func_181162_h(-time * 0.2 - MathHelper.floor_double(-time * 0.1).toDouble())
 
-        val r = rgb.red / 255f
-        val g = rgb.green / 255f
-        val b = rgb.blue / 255f
+        val r = (rgb shr 16 and 255) / 255f
+        val g = (rgb shr 8 and 255) / 255f
+        val b = (rgb and 255) / 255f
 
         val d2 = time * 0.025 * -1.5
         val d4 = 0.5 + cos(d2 + 2.356194490192345) * 0.2
@@ -158,6 +159,7 @@ object RenderUtils {
             GL11.glLineWidth(2F)
             disableDepth()
             tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO)
+
             color(color)
 
             val wr = tessellator.worldRenderer
@@ -364,14 +366,14 @@ object RenderUtils {
         draw3DString(text, Vec3(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5), scale, color, partialTicks)
     }
 
-    fun draw3DString(text: String, vec3: Vec3, scale: Double, color: Int, partialTicks: Float) {
+    fun draw3DString(text: String, vec3: Vec3, wildScale: Double, color: Int, partialTicks: Float) {
         val render = mc.renderViewEntity ?: return
 
         val x = vec3.xCoord - render.getRenderPosX(partialTicks)
         val y = vec3.yCoord - render.getRenderPosY(partialTicks)
         val z = vec3.zCoord - render.getRenderPosZ(partialTicks)
 
-        val scale = scale / wrapScaleTo1Block(text)
+        val scale = wildScale / wrapScaleTo1Block(text)
 
         matrix {
             translate(x, y, z)
@@ -470,7 +472,7 @@ object RenderUtils {
             )
 
         matrix {
-            translate(sr.scaledWidth / 2, sr.scaledHeight / 2, 0)
+            translate(sr.scaledWidth / 2f, sr.scaledHeight / 2f, 0f)
 
             val dist = mc.thePlayer.getDistance(target.xCoord, target.yCoord, target.zCoord)
 
@@ -487,7 +489,7 @@ object RenderUtils {
 
             mc.fontRendererObj.drawCenteredString(arrow, color)
 
-            scale(1, 1, 1)
+            scale(1f, 1f, 1f)
             color(1f, 1f, 1f, 1f)
 
         }
