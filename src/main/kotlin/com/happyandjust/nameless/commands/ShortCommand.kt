@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.commands
 
-import com.happyandjust.nameless.config.ConfigValue
+import com.happyandjust.nameless.config.configValue
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.events.PacketEvent
@@ -27,25 +27,20 @@ import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.utils.GuiUtil
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.serializer
 import net.minecraft.network.play.client.C01PacketChatMessage
 import java.util.regex.Pattern
 
 object ShortCommand : Command("shortcommand") {
 
-    var shortCommandInfos by ConfigValue(
-        "shortcommand",
-        "list",
-        emptyList(),
-        serializer<List<ShortCommandInfo>>()
-    )
+    var shortCommandInfos by configValue<List<ShortCommandInfo>>("shortcommand", "list", emptyList())
 
     override val commandAliases = hashSetOf(Alias("shortcmd"))
 
     init {
         on<PacketEvent.Sending>().subscribe {
             packet.withInstance<C01PacketChatMessage> {
-                val (shortCommandInfo, matcher) = shortCommandInfos.map { it to it.pair.first.matcher(message) }
+                val (shortCommandInfo, matcher) = shortCommandInfos
+                    .map { it to it.pair.first.matcher(message) }
                     .find { it.second.matches() } ?: return@subscribe
 
                 val groups = List(shortCommandInfo.pair.second) { matcher.group("g$it") }

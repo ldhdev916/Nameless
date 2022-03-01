@@ -28,6 +28,7 @@ import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.commands.DisplayName
 import net.minecraft.network.play.server.S3APacketTabComplete
+import java.util.regex.Matcher
 
 object ChangeHelmetTextureCommand : Command("helmettexture") {
 
@@ -57,13 +58,15 @@ object ChangeHelmetTextureCommand : Command("helmettexture") {
         on<PacketEvent.Received>().filter { packet is S3APacketTabComplete }.subscribe {
             mc.currentScreen.withInstance<AccessorGuiChat> {
                 pattern.matchesMatcher(inputField.text) {
-                    packet = S3APacketTabComplete(SkyblockUtils.allItems.values.filter {
-                        it.skin.isNotBlank() && it.id.contains(group("id"), true)
-                    }.map { it.id }.toTypedArray())
+                    packet = S3APacketTabComplete(getTabCompletion())
                 }
             }
         }
     }
+
+    private fun Matcher.getTabCompletion() = SkyblockUtils.allItems.values.filter {
+        it.skin.isNotBlank() && it.id.contains(group("id"), true)
+    }.map { it.id }.toTypedArray()
 
 
 }

@@ -29,8 +29,8 @@ import com.happyandjust.nameless.features.base.OverlayFeature
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.dsl.basicTextScaleConstraint
@@ -97,11 +97,11 @@ object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Sh
     }
 
     override fun shouldDisplayInRelocateGui(): Boolean {
-        return enabled && Hypixel.currentGame == GameType.SKYBLOCK
+        return enabled && Hypixel.currentGame is SkyBlock
     }
 
     override fun renderOverlay0(partialTicks: Float) {
-        if (enabled && Hypixel.currentGame == GameType.SKYBLOCK) {
+        if (enabled && Hypixel.currentGame is SkyBlock) {
             getCooltimeText()?.let {
                 matrix {
                     setup(overlayPoint)
@@ -126,7 +126,7 @@ object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Sh
     }
 
     init {
-        on<PacketEvent.Sending>().filter { lastWitherShieldUse == null && Hypixel.currentGame == GameType.SKYBLOCK }
+        on<PacketEvent.Sending>().filter { lastWitherShieldUse == null && Hypixel.currentGame is SkyBlock }
             .subscribe {
                 packet.withInstance<C08PacketPlayerBlockPlacement> {
                     if (stack.getSkyBlockID() in swords) {
@@ -135,7 +135,7 @@ object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Sh
                 }
             }
 
-        on<SpecialTickEvent>().filter { scanTimer.update().check() && Hypixel.currentGame == GameType.SKYBLOCK }
+        on<SpecialTickEvent>().filter { scanTimer.update().check() && Hypixel.currentGame is SkyBlock }
             .subscribe {
                 holdingSword = mc.thePlayer.heldItem.getSkyBlockID() in swords
             }

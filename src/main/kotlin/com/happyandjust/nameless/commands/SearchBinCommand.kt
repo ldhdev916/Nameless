@@ -19,75 +19,31 @@
 package com.happyandjust.nameless.commands
 
 import com.happyandjust.nameless.dsl.sendPrefixMessage
-import com.happyandjust.nameless.gui.auction.AuctionGui
-import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
-import com.happyandjust.nameless.utils.SkyblockUtils
+import com.happyandjust.nameless.hypixel.skyblock.BinProcessor
 import gg.essential.api.commands.*
-import gg.essential.api.utils.GuiUtil
-import kotlinx.coroutines.*
-import net.minecraft.event.ClickEvent
-import net.minecraft.event.HoverEvent
-import net.minecraft.util.ChatComponentText
-import net.minecraft.util.ChatStyle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object SearchBinCommand : Command("searchbin") {
 
-    private var openGui: (() -> AuctionGui)? = null
-
-    @OptIn(DelicateCoroutinesApi::class)
     @DefaultHandler
     fun handle(@DisplayName("Item Name") @Greedy name: String) {
         sendPrefixMessage("§aSearching $name...")
 
-        GlobalScope.launch {
-            val auctionInfos = arrayListOf<AuctionInfo>()
-
-            scanAuction { list ->
-                auctionInfos.addAll(
-                    list.filter { it.isBuyableBinAuction() && it.item_name.contains(name, true) }
-                )
-
-                if (auctionInfos.isEmpty()) {
-                    sendPrefixMessage("§cNo bin auction found for item $name")
-                    return@scanAuction
-                }
-
-                if (auctionInfos.size >= 700) {
-                    sendPrefixMessage("§cSo many items! (${auctionInfos.size}) try pass item name more specific")
-                    return@scanAuction
-                }
-
-                val click = ChatComponentText(" §a§l[CLICK]").apply {
-
-                    val hoverText = ChatComponentText("§aClick Here to View Items!")
-
-                    chatStyle = ChatStyle()
-                        .setChatClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/searchbin opengui"))
-                        .setChatHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))
-                }
-
-                openGui = { AuctionGui(auctionInfos) }
-                sendPrefixMessage(ChatComponentText("§aFound total ${auctionInfos.size} items!").appendSibling(click))
+        CoroutineScope(Dispatchers.IO).launch {
+            runCatching {
+                BinProcessor(name)
+                    .searchBinAuctions()
+                    .notifyInChat()
+                    .storeGuiCallBack()
+            }.getOrElse {
+                sendPrefixMessage("§c${it.message}")
+                return@launch
             }
         }
-    }
-
-    private suspend fun scanAuction(task: (List<AuctionInfo>) -> Unit) = coroutineScope {
-        List(SkyblockUtils.getMaxAuctionPage()) {
-            async {
-                runCatching { SkyblockUtils.getAuctionDataInPage(it) }.getOrDefault(emptyList())
-            }
-        }
-            .flatMap { it.await() }
-            .let(task)
     }
 
     @SubCommand("opengui")
-    fun openGui() {
-        openGui?.let {
-            GuiUtil.open(it())
-            return
-        }
-    }
-
+    fun openGui(key: Long) = BinProcessor.openIfExists(key)
 }

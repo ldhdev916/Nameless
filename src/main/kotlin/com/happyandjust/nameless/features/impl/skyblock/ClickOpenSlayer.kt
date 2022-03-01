@@ -21,8 +21,8 @@ package com.happyandjust.nameless.features.impl.skyblock
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiScreen
 import net.minecraft.client.gui.GuiChat
 import net.minecraft.event.ClickEvent
@@ -48,7 +48,7 @@ object ClickOpenSlayer : SimpleFeature("clickOpenSlayer", "Click Anywhere to Ope
         }
 
     init {
-        on<ClientChatReceivedEvent>().filter { enabled && Hypixel.currentGame == GameType.SKYBLOCK && type.toInt() != 2 }
+        on<ClientChatReceivedEvent>().filter { enabled && Hypixel.currentGame is SkyBlock && type.toInt() != 2 }
             .subscribe {
                 openMenuComponent = message.siblings.find {
                     it.unformattedText == "§2§l[OPEN MENU]" && it.chatStyle?.chatClickEvent?.run {

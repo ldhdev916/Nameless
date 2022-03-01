@@ -22,7 +22,6 @@ import com.happyandjust.nameless.commands.*
 import com.happyandjust.nameless.config.ConfigHandler
 import com.happyandjust.nameless.config.configValue
 import com.happyandjust.nameless.core.enums.OutlineMode
-import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.impl.misc.UpdateChecker
 import com.happyandjust.nameless.features.impl.qol.AutoRequeue
@@ -34,9 +33,8 @@ import com.happyandjust.nameless.listener.OutlineHandleListener
 import com.happyandjust.nameless.listener.WaypointListener
 import com.happyandjust.nameless.utils.SkyblockUtils
 import gg.essential.api.commands.Command
-import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Loader
@@ -66,20 +64,15 @@ object Nameless {
         UpdateChecker.checkForUpdate()
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     @Mod.EventHandler
     fun init(e: FMLInitializationEvent) {
-        if (!mc.framebuffer.isStencilEnabled) {
-            mc.framebuffer.enableStencil()
-        }
-
-        GlobalScope.launch {
+        CoroutineScope(Dispatchers.Default).launch {
             launch {
                 FeatureRegistry
                 AutoRequeue.isAutoGGLoaded = Loader.isModLoaded("autogg")
             }
             launch(Dispatchers.IO) {
-                launch { SkyblockUtils.fetchSkyBlockData() }
+                SkyblockUtils.fetchSkyBlockData()
             }
         }
 

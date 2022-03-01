@@ -25,28 +25,28 @@ import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.commands.SubCommand
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import net.minecraft.util.BlockPos
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
-import java.util.*
-import kotlin.concurrent.thread
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.system.measureTimeMillis
 
 object PathFindCommand : Command("pathfind") {
 
-    private val paths = Collections.synchronizedList(arrayListOf<BlockPos>())
+    private val paths = CopyOnWriteArrayList<BlockPos>()
 
     init {
         on<RenderWorldLastEvent>().subscribe {
-            synchronized(paths) {
-                RenderUtils.drawPath(paths, Color.red.rgb, partialTicks)
-            }
+            RenderUtils.drawPath(paths, Color.red.rgb, partialTicks)
         }
     }
 
     @DefaultHandler
     fun handle(x: Int, y: Int, z: Int, timeout: Int?) {
-        thread {
+        CoroutineScope(Dispatchers.Default).launch {
             paths.clear()
             val time = measureTimeMillis {
                 paths.addAll(ModPathFinding(BlockPos(x, y, z), true, (timeout ?: 10) * 1000L).findPath())

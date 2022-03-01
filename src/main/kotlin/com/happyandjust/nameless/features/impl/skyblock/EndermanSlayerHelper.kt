@@ -33,8 +33,8 @@ import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.utils.RenderUtils
 import com.happyandjust.nameless.utils.ScoreboardUtils
 import gg.essential.elementa.UIComponent
@@ -261,8 +261,10 @@ object EndermanSlayerHelper :
         )
     }
 
-    private fun checkForRequirement() =
-        enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.locrawInfo?.mode == "combat_3"
+    private fun checkForRequirement(): Boolean {
+        val currentGame = Hypixel.currentGame
+        return enabled && currentGame is SkyBlock && currentGame.island == "combat_3"
+    }
 
     init {
         on<RenderWorldLastEvent>().filter { checkForRequirement() }.subscribe {

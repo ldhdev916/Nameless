@@ -16,21 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.hypixel.skyblock
+package com.happyandjust.nameless.hypixel.games
 
-enum class DungeonFloor(val scoreboardName: String) {
+import com.happyandjust.nameless.hypixel.LocrawInfo
 
-    ENTRANCE("E"),
-    FLOOR_1("F1"), FLOOR_2("F2"), FLOOR_3("F3"), FLOOR_4("F4"),
-    FLOOR_5("F5"), FLOOR_6("F6"), FLOOR_7("F7"),
-    MASTER_1("M1"), MASTER_2("M2"), MASTER_3("M3"),
-    MASTER_4("M4"), MASTER_5("M5"), MASTER_6("M6");
+class Lobby : GameType {
 
-    companion object {
+    override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.mode == "lobby"
 
-        private val values = values()
+    override fun handleProperty(locrawInfo: LocrawInfo) = Unit
 
-        fun getByScoreboardName(s: String) = values.find { it.scoreboardName == s }
+    override fun printProperties() = Unit
 
+    companion object : GameTypeFactory {
+        override fun createGameTypeImpl() = Lobby()
     }
 }

@@ -31,9 +31,8 @@ import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.color
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.features.showFel
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.hypixel.PropertyKey
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.entity.item.EntityItem
@@ -85,8 +84,10 @@ object GlowStarDungeonMobs : SimpleFeature(
     private val checkTimer = TickTimer.withSecond(0.25)
     private val validTimer = TickTimer.withSecond(2.5)
 
-    private fun checkForEnabledAndDungeon() =
-        enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty(PropertyKey.DUNGEON)
+    private fun checkForEnabledAndDungeon(): Boolean {
+        val currentGame = Hypixel.currentGame
+        return enabled && currentGame is SkyBlock && currentGame.inDungeon
+    }
 
     init {
         on<SpecialTickEvent>().filter { checkForEnabledAndDungeon() }.subscribe {

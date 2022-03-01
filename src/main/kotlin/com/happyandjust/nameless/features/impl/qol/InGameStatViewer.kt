@@ -28,8 +28,11 @@ import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.gui.feature.components.MultiSelectorComponent
 import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
 import com.happyandjust.nameless.gui.fixed
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.BedWars
+import com.happyandjust.nameless.hypixel.games.Lobby
+import com.happyandjust.nameless.hypixel.games.MurderMystery
+import com.happyandjust.nameless.hypixel.games.SkyWars
 import com.happyandjust.nameless.utils.StatAPIUtils
 import com.happyandjust.nameless.utils.Utils
 import gg.essential.api.EssentialAPI
@@ -50,6 +53,8 @@ import net.minecraft.util.MovingObjectPosition
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 import kotlin.math.max
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 object InGameStatViewer : SimpleFeature(
     "inGameStatViewer",
@@ -294,16 +299,16 @@ object InGameStatViewer : SimpleFeature(
             override fun shouldDisplay() = EssentialAPI.getMinecraftUtil().isHypixel()
         },
         EXCEPT_LOBBY {
-            override fun shouldDisplay() = EssentialAPI.getMinecraftUtil().isHypixel() && !Hypixel.inLobby
+            override fun shouldDisplay() = EssentialAPI.getMinecraftUtil().isHypixel() && Hypixel.currentGame !is Lobby
         },
         SKYWARS {
-            override fun shouldDisplay() = Hypixel.currentGame == GameType.SKYWARS
+            override fun shouldDisplay() = Hypixel.currentGame is SkyWars
         },
         MURDER_MYSTERY {
-            override fun shouldDisplay() = Hypixel.currentGame == GameType.MURDER_MYSTERY
+            override fun shouldDisplay() = Hypixel.currentGame is MurderMystery
         },
         BEDWARS {
-            override fun shouldDisplay() = Hypixel.currentGame == GameType.BEDWARS
+            override fun shouldDisplay() = Hypixel.currentGame is BedWars
         };
 
         abstract fun shouldDisplay(): Boolean
@@ -312,7 +317,7 @@ object InGameStatViewer : SimpleFeature(
     enum class InformationType(val statName: String) {
         HYPIXEL_LEVEL("Hypixel Level") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return StatAPIUtils.networkExpToLevel(runCatching { jsonObject["networkExp"]!!.double }.getOrDefault(0.0))
+                return networkExpToLevel(runCatching { jsonObject["networkExp"]!!.double }.getOrDefault(0.0))
                     .toString()
             }
         },
@@ -324,7 +329,7 @@ object InGameStatViewer : SimpleFeature(
         },
         SKYWARS_LEVEL("SkyWars Level") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                return StatAPIUtils.skyWarsExpToLevel(
+                return skyWarsExpToLevel(
                     runCatching { jsonObject["stats"]!!.jsonObject["SkyWars"]!!.jsonObject["skywars_experience"]!!.int }
                         .getOrDefault(0)
                 ).toString()
@@ -465,6 +470,30 @@ object InGameStatViewer : SimpleFeature(
         abstract fun getStatValue(jsonObject: JsonObject): String
 
         companion object {
+
+            private val networkExpToLevel: (Double) -> Int =
+                { 1 + ((-8750 + sqrt(8750.0.pow(2) + 5000 * it)) / 2500).toInt() }
+            private val skyWarsExpToLevel: (Int) -> Int = {
+                when (it) {
+                    in 0 until 20 -> 1
+                    in 20 until 70 -> 2
+                    in 70 until 150 -> 3
+                    in 150 until 250 -> 4
+                    in 250 until 500 -> 5
+                    in 500 until 1000 -> 6
+                    in 1000 until 2000 -> 7
+                    in 2000 until 3500 -> 8
+                    in 3500 until 6000 -> 9
+                    in 6000 until 10000 -> 10
+                    in 10000 until 15000 -> 11
+                    else -> {
+                        val rest = it - 15000
+
+                        12 + (rest / 10000)
+                    }
+                }
+            }
+
             private fun JsonObject.getGameStat(gameName: String) = this["stats"]!!.jsonObject[gameName]!!.jsonObject
         }
     }

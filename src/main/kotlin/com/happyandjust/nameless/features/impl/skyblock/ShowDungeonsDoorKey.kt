@@ -30,9 +30,8 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.color
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.hypixel.PropertyKey
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.util.Vec3
@@ -55,8 +54,10 @@ object ShowDungeonsDoorKey : SimpleFeature(
         }
     }
 
-    private fun checkForRequirement() =
-        enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty(PropertyKey.DUNGEON)
+    private fun checkForRequirement(): Boolean {
+        val currentGame = Hypixel.currentGame
+        return enabled && currentGame is SkyBlock && currentGame.inDungeon
+    }
 
     init {
         on<SpecialTickEvent>().filter { checkForRequirement() && scanTimer.update().check() }.subscribe {

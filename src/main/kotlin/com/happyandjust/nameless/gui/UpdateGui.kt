@@ -51,7 +51,6 @@ class UpdateGui(markDownText: String) : WindowScreen(
 
     private fun check(): Boolean {
         if (mc.currentScreen !== this) canceled = true
-
         return canceled
     }
 

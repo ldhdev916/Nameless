@@ -36,7 +36,7 @@ abstract class TrajectoryPreview {
     protected var motionX = 0.0
     protected var motionY = 0.0
     protected var motionZ = 0.0
-    protected var entityHit: Entity? = null
+    private var entityHit: Entity? = null
     private val random = Random()
     protected var gaussian = 0.0
     protected var bool = false
@@ -87,7 +87,7 @@ abstract class TrajectoryPreview {
 
     protected abstract fun calculateMotions()
 
-    protected fun canMove() = when (mc.theWorld.getBlockState(BlockPos(posX, posY, posZ)).block) {
+    private fun canMove() = when (mc.theWorld.getBlockState(BlockPos(posX, posY, posZ)).block) {
         Blocks.air, Blocks.water, Blocks.flowing_water -> true
         else -> false
     }
@@ -100,7 +100,7 @@ abstract class TrajectoryPreview {
         }
     }
 
-    protected fun checkEntity(): Boolean {
+    private fun checkEntity(): Boolean {
         val vectorA = Vec3(posX, posY, posZ)
         val addVector = vectorA.addVector(motionX, motionY, motionZ)
         val vectorB = mc.theWorld.rayTraceBlocks(vectorA, addVector)?.hitVec ?: addVector

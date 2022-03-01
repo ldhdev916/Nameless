@@ -19,8 +19,8 @@
 package com.happyandjust.nameless.dsl
 
 import com.happyandjust.nameless.core.FAIRY_SOUL
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.hypixel.skyblock.ItemRarity
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.item.ItemStack
@@ -61,6 +61,5 @@ fun ItemStack?.getSkyBlockID(): String {
 
 
 fun EntityArmorStand.isFairySoul(): Boolean {
-    if (Hypixel.currentGame != GameType.SKYBLOCK) return false
-    return getEquipmentInSlot(4)?.getSkullOwner()?.getMD5() == FAIRY_SOUL
+    return Hypixel.currentGame is SkyBlock && getEquipmentInSlot(4)?.getSkullOwner()?.getMD5() == FAIRY_SOUL
 }

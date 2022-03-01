@@ -23,7 +23,7 @@ import net.minecraftforge.fml.common.eventhandler.ASMEventHandler
 import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.fml.common.eventhandler.EventPriority
 import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Opcodes
+import org.objectweb.asm.Opcodes.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.jvm.isAccessible
@@ -43,6 +43,7 @@ class SubscriptionBuilder<T : Event>(private val eventClass: KClass<T>) {
         filters.add(predicate)
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun subscribe(action: T.() -> Unit) {
         if (subscribed) return
         val handler = createdHandlers.getOrPut(eventClass) { Handler(eventClass.java) } as Handler<T>
@@ -77,65 +78,82 @@ class Handler<T : Event>(private val eventClass: Class<T>) {
     }
 
     private fun getHandlerClass(): Class<*> {
+        /*
+        public class Handler_SomeEvent {
+
+            private final Handler handler;
+
+            public Handler_SomeEvent(Handler var1) {
+                this.handler = var1;
+                MinecraftForge.EVENT_BUS.register(this);
+            }
+
+            @SubscribeEvent(receiveCanceled = true, priority = EventPriority.HIGHEST)
+            public void handle_SomeEvent(SomeEvent var1) {
+                this.handler.handleEvent(var1);
+            }
+
+        }
+         */
         val cw = ClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS)
         val eventName = eventClass.name.split(".").last().replace("$", "_")
         val fullEventName = eventClass.name.replace(".", "/")
+        val handler = "com/happyandjust/nameless/dsl/Handler"
 
         val name = "com/happyandjust/nameless/Handler_$eventName"
 
-        cw.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", null)
+        cw.visit(V1_8, ACC_PUBLIC, name, null, "java/lang/Object", null)
 
-        cw.visitField(Opcodes.ACC_PRIVATE, "handler", "Lcom/happyandjust/nameless/dsl/Handler;", null, null)
+        cw.visitField(ACC_PRIVATE + ACC_FINAL, "handler", "L$handler;", null, null)
 
-        with(cw.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "(Lcom/happyandjust/nameless/dsl/Handler;)V", null, null)) {
+        with(cw.visitMethod(ACC_PUBLIC, "<init>", "(L$handler;)V", null, null)) {
             visitCode()
-            visitVarInsn(Opcodes.ALOAD, 0)
-            visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false)
+            visitVarInsn(ALOAD, 0)
+            visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false)
 
-            visitVarInsn(Opcodes.ALOAD, 0)
-            visitVarInsn(Opcodes.ALOAD, 1)
-            visitFieldInsn(Opcodes.PUTFIELD, name, "handler", "Lcom/happyandjust/nameless/dsl/Handler;")
+            visitVarInsn(ALOAD, 0)
+            visitVarInsn(ALOAD, 1)
+            visitFieldInsn(PUTFIELD, name, "handler", "L$handler;")
 
             visitFieldInsn(
-                Opcodes.GETSTATIC,
+                GETSTATIC,
                 "net/minecraftforge/common/MinecraftForge",
                 "EVENT_BUS",
                 "Lnet/minecraftforge/fml/common/eventhandler/EventBus;"
             )
-            visitVarInsn(Opcodes.ALOAD, 0)
+            visitVarInsn(ALOAD, 0)
             visitMethodInsn(
-                Opcodes.INVOKEVIRTUAL,
+                INVOKEVIRTUAL,
                 "net/minecraftforge/fml/common/eventhandler/EventBus",
                 "register",
                 "(Ljava/lang/Object;)V",
                 false
             )
 
-            visitInsn(Opcodes.RETURN)
+            visitInsn(RETURN)
             visitEnd()
             visitMaxs(0, 0)
         }
 
-        with(cw.visitMethod(Opcodes.ACC_PUBLIC, "handle_$eventName", "(L$fullEventName;)V", null, null)) {
-
+        with(cw.visitMethod(ACC_PUBLIC, "handle_$eventName", "(L$fullEventName;)V", null, null)) {
             visitAnnotation("Lnet/minecraftforge/fml/common/eventhandler/SubscribeEvent;", true).apply {
                 visit("receiveCanceled", true)
                 visitEnum("priority", "Lnet/minecraftforge/fml/common/eventhandler/EventPriority;", "HIGHEST")
             }
             visitCode()
 
-            visitVarInsn(Opcodes.ALOAD, 0)
-            visitFieldInsn(Opcodes.GETFIELD, name, "handler", "Lcom/happyandjust/nameless/dsl/Handler;")
-            visitVarInsn(Opcodes.ALOAD, 1)
+            visitVarInsn(ALOAD, 0)
+            visitFieldInsn(GETFIELD, name, "handler", "L$handler;")
+            visitVarInsn(ALOAD, 1)
             visitMethodInsn(
-                Opcodes.INVOKEVIRTUAL,
-                "com/happyandjust/nameless/dsl/Handler",
+                INVOKEVIRTUAL,
+                handler,
                 "handleEvent",
                 "(Lnet/minecraftforge/fml/common/eventhandler/Event;)V",
                 false
             )
 
-            visitInsn(Opcodes.RETURN)
+            visitInsn(RETURN)
             visitEnd()
             visitMaxs(0, 0)
         }
@@ -148,6 +166,7 @@ class Handler<T : Event>(private val eventClass: Class<T>) {
         getHandlerClass().getConstructor(javaClass).newInstance(this)
     }
 
+    @Suppress("UNUSED")
     fun handleEvent(e: T) {
         for (listener in listeners) {
             if (listener.filter(e) && (!e.isCanceled || listener.receiveCanceled)) {

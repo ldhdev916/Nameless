@@ -16,15 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.hypixel
+package com.happyandjust.nameless.hypixel.games
 
-import com.happyandjust.nameless.hypixel.skyblock.DungeonFloor
+import com.happyandjust.nameless.hypixel.LocrawInfo
 
-enum class PropertyKey(supportedGame: GameType, val defaultValue: Any, description: String = "") {
+class GrinchSimulator : GameType {
 
-    DUNGEON(GameType.SKYBLOCK, false, "if player is in skyblock dungeon"),
-    MURDERER_TYPE(GameType.MURDER_MYSTERY, MurdererMode.CLASSIC, "assassin, classic, infection"),
-    PARTY_GAME_TYPE(GameType.PARTY_GAMES, PartyGamesType.NOTHING, "Supported Party Games Types"),
-    ISLAND(GameType.SKYBLOCK, "", "SkyBlock island"),
-    DUNGEON_FLOOR(GameType.SKYBLOCK, DungeonFloor.ENTRANCE, "Dungeons Floor")
+    override fun isCurrent(locrawInfo: LocrawInfo) =
+        locrawInfo.gameType == "ARCADE" && locrawInfo.mode == "GRINCH_SIMULATOR_V2"
+
+    override fun handleProperty(locrawInfo: LocrawInfo) = Unit
+
+    override fun printProperties() = Unit
+
+    companion object : GameTypeFactory {
+        override fun createGameTypeImpl() = GrinchSimulator()
+    }
+
+
 }

@@ -41,15 +41,16 @@ fun sendClientMessage(o: Any?) {
 }
 
 fun sendClientMessage(chatComponent: IChatComponent?) {
-    chatComponent ?: run {
-        sendClientMessage("null")
+    val sendingChatComponent = chatComponent ?: ChatComponentText("null")
+
+    val player = mc.thePlayer
+    if (player == null) {
+        LOGGER.info("[CHAT] ${sendingChatComponent.formattedText}")
         return
     }
-    mc.thePlayer?.run {
-        if (!MinecraftForge.EVENT_BUS.post(ClientChatReceivedEvent(1, chatComponent))) {
-            addChatMessage(chatComponent)
-        }
-    } ?: LOGGER.info("[CHAT] ${chatComponent.unformattedText}")
+    if (!MinecraftForge.EVENT_BUS.post(ClientChatReceivedEvent(1, sendingChatComponent))) {
+        player.addChatMessage(sendingChatComponent)
+    }
 }
 
 fun sendDebugMessage(o: Any?) {
@@ -59,11 +60,13 @@ fun sendDebugMessage(o: Any?) {
 
 fun sendDebugMessage(chatComponent: IChatComponent?) {
     if (!Debug.enabled) return
-    chatComponent ?: run {
-        sendDebugMessage("null")
+    val sendingChatComponent = chatComponent ?: ChatComponentText("null")
+
+    val player = mc.thePlayer
+    if (player == null) {
+        LOGGER.info("[DEBUG] ${sendingChatComponent.formattedText}")
         return
     }
-
-    mc.thePlayer?.addChatMessage(ChatComponentText("§6[§3Debug§6]§r ").appendSibling(chatComponent))
-        ?: LOGGER.info("[DEBUG] ${chatComponent.unformattedText}")
+    val debugChat = ChatComponentText("§6[§3Debug§6]§r ").appendSibling(chatComponent)
+    player.addChatMessage(debugChat)
 }

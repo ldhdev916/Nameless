@@ -36,8 +36,8 @@ import com.happyandjust.nameless.gui.feature.ColorCache
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.gui.relocate.RelocateGui
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import gg.essential.api.EssentialAPI
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.UIComponent
@@ -252,7 +252,7 @@ object HyChatChannelChanger : OverlayFeature(
         CO_OP(
             "Co-Op",
             "/cc",
-            { Hypixel.currentGame == GameType.SKYBLOCK }
+            { Hypixel.currentGame is SkyBlock }
         );
     }
 }

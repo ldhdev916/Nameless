@@ -18,9 +18,11 @@
 
 package com.happyandjust.nameless.utils
 
-import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.dsl.fetch
+import com.happyandjust.nameless.dsl.inputStream
+import com.happyandjust.nameless.dsl.isFairySoul
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
-import com.happyandjust.nameless.hypixel.skyblock.AuctionInfo
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
@@ -29,12 +31,8 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.decodeFromStream
 import net.minecraft.entity.item.EntityArmorStand
-import net.minecraft.nbt.CompressedStreamTools
-import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.BlockPos
 import net.minecraft.util.ResourceLocation
-import net.minecraftforge.common.util.Constants
-import java.util.*
 
 object SkyblockUtils {
     @OptIn(ExperimentalSerializationApi::class)
@@ -57,19 +55,12 @@ object SkyblockUtils {
     fun fetchSkyBlockData() = allItems
 
     fun getAllFairySoulsByEntity(island: String): List<FairySoul> {
-        return mc.theWorld.loadedEntityList.filter { it is EntityArmorStand && it.isFairySoul() }
+        return mc.theWorld.loadedEntityList
+            .filter { it is EntityArmorStand && it.isFairySoul() }
             .map {
                 val pos = BlockPos(it).up(2)
                 FairySoul(pos.x, pos.y, pos.z, island)
             }
-    }
-
-    fun readNBTFromItemBytes(itemBytes: String): NBTTagCompound {
-        val inputStream = Base64.getDecoder().decode(itemBytes).inputStream().buffered()
-
-        val nbt = CompressedStreamTools.readCompressed(inputStream)
-
-        return nbt.getTagList("i", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0)
     }
 
     fun getAllFairySoulsInWorld(island: String): List<FairySoul> {
@@ -78,24 +69,6 @@ object SkyblockUtils {
             return getAllFairySoulsByEntity("dungeon")
         }
 
-        return fairySoulMap[island] ?: return emptyList()
-    }
-
-    fun getAuctionDataInPage(page: Int): List<AuctionInfo> {
-        val jsonObject =
-            Json.decodeFromString<JsonObject>("https://api.hypixel.net/skyblock/auctions?page=$page".fetch())
-
-        if (jsonObject["success"]?.boolean != true) return emptyList()
-
-        return Json.decodeFromJsonElement<List<AuctionInfo>>(jsonObject["auctions"]!!).onEach {
-            it.skyBlockId = readNBTFromItemBytes(it.item_bytes).getCompoundTag("tag").getCompoundTag("ExtraAttributes")
-                .getString("id")
-        }
-    }
-
-    fun getMaxAuctionPage(): Int {
-        val json = Json.decodeFromString<JsonObject>("https://api.hypixel.net/skyblock/auctions".fetch())
-
-        return json["totalPages"]?.int ?: 0
+        return fairySoulMap.getOrDefault(island, emptyList())
     }
 }

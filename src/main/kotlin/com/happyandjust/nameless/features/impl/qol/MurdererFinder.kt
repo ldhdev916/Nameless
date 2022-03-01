@@ -26,10 +26,9 @@ import com.happyandjust.nameless.events.*
 import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.MurdererMode
-import com.happyandjust.nameless.hypixel.PropertyKey
+import com.happyandjust.nameless.hypixel.games.MurderMystery
 import com.happyandjust.nameless.pathfinding.ModPathFinding
 import com.happyandjust.nameless.utils.RenderUtils
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -211,9 +210,8 @@ object MurdererFinder : SimpleFeature(
 
     init {
         on<SpecialTickEvent>().filter {
-            checkForEnabledAndMurderMystery() && Hypixel.getProperty<MurdererMode>(
-                PropertyKey.MURDERER_TYPE
-            ) == MurdererMode.ASSASSIN
+            val currentGame = Hypixel.currentGame
+            enabled && currentGame is MurderMystery && currentGame.murdererMode == MurdererMode.ASSASSIN
         }.subscribe {
             if (targetName == null) {
                 targetName = getTargetName()?.takeIf { it != prevTargetName }?.also {
@@ -236,49 +234,53 @@ object MurdererFinder : SimpleFeature(
             pathsToTarget = emptyList()
         }
 
-        on<ClientChatReceivedEvent>().filter { checkForEnabledAndMurderMystery() }.subscribe {
-            when (Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)) {
-                MurdererMode.INFECTION -> {
-                    ALPHA_FOUND.matchesMatcher(pureText) {
-                        alpha = group("alpha")
-                        // this is why I set alpha to String, player may not be loaded when alpha is found
-                    }
-                    INFECTED.matchesMatcher(pureText) {
-                        val infectedName = group("infected")
-                        murderers.add(infectedName)
-                        survivors.remove(infectedName) // infected cannot be survivor smh
+        on<ClientChatReceivedEvent>().filter { enabled }.subscribe {
+            Hypixel.currentGame.withInstance<MurderMystery> {
+                when (murdererMode) {
+                    MurdererMode.INFECTION -> {
+                        ALPHA_FOUND.matchesMatcher(pureText) {
+                            alpha = group("alpha")
+                            // this is why I set alpha to String, player may not be loaded when alpha is found
+                        }
+                        INFECTED.matchesMatcher(pureText) {
+                            val infectedName = group("infected")
+                            murderers.add(infectedName)
+                            survivors.remove(infectedName) // infected cannot be survivor smh
 
-                        // same as reason why I set to String
+                            // same as reason why I set to String
+                        }
+                        ENVIRONMENT_INFECTED.matchesMatcher(pureText) {
+                            val infectedName = group("infected")
+                            murderers.add(infectedName)
+                            survivors.remove(infectedName)
+                        }
+                        ALPHA_LEFT.matchesMatcher(pureText) {
+                            alpha = group("name")
+                        }
                     }
-                    ENVIRONMENT_INFECTED.matchesMatcher(pureText) {
-                        val infectedName = group("infected")
-                        murderers.add(infectedName)
-                        survivors.remove(infectedName)
+                    MurdererMode.ASSASSIN -> {
+                        if (pureText == "Your kill contract has been updated!") {
+                            cancel()
+                            prevTargetName = targetName
+                            targetName = null // reset
+                        }
                     }
-                    ALPHA_LEFT.matchesMatcher(pureText) {
-                        alpha = group("name")
-                    }
+                    else -> {}
                 }
-                MurdererMode.ASSASSIN -> {
-                    if (pureText == "Your kill contract has been updated!") {
-                        cancel()
-                        prevTargetName = targetName
-                        targetName = null // reset
-                    }
-                }
-                else -> {}
             }
         }
 
         on<RenderWorldLastEvent>().filter {
-            checkForEnabledAndMurderMystery() && Hypixel.getProperty<MurdererMode>(
-                PropertyKey.MURDERER_TYPE
-            ) == MurdererMode.ASSASSIN && targetPath && pathsToTarget.isNotEmpty()
+            val currentGame = Hypixel.currentGame
+            enabled && currentGame is MurderMystery && currentGame.murdererMode == MurdererMode.ASSASSIN && targetPath && pathsToTarget.isNotEmpty()
         }.subscribe {
             RenderUtils.drawPath(pathsToTarget, Color.red.rgb, partialTicks)
         }
 
-        on<PacketEvent.Received>().filter { checkForEnabledAndMurderMystery() }.subscribe {
+        on<PacketEvent.Received>().filter { enabled }.subscribe {
+            val currentGame = Hypixel.currentGame
+            if (currentGame !is MurderMystery) return@subscribe
+
             val entityPlayer: EntityPlayer
             val heldItem: ItemStack?
             when (val msg = packet) {
@@ -294,7 +296,7 @@ object MurdererFinder : SimpleFeature(
             }
             heldItem ?: return@subscribe
 
-            val mode = Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)
+            val mode = currentGame.murdererMode
             val playerName = entityPlayer.name
 
             if (mode == MurdererMode.ASSASSIN) return@subscribe
@@ -329,11 +331,11 @@ object MurdererFinder : SimpleFeature(
         }
     }
 
-    private fun checkForEnabledAndMurderMystery() = enabled && Hypixel.currentGame == GameType.MURDER_MYSTERY
-
     init {
-        on<OutlineRenderEvent>().filter { checkForEnabledAndMurderMystery() }.subscribe {
-            val mode = Hypixel.getProperty<MurdererMode>(PropertyKey.MURDERER_TYPE)
+        on<OutlineRenderEvent>().filter { enabled }.subscribe {
+            val currentGame = Hypixel.currentGame
+            if (currentGame !is MurderMystery) return@subscribe
+            val mode = currentGame.murdererMode
             entity.withInstance<EntityPlayer> {
                 val color = when {
                     mode != MurdererMode.ASSASSIN && name in murderers && (mode != MurdererMode.INFECTION || alpha != name) -> murdererColor
@@ -354,11 +356,12 @@ object MurdererFinder : SimpleFeature(
             }
         }
 
-        on<SpecialOverlayEvent>().filter { checkForEnabledAndMurderMystery() && targetArrow }.subscribe {
-            getPlayerByName(targetName)?.let {
-                RenderUtils.drawDirectionArrow(it.toVec3(), Color.red.rgb)
+        on<SpecialOverlayEvent>().filter { enabled && Hypixel.currentGame is MurderMystery && targetArrow }
+            .subscribe {
+                getPlayerByName(targetName)?.let {
+                    RenderUtils.drawDirectionArrow(it.toVec3(), Color.red.rgb)
+                }
             }
-        }
     }
 
     //from here, assassins
@@ -401,13 +404,10 @@ object MurdererFinder : SimpleFeature(
     }
 
     class MurdererSet : HashSet<String>() {
-
         override fun add(element: String): Boolean {
             return super.add(element).also {
-                if (it && Hypixel.currentGame == GameType.MURDER_MYSTERY && Hypixel.getProperty<MurdererMode>(
-                        PropertyKey.MURDERER_TYPE
-                    ) == MurdererMode.CLASSIC && element != mc.thePlayer.name
-                ) {
+                val currentGame = Hypixel.currentGame
+                if (it && currentGame is MurderMystery && currentGame.murdererMode == MurdererMode.CLASSIC && element != mc.thePlayer.name) {
                     sendPrefixMessage("§cMurderer: $element")
                 }
             }

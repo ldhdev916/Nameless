@@ -22,7 +22,6 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.impl.misc.DisguiseNickname
 import com.happyandjust.nameless.features.nickname
 import java.util.regex.Matcher
-import java.util.regex.Pattern
 
 object FontRendererHook {
 
@@ -53,7 +52,7 @@ object FontRendererHook {
 
         prevSessionName = session
 
-        val pattern = Pattern.compile("(?i)$session")
+        val pattern = "(?i)$session".toPattern()
         var matcher: Matcher = pattern.matcher(text)
         while (matcher.find()) {
             val addNext = list.last().addNext

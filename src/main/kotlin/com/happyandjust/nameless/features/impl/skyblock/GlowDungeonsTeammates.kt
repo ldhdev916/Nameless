@@ -29,9 +29,8 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.color
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.hypixel.PropertyKey
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.scoreboard.ScorePlayerTeam
@@ -50,8 +49,10 @@ object GlowDungeonsTeammates : SimpleFeature("glowdungeonsteammates", "Glow Dung
     private val dungeonsTeammates = hashSetOf<EntityPlayer>()
     private val scanTimer = TickTimer.withSecond(1)
 
-    private fun checkForRequirements() =
-        enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty(PropertyKey.DUNGEON)
+    private fun checkForRequirements(): Boolean {
+        val currentGame = Hypixel.currentGame
+        return enabled && currentGame is SkyBlock && currentGame.inDungeon
+    }
 
     init {
         on<SpecialTickEvent>().filter { checkForRequirements() && scanTimer.update().check() }.subscribe {

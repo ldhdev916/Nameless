@@ -20,6 +20,7 @@ package com.happyandjust.nameless.listener
 
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.enums.OutlineMode
+import com.happyandjust.nameless.dsl.cancel
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.OutlineRenderEvent
@@ -36,12 +37,10 @@ object OutlineHandleListener {
 
     var manualRendering = false
     private val outlineEntityCache = hashMapOf<Entity, Int>()
-    private val changeColorEntityCache = hashMapOf<Entity, Int>()
 
     init {
         on<SpecialTickEvent>().subscribe {
             outlineEntityCache.clear()
-            changeColorEntityCache.clear()
 
             for (entity in mc.theWorld.loadedEntityList) {
                 val event = OutlineRenderEvent(entity)
@@ -50,27 +49,18 @@ object OutlineHandleListener {
                 outlineEntityCache[entity] = event.colorInfo?.color ?: continue
             }
         }
-        on<RenderWorldLastEvent>().subscribe {
-            for (entity in mc.theWorld.loadedEntityList) {
-
-                changeColorEntityCache[entity]?.let {
-                    manualRendering = true
-                    RenderUtils.changeEntityColor(entity, it, partialTicks)
-                    manualRendering = false
-                }
-
-                if (!RenderGlobalHook.canDisplayOutline() || Nameless.selectedOutlineMode == OutlineMode.BOX) {
+        on<RenderWorldLastEvent>().filter { !RenderGlobalHook.canDisplayOutline() || Nameless.selectedOutlineMode == OutlineMode.BOX }
+            .subscribe {
+                for (entity in mc.theWorld.loadedEntityList) {
                     outlineEntityCache[entity]?.let {
                         RenderUtils.drawOutlinedBox(entity.entityBoundingBox, it, partialTicks)
                     }
                 }
-
             }
-        }
 
         on<RenderLivingEvent.Specials.Pre<EntityLivingBase>>().subscribe {
             if (manualRendering) {
-                isCanceled = true
+                cancel()
             }
         }
     }

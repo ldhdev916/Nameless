@@ -28,7 +28,7 @@ object HypixelCommand : Command("currentdata") {
     fun handle() {
         sendPrefixMessage("Current Hypixel Game: ${Hypixel.currentGame}\n")
 
-        Hypixel.currentProperty.map { "Property key: ${it.key} Value: ${it.value}" }.forEach(::sendPrefixMessage)
+        Hypixel.currentGame?.printProperties()
 
         sendPrefixMessage("\n${Hypixel.locrawInfo}")
     }

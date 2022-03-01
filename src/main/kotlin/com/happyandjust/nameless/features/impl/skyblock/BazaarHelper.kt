@@ -21,8 +21,8 @@ package com.happyandjust.nameless.features.impl.skyblock
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
 import com.happyandjust.nameless.utils.ScoreboardUtils
 import gg.essential.elementa.ElementaVersion
@@ -66,7 +66,7 @@ object BazaarHelper : SimpleFeature(
     //§8- §6203,887.2 coins §7each | §a9§7x §7in §f1 §7order
 
     init {
-        on<GuiScreenEvent.InitGuiEvent.Post>().filter { enabled && Hypixel.currentGame == GameType.SKYBLOCK && gui is GuiChest }
+        on<GuiScreenEvent.InitGuiEvent.Post>().filter { enabled && Hypixel.currentGame is SkyBlock && gui is GuiChest }
             .subscribe {
                 gui.withInstance<AccessorGuiContainer> {
 
@@ -92,7 +92,7 @@ object BazaarHelper : SimpleFeature(
     }
 
     private fun GuiScreen.shouldDisplay(): Boolean {
-        if (!enabled || Hypixel.currentGame != GameType.SKYBLOCK || this !is GuiChest) return false
+        if (!enabled || Hypixel.currentGame !is SkyBlock || this !is GuiChest) return false
         inventorySlots.withInstance<ContainerChest> {
             val slots = inventorySlots.filter { it.inventory != mc.thePlayer.inventory }
             if (slots.size != 36) return false
@@ -107,7 +107,7 @@ object BazaarHelper : SimpleFeature(
     }
 
     private fun GuiScreen.updateDisplay() {
-        if (!enabled || Hypixel.currentGame != GameType.SKYBLOCK || this !is GuiChest) return
+        if (!enabled || Hypixel.currentGame !is SkyBlock || this !is GuiChest) return
         inventorySlots.withInstance<ContainerChest> {
             val slots = inventorySlots.filter { it.inventory != mc.thePlayer.inventory }
             if (slots.size != 36 || slots[10].stack?.displayName?.stripControlCodes() != "Buy Instantly") return

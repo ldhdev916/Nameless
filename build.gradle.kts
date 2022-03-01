@@ -76,6 +76,8 @@ dependencies {
     annotationProcessor("com.google.code.gson:gson:2.2.4")
     annotationProcessor("com.google.guava:guava:21.0")
     annotationProcessor("org.ow2.asm:asm-tree:6.2")
+
+    testImplementation(kotlin("test"))
 }
 
 sourceSets.main {
@@ -92,6 +94,10 @@ configure<NamedDomainObjectContainer<IReobfuscator>> {
 }
 
 tasks {
+    test {
+        useJUnitPlatform()
+    }
+
     processResources {
         inputs.property("version", project.version)
         inputs.property("mcversion", project.minecraft.version)

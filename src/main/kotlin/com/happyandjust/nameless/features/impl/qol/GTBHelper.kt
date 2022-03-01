@@ -29,8 +29,8 @@ import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.features.translate
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.GuessTheBuild
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiChat
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIContainer
@@ -169,7 +169,7 @@ object GTBHelper : OverlayFeature(
         }
     }
 
-    private fun checkForEnabledAndGuessTheBuild() = enabled && Hypixel.currentGame == GameType.GUESS_THE_BUILD
+    private fun checkForEnabledAndGuessTheBuild() = enabled && Hypixel.currentGame is GuessTheBuild
 
     init {
         on<PacketEvent.Received>().filter { checkForEnabledAndGuessTheBuild() }.subscribe {

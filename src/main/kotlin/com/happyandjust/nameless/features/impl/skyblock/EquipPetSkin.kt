@@ -24,8 +24,8 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.settings
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.hypixel.skyblock.PetSkinType
 import com.happyandjust.nameless.utils.SkyblockUtils
 import com.mojang.authlib.GameProfile
@@ -124,7 +124,7 @@ object EquipPetSkin : SimpleFeature(
 
     init {
         on<SpecialTickEvent>().filter {
-            enabled && Hypixel.currentGame == GameType.SKYBLOCK && scanTimer.update().check()
+            enabled && Hypixel.currentGame is SkyBlock && scanTimer.update().check()
         }.subscribe {
             currentModifiedPet = getNearestPossiblePet()
         }
@@ -141,7 +141,7 @@ object EquipPetSkin : SimpleFeature(
 
     @JvmStatic
     fun checkIfPetIsInInventory(itemStack: ItemStack): GameProfile? {
-        if (Hypixel.currentGame != GameType.SKYBLOCK) return null
+        if (Hypixel.currentGame !is SkyBlock) return null
         val gui = mc.currentScreen
         val stacks =
             if (gui is GuiContainer) {

@@ -67,6 +67,4 @@ inline fun <reified T : Any> dummySerializer() = object : KSerializer<T> {
     override fun deserialize(decoder: Decoder): T {
         error("You can not deserialize ${T::class.java.name}")
     }
-
-
 }

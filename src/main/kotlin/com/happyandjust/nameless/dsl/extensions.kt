@@ -57,7 +57,7 @@ inline val LOGGER: Logger
 
 
 fun String.getMD5() =
-    md5Cache.getOrPut(this) { md.digest(toByteArray()).joinToString("") { "%02x".format(it) } }
+    md5Cache.getOrPut(this) { md.digest(toByteArray()).joinToString("", transform = "%02x"::format)}
 
 fun String.copyToClipboard() =
     Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(this), null)

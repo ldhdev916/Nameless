@@ -23,7 +23,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
 @Serializable
-class AuctionInfo(
+data class AuctionInfo(
     @SerialName("uuid") val auctionId: String,
     val item_name: String,
     @SerialName("starting_bid") val price: Int,
@@ -37,40 +37,4 @@ class AuctionInfo(
     var skyBlockId = ""
 
     fun isBuyableBinAuction() = bin && bids.isEmpty() && !claimed
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as AuctionInfo
-
-        if (auctionId != other.auctionId) return false
-        if (item_name != other.item_name) return false
-        if (price != other.price) return false
-        if (item_bytes != other.item_bytes) return false
-        if (bin != other.bin) return false
-        if (bids != other.bids) return false
-        if (rarity != other.rarity) return false
-        if (lore != other.lore) return false
-        if (claimed != other.claimed) return false
-        if (skyBlockId != other.skyBlockId) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = auctionId.hashCode()
-        result = 31 * result + item_name.hashCode()
-        result = 31 * result + price
-        result = 31 * result + item_bytes.hashCode()
-        result = 31 * result + bin.hashCode()
-        result = 31 * result + bids.hashCode()
-        result = 31 * result + rarity.hashCode()
-        result = 31 * result + lore.hashCode()
-        result = 31 * result + claimed.hashCode()
-        result = 31 * result + skyBlockId.hashCode()
-        return result
-    }
-
-
 }

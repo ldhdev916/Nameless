@@ -28,10 +28,9 @@ import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.overlayParameter
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.gui.fixed
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PartyGamesType
-import com.happyandjust.nameless.hypixel.PropertyKey
+import com.happyandjust.nameless.hypixel.games.PartyGames
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.processor.partygames.*
 import gg.essential.elementa.components.UIContainer
@@ -159,7 +158,7 @@ object PartyGamesHelper : SimpleFeature("partyGamesHelper", "Party Games Helper"
                 container
             }
 
-            shouldDisplay { enabled && value && Hypixel.currentGame == GameType.PARTY_GAMES }
+            shouldDisplay { enabled && value && Hypixel.currentGame is PartyGames }
 
             render { /* LabEscapeProcessor */ }
         }
@@ -189,9 +188,8 @@ object PartyGamesHelper : SimpleFeature("partyGamesHelper", "Party Games Helper"
 
     init {
         on<SpecialTickEvent>().subscribe {
-
-            val type: PartyGamesType? =
-                if (Hypixel.currentGame == GameType.PARTY_GAMES) Hypixel.getProperty(PropertyKey.PARTY_GAME_TYPE) else null
+            val currentGame = Hypixel.currentGame
+            val type = (currentGame as? PartyGames)?.partyGamesType
 
             if (type != partyGameType) {
                 MinecraftForge.EVENT_BUS.post(PartyGameChangeEvent(partyGameType, type))

@@ -28,8 +28,8 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.invisible
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.BedWars
 import com.happyandjust.nameless.utils.Utils
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemArmor
@@ -51,7 +51,7 @@ object BedWarsESP : SimpleFeature(
             invisible = value
         }
 
-    private fun checkForEnabledAndBedwars() = enabled && Hypixel.currentGame == GameType.BEDWARS
+    private fun checkForEnabledAndBedwars() = enabled && Hypixel.currentGame is BedWars
 
     @JvmField
     val teamColorCache = hashMapOf<EntityPlayer, Int>()

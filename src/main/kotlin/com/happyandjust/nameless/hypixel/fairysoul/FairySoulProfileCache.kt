@@ -32,7 +32,7 @@ object FairySoulProfileCache {
         defaultProfile
     )
 
-    fun changeToProfileAndIfNotExistThenCreate(profileName: String) {
+    fun changeToProfile(profileName: String) {
         val uuid = mc.session.playerID
 
         val name = "$uuid-$profileName"

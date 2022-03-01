@@ -31,7 +31,7 @@ import kotlin.collections.set
 object ConfigHandler {
     private val customJson = Json { prettyPrint = true }
     var file = File("config/Nameless.json").apply {
-        if (!exists() || readBytes().decodeToString().isBlank()) {
+        if (!exists() || readText().isBlank()) {
             parentFile.mkdirs()
             writeText("{}")
         }

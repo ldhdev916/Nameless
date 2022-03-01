@@ -30,8 +30,8 @@ import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.color
 import com.happyandjust.nameless.features.scale
 import com.happyandjust.nameless.features.settings
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.SkyWars
 import gg.essential.elementa.utils.withAlpha
 import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.entity.item.EntityItem
@@ -127,7 +127,7 @@ object DisplayBetterArmor : SimpleFeature(
 
     init {
         on<SpecialTickEvent>()
-            .filter { enabled && Hypixel.currentGame == GameType.SKYWARS }
+            .filter { enabled && Hypixel.currentGame is SkyWars }
             .filter { scanTimer.update().check() }.subscribe {
                 scanInventory()
                 scanEntityItem()
@@ -179,7 +179,7 @@ object DisplayBetterArmor : SimpleFeature(
     }
 
     init {
-        on<GuiScreenEvent.BackgroundDrawnEvent>().filter { enabled && Hypixel.currentGame == GameType.SKYWARS }
+        on<GuiScreenEvent.BackgroundDrawnEvent>().filter { enabled && Hypixel.currentGame is SkyWars }
             .subscribe {
                 gui.withInstance<GuiInventory> {
                     val color = color.rgb

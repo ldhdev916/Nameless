@@ -16,17 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.hypixel
+package com.happyandjust.nameless.hypixel.games
 
-enum class GameType(val displayName: String, vararg val modeReqs: String) {
+import com.happyandjust.nameless.hypixel.LocrawInfo
 
-    SKYBLOCK("SKYBLOCK"),
-    MURDER_MYSTERY("MURDER_MYSTERY"),
-    BEDWARS("BEDWARS"),
-    GUESS_THE_BUILD("BUILD_BATTLE", "BUILD_BATTLE_GUESS_THE_BUILD"),
-    PARTY_GAMES("ARCADE", "PARTY"),
-    SKYWARS("SKYWARS"),
-    PIXEL_PARTY("PROTOTYPE", "PIXEL_PARTY"),
-    GRINCH_SIMULATOR("ARCADE", "GRINCH_SIMULATOR_V2")
+class BedWars : GameType {
+
+    override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "BEDWARS"
+
+    override fun handleProperty(locrawInfo: LocrawInfo) = Unit
+
+    override fun printProperties() = Unit
+
+    companion object : GameTypeFactory {
+        override fun createGameTypeImpl() = BedWars()
+    }
 
 }

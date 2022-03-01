@@ -26,8 +26,8 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.OverlayFeature
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.dsl.basicTextScaleConstraint
@@ -84,5 +84,5 @@ object LividDaggerBackStep : OverlayFeature(
     }
 
     private fun checkForRequirement() =
-        enabled && Hypixel.currentGame == GameType.SKYBLOCK && mc.thePlayer.heldItem.getSkyBlockID() == "LIVID_DAGGER"
+        enabled && Hypixel.currentGame is SkyBlock && mc.thePlayer.heldItem.getSkyBlockID() == "LIVID_DAGGER"
 }

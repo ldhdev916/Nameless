@@ -25,38 +25,46 @@ import com.happyandjust.nameless.features.order
 import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.commands.DisplayName
-import gg.essential.api.utils.Multithreading
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import net.minecraft.util.EnumChatFormatting
 
 object ViewStatCommand : Command("viewstat") {
 
     @DefaultHandler
     fun handle(@DisplayName("Name") name: String) {
-        Multithreading.runAsync {
+        CoroutineScope(Dispatchers.IO).launch {
             val uuid = getUUID(name) ?: run {
                 sendPrefixMessage("§cFailed to get uuid of $name")
-                return@runAsync
+                return@launch
+            }
+
+            val apiKey = HypixelAPIKey.apiKey
+            if (apiKey.isBlank()) {
+                sendPrefixMessage("Unknown Hypixel API Key")
+                return@launch
             }
 
             val identifiers =
                 InGameStatViewer.order.filter { it.supportGames.any(InGameStatViewer.SupportGame::shouldDisplay) }
 
             runCatching {
-                val jsonObject =
-                    Json.decodeFromString<JsonObject>("https://api.hypixel.net/player?key=${HypixelAPIKey.apiKey}&uuid=$uuid".fetch())["player"]!!.jsonObject
+                val apiUrl = "https://api.hypixel.net/player?key=$apiKey&uuid=$uuid"
+                val jsonObject = Json.decodeFromString<JsonObject>(apiUrl.fetch())["player"]!!.jsonObject
 
                 sendClientMessage("§bStats of ${getPlayerName(jsonObject)}")
 
                 sendClientMessage(identifiers.joinToString("\n") {
-                    it.informationType.run { getFormatText(getStatValue(jsonObject)) }
+                    val type = it.informationType
+                    type.getFormatText(type.getStatValue(jsonObject))
                 })
             }.onFailure {
-                sendClientMessage("§cException Occurred ${it.javaClass.name} ${it.message}")
+                sendClientMessage("§c$it")
                 it.printStackTrace()
             }
         }
@@ -65,16 +73,18 @@ object ViewStatCommand : Command("viewstat") {
     private fun getPlayerName(jsonObject: JsonObject): String {
         val displayName = jsonObject["displayname"]!!.string
 
-        return "${processRank(jsonObject)}$displayName"
+        return "${getRankOfPlayer(jsonObject)}$displayName"
     }
 
-    private fun processRank(jsonObject: JsonObject): String {
-        if ("prefix" in jsonObject) { // WTF
-            return "${jsonObject["prefix"]!!.string} "
+    private fun getRankOfPlayer(jsonObject: JsonObject): String {
+        val customPrefix = jsonObject["prefix"]
+        if (customPrefix != null) {
+            return "${customPrefix.string} "
         }
 
-        if ("rank" in jsonObject) {
-            when (jsonObject["rank"]!!.string) {
+        val specialRank = jsonObject["rank"]
+        if (specialRank != null) {
+            when (specialRank.string) {
                 "ADMIN" -> return "§c[ADMIN] "
                 "MODERATOR" -> return "§2[MOD] "
                 "HELPER" -> return "§9[HELPER] "
@@ -82,10 +92,9 @@ object ViewStatCommand : Command("viewstat") {
             }
         }
 
-        return when (runCatching { jsonObject["newPackageRank"]!!.string }.getOrDefault("NONE")) {
+        return when (jsonObject["newPackageRank"]?.string.orEmpty()) {
             "MVP_PLUS" -> {
-                val plus =
-                    if ("rankPlusColor" in jsonObject) jsonObject["rankPlusColor"]!!.jsonPrimitive.content else "RED"
+                val plus = jsonObject["rankPlusColor"]?.string ?: "RED"
                 val color = EnumChatFormatting.valueOf(plus)
 
                 if (jsonObject["monthlyPackageRank"]?.string == "SUPERSTAR") {

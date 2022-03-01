@@ -23,8 +23,8 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.autoFillEnum
 import com.happyandjust.nameless.features.base.listParameter
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.processor.Processor
 import com.happyandjust.nameless.processor.experimantation.ChronomatronProcessor
 import com.happyandjust.nameless.processor.experimantation.SuperpairsProcessor
@@ -35,7 +35,7 @@ import net.minecraftforge.client.event.GuiOpenEvent
 
 object ExperimentationTableHelper : SimpleFeature("experimentationTableHelper", "Experimentation Table Helper", "") {
 
-    private fun checkForRequirement() = enabled && Hypixel.currentGame == GameType.SKYBLOCK
+    private fun checkForRequirement() = enabled && Hypixel.currentGame is SkyBlock
     private var currentExperimentationType: ExperimentationType? = null
     val processors = hashMapOf<Processor, () -> Boolean>()
 

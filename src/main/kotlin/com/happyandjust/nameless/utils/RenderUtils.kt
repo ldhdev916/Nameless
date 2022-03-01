@@ -24,7 +24,6 @@ import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager.*
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.Entity
 import net.minecraft.util.*
 import org.lwjgl.opengl.GL11
 import kotlin.math.cos
@@ -164,28 +163,28 @@ object RenderUtils {
 
             val wr = tessellator.worldRenderer
 
-            axisAlignedBB.apply {
+            with(axisAlignedBB) {
                 translate(minX, minY, minZ)
 
-                val x = maxX - minX
-                val y = maxY - minY
-                val z = maxZ - minZ
+                val dx = maxX - minX
+                val dy = maxY - minY
+                val dz = maxZ - minZ
                 wr.begin(GL11.GL_LINE_LOOP, DefaultVertexFormats.POSITION)
 
                 //top
-                wr.pos(0.0, y, 0.0).endVertex()
-                wr.pos(x, y, 0.0).endVertex()
-                wr.pos(x, y, z).endVertex()
-                wr.pos(0.0, y, z).endVertex()
+                wr.pos(0.0, dy, 0.0).endVertex()
+                wr.pos(dx, dy, 0.0).endVertex()
+                wr.pos(dx, dy, dz).endVertex()
+                wr.pos(0.0, dy, dz).endVertex()
 
                 tessellator.draw()
 
                 wr.begin(GL11.GL_LINE_LOOP, DefaultVertexFormats.POSITION)
                 //bottom
                 wr.pos(0.0, 0.0, 0.0).endVertex()
-                wr.pos(x, 0.0, 0.0).endVertex()
-                wr.pos(x, 0.0, z).endVertex()
-                wr.pos(0.0, 0.0, z).endVertex()
+                wr.pos(dx, 0.0, 0.0).endVertex()
+                wr.pos(dx, 0.0, dz).endVertex()
+                wr.pos(0.0, 0.0, dz).endVertex()
 
                 tessellator.draw()
 
@@ -193,16 +192,16 @@ object RenderUtils {
                 wr.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION)
 
                 wr.pos(0.0, 0.0, 0.0).endVertex()
-                wr.pos(0.0, y, 0.0).endVertex()
+                wr.pos(0.0, dy, 0.0).endVertex()
 
-                wr.pos(x, 0.0, 0.0).endVertex()
-                wr.pos(x, y, 0.0).endVertex()
+                wr.pos(dx, 0.0, 0.0).endVertex()
+                wr.pos(dx, dy, 0.0).endVertex()
 
-                wr.pos(x, 0.0, z).endVertex()
-                wr.pos(x, y, z).endVertex()
+                wr.pos(dx, 0.0, dz).endVertex()
+                wr.pos(dx, dy, dz).endVertex()
 
-                wr.pos(0.0, 0.0, z).endVertex()
-                wr.pos(0.0, y, z).endVertex()
+                wr.pos(0.0, 0.0, dz).endVertex()
+                wr.pos(0.0, dy, dz).endVertex()
 
                 tessellator.draw()
             }
@@ -210,45 +209,6 @@ object RenderUtils {
             disableBlend()
             enableTexture2D()
         }
-    }
-
-    fun changeEntityColor(entity: Entity, color: Int, partialTicks: Float) {
-        val render = mc.renderViewEntity?.takeUnless { it == entity } ?: return
-
-        disableEntityShadow {
-            GL11.glEnable(GL11.GL_STENCIL_TEST)
-            GL11.glClearStencil(0)
-            clear(GL11.GL_STENCIL_BUFFER_BIT)
-
-            GL11.glStencilMask(0xFF)
-            GL11.glStencilOp(GL11.GL_REPLACE, GL11.GL_REPLACE, GL11.GL_REPLACE)
-            GL11.glStencilFunc(GL11.GL_NEVER, 1, 0xFF)
-
-            matrix {
-                translate(
-                    -render.getRenderPosX(partialTicks),
-                    -render.getRenderPosY(partialTicks),
-                    -render.getRenderPosZ(partialTicks)
-                )
-
-                mc.renderManager.doRenderEntity(
-                    entity,
-                    entity.getRenderPosX(partialTicks),
-                    entity.getRenderPosY(partialTicks),
-                    entity.getRenderPosZ(partialTicks),
-                    entity.getRenderYaw(partialTicks),
-                    partialTicks,
-                    true
-                )
-            }
-
-            GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP)
-            GL11.glStencilFunc(GL11.GL_EQUAL, 1, 0xFF)
-
-            drawBox(entity.entityBoundingBox.expand(1.0, 1.0, 1.0), color, partialTicks)
-            GL11.glDisable(GL11.GL_STENCIL_TEST)
-        }
-
     }
 
     fun draw3DPoint(point: Vec3, color: Int, size: Double, partialTicks: Float) {
@@ -309,7 +269,7 @@ object RenderUtils {
 
             val wr = tessellator.worldRenderer
 
-            axisAlignedBB.apply {
+            with(axisAlignedBB) {
                 val x = maxX - minX
                 val y = maxY - minY
                 val z = maxZ - minZ
@@ -447,7 +407,6 @@ object RenderUtils {
             wr.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION)
 
             for (pos in paths) {
-
                 wr.pos(pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5).endVertex()
             }
 

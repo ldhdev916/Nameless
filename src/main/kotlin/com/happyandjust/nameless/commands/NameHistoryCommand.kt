@@ -28,12 +28,9 @@ import gg.essential.api.commands.DisplayName
 import gg.essential.api.utils.Multithreading
 import gg.essential.api.utils.mojang.Name
 import gg.essential.elementa.dsl.width
-import kotlinx.coroutines.DelicateCoroutinesApi
 import java.util.*
 
 object NameHistoryCommand : Command("name") {
-
-    private fun Int.convert() = String.format("%02d", this)
 
     private val transformNameHistoryToString: (Name) -> String = {
         val isOriginal = it.changedToAt == 0L
@@ -42,33 +39,30 @@ object NameHistoryCommand : Command("name") {
             val calendar = Calendar.getInstance().apply { time = Date(it) }
 
             val year = calendar[Calendar.YEAR]
-            val month = (calendar[Calendar.MONTH] + 1).convert()
-            val day = calendar[Calendar.DATE].convert()
+            val month = "%02d".format(calendar[Calendar.MONTH] + 1)
+            val day = "%02d".format(calendar[Calendar.DATE])
 
-            val hour = calendar[Calendar.HOUR_OF_DAY].convert()
-            val minute = calendar[Calendar.MINUTE].convert()
-            val second = calendar[Calendar.SECOND].convert()
+            val hour = "%02d".format(calendar[Calendar.HOUR_OF_DAY])
+            val minute = "%02d".format(calendar[Calendar.MINUTE])
+            val second = "%02d".format(calendar[Calendar.SECOND])
 
             "$year-$month-$day @ $hour:$minute:$second"
 
         } ?: "Original Name"
 
-        "§6${if (isOriginal) "§l" else ""}${it.name} - $time"
+        buildString {
+            append("§6")
+            if (isOriginal) {
+                append("§l")
+            }
+            append("${it.name} - $time")
+        }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     @DefaultHandler
     fun handle(@DisplayName("Player Name") name: String) {
         Multithreading.runAsync {
-            val uuid = getUUID(name) ?: run {
-                sendPrefixMessage("§cFailed to get $name's uuid")
-                return@runAsync
-            }
-
-            val nameHistories = getNameHistory(uuid) ?: run {
-                sendPrefixMessage("§cFailed to get $name's Name History")
-                return@runAsync
-            }
+            val nameHistories = getNameHistories(name) ?: return@runAsync
 
             val nameHistoryTexts = nameHistories.map(transformNameHistoryToString).ifEmpty {
                 sendPrefixMessage("§cSomething went wrong! Try again")
@@ -82,6 +76,19 @@ object NameHistoryCommand : Command("name") {
             sendClientMessage(dash)
 
         }
+    }
+
+    private fun getNameHistories(name: String): List<Name>? {
+        val uuid = getUUID(name) ?: run {
+            sendPrefixMessage("§cFailed to get $name's uuid")
+            return null
+        }
+
+        val nameHistories = getNameHistory(uuid) ?: run {
+            sendPrefixMessage("§cFailed to get $name's Name History")
+            return null
+        }
+        return nameHistories
     }
 
     private fun getDashAsLongestString(longestWidth: Float) = "-".repeat((longestWidth / "-".width()).toInt())

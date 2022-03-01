@@ -24,15 +24,14 @@ import com.happyandjust.nameless.dsl.transformToPrecisionString
 import com.happyandjust.nameless.features.impl.skyblock.DamageIndicator
 import com.happyandjust.nameless.features.precision
 import com.happyandjust.nameless.features.type
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
 import net.minecraft.util.ChatComponentText
-import java.util.regex.Pattern
 
 object EntityHook {
 
-    private val CRIT_DAMAGE = Pattern.compile("✧(?<damage>\\d+)✧")
+    private val CRIT_DAMAGE = "✧(?<damage>\\d+)✧".toPattern()
     private val DAMAGE_REGEX = "\\d+".toRegex()
     val transformedDamageCache = hashMapOf<String, ChatComponentText>()
     private val critDamageColor = arrayOf("§f", "§f", "§e", "§6", "§c", "§c")
@@ -62,15 +61,14 @@ object EntityHook {
 
     fun getCustomDamageName(origin: ChatComponentText): ChatComponentText {
 
-        if (Hypixel.currentGame == GameType.SKYBLOCK && DamageIndicator.enabled) {
+        if (Hypixel.currentGame is SkyBlock && DamageIndicator.enabled) {
 
             val unformattedText = origin.unformattedText
 
             transformedDamageCache.getOrPut(unformattedText) {
                 val (damage, isCritical) = getDamageFromString(unformattedText.stripControlCodes()) ?: return origin
 
-                val damageText =
-                    transformDamage(damage, DamageIndicator.type, DamageIndicator.precision)
+                val damageText = transformDamage(damage, DamageIndicator.type, DamageIndicator.precision)
 
                 ChatComponentText(
                     if (isCritical) { // critical

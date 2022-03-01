@@ -33,9 +33,11 @@ import com.happyandjust.nameless.features.color
 import com.happyandjust.nameless.features.renderDirectionArrow
 import com.happyandjust.nameless.features.selectedTypes
 import com.happyandjust.nameless.features.settings
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.hypixel.PropertyKey
+import com.happyandjust.nameless.hypixel.games.GrinchSimulator
+import com.happyandjust.nameless.hypixel.games.Lobby
+import com.happyandjust.nameless.hypixel.games.MurderMystery
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.elementa.utils.withAlpha
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -175,13 +177,17 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
         RenderUtils.drawBox(boundingBox, color.rgb, partialTicks)
     }
 
-    private fun GiftGameType.shouldRender() = this in selectedTypes && when (this) {
-        GiftGameType.JERRY_WORKSHOP -> Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty<String>(
-            PropertyKey.ISLAND
-        ) == "winter"
-        GiftGameType.LOBBY -> Hypixel.inLobby
-        GiftGameType.GRINCH_SIMULATOR -> Hypixel.currentGame == GameType.GRINCH_SIMULATOR
-        GiftGameType.MURDER_MYSTERY -> Hypixel.currentGame == GameType.MURDER_MYSTERY
+    private fun GiftGameType.shouldRender(): Boolean {
+        if (this !in selectedTypes) return false
+
+        val currentGame = Hypixel.currentGame
+
+        return when (this) {
+            GiftGameType.JERRY_WORKSHOP -> currentGame is SkyBlock && currentGame.island == "winter"
+            GiftGameType.LOBBY -> currentGame is Lobby
+            GiftGameType.GRINCH_SIMULATOR -> currentGame is GrinchSimulator
+            GiftGameType.MURDER_MYSTERY -> currentGame is MurderMystery
+        }
     }
 
 

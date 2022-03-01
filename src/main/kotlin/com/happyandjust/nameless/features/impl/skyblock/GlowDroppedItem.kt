@@ -26,8 +26,8 @@ import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.init.Blocks
@@ -42,7 +42,7 @@ object GlowDroppedItem : SimpleFeature(
     private val itemRarityCache = hashMapOf<EntityItem, ColorInfo>()
     private val scanTimer = TickTimer.withSecond(1)
 
-    private fun checkForRequirement() = enabled && Hypixel.currentGame == GameType.SKYBLOCK
+    private fun checkForRequirement() = enabled && Hypixel.currentGame is SkyBlock
 
     init {
         on<SpecialTickEvent>().filter { checkForRequirement() && scanTimer.update().check() }.subscribe {

@@ -26,9 +26,7 @@ import com.happyandjust.nameless.gui.feature.ComponentType
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
 import kotlin.jvm.internal.TypeIntrinsics
-import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty
 
 open class FeatureParameter<T : Any, E : Any>(
@@ -47,7 +45,6 @@ open class FeatureParameter<T : Any, E : Any>(
         }.reversed().joinToString("_")
 
     lateinit var category: String
-    var subParameterOf: KMutableProperty0<*>? = null
 
     var onValueChange: (T) -> Unit = {}
         private set
@@ -56,7 +53,7 @@ open class FeatureParameter<T : Any, E : Any>(
         get() = if (!hasPrefer) error("Unable to find appropriate component type for class ${defaultValue.javaClass.name}") else field
     private var hasPrefer = false
 
-    override var componentType: ComponentType? = null
+    override var componentType: ComponentType?
         get() = when (defaultValue) {
             is Int -> ComponentType.SLIDER
             is Double -> ComponentType.SLIDER_DECIMAL
@@ -68,12 +65,25 @@ open class FeatureParameter<T : Any, E : Any>(
             else -> if (TypeIntrinsics.isFunctionOfArity(defaultValue, 0)) ComponentType.BUTTON else preferComponentType
         }
         set(value) {
-            field = value
             preferComponentType = value
             hasPrefer = true
         }
 
-    var value by lazyConfig { ConfigValue(category, jsonSaveKey, defaultValue, serializer) }
+    var value by object : ReadWriteProperty<FeatureParameter<T, E>, T> {
+
+        val lazyConfig by lazy { ConfigValue(category, jsonSaveKey, defaultValue, serializer) }
+
+        override fun getValue(thisRef: FeatureParameter<T, E>, property: KProperty<*>): T {
+            return lazyConfig.value
+        }
+
+        override fun setValue(thisRef: FeatureParameter<T, E>, property: KProperty<*>, value: T) {
+            if(lazyConfig.value != value) {
+                lazyConfig.value = value
+                onValueChange(value)
+            }
+        }
+    }
 
     override val property
         get() = ::value
@@ -106,37 +116,6 @@ inline fun <E : Any, reified T : List<E>> AbstractDefaultFeature<*, *>.listParam
 
     this@listParameter.parameters[key] = this
 }
-
-private class LazyConfig<T : Any, E : Any>(getter: () -> ConfigValue<T>) :
-    ReadOnlyProperty<FeatureParameter<T, E>, ConfigValue<T>> {
-
-    val value by lazy(getter)
-
-    override fun getValue(thisRef: FeatureParameter<T, E>, property: KProperty<*>): ConfigValue<T> {
-        return value
-    }
-}
-
-private class LateInitConfigValueDelegate<T : Any, E : Any>(private val lazyConfig: LazyConfig<T, E>) :
-    ReadWriteProperty<FeatureParameter<T, E>, T> {
-    override fun getValue(thisRef: FeatureParameter<T, E>, property: KProperty<*>): T {
-        return lazyConfig.value.value
-    }
-
-    override fun setValue(thisRef: FeatureParameter<T, E>, property: KProperty<*>, value: T) {
-        if (thisRef.value != value) {
-            lazyConfig.value.value = value
-            thisRef.onValueChange(value)
-        }
-    }
-}
-
-private operator fun <T : Any, E : Any> LazyConfig<T, E>.provideDelegate(
-    thisRef: FeatureParameter<T, E>,
-    property: KProperty<*>
-) = LateInitConfigValueDelegate(this)
-
-private fun <T : Any, E : Any> lazyConfig(getter: () -> ConfigValue<T>) = LazyConfig<T, E>(getter)
 
 inline fun <reified T : Enum<T>, E : Any> AbstractDefaultFeature<T, E>.autoFillEnum(
     noinline allValueList: () -> List<T> = { listEnum() },

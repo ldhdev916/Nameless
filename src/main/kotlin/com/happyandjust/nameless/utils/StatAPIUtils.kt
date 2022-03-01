@@ -22,8 +22,8 @@ import com.happyandjust.nameless.dsl.fetch
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.features.impl.qol.InGameStatViewer
 import com.happyandjust.nameless.features.impl.settings.HypixelAPIKey
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -32,35 +32,11 @@ import kotlinx.serialization.json.jsonObject
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 object StatAPIUtils {
 
     private val playerJSONCache = hashMapOf<EntityPlayer, JsonObject>()
     private val processingRequest = hashSetOf<EntityPlayer>()
-
-    val networkExpToLevel: (Double) -> Int = { 1 + ((-8750 + sqrt(8750.0.pow(2) + 5000 * it)) / 2500).toInt() }
-    val skyWarsExpToLevel: (Int) -> Int = {
-        when (it) {
-            in 0 until 20 -> 1
-            in 20 until 70 -> 2
-            in 70 until 150 -> 3
-            in 150 until 250 -> 4
-            in 250 until 500 -> 5
-            in 500 until 1000 -> 6
-            in 1000 until 2000 -> 7
-            in 2000 until 3500 -> 8
-            in 3500 until 6000 -> 9
-            in 6000 until 10000 -> 10
-            in 10000 until 15000 -> 11
-            else -> {
-                val rest = it - 15000
-
-                12 + (rest / 10000)
-            }
-        }
-    }
 
     init {
         MinecraftForge.EVENT_BUS.register(this)
@@ -72,14 +48,11 @@ object StatAPIUtils {
         processingRequest.clear()
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     fun getStatValue(player: EntityPlayer, informationType: InGameStatViewer.InformationType): String {
 
         val json = playerJSONCache[player] ?: run {
-
             if (processingRequest.add(player)) {
-
-                GlobalScope.launch {
+                CoroutineScope(Dispatchers.IO).launch {
                     val api = HypixelAPIKey.apiKey
 
                     val uuid = player.uniqueID

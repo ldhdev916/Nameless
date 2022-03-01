@@ -20,20 +20,21 @@ package com.happyandjust.nameless.trajectory
 
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.MathHelper
+import kotlin.math.PI
 
 class ArrowTrajectoryPreview : TrajectoryPreview() {
     override fun getAxisAlignedBB(): AxisAlignedBB =
         AxisAlignedBB(posX - 0.25, posY, posZ - 0.25, posX + 0.25, posY + 0.5, posZ + 0.25)
 
     override fun setInitialLocation() {
-        posX = entityPlayerSP.posX - MathHelper.cos(entityPlayerSP.rotationYaw / 180.0f * Math.PI.toFloat()) * 0.16f
+        posX = entityPlayerSP.posX - MathHelper.cos(entityPlayerSP.rotationYaw / 180.0f * PI.toFloat()) * 0.16f
         posY = entityPlayerSP.posY + entityPlayerSP.getEyeHeight().toDouble() - 0.10000000149011612
-        posZ = entityPlayerSP.posZ - MathHelper.sin(entityPlayerSP.rotationYaw / 180.0f * Math.PI.toFloat()) * 0.16f
+        posZ = entityPlayerSP.posZ - MathHelper.sin(entityPlayerSP.rotationYaw / 180.0f * PI.toFloat()) * 0.16f
         motionX =
-            (-MathHelper.sin(entityPlayerSP.rotationYaw / 180.0f * Math.PI.toFloat()) * MathHelper.cos(entityPlayerSP.rotationPitch / 180.0f * Math.PI.toFloat())).toDouble()
+            (-MathHelper.sin(entityPlayerSP.rotationYaw / 180.0f * PI.toFloat()) * MathHelper.cos(entityPlayerSP.rotationPitch / 180.0f * PI.toFloat())).toDouble()
         motionZ =
-            (MathHelper.cos(entityPlayerSP.rotationYaw / 180.0f * Math.PI.toFloat()) * MathHelper.cos(entityPlayerSP.rotationPitch / 180.0f * Math.PI.toFloat())).toDouble()
-        motionY = -MathHelper.sin(entityPlayerSP.rotationPitch / 180.0f * Math.PI.toFloat()).toDouble()
+            (MathHelper.cos(entityPlayerSP.rotationYaw / 180.0f * PI.toFloat()) * MathHelper.cos(entityPlayerSP.rotationPitch / 180.0f * PI.toFloat())).toDouble()
+        motionY = -MathHelper.sin(entityPlayerSP.rotationPitch / 180.0f * PI.toFloat()).toDouble()
         var x = motionX
         var y = motionY
         var z = motionZ

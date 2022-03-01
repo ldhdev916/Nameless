@@ -16,25 +16,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.impl.qol
+package com.happyandjust.nameless.hypixel.games
 
-import com.happyandjust.nameless.dsl.cancel
-import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.hypixel.games.Lobby
-import net.minecraftforge.client.event.RenderPlayerEvent
+import com.happyandjust.nameless.dsl.sendPrefixMessage
+import com.happyandjust.nameless.hypixel.LocrawInfo
 
-object HideNPC : SimpleFeature("hideNpc", "Hide NPC in Lobby", "hide npcs in tab, and stop rendering") {
+class SkyBlock : GameType {
 
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
+    var inDungeon = false
+        private set
+    var island = ""
+        private set
 
-    init {
-        on<RenderPlayerEvent.Pre>().filter { enabled && Hypixel.currentGame is Lobby && entityPlayer.uniqueID.version() == 2 }
-            .subscribe {
-                cancel()
-            }
+    override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "SKYBLOCK"
+
+    override fun handleProperty(locrawInfo: LocrawInfo) {
+        inDungeon = locrawInfo.mode == "dungeon"
+        island = locrawInfo.mode
+    }
+
+    override fun printProperties() {
+        sendPrefixMessage("In Dungeon: $inDungeon")
+        sendPrefixMessage("Island: $island")
+    }
+
+    companion object : GameTypeFactory {
+        override fun createGameTypeImpl() = SkyBlock()
     }
 }

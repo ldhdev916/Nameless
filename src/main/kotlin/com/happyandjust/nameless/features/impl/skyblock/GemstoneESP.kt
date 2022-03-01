@@ -30,9 +30,8 @@ import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.radius
 import com.happyandjust.nameless.features.selectedGemstoneTypes
 import com.happyandjust.nameless.features.settings
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.hypixel.PropertyKey
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.hypixel.skyblock.Gemstone
 import com.happyandjust.nameless.utils.RenderUtils
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -52,8 +51,10 @@ object GemstoneESP : SimpleFeature(
     "Render box on gemstones in SkyBlock Crystal Hollows"
 ) {
 
-    private fun checkForRequirement() =
-        enabled && Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty<String>(PropertyKey.ISLAND) == "crystal_hollows"
+    private fun checkForRequirement(): Boolean {
+        val currentGame = Hypixel.currentGame
+        return enabled && currentGame is SkyBlock && currentGame.island == "crystal_hollows"
+    }
 
     private val scanTimer = TickTimer.withSecond(2)
     private var gemstoneBlocks = mapOf<AxisAlignedBB, Int>()

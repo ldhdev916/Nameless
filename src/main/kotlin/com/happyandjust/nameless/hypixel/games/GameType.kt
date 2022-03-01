@@ -16,25 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.features.impl.qol
+package com.happyandjust.nameless.hypixel.games
 
-import com.happyandjust.nameless.dsl.cancel
-import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.hypixel.games.Lobby
-import net.minecraftforge.client.event.RenderPlayerEvent
+import com.happyandjust.nameless.hypixel.LocrawInfo
 
-object HideNPC : SimpleFeature("hideNpc", "Hide NPC in Lobby", "hide npcs in tab, and stop rendering") {
+interface GameType {
 
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
+    fun isCurrent(locrawInfo: LocrawInfo): Boolean
 
-    init {
-        on<RenderPlayerEvent.Pre>().filter { enabled && Hypixel.currentGame is Lobby && entityPlayer.uniqueID.version() == 2 }
-            .subscribe {
-                cancel()
-            }
-    }
+    fun handleProperty(locrawInfo: LocrawInfo)
+
+    fun printProperties()
+}
+
+interface GameTypeFactory {
+    fun createGameTypeImpl(): GameType
 }

@@ -18,38 +18,31 @@
 
 package com.happyandjust.nameless.hypixel
 
-import com.happyandjust.nameless.dsl.matchesMatcher
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
-import com.happyandjust.nameless.hypixel.skyblock.DungeonFloor
-import com.happyandjust.nameless.utils.ScoreboardUtils
+import com.happyandjust.nameless.hypixel.games.*
 import gg.essential.api.EssentialAPI
 import net.minecraftforge.common.MinecraftForge
-import java.util.regex.Pattern
 
 object Hypixel {
-    private val DUNGEONS_FLOOR_PATTERN = Pattern.compile("The Catacombs \\((?<name>([FM][1-7]|E))\\)")
+    private val gameTypeFactories =
+        setOf(BedWars, GrinchSimulator, GuessTheBuild, Lobby, MurderMystery, PartyGames, PixelParty, SkyBlock, SkyWars)
     var currentGame: GameType? = null
-    val currentProperty = hashMapOf<PropertyKey, Any>()
-    var inLobby = false
     var locrawInfo: LocrawInfo? = null
     private var prevServer: String? = null
 
-    fun <T> getProperty(key: PropertyKey): T {
-        val value = currentProperty[key] ?: return key.defaultValue as T
-
-        return value as T
-    }
-
     fun updateGame() {
-
-        currentProperty.clear()
         currentGame = null
-        inLobby = false
-
         if (!EssentialAPI.getMinecraftUtil().isHypixel()) return
 
         val locraw = locrawInfo ?: return
 
+        currentGame = gameTypeFactories.map { it.createGameTypeImpl() }.find { it.isCurrent(locraw) }
+        currentGame?.handleProperty(locraw)
+
+        handleServerChange(locraw)
+    }
+
+    private fun handleServerChange(locraw: LocrawInfo) {
         var serverChanged = false
 
         val server = locraw.server
@@ -58,53 +51,8 @@ object Hypixel {
         }
         prevServer = server
 
-        if (locraw.mode == "lobby") {
-            inLobby = true
-            return
-        }
-
-        val type = locraw.gameType
-
-        currentGame = GameType.values().find {
-            it.displayName == type && it.modeReqs.let { modeReqs ->
-                modeReqs.isEmpty() || modeReqs.contains(locraw.mode)
-            }
-        }
-
-        when (currentGame) {
-            GameType.MURDER_MYSTERY -> {
-                currentProperty[PropertyKey.MURDERER_TYPE] = when (locraw.mode) {
-                    "MURDER_INFECTION" -> MurdererMode.INFECTION
-                    "MURDER_CLASSIC", "MURDER_DOUBLE_UP" -> MurdererMode.CLASSIC
-                    "MURDER_ASSASSINS" -> MurdererMode.ASSASSIN
-                    else -> MurdererMode.CLASSIC // wtf
-                }
-            }
-            GameType.SKYBLOCK -> {
-                currentProperty[PropertyKey.DUNGEON] = locraw.mode == "dungeon"
-                currentProperty[PropertyKey.ISLAND] = locraw.mode
-
-                for (scoreboard in ScoreboardUtils.getSidebarLines(true)) {
-                    DUNGEONS_FLOOR_PATTERN.matchesMatcher(scoreboard.trim()) {
-                        currentProperty[PropertyKey.DUNGEON_FLOOR] =
-                            DungeonFloor.getByScoreboardName(group("name")) ?: return@matchesMatcher
-                    }
-                }
-            }
-            GameType.PARTY_GAMES -> {
-                val partyGames =
-                    (PartyGamesType.values().toList() - PartyGamesType.NOTHING).map { it to it.scoreboardName!! }
-                for (scoreboard in ScoreboardUtils.getSidebarLines(true)) {
-                    currentProperty[PropertyKey.PARTY_GAME_TYPE] =
-                        partyGames.find { scoreboard.contains(it.second, true) }?.first ?: continue
-                }
-            }
-            else -> {}
-        }
-
         if (serverChanged) {
             MinecraftForge.EVENT_BUS.post(HypixelServerChangeEvent(server))
         }
-
     }
 }

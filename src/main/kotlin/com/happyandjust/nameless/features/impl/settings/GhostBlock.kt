@@ -30,9 +30,8 @@ import com.happyandjust.nameless.features.ignoreSecret
 import com.happyandjust.nameless.features.restore
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.ComponentType
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.hypixel.PropertyKey
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import net.minecraft.block.BlockChest
 import net.minecraft.block.BlockLever
@@ -108,7 +107,8 @@ object GhostBlock : SimpleFeature(
     }
 
     private fun makeGhostBlock(pos: BlockPos) {
-        if (Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty(PropertyKey.DUNGEON) && ignoreSecret) {
+        val currentGame = Hypixel.currentGame
+        if (currentGame is SkyBlock && currentGame.inDungeon && ignoreSecret) {
             when (mc.theWorld.getBlockAtPos(pos)) {
                 is BlockChest, is BlockLever, is BlockSkull -> return
             }

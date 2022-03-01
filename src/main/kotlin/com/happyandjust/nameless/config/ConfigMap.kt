@@ -24,31 +24,47 @@ import kotlinx.serialization.serializer
 open class ConfigMap<V>(
     private val category: String,
     private val serializer: KSerializer<V>
-) {
+) : MutableMap<String, V> {
 
     private val internalMap =
         ConfigHandler.getKeys(category).associateWith { ConfigHandler.get(category, it, serializer) }
             .toMutableMap()
 
-    fun clear() {
+    override fun get(key: String) = internalMap[key]
+
+    override fun clear() {
         ConfigHandler.deleteCategory(category)
         internalMap.clear()
     }
 
-    fun remove(key: String): V? {
+    override fun remove(key: String): V? {
         ConfigHandler.deleteKey(category, key)
-
-        return internalMap.remove(key)
+        return internalMap.remove(category)
     }
 
-    operator fun get(key: String) = internalMap[key]
+    override val size: Int
+        get() = internalMap.size
 
-    operator fun set(key: String, value: V) {
+    override fun containsKey(key: String) = internalMap.containsKey(key)
+    override fun containsValue(value: V) = internalMap.containsValue(value)
+
+    override fun isEmpty() = internalMap.isEmpty()
+
+    override val entries: MutableSet<MutableMap.MutableEntry<String, V>>
+        get() = internalMap.entries
+    override val keys: MutableSet<String>
+        get() = internalMap.keys
+    override val values: MutableCollection<V>
+        get() = internalMap.values
+
+    override fun put(key: String, value: V): V? {
         ConfigHandler.write(category, key, value, serializer)
-        internalMap[key] = value
+        return internalMap.put(key, value)
     }
 
-    fun getOrPut(key: String, defaultValue: () -> V) = internalMap.getOrPut(key, defaultValue)
+    override fun putAll(from: Map<out String, V>) {
+        from.forEach(::put)
+    }
 }
 
 inline fun <reified V> configMap(category: String) = ConfigMap<V>(category, serializer())

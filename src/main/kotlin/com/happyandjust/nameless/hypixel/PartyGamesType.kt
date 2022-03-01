@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.hypixel
 
-enum class PartyGamesType(val scoreboardName: String?) {
+enum class PartyGamesType(val scoreboardName: String) {
 
     JIGSAW_RUSH("JIGSAW RUSH"),
     RPG_16("RPG-16"),
@@ -30,5 +30,5 @@ enum class PartyGamesType(val scoreboardName: String?) {
     LAB_ESCAPE("LAB ESCAPE"),
     WORKSHOP("WORKSHOP"),
     HIGH_GROUND("HIGH GROUND"),
-    NOTHING(null)
+    NOTHING("BRUH")
 }

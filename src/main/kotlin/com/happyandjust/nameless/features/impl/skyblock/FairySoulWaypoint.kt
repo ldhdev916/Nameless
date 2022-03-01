@@ -27,11 +27,10 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.showPath
-import com.happyandjust.nameless.hypixel.GameType
 import com.happyandjust.nameless.hypixel.Hypixel
-import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoulProfileCache
+import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.pathfinding.ModPathFinding
 import com.happyandjust.nameless.utils.RenderUtils
@@ -71,7 +70,7 @@ object FairySoulWaypoint : SimpleFeature(
         set(value) {
             if (field != value) {
                 field = value
-                FairySoulProfileCache.changeToProfileAndIfNotExistThenCreate(value)
+                FairySoulProfileCache.changeToProfile(value)
             }
         }
 
@@ -85,7 +84,7 @@ object FairySoulWaypoint : SimpleFeature(
     }
 
     init {
-        on<RenderWorldLastEvent>().filter { enabled && Hypixel.currentGame == GameType.SKYBLOCK }.subscribe {
+        on<RenderWorldLastEvent>().filter { enabled && Hypixel.currentGame is SkyBlock }.subscribe {
             if (showPath) {
                 RenderUtils.drawPath(fairySoulPaths, if (pathFreezed) freezedPathColor else Color.red.rgb, partialTicks)
             }
@@ -94,7 +93,10 @@ object FairySoulWaypoint : SimpleFeature(
             }
         }
 
-        on<SpecialTickEvent>().filter { enabled && Hypixel.currentGame == GameType.SKYBLOCK }.subscribe {
+        on<SpecialTickEvent>().filter { enabled }.subscribe {
+            val currentGame = Hypixel.currentGame
+            if (currentGame !is SkyBlock) return@subscribe
+
             currentSkyblockIsland?.let {
                 if (it == "dungeon" && dungeonFairySoulScanTimer.update().check()) {
                     currentIslandFairySouls = SkyblockUtils.getAllFairySoulsByEntity("dungeon")
@@ -115,7 +117,7 @@ object FairySoulWaypoint : SimpleFeature(
                         }
                 }
             } ?: run {
-                currentSkyblockIsland = Hypixel.getProperty(PropertyKey.ISLAND)
+                currentSkyblockIsland = currentGame.island
 
                 currentSkyblockIsland?.let {
                     currentIslandFairySouls = SkyblockUtils.getAllFairySoulsInWorld(it)
@@ -134,7 +136,7 @@ object FairySoulWaypoint : SimpleFeature(
                 pathFreezed = !pathFreezed
             }
 
-        on<PacketEvent.Sending>().filter { Hypixel.currentGame == GameType.SKYBLOCK }.subscribe {
+        on<PacketEvent.Sending>().filter { Hypixel.currentGame is SkyBlock }.subscribe {
             packet.withInstance<C02PacketUseEntity> {
                 if (action == C02PacketUseEntity.Action.ATTACK) {
                     val entity = getEntityFromWorld(mc.theWorld)
@@ -147,15 +149,14 @@ object FairySoulWaypoint : SimpleFeature(
             }
         }
 
-        on<ClientChatReceivedEvent>().filter { type.toInt() != 2 && Hypixel.currentGame == GameType.SKYBLOCK }
-            .subscribe {
-                PROFILE.matchesMatcher(pureText) {
-                    currentSkyBlockProfile = group("profile")
-                }
-                PROFILE_CHANGE.matchesMatcher(pureText) {
-                    currentSkyBlockProfile = group("profile")
-                }
+        on<ClientChatReceivedEvent>().filter { type.toInt() != 2 && Hypixel.currentGame is SkyBlock }.subscribe {
+            PROFILE.matchesMatcher(pureText) {
+                currentSkyBlockProfile = group("profile")
             }
+            PROFILE_CHANGE.matchesMatcher(pureText) {
+                currentSkyBlockProfile = group("profile")
+            }
+        }
     }
 
     private fun EntityArmorStand.getNearestPossibleFairySoul() =

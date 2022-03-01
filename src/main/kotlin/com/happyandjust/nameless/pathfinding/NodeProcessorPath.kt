@@ -33,8 +33,6 @@ import net.minecraft.util.MathHelper
 import net.minecraft.util.Vec3i
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.pathfinder.NodeProcessor
-import java.util.*
-import kotlin.concurrent.timerTask
 import kotlin.math.abs
 
 class NodeProcessorPath(
@@ -42,8 +40,7 @@ class NodeProcessorPath(
     private val timeout: Long,
     private val cache: Boolean,
     private val additionalValidCheck: (BlockPos) -> Boolean
-) :
-    NodeProcessor() {
+) : NodeProcessor() {
 
     companion object {
         private val directionVectors = buildSet {
@@ -60,28 +57,23 @@ class NodeProcessorPath(
         }
     }
 
-    private var shouldEnd = false
+    private var endTimeMillis = 0L
     private val passableMap = hashMapOf<BlockPos, Boolean>()
     private val blockMap = hashMapOf<BlockPos, Block>()
 
     private fun BlockPos.isPassable() = if (cache) {
-        passableMap.getOrPut(this) {
-            mc.theWorld.isBlockLoaded(this, false) && getBlockAtPos(this).isPassable(mc.theWorld, this)
-        }
-    } else getBlockAtPos(this).isPassable(mc.theWorld, this)
+        passableMap.getOrPut(this) { noCachePassable() }
+    } else noCachePassable()
+
+    private fun BlockPos.noCachePassable() =
+        mc.theWorld.isBlockLoaded(this, false) && getBlockAtPos(this).isPassable(mc.theWorld, this)
 
     private fun getBlockAtPos(pos: BlockPos) =
         if (cache) blockMap.getOrPut(pos) { mc.theWorld.getBlockAtPos(pos) } else mc.theWorld.getBlockAtPos(pos)
 
     override fun initProcessor(iblockaccessIn: IBlockAccess?, entityIn: Entity?) {
         super.initProcessor(iblockaccessIn, entityIn)
-        shouldEnd = false
-        Timer().schedule(
-            timerTask {
-                shouldEnd = true
-            },
-            timeout
-        )
+        endTimeMillis = System.currentTimeMillis() + timeout
     }
 
     private fun jumpCheck(pos: BlockPos): Boolean {
@@ -118,7 +110,7 @@ class NodeProcessorPath(
         maxDistance: Float
     ): Int {
 
-        if (shouldEnd) {
+        if (System.currentTimeMillis() >= endTimeMillis) {
             return 0
         }
 
@@ -134,20 +126,7 @@ class NodeProcessorPath(
             val current = BlockPos(newX, newY, newZ)
             val up = BlockPos(newX, newY + 1, newZ)
 
-            if (!canFly && dir.y > 0 && getBlockAtPos(current) != Blocks.ladder) {
-                if (listOf(
-                        getHighestGround(BlockPos(currentPoint.xCoord, currentPoint.yCoord, currentPoint.zCoord)),
-                        getHighestGround(BlockPos(newX + dir.x, newY + dir.y, newZ + dir.z))
-                    ).any { newY - it.y > 2 }
-                ) continue
-            }
-
-            if (isDiagonal) {
-                val subX = current.add(-dir.x, 0, 0)
-                val subZ = current.add(0, 0, -dir.z)
-
-                if ((!isValid(subX) || !isValid(subX.up())) && (!isValid(subZ) || !isValid(subZ.up()))) continue
-            }
+            if (isUnableToMove(dir, current, isDiagonal)) continue
 
             val pathPoint = openPoint(newX, newY, newZ)
 
@@ -171,15 +150,37 @@ class NodeProcessorPath(
         return i
     }
 
-    private fun getHighestGround(pos: BlockPos): BlockPos {
-        var pos = pos
-        while (getBlockAtPos(pos).run {
-                isPassable(mc.theWorld, pos) && material != Material.water && this !is BlockLadder
-            }) {
+    private fun isUnableToMove(dir: Vec3i, current: BlockPos, isDiagonal: Boolean): Boolean {
+        val (curX, curY, curZ) = Triple(current.x, current.y, current.z)
+        val (prevX, prevY, prevZ) = Triple(curX - dir.x, curY - dir.y, curZ - dir.z)
+
+        if (!canFly && dir.y > 0 && getBlockAtPos(current) != Blocks.ladder) {
+            val check: BlockPos.() -> Boolean = {
+                curY - getHighestGround(this).y > 2
+            }
+            if (BlockPos(prevX, prevY, prevZ).check()) return true
+            if (BlockPos(curX + dir.x, curY + dir.y, curZ + dir.z).check()) return true
+        }
+
+        if (isDiagonal) {
+            val subX = current.add(-dir.x, 0, 0)
+            val subZ = current.add(0, 0, -dir.z)
+
+            if ((!isValid(subX) || !isValid(subX.up())) && (!isValid(subZ) || !isValid(subZ.up()))) return true
+        }
+        return false
+    }
+
+    private fun getHighestGround(posParam: BlockPos): BlockPos {
+        var pos = posParam
+        while (getBlockAtPos(pos).canPassThrough(pos)) {
             pos = pos.down()
             if (pos.y <= 0) return pos
         }
 
         return pos
     }
+
+    private fun Block.canPassThrough(pos: BlockPos) =
+        isPassable(mc.theWorld, pos) && material != Material.water && this !is BlockLadder
 }
