@@ -27,8 +27,8 @@ import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.color
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import net.minecraft.client.gui.FontRenderer
@@ -39,13 +39,13 @@ import java.awt.Color
 object GlowDungeonsTeammates : SimpleFeature("glowdungeonsteammates", "Glow Dungeons Teammates", "") {
 
     init {
-        parameter(Color.green.toChromaColor()) {
-            matchKeyCategory()
-            key = "color"
-            title = "Teammates Glowing Color"
-        }
+        hierarchy { +::color }
     }
 
+    private var color by parameter(Color.green.toChromaColor()) {
+        key = "color"
+        title = "Teammates Glowing Color"
+    }
     private val dungeonsTeammates = hashSetOf<EntityPlayer>()
     private val scanTimer = TickTimer.withSecond(1)
 

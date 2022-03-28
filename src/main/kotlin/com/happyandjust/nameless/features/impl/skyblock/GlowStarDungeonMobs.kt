@@ -27,10 +27,9 @@ import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.color
 import com.happyandjust.nameless.features.settings
-import com.happyandjust.nameless.features.showFel
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import net.minecraft.entity.Entity
@@ -49,32 +48,26 @@ object GlowStarDungeonMobs : SimpleFeature(
     "Glow Star Dungeons mobs"
 ) {
 
-    @JvmStatic
-    var showFelJVM
-        get() = showFel
-        set(value) {
-            showFel = value
-        }
-
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-
     init {
-        parameter(Color.yellow.toChromaColor()) {
-            matchKeyCategory()
-            key = "color"
-            title = "Outline Color"
-        }
+        hierarchy {
+            +::color
 
-        parameter(false) {
-            matchKeyCategory()
-            key = "showFel"
-            title = "Show Fel"
-            desc = "Make fel visible"
-
-            settings { ordinal = 1 }
+            +::showFel
         }
+    }
+
+    private var color by parameter(Color.yellow.toChromaColor()) {
+        key = "color"
+        title = "Outline Color"
+    }
+
+    @JvmStatic
+    var showFel by parameter(false) {
+        key = "showFel"
+        title = "Show Fel"
+        desc = "Make fel visible"
+
+        settings { ordinal = 1 }
     }
 
     @JvmField

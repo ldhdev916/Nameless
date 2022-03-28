@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
@@ -26,11 +26,8 @@ import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.base.OverlayFeature
-import com.happyandjust.nameless.features.base.autoFillEnum
-import com.happyandjust.nameless.features.base.listParameter
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.exceptionPrefix
-import com.happyandjust.nameless.features.selectedPrefixTypes
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.ColorCache
 import com.happyandjust.nameless.gui.fixed
@@ -63,30 +60,37 @@ object HyChatChannelChanger : OverlayFeature(
     "HyChat Channel Changer",
     "Add button where you could select chat channel like party, guild, reply in hypixel"
 ) {
+
+    init {
+        hierarchy {
+            +::exceptionPrefix
+
+            +::selectedPrefixTypes
+        }
+    }
+
     override var overlayPoint by configValue("hychat", "overlay", Overlay.DEFAULT)
     private var currentPrefix by configValue("hychat", "currentPrefix", "/ac")
     private val channelButtons = ChannelsContainer.children.filterIsInstance<ChannelButton>()
     private val window = Window(ElementaVersion.V1).apply { ChannelsContainer childOf this }
 
-    init {
-        parameter("!") {
-            matchKeyCategory()
-            key = "exceptionPrefix"
-            title = "Exception Prefix"
-            desc =
-                "If you write this prefix at the first of your chat message, that message will be prevented from going to channel you selected\n§lSet this to empty if you don't want this feature"
+    private var exceptionPrefix by parameter("!") {
+        key = "exceptionPrefix"
+        title = "Exception Prefix"
+        desc =
+            "If you write this prefix at the first of your chat message, that message will be prevented from going to channel you selected\n§lSet this to empty if you don't want this feature"
 
-            settings {
-                validator = ChatAllowedCharacters::isAllowedCharacter
-            }
+        settings {
+            validator = ChatAllowedCharacters::isAllowedCharacter
         }
+    }
 
-        listParameter(PrefixType.values().toList()) {
-            matchKeyCategory()
-            key = "selectedPrefixTypes"
-            title = "Selected Chat Types"
+    private var selectedPrefixTypes by parameter(PrefixType.values().toList()) {
+        key = "selectedPrefixTypes"
+        title = "Selected Chat Types"
 
-            settings { ordinal = 1 }
+        settings {
+            ordinal = 1
             autoFillEnum { it.prettyName }
         }
     }
@@ -126,7 +130,7 @@ object HyChatChannelChanger : OverlayFeature(
         }
 
         on<PacketEvent.Sending>().filter { enabled && EssentialAPI.getMinecraftUtil().isHypixel() }.subscribe {
-            packet.withInstance<C01PacketChatMessage> {
+            withInstance<C01PacketChatMessage>(packet) {
                 if (message.startsWith("/")) return@subscribe
                 packet = C01PacketChatMessage(
                     if (exceptionPrefix.isNotBlank() && message.startsWith(exceptionPrefix)) {

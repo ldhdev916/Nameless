@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.listener
 
-import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.dsl.cancel
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
@@ -35,16 +34,13 @@ object LocrawListener {
 
     private var sentCommand = false
     private val JSON = "\\{\"server\".+}".toRegex()
-    private val updateTimer = TickTimer.withSecond(2)
     private var locrawTick = 0
+    private val locrawJson = Json { ignoreUnknownKeys = true }
 
     init {
         on<SpecialTickEvent>().filter { EssentialAPI.getMinecraftUtil().isHypixel() && ++locrawTick == 20 }.subscribe {
             sentCommand = true
             mc.thePlayer.sendChatMessage("/locraw")
-        }
-        on<SpecialTickEvent>().filter { updateTimer.update().check() }.subscribe {
-            Hypixel.updateGame()
         }
         on<WorldEvent.Load>().subscribe {
             locrawTick = 0
@@ -58,10 +54,13 @@ object LocrawListener {
                     }
                     val prev = locrawInfo
                     runCatching {
-                        locrawInfo = Json.decodeFromString(pureText)
+                        locrawInfo = locrawJson.decodeFromString(pureText)
 
                         updateGame()
-                    }.onFailure { locrawInfo = prev }
+                    }.onFailure {
+                        it.printStackTrace()
+                        locrawInfo = prev
+                    }
 
                     sentCommand = false
                 }

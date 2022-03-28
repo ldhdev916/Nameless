@@ -18,14 +18,13 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.OverlayFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.hide
-import com.happyandjust.nameless.features.press
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
@@ -53,19 +52,23 @@ import java.awt.Color
 object AutoAcceptParty : OverlayFeature("autoAcceptParty", "Auto Accept Party") {
 
     init {
-        parameter(true) {
-            matchKeyCategory()
-            key = "hide"
-            title = "Hide Party Request Message"
-        }
+        hierarchy {
+            +::hide
 
-        parameter(false) {
-            matchKeyCategory()
-            key = "press"
-            title = "Press to Join"
-            desc =
-                "Disable automatically join party and instead, Press Y/N to accept/deny party request\nYou can change the key in ESC -> Settings -> Controls"
+            +::press
         }
+    }
+
+    private var hide by parameter(true) {
+        key = "hide"
+        title = "Hide Party Request Message"
+    }
+
+    private var press by parameter(false) {
+        key = "press"
+        title = "Press to Join"
+        desc =
+            "Disable automatically join party and instead, Press Y/N to accept/deny party request\nYou can change the key in ESC -> Settings -> Controls"
     }
 
     private val MESSAGE = """
@@ -110,11 +113,14 @@ object AutoAcceptParty : OverlayFeature("autoAcceptParty", "Auto Accept Party") 
 
         on<InputEvent.KeyInputEvent>().subscribe {
             currentPartyInfo?.let {
-                if (KeyBindingCategory.ACCEPT_PARTY.getKeyBinding().isKeyDown) {
-                    mc.thePlayer.sendChatMessage("/p accept ${it.nickname}")
-                    currentPartyInfo = null
-                } else if (KeyBindingCategory.DENY_PARTY.getKeyBinding().isKeyDown) {
-                    currentPartyInfo = null
+                when {
+                    KeyBindingCategory.ACCEPT_PARTY.keyBinding.isKeyDown -> {
+                        mc.thePlayer.sendChatMessage("/p accept ${it.nickname}")
+                        currentPartyInfo = null
+                    }
+                    KeyBindingCategory.DENY_PARTY.keyBinding.isKeyDown -> {
+                        currentPartyInfo = null
+                    }
                 }
             }
         }
@@ -152,9 +158,11 @@ object AutoAcceptParty : OverlayFeature("autoAcceptParty", "Auto Accept Party") 
             height = ChildBasedSizeConstraint()
         } childOf block
 
+        val acceptKeyName = Keyboard.getKeyName(KeyBindingCategory.ACCEPT_PARTY.keyBinding.keyCode)
+        val denyKeyName = Keyboard.getKeyName(KeyBindingCategory.DENY_PARTY.keyBinding.keyCode)
         val texts = arrayOf(
             "§6Party Request From §aSomeone",
-            "§6Press [§a${getKeyName(KeyBindingCategory.ACCEPT_PARTY)}§6] to Accept [§c${getKeyName(KeyBindingCategory.DENY_PARTY)}§6] to Deny"
+            "§6Press [§a$acceptKeyName§6] to Accept [§c${denyKeyName}§6] to Deny"
         )
 
         for (text in texts) {
@@ -170,9 +178,6 @@ object AutoAcceptParty : OverlayFeature("autoAcceptParty", "Auto Accept Party") 
         return block
     }
 
-    private fun getKeyName(keyBindingCategory: KeyBindingCategory) =
-        Keyboard.getKeyName(keyBindingCategory.getKeyBinding().keyCode)
-
     private object PartyOverlayContainer : UIContainer() {
 
         init {
@@ -180,7 +185,6 @@ object AutoAcceptParty : OverlayFeature("autoAcceptParty", "Auto Accept Party") 
         }
 
         private val block = UIBlock(Color.white.invisible()).constrain {
-
             x = basicXConstraint { overlayPoint.x.toFloat() }.fixed()
             y = basicYConstraint { overlayPoint.y.toFloat() }.fixed()
 
@@ -219,8 +223,8 @@ object AutoAcceptParty : OverlayFeature("autoAcceptParty", "Auto Accept Party") 
             text1.setText("§6Party Request From §a${partyInfo.nickname}")
 
             text2.setText(
-                "§6Press [§a${getKeyName(KeyBindingCategory.ACCEPT_PARTY)}§6] to Accept [§c${
-                    getKeyName(KeyBindingCategory.DENY_PARTY)
+                "§6Press [§a${Keyboard.getKeyName(KeyBindingCategory.ACCEPT_PARTY.keyBinding.keyCode)}§6] to Accept [§c${
+                    Keyboard.getKeyName(KeyBindingCategory.DENY_PARTY.keyBinding.keyCode)
                 }§6] to Deny"
             )
 

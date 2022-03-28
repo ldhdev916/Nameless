@@ -38,11 +38,15 @@ class ChromaColor(val originRGB: Int) : Color(originRGB, true) {
     var chromaEnabled = false
 
     override fun getRGB(): Int {
-        return if (!chromaEnabled) super.getRGB() else HSBtoRGB(
-            (System.currentTimeMillis() % chromaSpeed) / chromaSpeed.toFloat(),
-            1f,
-            0.8f
-        ).withAlpha(super.getRGB() shr 24 and 255)
+        return if (!chromaEnabled) {
+            super.getRGB()
+        } else {
+            HSBtoRGB(
+                (System.currentTimeMillis() % chromaSpeed) / chromaSpeed.toFloat(),
+                1f,
+                0.8f
+            ).withAlpha(super.getRGB() shr 24 and 255)
+        }
     }
 
     override fun equals(other: Any?): Boolean {

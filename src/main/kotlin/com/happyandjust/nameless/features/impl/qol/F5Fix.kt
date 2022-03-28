@@ -25,9 +25,4 @@ object F5Fix : SimpleFeature(
     "F5 Fix",
     "Allow you to look through blocks when using f5",
     true
-) {
-
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-}
+)

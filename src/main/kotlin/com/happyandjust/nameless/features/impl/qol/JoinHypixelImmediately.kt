@@ -39,12 +39,10 @@ object JoinHypixelImmediately : SimpleFeature(
     init {
         on<GuiOpenEvent>().apply {
             priority = EventPriority.LOWEST
-        }.filter { gui is GuiMainMenu && !stop }.subscribe {
-            if (firstShown) {
-                firstShown = false
-                if (enabled) {
-                    gui = GuiConnecting(gui, mc, ServerData("Hypixel", "mc.hypixel.net", false))
-                }
+        }.filter { gui is GuiMainMenu && !stop && firstShown }.subscribe {
+            firstShown = false
+            if (enabled) {
+                gui = GuiConnecting(gui, mc, ServerData("Hypixel", "mc.hypixel.net", false))
             }
         }
     }

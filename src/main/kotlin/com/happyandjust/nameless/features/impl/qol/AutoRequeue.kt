@@ -18,24 +18,22 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.dsl.fetch
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.dsl.stripControlCodes
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.command
-import com.happyandjust.nameless.features.delay
 import com.happyandjust.nameless.features.settings
-import com.happyandjust.nameless.features.waitForGG
 import gg.essential.api.EssentialAPI
 import gg.essential.api.utils.Multithreading
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 import net.minecraftforge.client.event.ClientChatReceivedEvent
+import net.minecraftforge.fml.common.Loader
 import java.util.concurrent.TimeUnit
-import kotlin.properties.Delegates
 
 object AutoRequeue : SimpleFeature(
     "autoRequeue",
@@ -44,50 +42,59 @@ object AutoRequeue : SimpleFeature(
 ) {
 
     init {
-        parameter("/play ranked_normal") {
-            matchKeyCategory()
-            key = "command"
-            title = "Play Command"
-            desc = "The play command mod will send after game end"
-        }
-        parameter(0) {
-            matchKeyCategory()
-            key = "delay"
-            title = "Delay"
-            desc = "Send delay in seconds"
+        hierarchy {
+            +::command
 
-            settings {
-                ordinal = 1
-                maxValueInt = 5
-            }
-        }
+            +::delay
 
-        parameter(true) {
-            matchKeyCategory()
-            key = "waitForGG"
-            title = "Wait GG"
-            desc = "Wait until AutoGG send gg message then send command"
-
-            settings {
-                ordinal = 2
+            if (isAutoGGLoaded) {
+                +::waitForGG
             }
         }
     }
 
-    var isAutoGGLoaded by Delegates.observable(false) { _, _, newValue ->
-        if (!newValue) parameters.remove("waitForGG")
+    private var command by parameter("/play ranked_normal") {
+        key = "command"
+        title = "Play Command"
+        desc = "The play command mod will send after game end"
     }
+
+    private var delay by parameter(0) {
+        key = "delay"
+        title = "Delay"
+        desc = "Send delay in seconds"
+
+        settings {
+            ordinal = 1
+            maxValueInt = 5
+        }
+    }
+
+    private var waitForGG by parameter(true) {
+        key = "waitForGG"
+        title = "Wait GG"
+        desc = "Wait until AutoGG send gg message then send command"
+
+        settings {
+            ordinal = 2
+        }
+    }
+    private val isAutoGGLoaded by lazy { Loader.isModLoaded("autogg") }
 
     private val triggers = run {
-        val jsonObject =
-            Json.decodeFromString<JsonObject>("https://static.sk1er.club/autogg/regex_triggers_3.json".fetch())
-        jsonObject["servers"]!!.jsonArray[0].jsonObject["triggers"]!!.jsonArray.mapNotNull {
-            if (it.jsonObject["type"]?.int == 0) it.jsonObject["pattern"]!!.string.toPattern() else null
-        }
+        val json = Json { ignoreUnknownKeys = true }
+        val response = "https://static.sk1er.club/autogg/regex_triggers_3.json".fetch()
+        val triggerResponse = json.decodeFromString<TriggerResponse>(response)
+
+        triggerResponse.servers
+            .single { it.name == "Hypixel Server" }
+            .triggers
+            .filter { it.type == 0 }
+            .map { it.pattern.toRegex() }
     }
 
-    private val ggPattern = "\\w: gg".toPattern()
-    private val karmaPattern = "\\+\\d+ Karma!".toPattern()
+    private val ggRegex = "\\w: gg".toRegex()
+    private val karmaRegex = "\\+\\d+ Karma!".toRegex()
 
     private var shouldDetectGG = false
     private var sentGG = false
@@ -97,19 +104,19 @@ object AutoRequeue : SimpleFeature(
             enabled && EssentialAPI.getMinecraftUtil().isHypixel() && type.toInt() != 2
         }.subscribe {
             val msg = message.unformattedText.stripControlCodes()
-            if (triggers.any { it.matcher(msg).matches() }) {
-                if (isAutoGGLoaded && waitForGG) {
-                    shouldDetectGG = true
-                } else sendCommand()
-            } else if (shouldDetectGG) {
-                if (ggPattern.matcher(msg).find()) {
+            when {
+                triggers.any { it.matches(msg) } -> {
+                    if (isAutoGGLoaded && waitForGG) {
+                        shouldDetectGG = true
+                    } else {
+                        sendCommand()
+                    }
+                }
+                shouldDetectGG && ggRegex.matches(msg) -> {
                     sentGG = true
                     shouldDetectGG = false
                 }
-            } else if (sentGG) {
-                if (karmaPattern.matcher(msg).matches()) {
-                    sendCommand()
-                }
+                sentGG && karmaRegex.matches(msg) -> sendCommand()
             }
         }
 
@@ -122,4 +129,13 @@ object AutoRequeue : SimpleFeature(
     private fun sendCommand() {
         Multithreading.schedule({ mc.thePlayer.sendChatMessage(command) }, delay.toLong(), TimeUnit.SECONDS)
     }
+
+    @kotlinx.serialization.Serializable
+    private data class TriggerResponse(val servers: List<TriggerServer>)
+
+    @kotlinx.serialization.Serializable
+    private data class TriggerServer(val name: String, val triggers: List<TriggerData>)
+
+    @kotlinx.serialization.Serializable
+    private data class TriggerData(val type: Int, val pattern: String)
 }

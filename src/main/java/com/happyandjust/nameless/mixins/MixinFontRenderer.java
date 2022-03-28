@@ -20,7 +20,7 @@ package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.core.enums.Direction;
 import com.happyandjust.nameless.core.value.ChromaColor;
-import com.happyandjust.nameless.dsl.RenderingExtensionsKt;
+import com.happyandjust.nameless.dsl.RenderKt;
 import com.happyandjust.nameless.features.impl.misc.ChangeNicknameColor;
 import com.happyandjust.nameless.features.impl.misc.DisguiseNickname;
 import com.happyandjust.nameless.mixinhooks.FontRendererHook;
@@ -99,7 +99,7 @@ public abstract class MixinFontRenderer {
             List<FontRendererHook.MatchInfo> matchInfos = getMatchInfoForString(text);
 
             if (!matchInfos.isEmpty() && !shadow) {
-                ChromaColor color = ChangeNicknameColor.getColorJVM();
+                ChromaColor color = ChangeNicknameColor.getColor();
 
                 if (color.getChromaEnabled() && RenderGlobalHook.INSTANCE.canDisplayOutline()) {
                     drawChromaString(text, matchInfos, color.getAlpha());
@@ -125,8 +125,7 @@ public abstract class MixinFontRenderer {
 
     @Unique
     private String replaceDisguisedNickname(String text) {
-
-        return DisguiseNickname.getEnabledJVM() ? text.replaceAll("(?i)" + Minecraft.getMinecraft().getSession().getUsername(), DisguiseNickname.getNicknameJVM()) : text;
+        return DisguiseNickname.INSTANCE.getEnabled() ? text.replaceAll("(?i)" + Minecraft.getMinecraft().getSession().getUsername(), DisguiseNickname.getNickname()) : text;
 
     }
 
@@ -240,7 +239,7 @@ public abstract class MixinFontRenderer {
 
         Rectangle rectangle = new Rectangle((int) left, (int) posY, (int) (posX - left), FONT_HEIGHT);
 
-        RenderingExtensionsKt.drawChromaRect(rectangle, Direction.RIGHT, (System.currentTimeMillis() % 2000 + (posX * 10L - posY * 10L)) / 2000F, alpha);
+        RenderKt.drawChromaRect(rectangle, Direction.RIGHT, (System.currentTimeMillis() % 2000 + (posX * 10L - posY * 10L)) / 2000F, alpha);
 
         GL11.glDisable(GL11.GL_STENCIL_TEST);
     }

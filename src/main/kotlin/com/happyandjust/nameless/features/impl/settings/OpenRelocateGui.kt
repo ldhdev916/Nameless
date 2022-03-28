@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.settings
 
+import com.happyandjust.nameless.core.property.KPropertyBackedPropertyValue
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.base.BaseFeature
 import com.happyandjust.nameless.features.base.IRelocateAble
@@ -25,7 +26,7 @@ import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.gui.relocate.RelocateGui
 
-object OpenRelocateGui : BaseFeature<() -> Unit, Any>("relocateGui", "Relocate Gui", "Edit gui position, scale") {
+object OpenRelocateGui : BaseFeature<() -> Unit>("relocateGui", "Relocate Gui", "Edit gui position, scale") {
 
     private var action = {
         mc.displayGuiScreen(
@@ -35,7 +36,7 @@ object OpenRelocateGui : BaseFeature<() -> Unit, Any>("relocateGui", "Relocate G
         )
     }
 
-    override val property = ::action
+    override val propertyValue = KPropertyBackedPropertyValue(::action)
     override var componentType: ComponentType? = ComponentType.BUTTON
 
     init {

@@ -18,25 +18,25 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.VOIDGLOOM_SKULL
+import com.happyandjust.nameless.core.property.Identifiers
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.OverlayFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
-import com.happyandjust.nameless.utils.RenderUtils
-import com.happyandjust.nameless.utils.ScoreboardUtils
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIText
@@ -61,6 +61,24 @@ import kotlin.math.pow
 object EndermanSlayerHelper :
     OverlayFeature("endermanSlayerHelper", "Enderman Slayer Helper", "Display Voidgloom Info") {
 
+    init {
+        hierarchy {
+            ::beacon {
+                +::beaconColor
+            }
+
+            +::directionArrow
+
+            +::notifyBeacon
+
+            ::skull {
+                +::skullColor
+            }
+
+            +::order
+        }
+    }
+
     private val scanTimer = TickTimer.withSecond(0.5)
     override var overlayPoint by configValue("endermanSlayer", "overlay", Overlay.DEFAULT)
     private var currentVoidgloomCache: VoidgloomCache? = null
@@ -76,56 +94,48 @@ object EndermanSlayerHelper :
             .find { entityArmorStand -> "Voidgloom Seraph" in entityArmorStand.displayName.unformattedText }
     }
 
-    init {
-        parameter(true) {
-            matchKeyCategory()
-            key = "beacon"
-            title = "Highlight Beacon"
+    private var beacon by parameter(true) {
+        key = "beacon"
+        title = "Highlight Beacon"
+    }
 
-            parameter(Color.red.withAlpha(0.5f).toChromaColor()) {
-                matchKeyCategory()
-                key = "color"
-                title = "Highlight Color"
-            }
-        }
+    private var beaconColor by parameter(Color.red.withAlpha(0.5f).toChromaColor()) {
+        key = "color"
+        title = "Highlight Color"
+    }
 
-        parameter(false) {
-            matchKeyCategory()
-            key = "directionArrow"
-            title = "Render Direction Arrow on Screen"
-            desc = "Render arrow pointing to beacon"
-        }
+    private var directionArrow by parameter(false) {
+        key = "directionArrow"
+        title = "Render Direction Arrow on Screen"
+        desc = "Render arrow pointing to beacon"
+    }
 
-        parameter(false) {
-            matchKeyCategory()
-            key = "notifyBeacon"
-            title = "Notify Beacon"
-            desc = "Display title and play sound when beacon is placed"
-        }
+    private var notifyBeacon by parameter(false) {
+        key = "notifyBeacon"
+        title = "Notify Beacon"
+        desc = "Display title and play sound when beacon is placed"
+    }
 
-        parameter(true) {
-            matchKeyCategory()
-            key = "skull"
-            title = "Highlight Skulls"
+    private var skull by parameter(true) {
+        key = "skull"
+        title = "Highlight Skulls"
 
-            settings { ordinal = 1 }
+        settings { ordinal = 1 }
+    }
 
-            parameter(Color.red.withAlpha(0.5f).toChromaColor()) {
-                matchKeyCategory()
-                key = "color"
-                title = "Highlight Color"
-            }
-        }
+    private var skullColor by parameter(Color.red.withAlpha(0.5f).toChromaColor()) {
+        key = "color"
+        title = "Highlight Color"
+    }
 
-        parameter(VoidgloomInformation.values().map(::VoidgloomIdentifier)) {
-            matchKeyCategory()
-            key = "order"
-            title = "Information List"
+    private var order by parameter(Identifiers(VoidgloomInformation.values().map(::VoidgloomIdentifier))) {
+        matchKeyCategory()
+        key = "order"
+        title = "Information List"
 
-            settings {
-                ordinal = 2
-                allIdentifiers = VoidgloomInformation.values().map(::VoidgloomIdentifier)
-            }
+        settings {
+            ordinal = 2
+            allIdentifiers = VoidgloomInformation.values().map(::VoidgloomIdentifier)
         }
     }
 
@@ -171,9 +181,7 @@ object EndermanSlayerHelper :
                 }
 
                 if (directionArrow) {
-                    val pos = getBeaconPos()?.toVec3() ?: return
-
-                    RenderUtils.drawDirectionArrow(pos, 0xFFFF0000.toInt())
+                    getBeaconPos()?.toVec3()?.drawDirectionArrow(0xFFFF0000.toInt())
                 }
             }
 
@@ -183,7 +191,7 @@ object EndermanSlayerHelper :
     init {
         on<SpecialTickEvent>().filter { checkForRequirement() && scanTimer.update().check() }.subscribe {
             currentVoidgloomCache =
-                if (ScoreboardUtils.getSidebarLines(true).any { "Slay the boss!" in it }) {
+                if (mc.theWorld.getSidebarLines().any { "Slay the boss!" in it }) {
                     val pair = mc.theWorld.loadedEntityList
                         .asSequence()
                         .filterIsInstance<EntityEnderman>()
@@ -269,20 +277,12 @@ object EndermanSlayerHelper :
     init {
         on<RenderWorldLastEvent>().filter { checkForRequirement() }.subscribe {
             if (beacon) {
-                run {
-                    val aabb = getBeaconPos()?.getAxisAlignedBB() ?: return@run
-
-                    RenderUtils.drawBox(
-                        aabb,
-                        beacon_color.rgb,
-                        partialTicks
-                    )
-                }
+                getBeaconPos()?.getAxisAlignedBB()?.drawFilledBox(beaconColor.rgb, partialTicks)
             }
 
             if (skull) {
                 for (aabb in getSkullPos()) {
-                    RenderUtils.drawBox(aabb, skull_color.rgb, partialTicks)
+                    aabb.drawFilledBox(skullColor.rgb, partialTicks)
                 }
             }
         }
@@ -348,28 +348,11 @@ object EndermanSlayerHelper :
     }
 
     @Serializable
-    class VoidgloomIdentifier(val information: VoidgloomInformation) : Identifier {
+    data class VoidgloomIdentifier(val information: VoidgloomInformation) : Identifier {
         override fun toUIComponent(gui: VerticalPositionEditableComponent): UIComponent {
             return UIText(information.prettyName).constrain {
                 textScale = 2.pixels()
             }
-        }
-
-        override fun areEqual(other: Identifier) = this == other
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as VoidgloomIdentifier
-
-            if (information != other.information) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            return information.hashCode()
         }
     }
 
@@ -398,7 +381,7 @@ object EndermanSlayerHelper :
 
                     val timeLeft = (5 - timePassed).coerceAtLeast(0.0)
 
-                    basicText += " §5${timeLeft.transformToPrecisionString(3)}s"
+                    basicText += " §5${timeLeft.withPrecisionText(3)}s"
                 }
 
                 return basicText

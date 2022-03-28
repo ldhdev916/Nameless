@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.autoFillEnum
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
@@ -30,30 +30,35 @@ object DamageIndicator : SimpleFeature(
     "Damage Indicator",
     "Transform damage into K or M or B"
 ) {
-    init {
-        parameter(DamageIndicateType.SMART) {
-            matchKeyCategory()
-            key = "type"
-            title = "Damage Indicate Type"
 
-            onValueChange {
-                EntityHook.transformedDamageCache.clear()
-            }
-            autoFillEnum()
+    init {
+        hierarchy {
+            +::type
+
+            +::precision
+        }
+    }
+
+    var type by parameter(DamageIndicateType.SMART) {
+        key = "type"
+        title = "Damage Indicate Type"
+
+        onValueChange {
+            EntityHook.transformedDamageCache.clear()
+        }
+        settings { autoFillEnum() }
+    }
+
+    var precision by parameter(1) {
+        key = "precision"
+        title = "Floating Point Precision"
+
+        settings {
+            maxValueInt = 7
         }
 
-        parameter(1) {
-            matchKeyCategory()
-            key = "precision"
-            title = "Floating Point Precision"
-
-            settings {
-                maxValueInt = 7
-            }
-
-            onValueChange {
-                EntityHook.transformedDamageCache.clear()
-            }
+        onValueChange {
+            EntityHook.transformedDamageCache.clear()
         }
     }
 }

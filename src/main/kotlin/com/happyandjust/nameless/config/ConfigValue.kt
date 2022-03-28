@@ -45,7 +45,9 @@ open class ConfigValue<T>(
     override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
         this.value = value
     }
-}
 
-inline fun <reified T> configValue(category: String, key: String, defaultValue: T) =
-    ConfigValue(category, key, defaultValue, serializer())
+    companion object {
+        inline fun <reified T> configValue(category: String, key: String, defaultValue: T) =
+            ConfigValue(category, key, defaultValue, serializer())
+    }
+}

@@ -19,30 +19,38 @@
 package com.happyandjust.nameless.hypixel.games
 
 import com.happyandjust.nameless.dsl.sendPrefixMessage
+import com.happyandjust.nameless.features.impl.qol.MurdererFinder
 import com.happyandjust.nameless.hypixel.LocrawInfo
-import com.happyandjust.nameless.hypixel.MurdererMode
+import com.happyandjust.nameless.hypixel.murderer.Assassins
+import com.happyandjust.nameless.hypixel.murderer.Classic
+import com.happyandjust.nameless.hypixel.murderer.Infection
+import com.happyandjust.nameless.hypixel.murderer.MurdererMode
 
 class MurderMystery : GameType {
 
-    var murdererMode = MurdererMode.CLASSIC
-        private set
-
-    override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "MURDER_MYSTERY"
+    var murdererMode: MurdererMode? = null
+        private set(value) {
+            field?.unregisterAll()
+            field = value
+            if (value != null && MurdererFinder.enabled && value.isEnabled()) {
+                value.registerEventListeners()
+            }
+        }
 
     override fun handleProperty(locrawInfo: LocrawInfo) {
-        murdererMode = when (locrawInfo.mode) {
-            "MURDER_INFECTION" -> MurdererMode.INFECTION
-            "MURDER_CLASSIC", "MURDER_DOUBLE_UP" -> MurdererMode.CLASSIC
-            "MURDER_ASSASSINS" -> MurdererMode.ASSASSIN
-            else -> MurdererMode.CLASSIC
-        }
+        murdererMode = murdererModes.find { locrawInfo.mode in it.modes }?.createImpl()
     }
 
     override fun printProperties() {
         sendPrefixMessage("Murderer Mode: $murdererMode")
     }
 
-    companion object : GameTypeFactory {
+    companion object : GameTypeCreator {
+
+        private val murdererModes = setOf(Classic, Infection, Assassins)
+
+        override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "MURDER_MYSTERY"
+
         override fun createGameTypeImpl() = MurderMystery()
     }
 }

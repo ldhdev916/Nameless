@@ -18,127 +18,195 @@
 
 package com.happyandjust.nameless.gui.feature
 
+import com.happyandjust.nameless.core.property.Identifiers
+import com.happyandjust.nameless.core.property.PropertyData
 import com.happyandjust.nameless.core.value.ChromaColor
-import com.happyandjust.nameless.gui.feature.components.*
+import com.happyandjust.nameless.gui.feature.components.MultiSelectorComponent
+import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
+import com.happyandjust.nameless.gui.feature.components.toChromaColorComponent
+import com.happyandjust.nameless.gui.feature.components.toFilterTextComponent
 import gg.essential.vigilance.gui.settings.*
-import java.awt.Color
 
 enum class ComponentType {
 
     SWITCH {
-        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) =
-            SwitchComponent(propertyData.property() as Boolean).apply {
+        override fun getComponent(propertyData: PropertyData): SettingComponent {
+            return SwitchComponent(propertyData.cast()).apply {
                 onValueChange {
-                    propertyData.property.set(it as T)
+                    propertyData.set(it)
                 }
             }
+        }
+
+        override fun isProperData(value: Any): Boolean {
+            return value is Boolean
+        }
     },
     SLIDER_DECIMAL {
-        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) = DecimalSliderComponent(
-            propertyData.property().let { (it as Number).toFloat() },
-            propertyData.propertySetting.minValue.toFloat(),
-            propertyData.propertySetting.maxValue.toFloat()
-        ).apply {
-            onValueChange {
-                propertyData.property.set(it as T)
+        override fun getComponent(propertyData: PropertyData): SettingComponent {
+
+            val minValue = propertyData.propertySetting.minValue.toFloat()
+            val maxValue = propertyData.propertySetting.maxValue.toFloat()
+
+            return DecimalSliderComponent(propertyData.cast<Number>().toFloat(), minValue, maxValue).apply {
+                onValueChange {
+                    propertyData.set(it)
+                }
             }
+        }
+
+        override fun isProperData(value: Any): Boolean {
+            return value is Double || value is Float
         }
     },
     SLIDER {
-        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) = SliderComponent(
-            propertyData.property() as Int,
-            propertyData.propertySetting.minValueInt,
-            propertyData.propertySetting.maxValueInt
-        ).apply {
-            onValueChange {
-                propertyData.property.set(it as T)
+        override fun getComponent(propertyData: PropertyData): SettingComponent {
+            val minValue = propertyData.propertySetting.minValueInt
+            val maxValue = propertyData.propertySetting.maxValueInt
+
+            return SliderComponent(propertyData.cast(), minValue, maxValue).apply {
+                onValueChange {
+                    propertyData.set(it)
+                }
             }
+        }
+
+        override fun isProperData(value: Any): Boolean {
+            return value is Int
         }
     },
     TEXT {
-        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) = TextComponent(
-            propertyData.property() as String,
-            propertyData.propertySetting.placeHolder ?: "",
-            false,
-            false
-        ).toFilterTextComponent().apply {
+        override fun getComponent(propertyData: PropertyData): SettingComponent {
+            val placeHolder = propertyData.propertySetting.placeHolder.orEmpty()
+            val textComponent = TextComponent(propertyData.cast(), placeHolder, wrap = false, protected = false)
 
-            validator = propertyData.propertySetting.validator
+            return textComponent.toFilterTextComponent().apply {
+                validator = propertyData.propertySetting.validator
 
-            onValueChange {
-                propertyData.property.set(it as T)
+                onValueChange {
+                    propertyData.set(it)
+                }
             }
+        }
+
+        override fun isProperData(value: Any): Boolean {
+            return value is String
         }
     },
     PASSWORD {
-        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) = TextComponent(
-            propertyData.property() as String,
-            propertyData.propertySetting.placeHolder ?: "",
-            false,
-            true
-        ).toFilterTextComponent().apply {
-            validator = propertyData.propertySetting.validator
+        override fun getComponent(propertyData: PropertyData): SettingComponent {
+            val placeHolder = propertyData.propertySetting.placeHolder.orEmpty()
 
-            onValueChange {
-                propertyData.property.set(it as T)
+            val component = TextComponent(propertyData.cast(), placeHolder, wrap = false, protected = true)
+
+            return component.toFilterTextComponent().apply {
+                validator = propertyData.propertySetting.validator
+
+                onValueChange {
+                    propertyData.set(it)
+                }
             }
+        }
+
+        override fun isProperData(value: Any): Boolean {
+            return false // Only when preferred
         }
     },
     COLOR {
-        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) = ColorComponent(
-            propertyData.property() as Color,
-            true
-        ).toChromaColorComponent((propertyData.property() as ChromaColor).chromaEnabled).apply {
-            onValueChange {
-                propertyData.property.set(it as T)
+        override fun getComponent(propertyData: PropertyData): SettingComponent {
+
+            val value = propertyData.cast<ChromaColor>()
+
+            val component = ColorComponent(value, true)
+            val chromaEnabled = value.chromaEnabled
+
+            return component.toChromaColorComponent(chromaEnabled).apply {
+                onValueChange {
+                    propertyData.set(it)
+                }
             }
+        }
+
+        override fun isProperData(value: Any): Boolean {
+            return value is ChromaColor
         }
     },
     BUTTON {
-        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) =
-            ButtonComponent(propertyData.propertySetting.placeHolder, propertyData.property() as () -> Unit)
+        override fun getComponent(propertyData: PropertyData): SettingComponent {
+            val placeHolder = propertyData.propertySetting.placeHolder
+            return ButtonComponent(placeHolder, propertyData.cast<() -> Unit>())
+        }
+
+        override fun isProperData(value: Any): Boolean {
+            return isInstance<() -> Unit>(value)
+        }
+
+        private inline fun <reified T> isInstance(value: Any) = value is T
     },
     SELECTOR {
-        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) =
+        override fun getComponent(propertyData: PropertyData): SettingComponent {
             with(propertyData.propertySetting) {
                 val allValue = allValueList()
-                SelectorComponent(
-                    allValue.indexOf(propertyData.property()),
-                    allValue.map(stringSerializer)
-                ).apply {
+                val selectedIndex = allValue.indexOf(propertyData.propertyValue.getValue())
+                val options = allValue.map(stringSerializer)
+
+                return SelectorComponent(selectedIndex, options).apply {
                     onValueChange {
-                        propertyData.property.set(allValue[it as Int])
+                        propertyData.set(allValue[it as Int])
                     }
                 }
             }
+        }
+
+        override fun isProperData(value: Any): Boolean {
+            return value is Enum<*>
+        }
     },
-    VERTIAL_MOVE {
-        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) =
-            VerticalPositionEditableComponent(
-                propertyData.propertySetting.allIdentifiers,
-                propertyData.property() as List<Identifier>
-            ).apply {
+    VERTICAL_MOVE {
+        override fun getComponent(propertyData: PropertyData): SettingComponent {
+            val allIdentifiers = propertyData.propertySetting.allIdentifiers
+
+            return VerticalPositionEditableComponent(propertyData.cast(), allIdentifiers).apply {
                 onValueChange {
-                    propertyData.property.set(it as T)
+                    propertyData.set(it)
                 }
             }
+        }
+
+        override fun isProperData(value: Any): Boolean {
+            return value is Identifiers<*>
+        }
     },
     MULTI_SELECTOR {
-        override fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>) =
+        override fun getComponent(propertyData: PropertyData): SettingComponent {
             with(propertyData.propertySetting) {
-                val list = propertyData.property() as List<E>
-                val allValue = listAllValueList()
-                MultiSelectorComponent(
-                    list.map(listStringSerializer),
-                    allValue.map(listStringSerializer)
-                ).apply {
+                val allValue = allValueList()
+                val currentList = propertyData.cast<List<Any>>()
+                val selected = currentList.map(stringSerializer)
+                val all = allValue.map(stringSerializer)
+
+                return MultiSelectorComponent(selected, all).apply {
                     onValueChange {
-                        val indexes = it as List<Int>
-                        propertyData.property.set(indexes.map(allValue::get) as T)
+                        val indexes = (it as List<*>).filterIsInstance<Int>()
+
+                        propertyData.set(indexes.map(allValue::get))
                     }
                 }
             }
+        }
+
+        override fun isProperData(value: Any): Boolean {
+            return value is List<*> && value !is Identifiers<*>
+        }
     };
 
-    abstract fun <T : Any, E : Any> getComponent(propertyData: PropertyData<T, E>): SettingComponent
+    abstract fun getComponent(propertyData: PropertyData): SettingComponent
+
+    abstract fun isProperData(value: Any): Boolean
+
+    protected inline fun <reified T : Any> PropertyData.cast() = propertyValue.getValue() as T
+
+    protected fun PropertyData.set(value: Any?) {
+        propertyValue.setValue(value!!)
+    }
 }

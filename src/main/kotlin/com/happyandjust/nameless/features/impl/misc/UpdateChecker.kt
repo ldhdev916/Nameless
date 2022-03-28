@@ -27,8 +27,8 @@ import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.impl.qol.JoinHypixelImmediately
 import com.happyandjust.nameless.gui.UpdateGui
 import gg.essential.api.utils.GuiUtil
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -55,11 +55,10 @@ object UpdateChecker : SimpleFeature(
     private var needUpdate = false
     private var shouldShow = false
 
-    @OptIn(DelicateCoroutinesApi::class)
     fun checkForUpdate() {
         if (!enabled) return
 
-        GlobalScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             val jsonObject =
                 Json.decodeFromString<JsonObject>("https://api.github.com/repos/HappyAndJust/Nameless/releases/latest".fetch())
             val latestTag = jsonObject["tag_name"]!!.string.drop(1)

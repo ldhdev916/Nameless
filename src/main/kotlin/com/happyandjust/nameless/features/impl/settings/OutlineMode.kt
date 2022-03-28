@@ -20,16 +20,19 @@ package com.happyandjust.nameless.features.impl.settings
 
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.enums.OutlineMode
+import com.happyandjust.nameless.core.property.KPropertyBackedPropertyValue
 import com.happyandjust.nameless.features.base.BaseFeature
-import com.happyandjust.nameless.features.base.autoFillEnum
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.ComponentType
 
-object OutlineMode : BaseFeature<OutlineMode, Any>("outlineMode", "Outline Mode", "BOX, OUTLINE") {
+object OutlineMode : BaseFeature<OutlineMode>("outlineMode", "Outline Mode", "BOX, OUTLINE") {
 
-    override val property = Nameless::selectedOutlineMode
+    override val propertyValue = KPropertyBackedPropertyValue(Nameless::selectedOutlineMode)
     override var componentType: ComponentType? = ComponentType.SELECTOR
 
     init {
-        autoFillEnum()
+        settings {
+            autoFillEnum()
+        }
     }
 }

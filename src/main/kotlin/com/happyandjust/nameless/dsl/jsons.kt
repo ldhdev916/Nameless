@@ -56,7 +56,7 @@ inline fun <reified T> Json.encodeToFile(value: T, file: File) = file.outputStre
 @OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T> Json.decodeFromFile(file: File): T = file.inputStream().buffered().use(this::decodeFromStream)
 
-inline fun <reified T : Any> dummySerializer() = object : KSerializer<T> {
+inline fun <reified T> dummySerializer() = object : KSerializer<T> {
     override val descriptor: SerialDescriptor
         get() = error("You can not serialize ${T::class.java.name}")
 

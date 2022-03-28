@@ -18,67 +18,32 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.core.BlockSerializer
 import com.happyandjust.nameless.dsl.displayName
-import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.listParameter
-import com.happyandjust.nameless.features.blocks
+import com.happyandjust.nameless.features.base.hierarchy
+import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.settings
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import net.minecraft.block.Block
 
 object CancelCertainBlockRendering : SimpleFeature("cancelBlockRendering", "Cancel Certain Block Rendering") {
 
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-
-    @JvmStatic
-    var blocksJVM
-        get() = blocks
-        set(value) {
-            blocks = value
-        }
-
     init {
-        listParameter(emptyList(), ListSerializer(BlockSerializer)) {
-            matchKeyCategory()
-            key = "blocks"
-            title = "Blocks"
-
-            settings {
-                ordinal = -1
-
-                listStringSerializer = { it.displayName }
-                listAllValueList = {
-                    Block.blockRegistry.toList().sortedBy { it.displayName }.sortedBy { it !in value }
-                }
-            }
-
-            onValueChange {
-                mc.renderGlobal.loadRenderers()
-            }
-        }
+        hierarchy { +::blocks }
     }
 
-    object BlockSerializer : KSerializer<Block> {
+    @JvmStatic
+    var blocks by parameter(emptyList(), serializer = ListSerializer(BlockSerializer)) {
+        matchKeyCategory()
+        key = "blocks"
+        title = "Blocks"
 
-        override val descriptor = String.serializer().descriptor
-
-        override fun serialize(encoder: Encoder, value: Block) {
-            encoder.encodeSerializableValue(String.serializer(), value.registryName)
+        settings {
+            listSerializer { it.displayName }
+            allValueList = {
+                Block.blockRegistry.sortedWith(compareBy({ it !in value }, { it.displayName }))
+            }
         }
-
-        override fun deserialize(decoder: Decoder): Block {
-            val registryName = decoder.decodeSerializableValue(String.serializer())
-
-            return Block.getBlockFromName(registryName)
-        }
-
-
     }
 }

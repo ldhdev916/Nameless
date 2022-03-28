@@ -25,15 +25,14 @@ import com.happyandjust.nameless.events.KeyPressEvent
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.showPath
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoulProfileCache
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.pathfinding.ModPathFinding
-import com.happyandjust.nameless.utils.RenderUtils
 import com.happyandjust.nameless.utils.SkyblockUtils
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -51,6 +50,12 @@ object FairySoulWaypoint : SimpleFeature(
     "FairySoul Waypoint",
     "Renders outline box on fairysoul except the ones you've already found"
 ) {
+
+    init {
+        hierarchy {
+            +::showPath
+        }
+    }
 
     private val PROFILE = "You are playing on profile: (?<profile>\\w+).*".toPattern()
     private val PROFILE_CHANGE = "Your profile was changed to: (?<profile>\\w+).*".toPattern()
@@ -74,22 +79,21 @@ object FairySoulWaypoint : SimpleFeature(
             }
         }
 
-    init {
-        parameter(true) {
-            matchKeyCategory()
-            key = "showPath"
-            title = "FairySoul Path Finding"
-            desc = "Show path to nearest fairysoul"
-        }
+    private var showPath by parameter(true) {
+        key = "showPath"
+        title = "FairySoul Path Finding"
+        desc = "Show path to nearest fairysoul"
     }
+
 
     init {
         on<RenderWorldLastEvent>().filter { enabled && Hypixel.currentGame is SkyBlock }.subscribe {
             if (showPath) {
-                RenderUtils.drawPath(fairySoulPaths, if (pathFreezed) freezedPathColor else Color.red.rgb, partialTicks)
+                val color = if (pathFreezed) freezedPathColor else Color.red.rgb
+                fairySoulPaths.drawPaths(color, partialTicks)
             }
             for (fairySoul in currentIslandFairySouls - foundFairySoulsInThisProfile.toSet()) {
-                RenderUtils.drawBox(fairySoul.toBlockPos().getAxisAlignedBB(), fairySoulColor, partialTicks)
+                fairySoul.blockPos.getAxisAlignedBB().drawFilledBox(fairySoulColor, partialTicks)
             }
         }
 
@@ -108,7 +112,7 @@ object FairySoulWaypoint : SimpleFeature(
                 if (showPath && pathTimer.update().check()) {
                     (currentIslandFairySouls - foundFairySoulsInThisProfile.toSet())
                         .takeIf { list -> list.any() && !pathFreezed }
-                        ?.map(FairySoul::toBlockPos)
+                        ?.map(FairySoul::blockPos)
                         ?.minByOrNull(mc.thePlayer::getDistanceSq)
                         ?.let { blockPos ->
                             GlobalScope.launch {
@@ -137,7 +141,7 @@ object FairySoulWaypoint : SimpleFeature(
             }
 
         on<PacketEvent.Sending>().filter { Hypixel.currentGame is SkyBlock }.subscribe {
-            packet.withInstance<C02PacketUseEntity> {
+            withInstance<C02PacketUseEntity>(packet) {
                 if (action == C02PacketUseEntity.Action.ATTACK) {
                     val entity = getEntityFromWorld(mc.theWorld)
                     if (entity is EntityArmorStand && entity.isFairySoul()) {
@@ -160,8 +164,8 @@ object FairySoulWaypoint : SimpleFeature(
     }
 
     private fun EntityArmorStand.getNearestPossibleFairySoul() =
-        currentIslandFairySouls.sortedBy { getDistanceSq(it.toBlockPos()) }.firstOrNull {
-            getDistanceSq(it.toBlockPos()) < 4
+        currentIslandFairySouls.sortedBy { getDistanceSq(it.blockPos) }.find {
+            getDistanceSq(it.blockPos) < 4
         }
 
 }

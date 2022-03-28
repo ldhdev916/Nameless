@@ -18,10 +18,10 @@
 
 package com.happyandjust.nameless.commands
 
+import com.happyandjust.nameless.dsl.drawPaths
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.sendDebugMessage
 import com.happyandjust.nameless.pathfinding.ModPathFinding
-import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.commands.SubCommand
@@ -40,7 +40,7 @@ object PathFindCommand : Command("pathfind") {
 
     init {
         on<RenderWorldLastEvent>().subscribe {
-            RenderUtils.drawPath(paths, Color.red.rgb, partialTicks)
+            paths.drawPaths(Color.red.rgb, partialTicks)
         }
     }
 

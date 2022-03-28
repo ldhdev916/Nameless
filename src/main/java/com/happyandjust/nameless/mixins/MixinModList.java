@@ -40,9 +40,8 @@ public class MixinModList {
     @Inject(method = "<init>(Ljava/util/List;)V", at = @At("RETURN"))
     public void removeModList(List<ModContainer> modList, CallbackInfo ci) {
         if (Minecraft.getMinecraft().isSingleplayer()) return;
-        RemoveCertainModID feature = RemoveCertainModID.INSTANCE;
-        if (!feature.getEnabled()) return;
+        if (!RemoveCertainModID.INSTANCE.getEnabled()) return;
 
-        modTags.keySet().removeIf(s -> feature.hasParameter(s) && feature.<Boolean>getParameterValue(s));
+        modTags.keySet().removeIf(RemoveCertainModID::shouldRemoveModId);
     }
 }

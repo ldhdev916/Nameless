@@ -18,8 +18,9 @@
 
 package com.happyandjust.nameless.features.impl.general
 
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.info.InventorySlotInfo.Companion.getSlotsFromInventory
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
@@ -31,8 +32,6 @@ import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.BedWars
 import com.happyandjust.nameless.mixins.accessors.AccessorItemAxe
 import com.happyandjust.nameless.mixins.accessors.AccessorItemPickaxe
-import com.happyandjust.nameless.utils.RenderUtils
-import com.happyandjust.nameless.utils.Utils
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIText
@@ -185,9 +184,7 @@ object BedWarsRayTraceBed : OverlayFeature(
             currentRayTraceInfo = null
         }
         on<RenderWorldLastEvent>().subscribe {
-            currentRayTraceInfo?.bedHit?.let {
-                RenderUtils.drawBox(it.getAxisAlignedBB(), 0x80FF0000.toInt(), partialTicks)
-            }
+            currentRayTraceInfo?.bedHit?.getAxisAlignedBB()?.drawFilledBox(0x80FF0000.toInt(), partialTicks)
         }
     }
 
@@ -213,14 +210,17 @@ object BedWarsRayTraceBed : OverlayFeature(
 
     private fun storeBlockToKeyName(list: Iterable<Block>) {
         blockToKeyName.clear()
-        val map = Utils.getKeyBindingNameInEverySlot()
+        val inventorySlots = mc.thePlayer.getSlotsFromInventory()
 
         val inventory = mc.thePlayer.inventory
 
         blockToKeyName.putAll(
             list.associateWith { block ->
                 val requirement = getBlockRequirement(block)
-                (map.values.firstOrNull { requirement(it.itemStack?.item) } ?: map[inventory.currentItem]!!).keyName
+
+                val findReq = inventorySlots.find { requirement(it.itemStack?.item) }
+
+                (findReq ?: inventorySlots[inventory.currentItem]).keyName
             }
         )
     }

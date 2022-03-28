@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.gui.feature
 
-import com.happyandjust.nameless.features.PropertySetting
+import com.happyandjust.nameless.core.property.PropertyData
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIWrappedText
@@ -29,18 +29,8 @@ import gg.essential.elementa.dsl.*
 import gg.essential.elementa.effects.OutlineEffect
 import gg.essential.vigilance.gui.Setting
 import gg.essential.vigilance.gui.settings.ButtonComponent
-import kotlin.reflect.KMutableProperty0
 
-data class PropertyData<T : Any, E : Any>(
-    val property: KMutableProperty0<T>,
-    val title: String,
-    val desc: String,
-    val componentType: ComponentType?,
-    val propertySetting: PropertySetting<T, E>,
-    val settings: List<PropertyData<*, *>> = emptyList()
-)
-
-class DataComponent<T : Any>(gui: FeatureGui, val data: PropertyData<T, *>) : Setting() {
+class DataComponent(gui: FeatureGui, val data: PropertyData) : Setting() {
 
     private val boundingBox: UIBlock by UIBlock(ColorCache.darkHighlight).constrain {
         x = 1.pixel()

@@ -37,6 +37,8 @@ public abstract class MixinRenderGlobalHook {
     @Dynamic
     @Inject(method = "blockRenderingSkyblockItemOutlines", at = @At("RETURN"), cancellable = true)
     private static void dontBlockRenderOutline(ICamera camera, float partialTicks, double x, double y, double z, List<Entity> entities, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(DisableSBAGlowing.getEnabledJVM());
+        if (DisableSBAGlowing.INSTANCE.getEnabled()) {
+            cir.setReturnValue(true);
+        }
     }
 }

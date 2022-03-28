@@ -22,13 +22,13 @@ import com.happyandjust.nameless.hypixel.LocrawInfo
 
 interface GameType {
 
-    fun isCurrent(locrawInfo: LocrawInfo): Boolean
-
     fun handleProperty(locrawInfo: LocrawInfo)
 
     fun printProperties()
 }
 
-interface GameTypeFactory {
+interface GameTypeCreator {
     fun createGameTypeImpl(): GameType
+
+    fun isCurrent(locrawInfo: LocrawInfo): Boolean
 }

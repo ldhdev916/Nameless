@@ -20,10 +20,8 @@ package com.happyandjust.nameless.mixinhooks
 
 import com.happyandjust.nameless.dsl.matchesMatcher
 import com.happyandjust.nameless.dsl.stripControlCodes
-import com.happyandjust.nameless.dsl.transformToPrecisionString
+import com.happyandjust.nameless.dsl.withPrecisionText
 import com.happyandjust.nameless.features.impl.skyblock.DamageIndicator
-import com.happyandjust.nameless.features.precision
-import com.happyandjust.nameless.features.type
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
@@ -56,7 +54,7 @@ object EntityHook {
             DamageIndicateType.M -> (damage / 100_0000.0)
             DamageIndicateType.B -> (damage / 10_0000_0000.0)
             DamageIndicateType.SMART -> smartTransform(damage).first
-        }.transformToPrecisionString(precision) + name
+        }.withPrecisionText(precision) + name
     }
 
     fun getCustomDamageName(origin: ChatComponentText): ChatComponentText {
@@ -65,7 +63,7 @@ object EntityHook {
 
             val unformattedText = origin.unformattedText
 
-            transformedDamageCache.getOrPut(unformattedText) {
+            return transformedDamageCache.getOrPut(unformattedText) {
                 val (damage, isCritical) = getDamageFromString(unformattedText.stripControlCodes()) ?: return origin
 
                 val damageText = transformDamage(damage, DamageIndicator.type, DamageIndicator.precision)

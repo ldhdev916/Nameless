@@ -23,5 +23,5 @@ import net.minecraft.util.BlockPos
 
 @Serializable
 data class FairySoul(val x: Int, val y: Int, val z: Int, val island: String) {
-    fun toBlockPos() = BlockPos(x, y, z)
+    val blockPos by lazy { BlockPos(x, y, z) }
 }

@@ -43,15 +43,15 @@ public class MixinLayerCustomHead {
     public void changeSkin(EntityLivingBase entitylivingbaseIn, float p_177141_2_, float p_177141_3_, float partialTicks, float p_177141_5_, float p_177141_6_, float p_177141_7_, float scale, CallbackInfo ci) {
         GameProfile gameProfile = null;
 
-        if (EquipPetSkin.getEnabledJVM() && entitylivingbaseIn instanceof EntityArmorStand) {
+        if (EquipPetSkin.INSTANCE.getEnabled() && entitylivingbaseIn instanceof EntityArmorStand) {
             EquipPetSkin.PetSkinChangeInfo info = EquipPetSkin.currentPetSkinChangeInfo;
 
             if (info != null && info.getItemStack().equals(entitylivingbaseIn.getCurrentArmor(3))) {
                 gameProfile = info.getGameProfile();
             }
         }
-        if (ChangeHelmetTexture.getEnabledJVM() && entitylivingbaseIn instanceof EntityPlayerSP) {
-            Pair<SkyBlockItem, GameProfile> pair = ChangeHelmetTexture.getCurrentlyEquipedTexture();
+        if (ChangeHelmetTexture.INSTANCE.getEnabled() && entitylivingbaseIn instanceof EntityPlayerSP) {
+            Pair<SkyBlockItem, GameProfile> pair = ChangeHelmetTexture.getCurrentlyEquippedTexture();
 
             if (pair != null) gameProfile = pair.getSecond();
         }

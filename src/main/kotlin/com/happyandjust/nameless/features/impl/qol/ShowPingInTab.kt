@@ -20,16 +20,19 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
 import java.awt.Color
 
 object ShowPingInTab : SimpleFeature("pingTab", "Show Ping numbers in Tab") {
 
     init {
-        parameter(Color.green.toChromaColor()) {
-            matchKeyCategory()
-            key = "color"
-            title = "Ping Text Color"
-        }
+        hierarchy { +::color }
+    }
+
+    var color by parameter(Color.green.toChromaColor()) {
+        matchKeyCategory()
+        key = "color"
+        title = "Ping Text Color"
     }
 }

@@ -21,12 +21,12 @@ package com.happyandjust.nameless.listener
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.enums.OutlineMode
 import com.happyandjust.nameless.dsl.cancel
+import com.happyandjust.nameless.dsl.drawOutlinedBox
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.mixinhooks.RenderGlobalHook
-import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraftforge.client.event.RenderLivingEvent
@@ -53,7 +53,7 @@ object OutlineHandleListener {
             .subscribe {
                 for (entity in mc.theWorld.loadedEntityList) {
                     outlineEntityCache[entity]?.let {
-                        RenderUtils.drawOutlinedBox(entity.entityBoundingBox, it, partialTicks)
+                        entity.entityBoundingBox.drawOutlinedBox(it, partialTicks)
                     }
                 }
             }

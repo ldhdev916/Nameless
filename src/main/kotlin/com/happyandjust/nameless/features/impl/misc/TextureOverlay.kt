@@ -21,10 +21,7 @@ package com.happyandjust.nameless.features.impl.misc
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.dummySerializer
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.base.OverlayParameter
-import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.overlayParameter
-import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.base.*
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.fixed
 import gg.essential.elementa.ElementaVersion
@@ -54,8 +51,7 @@ object TextureOverlay : SimpleFeature(
             mc.displayGuiScreen(null)
         }
 
-        parameter(callback, dummySerializer()) {
-            matchKeyCategory()
+        val callbackParameter = parameter(callback, dummySerializer()) {
             key = List(100) { if (Random.nextBoolean()) 'I' else 'l' }.joinToString("")
             title = "Reload Textures"
 
@@ -64,20 +60,27 @@ object TextureOverlay : SimpleFeature(
             }
         }
 
+        hierarchy { +callbackParameter }
+
         reloadTexture()
     }
 
-    private fun reloadTexture() {
-        parameters.values.removeIf { it is OverlayParameter }
 
-        val files = dir.listFiles().orEmpty().filter {
+    private fun reloadTexture() {
+        executeHierarchy {
+            parameters.values.filterIsInstance<OverlayParameter<Boolean>>().forEach {
+                -it
+                it.value = false
+            }
+        }
+
+        val imageFiles = dir.listFiles().orEmpty().filter {
             Files.probeContentType(it.toPath()).substringBefore("/") == "image"
         }
-        for (file in files) {
+        for (file in imageFiles) {
             val name = file.name
 
-            overlayParameter(false) {
-                matchKeyCategory()
+            val parameter = overlayParameter(false) {
                 key = name
                 title = name
 
@@ -105,6 +108,10 @@ object TextureOverlay : SimpleFeature(
                 shouldDisplay { enabled && value }
 
                 render { if (enabled && value) window.draw(UMatrixStack.Compat.get()) }
+            }
+
+            executeHierarchy {
+                +parameter
             }
         }
     }

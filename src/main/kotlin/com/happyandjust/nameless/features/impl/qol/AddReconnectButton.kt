@@ -20,11 +20,10 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.dsl.transformToPrecisionString
 import com.happyandjust.nameless.dsl.withInstance
-import com.happyandjust.nameless.features.auto
-import com.happyandjust.nameless.features.auto_second
+import com.happyandjust.nameless.dsl.withPrecisionText
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiDisconnected
@@ -43,34 +42,39 @@ object AddReconnectButton : SimpleFeature(
     true
 ) {
 
-    private var lastServerData: ServerData? = null
-    private const val gap = 8
-    private var currentDisconnectInfo: DisconnectInfo? = null
-
     init {
-        parameter(true) {
-            matchKeyCategory()
-            key = "auto"
-            title = "Enable Auto Reconnect"
-            desc = "If this is enabled, mod will auto reconnect to server in seconds you set"
-
-            parameter(5) {
-                matchKeyCategory()
-                key = "second"
-                title = "Auto Reconnect Second"
-
-                settings {
-                    minValueInt = 1
-                    maxValueInt = 60
-                }
+        hierarchy {
+            ::auto {
+                +::autoSecond
             }
         }
     }
 
+    private var lastServerData: ServerData? = null
+    private const val gap = 8
+    private var currentDisconnectInfo: DisconnectInfo? = null
+
+    private var auto by parameter(true) {
+        matchKeyCategory()
+        key = "auto"
+        title = "Enable Auto Reconnect"
+        desc = "If this is enabled, mod will auto reconnect to server in seconds you set"
+    }
+
+    private var autoSecond by parameter(5) {
+        matchKeyCategory()
+        key = "second"
+        title = "Auto Reconnect Second"
+
+        settings {
+            minValueInt = 1
+            maxValueInt = 60
+        }
+    }
 
     init {
         on<GuiScreenEvent.ActionPerformedEvent.Post>().filter { button.id == 101 && enabled }.subscribe {
-            gui.withInstance<AccessorGuiDisconnected> {
+            withInstance<AccessorGuiDisconnected>(gui) {
                 GuiUtil.open(GuiConnecting(parentScreen, mc, lastServerData!!))
             }
         }
@@ -80,36 +84,21 @@ object AddReconnectButton : SimpleFeature(
                 is GuiDisconnected -> {
                     if (enabled && lastServerData != null) {
                         buttonList.find { it.id == 0 }?.let {
-                            val text =
-                                if (auto) "Reconnect in: ${getSecondText(auto_second.toDouble())}" else "Reconnect"
-                            buttonList.add(
-                                GuiButton(
-                                    101,
-                                    it.xPosition,
-                                    it.yPosition,
-                                    (it.width / 2) - (gap - 2),
-                                    it.height,
-                                    text
-                                ).apply {
-                                    it.xPosition = it.xPosition + it.width - width
+                            val text = if (auto) "Reconnect in: ${getSecondText(autoSecond)}" else "Reconnect"
+                            val reconnectButton = getReconnectButton(it, text)
 
-                                    it.width = width
-
-                                    if (auto) {
-                                        currentDisconnectInfo =
-                                            DisconnectInfo(
-                                                System.currentTimeMillis() + (auto_second * 1000),
-                                                this
-                                            ) {
-                                                GuiConnecting(
-                                                    (gui as AccessorGuiDisconnected).parentScreen,
-                                                    mc,
-                                                    lastServerData!!
-                                                )
-                                            }
-                                    }
+                            it.width = reconnectButton.width
+                            if (auto) {
+                                val reconnectTime = System.currentTimeMillis() + (autoSecond * 1000)
+                                val guiCallback = {
+                                    val parentScreen = (gui as AccessorGuiDisconnected).parentScreen
+                                    GuiConnecting(parentScreen, mc, lastServerData!!)
                                 }
-                            )
+
+                                currentDisconnectInfo = DisconnectInfo(reconnectTime, reconnectButton, guiCallback)
+                            }
+
+                            buttonList.add(reconnectButton)
                         }
                     }
                 }
@@ -119,7 +108,7 @@ object AddReconnectButton : SimpleFeature(
 
         on<TickEvent.ClientTickEvent>().filter { phase == TickEvent.Phase.END }.subscribe {
             getDisconnectInfo()?.let {
-                val remainTime = it.shouldReconnectTime - System.currentTimeMillis()
+                val remainTime = it.reconnectTime - System.currentTimeMillis()
 
                 if (remainTime <= 0) {
                     currentDisconnectInfo = null
@@ -139,12 +128,12 @@ object AddReconnectButton : SimpleFeature(
      * 0 ~ 3: red
      * 4 ~ 10: green
      */
-    private fun getSecondText(currentSecond: Double): String {
-        val percent = auto_second * 0.3
+    private fun getSecondText(currentSecond: Number): String {
+        val percent = autoSecond * 0.3
 
-        val colorCode = if (currentSecond <= percent) "§4" else "§a"
+        val colorCode = if (currentSecond.toDouble() <= percent) "§4" else "§a"
 
-        return "$colorCode${currentSecond.transformToPrecisionString(1)}s"
+        return "$colorCode${currentSecond.toDouble().withPrecisionText(1)}s"
     }
 
     private fun getDisconnectInfo() = currentDisconnectInfo?.takeIf {
@@ -152,8 +141,15 @@ object AddReconnectButton : SimpleFeature(
     }
 
     data class DisconnectInfo(
-        val shouldReconnectTime: Long,
+        val reconnectTime: Long,
         val reconnectButton: GuiButton,
         val guiConnecting: () -> GuiConnecting
     )
+
+    private fun getReconnectButton(base: GuiButton, text: String): GuiButton {
+        val width = base.width / 2 - gap / 2
+        val x = base.xPosition + gap + width
+
+        return GuiButton(101, x, base.yPosition, width, base.height, text)
+    }
 }

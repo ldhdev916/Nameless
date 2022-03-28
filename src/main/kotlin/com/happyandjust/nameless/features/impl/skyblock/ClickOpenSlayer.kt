@@ -60,7 +60,7 @@ object ClickOpenSlayer : SimpleFeature("clickOpenSlayer", "Click Anywhere to Ope
         on<GuiScreenEvent.MouseInputEvent.Post>().filter { openMenuComponent != null && enabled && Mouse.getEventButton() == 0 && Mouse.getEventButtonState() }
             .subscribe {
                 if (gui is GuiChat) {
-                    gui.withInstance<AccessorGuiScreen> {
+                    withInstance<AccessorGuiScreen>(gui) {
                         invokeHandleComponentClick(openMenuComponent)
                     }
                 }

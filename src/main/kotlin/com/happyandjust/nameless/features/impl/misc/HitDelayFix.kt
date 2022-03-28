@@ -25,9 +25,4 @@ object HitDelayFix : SimpleFeature(
     "Hit Delay Fix",
     "",
     true
-) {
-
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-}
+)

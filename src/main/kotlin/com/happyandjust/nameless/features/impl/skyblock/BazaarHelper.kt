@@ -24,7 +24,6 @@ import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
-import com.happyandjust.nameless.utils.ScoreboardUtils
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIRoundedRectangle
@@ -68,7 +67,7 @@ object BazaarHelper : SimpleFeature(
     init {
         on<GuiScreenEvent.InitGuiEvent.Post>().filter { enabled && Hypixel.currentGame is SkyBlock && gui is GuiChest }
             .subscribe {
-                gui.withInstance<AccessorGuiContainer> {
+                withInstance<AccessorGuiContainer>(gui) {
 
                     BazaarInformation.values().forEach { it.updateValue(Double.NaN, "") }
 
@@ -87,13 +86,13 @@ object BazaarHelper : SimpleFeature(
         }
 
         on<SpecialTickEvent>().subscribe {
-            mc.currentScreen.withInstance<GuiChest> { updateDisplay() }
+            withInstance<GuiChest>(mc.currentScreen) { updateDisplay() }
         }
     }
 
     private fun GuiScreen.shouldDisplay(): Boolean {
         if (!enabled || Hypixel.currentGame !is SkyBlock || this !is GuiChest) return false
-        inventorySlots.withInstance<ContainerChest> {
+        withInstance<ContainerChest>(inventorySlots) {
             val slots = inventorySlots.filter { it.inventory != mc.thePlayer.inventory }
             if (slots.size != 36) return false
             val name = lowerChestInventory.displayName.unformattedText.stripControlCodes()
@@ -108,13 +107,12 @@ object BazaarHelper : SimpleFeature(
 
     private fun GuiScreen.updateDisplay() {
         if (!enabled || Hypixel.currentGame !is SkyBlock || this !is GuiChest) return
-        inventorySlots.withInstance<ContainerChest> {
+        withInstance<ContainerChest>(inventorySlots) {
             val slots = inventorySlots.filter { it.inventory != mc.thePlayer.inventory }
             if (slots.size != 36 || slots[10].stack?.displayName?.stripControlCodes() != "Buy Instantly") return
 
             val coinLine =
-                ScoreboardUtils.getSidebarLines(true).find { it.startsWith("Purse:") || it.startsWith("Piggy:") }
-                    ?: return
+                mc.theWorld.getSidebarLines().find { it.startsWith("Purse:") || it.startsWith("Piggy:") } ?: return
             val coin = coinLine.split(":")[1].trim().replace(",", "").toDoubleOrNull()
 
             slots[13].stack?.displayName?.let {

@@ -31,10 +31,8 @@ import gg.essential.vigilance.gui.settings.SettingComponent
 import gg.essential.vigilance.utils.onLeftClick
 import java.awt.Color
 
-class VerticalPositionEditableComponent(
-    allIdentifiers: List<Identifier>,
-    addedIdentifiers: List<Identifier>
-) : SettingComponent() {
+class VerticalPositionEditableComponent(addedIdentifiers: List<Identifier>, allIdentifiers: Iterable<Identifier>) :
+    SettingComponent() {
 
     private val padding = 5f
     private val notAddedContainer by UIContainer().constrain {
@@ -67,9 +65,7 @@ class VerticalPositionEditableComponent(
             } childOf container
         }
 
-        val filterAddedIdentifiers = addedIdentifiers.filter { allIdentifiers.any(it::areEqual) }
-
-        allIdentifiers.filter { filterAddedIdentifiers.none { identifier -> it.areEqual(identifier) } }.forEach {
+        (allIdentifiers - addedIdentifiers.toSet()).forEach {
             val component = MoveAbleComponent(it.toUIComponent(this)).constrain {
                 y = SiblingConstraint(padding)
             } childOf notAddedContainer
@@ -77,7 +73,7 @@ class VerticalPositionEditableComponent(
             componentIdentifierMap[component] = it
         }
 
-        filterAddedIdentifiers.forEach {
+        addedIdentifiers.forEach {
             val component = MoveAbleComponent(it.toUIComponent(this)).constrain {
                 y = SiblingConstraint(padding)
             } childOf addedContainer
@@ -249,5 +245,5 @@ class VerticalPositionEditableComponent(
 interface Identifier {
     fun toUIComponent(gui: VerticalPositionEditableComponent): UIComponent
 
-    fun areEqual(other: Identifier): Boolean
+    override fun equals(other: Any?): Boolean
 }

@@ -20,17 +20,16 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.core.value.toChromaColor
+import com.happyandjust.nameless.dsl.drawFilledBox
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.overlayParameter
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.boxColor
 import com.happyandjust.nameless.features.settings
-import com.happyandjust.nameless.features.showY_yText
 import com.happyandjust.nameless.gui.fixed
-import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.components.Window
@@ -48,58 +47,63 @@ object DropperHelper : SimpleFeature(
     "Render box on where you'll land"
 ) {
 
-    private val textState = BasicState("")
-
     init {
+        hierarchy {
+            +::boxColor
 
-        parameter(Color.green.toChromaColor()) {
-            matchKeyCategory()
-            key = "boxColor"
-            title = "Box Color"
-        }
-
-        overlayParameter(false) {
-            matchKeyCategory()
-            key = "showY"
-            title = "Display Y Position"
-            desc = "Render y position of where you'll land on your screen"
-
-
-            settings {
-                ordinal = 1
-            }
-
-            config("dropper", "yPosition", Overlay.DEFAULT)
-
-            component {
-                UIText(getYText(999)).constrain {
-                    textScale = basicTextScaleConstraint { currentScale.toFloat() }.fixed()
-                }
-            }
-
-            shouldDisplay { enabled && value }
-
-            val window = Window(ElementaVersion.V1).apply {
-                UIText().constrain {
-                    x = basicXConstraint { overlayPoint.x.toFloat() }.fixed()
-                    y = basicYConstraint { overlayPoint.y.toFloat() }.fixed()
-
-                    textScale = basicTextScaleConstraint { overlayPoint.scale.toFloat() }.fixed()
-                }.bindText(textState) childOf this
-            }
-
-            render { if (enabled && value) window.draw(UMatrixStack.Compat.get()) }
-
-
-            parameter("&a{value}") {
-                matchKeyCategory()
-                key = "yText"
-                title = "Y Text"
+            showY {
+                +::yText
             }
         }
     }
 
-    private fun getYText(y: Int) = showY_yText.replace("&", "§").replace("{value}", y.toString())
+    private val textState = BasicState("")
+
+    private var boxColor by parameter(Color.green.toChromaColor()) {
+        matchKeyCategory()
+        key = "boxColor"
+        title = "Box Color"
+    }
+
+    private var yText by parameter("&a{value}") {
+        matchKeyCategory()
+        key = "yText"
+        title = "Y Text"
+    }
+
+    private val showY = overlayParameter(false) {
+        matchKeyCategory()
+        key = "showY"
+        title = "Display Y Position"
+        desc = "Render y position of where you'll land on your screen"
+
+        settings {
+            ordinal = 1
+        }
+
+        config("dropper", "yPosition", Overlay.DEFAULT)
+
+        component {
+            UIText(getYText(999)).constrain {
+                textScale = basicTextScaleConstraint { currentScale.toFloat() }.fixed()
+            }
+        }
+
+        shouldDisplay { enabled && value }
+
+        val window = Window(ElementaVersion.V1).apply {
+            UIText().constrain {
+                x = basicXConstraint { overlayPoint.x.toFloat() }.fixed()
+                y = basicYConstraint { overlayPoint.y.toFloat() }.fixed()
+
+                textScale = basicTextScaleConstraint { overlayPoint.scale.toFloat() }.fixed()
+            }.bindText(textState) childOf this
+        }
+
+        render { if (enabled && value) window.draw(UMatrixStack.Compat.get()) }
+    }
+
+    private fun getYText(y: Int) = yText.replace("&", "§").replace("{value}", y.toString())
 
     private var axisAlignedBB: AxisAlignedBB? = null
 
@@ -118,9 +122,7 @@ object DropperHelper : SimpleFeature(
         }
 
         on<RenderWorldLastEvent>().filter { enabled }.subscribe {
-            axisAlignedBB?.let {
-                RenderUtils.drawBox(it, boxColor.rgb, partialTicks)
-            }
+            axisAlignedBB?.drawFilledBox(boxColor.rgb, partialTicks)
         }
     }
 }

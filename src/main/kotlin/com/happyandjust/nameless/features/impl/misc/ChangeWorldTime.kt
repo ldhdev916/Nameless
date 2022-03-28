@@ -19,11 +19,9 @@
 package com.happyandjust.nameless.features.impl.misc
 
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.autoFillEnum
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.settings
-import com.happyandjust.nameless.features.time
-import com.happyandjust.nameless.features.timeFormat
 
 object ChangeWorldTime : SimpleFeature(
     "changeWorldTime",
@@ -31,39 +29,43 @@ object ChangeWorldTime : SimpleFeature(
     "This changes sky color so requires Change Sky Color to be turned off"
 ) {
 
-    @JvmStatic
-    var timeJVM
-        get() = time
-        set(value) {
-            time = value
-        }
-
     init {
-        parameter(0) {
-            matchKeyCategory()
-            key = "time"
-            title = "Precise World Time"
+        hierarchy {
+            +::time
 
-            settings {
-                maxValueInt = 23999
-            }
+            +::timeFormat
+        }
+    }
 
-            onValueChange { time ->
-                timeFormat = WorldTimeFormat.values().single { time in it.ordinal * 1000 until (it.ordinal + 1) * 1000 }
-            }
+    @JvmStatic
+    var time: Int by parameter(0) {
+        matchKeyCategory()
+        key = "time"
+        title = "Precise World Time"
+
+        settings {
+            maxValueInt = 23999
         }
 
-        parameter(WorldTimeFormat.AM12) {
-            matchKeyCategory()
-            key = "timeFormat"
-            title = "World Time Formatted"
+        onValueChange { time ->
+            val format = WorldTimeFormat.values().single {
+                val ordinal = it.ordinal
+                time in ordinal * 1000 until (ordinal + 1) * 1000
+            }
+            timeFormat = format
+        }
+    }
 
+    private var timeFormat by parameter(WorldTimeFormat.AM12) {
+        matchKeyCategory()
+        key = "timeFormat"
+        title = "World Time Formatted"
+
+        settings {
             autoFillEnum { it.prettyName }
-
-            onValueChange {
-                time = it.ordinal * 1000
-            }
         }
+
+        onValueChange { time = it.ordinal * 1000 }
     }
 
     enum class WorldTimeFormat(val prettyName: String) {

@@ -20,14 +20,11 @@ package com.happyandjust.nameless.listener
 
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.toChromaColor
-import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.dsl.toVec3
-import com.happyandjust.nameless.dsl.withAlpha
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.KeyPressEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import com.happyandjust.nameless.pathfinding.ModPathFinding
-import com.happyandjust.nameless.utils.RenderUtils
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -58,13 +55,12 @@ object WaypointListener {
             for (waypoint in waypointInfos) {
                 if (!waypoint.enabled) continue
                 val color = waypoint.color.rgb
-                RenderUtils.drawPath(
-                    waypoint.waypointPaths,
-                    if (pathFreezed) color.withAlpha(0.5f) else color,
-                    partialTicks
-                )
-                RenderUtils.draw3DString(waypoint.name, waypoint.targetPos, 2.5, color, partialTicks)
-                RenderUtils.renderBeaconBeam(waypoint.targetPos.toVec3(), color, 0.7f, partialTicks)
+
+                val pathColor = if (pathFreezed) color.withAlpha(0.5f) else color
+
+                waypoint.waypointPaths.drawPaths(pathColor, partialTicks)
+                waypoint.targetPos.drawStringAtCenter(waypoint.name, 2.5, color, partialTicks)
+                waypoint.targetPos.toVec3().renderBeaconBeam(color, 0.7f, partialTicks)
             }
         }
         on<KeyPressEvent>().filter { isNew && !inGui && keyBindingCategory == KeyBindingCategory.FREEZE_WAYPOINT_PATH }

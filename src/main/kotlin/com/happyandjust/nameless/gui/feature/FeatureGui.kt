@@ -192,7 +192,7 @@ class FeatureGui : WindowScreen(
     }
 
     @JvmName("selectCategoryByFeatureList")
-    fun selectCategory(list: List<BaseFeature<*, *>>, resetText: Boolean = true) {
+    fun selectCategory(list: List<BaseFeature<*>>, resetText: Boolean = true) {
         hidePeek()
 
         componentStack.clear()

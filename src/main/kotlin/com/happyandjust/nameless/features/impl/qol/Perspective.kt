@@ -28,9 +28,6 @@ import com.happyandjust.nameless.mixinhooks.EntityRendererHook
 
 object Perspective : SimpleFeature("perspective", "Perspective", "Free Look") {
 
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
     private var lastThirdPersonView = 0
 
     init {

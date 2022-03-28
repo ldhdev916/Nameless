@@ -20,18 +20,18 @@ package com.happyandjust.nameless.features.impl.qol
 
 import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.core.value.toChromaColor
+import com.happyandjust.nameless.dsl.drawCurvedLine
+import com.happyandjust.nameless.dsl.drawPoint
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.autoFillEnum
-import com.happyandjust.nameless.features.base.listParameter
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.trajectory.*
 import com.happyandjust.nameless.trajectory.TrajectoryPreview
-import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.item.*
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
@@ -43,71 +43,78 @@ object TrajectoryPreview : SimpleFeature(
 ) {
 
     init {
-        parameter(false) {
-            matchKeyCategory()
-            key = "showTrace"
-            title = "Enable Showing Trace of Trajectory"
-
-            settings { subCategory = "Rendering" }
-
-            parameter(Color.red.toChromaColor()) {
-                matchKeyCategory()
-                key = "color"
-                title = "Trace Color"
+        hierarchy {
+            ::showTrace {
+                +::traceColor
             }
+
+            +::endColor
+
+            +::targetColor
+
+            ::glowTarget {
+                +::glowColor
+            }
+
+            +::selectedTypes
         }
+    }
 
-        parameter(Color.green.toChromaColor()) {
-            matchKeyCategory()
-            key = "endColor"
-            title = "End Point Color"
+    private var showTrace by parameter(false) {
+        key = "showTrace"
+        title = "Enable Showing Trace of Trajectory"
 
-            settings {
-                ordinal = 1
-                subCategory = "Rendering"
-            }
+        settings { subCategory = "Rendering" }
+    }
+
+    private var traceColor by parameter(Color.red.toChromaColor()) {
+        key = "color"
+        title = "Trace Color"
+    }
+
+    private var endColor by parameter(Color.green.toChromaColor()) {
+        key = "endColor"
+        title = "End Point Color"
+
+        settings {
+            ordinal = 1
+            subCategory = "Rendering"
         }
+    }
 
-        parameter(Color.blue.toChromaColor()) {
-            matchKeyCategory()
-            key = "targetColor"
-            title = "Target Point Color"
-            desc = "Color when end point of trajectory HITS entity"
+    private var targetColor by parameter(Color.blue.toChromaColor()) {
+        key = "targetColor"
+        title = "Target Point Color"
+        desc = "Color when end point of trajectory HITS entity"
 
-            settings {
-                ordinal = 2
-                subCategory = "Rendering"
-            }
+        settings {
+            ordinal = 2
+            subCategory = "Rendering"
         }
+    }
 
-        parameter(false) {
+    private var glowTarget by parameter(false) {
+        key = "glowTarget"
+        title = "Glow Trajectory Target"
+        desc = "Glow entity which is hit by end point of trajectory"
 
-            matchKeyCategory()
-            key = "glowTarget"
-            title = "Glow Trajectory Target"
-            desc = "Glow entity which is hit by end point of trajectory"
-
-            settings {
-                ordinal = 3
-                subCategory = "Rendering"
-            }
-
-            parameter(Color(120, 5, 121).toChromaColor()) {
-                matchKeyCategory()
-                key = "color"
-                title = "Glow Color"
-            }
+        settings {
+            ordinal = 3
+            subCategory = "Rendering"
         }
+    }
 
-        listParameter(listOf(TrajectoryType.BOW, TrajectoryType.ENDER_PEARL)) {
-            matchKeyCategory()
-            key = "selectedTypes"
-            title = "Trajectory Types"
+    private var glowColor by parameter(Color(120, 5, 121).toChromaColor()) {
+        key = "color"
+        title = "Glow Color"
+    }
 
-            settings {
-                subCategory = "Type"
-            }
+    private var selectedTypes by parameter(listOf(TrajectoryType.BOW, TrajectoryType.ENDER_PEARL)) {
+        key = "selectedTypes"
+        title = "Trajectory Types"
 
+        settings {
+            subCategory = "Type"
             autoFillEnum { it.prettyName }
         }
     }
@@ -133,26 +140,21 @@ object TrajectoryPreview : SimpleFeature(
         on<RenderWorldLastEvent>().filter { enabled }.subscribe {
             trajectoryCalculateResult?.let {
                 if (showTrace) {
-                    RenderUtils.drawCurveLine(
-                        it.renderTraces,
-                        showTrace_color.rgb,
-                        1.0,
-                        partialTicks
-                    )
+                    it.renderTraces.drawCurvedLine(traceColor.rgb, 1, partialTicks)
                 }
 
                 it.end?.let { end ->
                     val pointColor =
                         (if (it.entityHit == null) endColor else targetColor).rgb
 
-                    RenderUtils.draw3DPoint(end, pointColor, 4.0, partialTicks)
+                    end.drawPoint(pointColor, 4, partialTicks)
                 }
             }
         }
 
         on<OutlineRenderEvent>().filter { enabled && glowTarget && entity == trajectoryCalculateResult?.entityHit }
             .subscribe {
-                colorInfo = ColorInfo(glowTarget_color.rgb, ColorInfo.ColorPriority.HIGHEST)
+                colorInfo = ColorInfo(targetColor.rgb, ColorInfo.ColorPriority.HIGHEST)
             }
     }
 

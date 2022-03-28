@@ -22,13 +22,14 @@ import com.happyandjust.nameless.hypixel.LocrawInfo
 
 class SkyWars : GameType {
 
-    override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "SKYWARS"
-
     override fun handleProperty(locrawInfo: LocrawInfo) = Unit
 
     override fun printProperties() = Unit
 
-    companion object : GameTypeFactory {
+    companion object : GameTypeCreator {
+
+        override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "SKYWARS"
+
         override fun createGameTypeImpl() = SkyWars()
     }
 }

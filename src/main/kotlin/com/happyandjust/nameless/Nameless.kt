@@ -20,13 +20,12 @@ package com.happyandjust.nameless
 
 import com.happyandjust.nameless.commands.*
 import com.happyandjust.nameless.config.ConfigHandler
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.enums.OutlineMode
 import com.happyandjust.nameless.features.FeatureRegistry
+import com.happyandjust.nameless.features.base.ParameterHierarchy
 import com.happyandjust.nameless.features.impl.misc.UpdateChecker
-import com.happyandjust.nameless.features.impl.qol.AutoRequeue
-import com.happyandjust.nameless.keybinding.KeyBindingCategory
-import com.happyandjust.nameless.keybinding.NamelessKeyBinding
+import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.listener.BasicListener
 import com.happyandjust.nameless.listener.LocrawListener
 import com.happyandjust.nameless.listener.OutlineHandleListener
@@ -36,8 +35,7 @@ import gg.essential.api.commands.Command
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import net.minecraftforge.fml.client.registry.ClientRegistry
-import net.minecraftforge.fml.common.Loader
+import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
@@ -46,9 +44,6 @@ import java.io.File
 @Mod(modid = MOD_ID, name = MOD_NAME, version = VERSION, modLanguageAdapter = "gg.essential.api.utils.KotlinAdapter")
 object Nameless {
 
-    val keyBindings = KeyBindingCategory.values()
-        .associateWith { NamelessKeyBinding(it.desc, it.key).also(ClientRegistry::registerKeyBinding) }
-
     var selectedOutlineMode by configValue(
         "outline",
         "selected",
@@ -56,12 +51,26 @@ object Nameless {
     )
 
     lateinit var modFile: File
+    private val delayedEventHandlers = hashSetOf<Any>()
+    private var shouldRegisterHandlers = false
+
+    fun requestRegisterEventHandler(handler: Any) {
+        if (shouldRegisterHandlers) {
+            MinecraftForge.EVENT_BUS.register(handler)
+        } else {
+            delayedEventHandlers.add(handler)
+        }
+    }
 
     @Mod.EventHandler
     fun preInit(e: FMLPreInitializationEvent) {
         modFile = e.sourceFile
         ConfigHandler.file = File(e.modConfigurationDirectory, "Nameless.json")
         UpdateChecker.checkForUpdate()
+
+        shouldRegisterHandlers = true
+        delayedEventHandlers.forEach { MinecraftForge.EVENT_BUS.register(it) }
+        delayedEventHandlers.clear()
     }
 
     @Mod.EventHandler
@@ -69,7 +78,7 @@ object Nameless {
         CoroutineScope(Dispatchers.Default).launch {
             launch {
                 FeatureRegistry
-                AutoRequeue.isAutoGGLoaded = Loader.isModLoaded("autogg")
+                ParameterHierarchy.executeAll()
             }
             launch(Dispatchers.IO) {
                 SkyblockUtils.fetchSkyBlockData()
@@ -93,6 +102,8 @@ object Nameless {
         LocrawListener
         OutlineHandleListener
         WaypointListener
+
+        Hypixel
     }
 
 
@@ -103,4 +114,4 @@ object Nameless {
 
 const val MOD_ID = "nameless"
 const val MOD_NAME = "Nameless"
-const val VERSION = "1.0.5"
+const val VERSION = "1.0.5-Pre"

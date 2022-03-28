@@ -40,7 +40,7 @@ abstract class TrajectoryPreview {
     private val random = Random()
     protected var gaussian = 0.0
     protected var bool = false
-    protected open val shouldStop = { posY < 0 || !canMove() || checkEntity() }
+    protected open val shouldStop = { posY < 0 || !canMove() || isCollidingWithEntity() }
 
     fun setRandomValue() {
         gaussian = random.nextGaussian()
@@ -100,7 +100,7 @@ abstract class TrajectoryPreview {
         }
     }
 
-    private fun checkEntity(): Boolean {
+    private fun isCollidingWithEntity(): Boolean {
         val vectorA = Vec3(posX, posY, posZ)
         val addVector = vectorA.addVector(motionX, motionY, motionZ)
         val vectorB = mc.theWorld.rayTraceBlocks(vectorA, addVector)?.hitVec ?: addVector
@@ -115,13 +115,11 @@ abstract class TrajectoryPreview {
 
         val f = 0.3
         list.filter { it.canBeCollidedWith() }.forEach {
-            it.entityBoundingBox.expand(f, f, f).calculateIntercept(vectorA, vectorB)?.run {
-                val d1 = vectorA.squareDistanceTo(hitVec)
-
-                if (d1 < d0 || d0 == 0.0) {
-                    entity = it
-                    d0 = d1
-                }
+            val intercept = it.entityBoundingBox.expand(f, f, f).calculateIntercept(vectorA, vectorB) ?: return@forEach
+            val d1 = vectorA.squareDistanceTo(intercept.hitVec)
+            if (d1 < d0 || d0 == 0.0) {
+                entity = it
+                d0 = d1
             }
         }
 

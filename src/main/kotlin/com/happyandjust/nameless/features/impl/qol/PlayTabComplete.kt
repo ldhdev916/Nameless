@@ -43,7 +43,7 @@ object PlayTabComplete : SimpleFeature(
 
     init {
         on<PacketEvent.Sending>().filter { EssentialAPI.getMinecraftUtil().isHypixel() && enabled }.subscribe {
-            packet.withInstance<C01PacketChatMessage> {
+            withInstance<C01PacketChatMessage>(packet) {
                 PLAY.matchesMatcher(message) {
                     val game = group("msg")
                     packet = C01PacketChatMessage("/play ${gameMap[game] ?: game}")
@@ -54,7 +54,7 @@ object PlayTabComplete : SimpleFeature(
         on<PacketEvent.Received>().filter {
             EssentialAPI.getMinecraftUtil().isHypixel() && enabled && packet is S3APacketTabComplete
         }.subscribe {
-            mc.currentScreen.withInstance<AccessorGuiChat> {
+            withInstance<AccessorGuiChat>(mc.currentScreen) {
                 PLAY.matchesMatcher(inputField.text) {
                     val game = group("msg")
                     packet = S3APacketTabComplete(games.filter { map -> map.contains(game, true) }.toTypedArray())

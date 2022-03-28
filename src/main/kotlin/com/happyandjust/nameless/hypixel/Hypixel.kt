@@ -18,41 +18,55 @@
 
 package com.happyandjust.nameless.hypixel
 
+import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.dsl.sendDebugMessage
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
+import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.hypixel.games.*
 import gg.essential.api.EssentialAPI
 import net.minecraftforge.common.MinecraftForge
 
 object Hypixel {
-    private val gameTypeFactories =
+    private val gameTypeCreators =
         setOf(BedWars, GrinchSimulator, GuessTheBuild, Lobby, MurderMystery, PartyGames, PixelParty, SkyBlock, SkyWars)
     var currentGame: GameType? = null
+        private set
     var locrawInfo: LocrawInfo? = null
     private var prevServer: String? = null
 
+    private val updateTimer = TickTimer.withSecond(2)
+
+    init {
+        on<SpecialTickEvent>().filter { updateTimer.update().check() }.subscribe {
+            updateGame()
+        }
+    }
+
     fun updateGame() {
-        currentGame = null
-        if (!EssentialAPI.getMinecraftUtil().isHypixel()) return
+        if (!EssentialAPI.getMinecraftUtil().isHypixel()) {
+            currentGame = null
+            return
+        }
 
-        val locraw = locrawInfo ?: return
-
-        currentGame = gameTypeFactories.map { it.createGameTypeImpl() }.find { it.isCurrent(locraw) }
-        currentGame?.handleProperty(locraw)
+        val locraw = locrawInfo ?: run {
+            currentGame = null
+            return
+        }
 
         handleServerChange(locraw)
+        currentGame?.handleProperty(locraw)
     }
 
     private fun handleServerChange(locraw: LocrawInfo) {
-        var serverChanged = false
-
         val server = locraw.server
         if (prevServer != server) {
-            serverChanged = true
-        }
-        prevServer = server
 
-        if (serverChanged) {
+            currentGame = gameTypeCreators.find { it.isCurrent(locraw) }?.createGameTypeImpl()
+            sendDebugMessage("Hypixel", "Current Game: $currentGame")
+
             MinecraftForge.EVENT_BUS.post(HypixelServerChangeEvent(server))
         }
+        prevServer = server
     }
 }

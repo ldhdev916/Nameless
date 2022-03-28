@@ -22,18 +22,15 @@ import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.changeSkin
-import com.happyandjust.nameless.features.nickname
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.FeatureGui
-import com.happyandjust.nameless.mixins.accessors.AccessorAbstractClientPlayer
-import com.happyandjust.nameless.mixins.accessors.AccessorNetworkPlayerInfo
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.minecraft.MinecraftProfileTexture
 import com.mojang.authlib.properties.Property
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -41,6 +38,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import net.minecraft.util.ResourceLocation
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
 import java.util.*
 
 
@@ -50,59 +48,54 @@ object DisguiseNickname : SimpleFeature(
     "Change your nickname and skin if nickname is valid!"
 ) {
 
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-
-    @JvmStatic
-    var nicknameJVM
-        get() = nickname
-        set(value) {
-            nickname = value
-        }
-
     init {
-        parameter("") {
-            matchKeyCategory()
-            key = "nickname"
-            title = "Disguise Nickname"
-            desc = "If you leave this empty, your nickname will disappear"
+        hierarchy {
+            +::nickname
 
-            settings {
-                validator = Char::isLetterOrDigit
-            }
+            +::changeSkin
+        }
+    }
+
+    @JvmStatic
+    var nickname by parameter("") {
+        key = "nickname"
+        title = "Disguise Nickname"
+        desc = "If you leave this empty, your nickname will disappear"
+
+        settings {
+            validator = Char::isLetterOrDigit
+        }
+    }
+
+    private var changeSkin by parameter(false) {
+        key = "changeSkin"
+        title = "Change Skin"
+        desc = "If nickname you set above is valid, your skin will be changed into his skin"
+
+        onValueChange {
+            if (!it) reset()
         }
 
-        parameter(false) {
-            matchKeyCategory()
-            key = "changeSkin"
-            title = "Change Skin"
-            desc = "If nickname you set above is valid, your skin will be changed into his skin"
-
-            onValueChange {
-                if (!it) resetTexture()
-            }
-
-            settings {
-                ordinal = 1
-            }
+        settings {
+            ordinal = 1
         }
     }
 
     private val invalidUsernames = hashSetOf<String>()
     private var currentlyLoadedUsername: String? = null
+
+    private var currentlyLoadedSkin: ResourceLocation? = null
+
     private val listener: (MinecraftProfileTexture.Type, ResourceLocation, MinecraftProfileTexture) -> Unit =
         { _, location, _ ->
-            ((mc.thePlayer as AccessorAbstractClientPlayer).invokeGetPlayerInfo() as AccessorNetworkPlayerInfo)
-                .setLocationSkin(location)
+            currentlyLoadedSkin = location
         }
 
-    @OptIn(DelicateCoroutinesApi::class)
     private fun checkAndLoadSkin(username: String) {
         if (mc.currentScreen is FeatureGui) return
         if (username in invalidUsernames) return
         if (username.equals(currentlyLoadedUsername, true)) return
-        GlobalScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             currentlyLoadedUsername = username
             val uuid = getUUID(username) ?: run {
                 invalidUsernames.add(username)
@@ -128,18 +121,20 @@ object DisguiseNickname : SimpleFeature(
 
     init {
         on<FeatureStateChangeEvent.Pre>().filter { feature == this@DisguiseNickname && !enabledAfter }
-            .subscribe { resetTexture() }
+            .subscribe { reset() }
 
         on<SpecialTickEvent>().filter { enabled && changeSkin }.subscribe { checkAndLoadSkin(nickname) }
     }
 
-    private fun resetTexture() {
+    private fun reset() {
         currentlyLoadedUsername = mc.thePlayer.name
-        mc.thePlayer.withInstance<AccessorAbstractClientPlayer> {
-            invokeGetPlayerInfo().withInstance<AccessorNetworkPlayerInfo> {
-                setLocationSkin(null)
-                setPlayerTexturesLoaded(false)
-            }
+        currentlyLoadedSkin = null
+    }
+
+    @JvmStatic
+    fun doChangeSkin(cir: CallbackInfoReturnable<ResourceLocation>, gameProfile: GameProfile) {
+        if (gameProfile.id == mc.thePlayer?.uniqueID) {
+            currentlyLoadedSkin?.let { cir.returnValue = it }
         }
     }
 }

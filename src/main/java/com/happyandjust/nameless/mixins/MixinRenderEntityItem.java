@@ -19,9 +19,6 @@
 package com.happyandjust.nameless.mixins;
 
 import com.happyandjust.nameless.features.impl.general.DisplayBetterArmor;
-import com.happyandjust.nameless.hypixel.Hypixel;
-import com.happyandjust.nameless.hypixel.games.SkyBlock;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderEntityItem;
 import net.minecraft.entity.item.EntityItem;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,10 +31,6 @@ public class MixinRenderEntityItem {
 
     @Inject(method = "doRender*", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/RenderItem;renderItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/resources/model/IBakedModel;)V"))
     public void modifyScale(EntityItem entity, double x, double y, double z, float entityYaw, float partialTicks, CallbackInfo ci) {
-        if (DisplayBetterArmor.getEnabledJVM() && Hypixel.INSTANCE.getCurrentGame() instanceof SkyBlock && DisplayBetterArmor.scaledItems.contains(entity)) {
-            double scale = DisplayBetterArmor.getScaleJVM();
-
-            GlStateManager.scale(scale, scale, scale);
-        }
+        DisplayBetterArmor.scaleEntityItem(entity);
     }
 }

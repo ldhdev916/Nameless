@@ -18,34 +18,62 @@
 
 package com.happyandjust.nameless.hypixel.games
 
+import com.happyandjust.nameless.dsl.getSidebarLines
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.sendDebugMessage
 import com.happyandjust.nameless.dsl.sendPrefixMessage
+import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
 import com.happyandjust.nameless.hypixel.LocrawInfo
-import com.happyandjust.nameless.hypixel.PartyGamesType
-import com.happyandjust.nameless.utils.ScoreboardUtils
+import com.happyandjust.nameless.hypixel.partygames.*
 
 class PartyGames : GameType {
 
-    var partyGamesType = PartyGamesType.NOTHING
-        private set
+    var partyMiniGames: PartyMiniGames? = null
+        private set(value) {
+            field?.unregisterAll()
+            field = value
 
-    override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "ARCADE" && locrawInfo.mode == "PARTY"
+            if (value != null && PartyGamesHelper.enabled && value.isEnabled()) {
+                value.registerEventListeners()
+            }
+        }
 
     override fun handleProperty(locrawInfo: LocrawInfo) {
-        for (scoreboard in ScoreboardUtils.getSidebarLines(true)) {
-            val foundPartyGamesType = validPartyGamesTypes.find { scoreboard.contains(it.scoreboardName, true) }
-            if (foundPartyGamesType != null) {
-                partyGamesType = foundPartyGamesType
+        for (scoreboard in mc.theWorld.getSidebarLines()) {
+            val partyMiniGames = findPartyMiniGames(scoreboard)
+            if (isNewMiniGames(partyMiniGames)) {
+                this.partyMiniGames = partyMiniGames
+                sendDebugMessage("Changed to $partyMiniGames")
                 break
             }
         }
     }
 
+    private fun findPartyMiniGames(scoreboard: String) =
+        partyMiniGamesList.find { scoreboard.contains(it.scoreboardIdentifier, true) }?.createImpl()
+
+    private fun isNewMiniGames(partyMiniGames: PartyMiniGames?) =
+        partyMiniGames != null && this.partyMiniGames?.javaClass != partyMiniGames.javaClass
+
     override fun printProperties() {
-        sendPrefixMessage("Party Games Type: $partyGamesType")
+        sendPrefixMessage("Party Games Type: ${partyMiniGames?.javaClass?.name}")
     }
 
-    companion object : GameTypeFactory {
-        private val validPartyGamesTypes = PartyGamesType.values().toList() - PartyGamesType.NOTHING
+    companion object : GameTypeCreator {
+        private val partyMiniGamesList = setOf(
+            AnimalSlaughter,
+            AnvilSpleef,
+            Avalanche,
+            Dive,
+            HighGround,
+            JigsawRush,
+            LabEscape,
+            RPG16,
+            SpiderMaze
+        )
+
         override fun createGameTypeImpl() = PartyGames()
+
+        override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "ARCADE" && locrawInfo.mode == "PARTY"
     }
 }

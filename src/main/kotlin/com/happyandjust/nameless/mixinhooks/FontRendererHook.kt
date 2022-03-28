@@ -20,7 +20,6 @@ package com.happyandjust.nameless.mixinhooks
 
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.impl.misc.DisguiseNickname
-import com.happyandjust.nameless.features.nickname
 import java.util.regex.Matcher
 
 object FontRendererHook {

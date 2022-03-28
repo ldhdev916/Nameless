@@ -19,6 +19,7 @@
 package com.happyandjust.nameless.utils
 
 import com.happyandjust.nameless.dsl.fetch
+import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.features.impl.qol.InGameStatViewer
 import com.happyandjust.nameless.features.impl.settings.HypixelAPIKey
@@ -30,8 +31,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
 object StatAPIUtils {
 
@@ -39,13 +38,10 @@ object StatAPIUtils {
     private val processingRequest = hashSetOf<EntityPlayer>()
 
     init {
-        MinecraftForge.EVENT_BUS.register(this)
-    }
-
-    @SubscribeEvent
-    fun onServerChange(e: HypixelServerChangeEvent) {
-        playerJSONCache.clear()
-        processingRequest.clear()
+        on<HypixelServerChangeEvent>().subscribe {
+            playerJSONCache.clear()
+            processingRequest.clear()
+        }
     }
 
     fun getStatValue(player: EntityPlayer, informationType: InGameStatViewer.InformationType): String {

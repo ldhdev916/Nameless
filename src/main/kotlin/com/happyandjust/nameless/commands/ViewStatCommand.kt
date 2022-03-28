@@ -21,7 +21,6 @@ package com.happyandjust.nameless.commands
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.features.impl.qol.InGameStatViewer
 import com.happyandjust.nameless.features.impl.settings.HypixelAPIKey
-import com.happyandjust.nameless.features.order
 import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.commands.DisplayName

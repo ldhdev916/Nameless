@@ -18,7 +18,9 @@
 
 package com.happyandjust.nameless.features.base
 
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
+import com.happyandjust.nameless.core.property.KPropertyBackedPropertyValue
+import com.happyandjust.nameless.core.property.PropertyValue
 import com.happyandjust.nameless.events.FeatureStateChangeEvent
 import com.happyandjust.nameless.features.Category
 import com.happyandjust.nameless.gui.feature.ComponentType
@@ -28,12 +30,12 @@ abstract class SimpleFeature(
     key: String,
     title: String,
     desc: String = "",
-    enabled_: Boolean = false
-) : BaseFeature<Boolean, Any>(key, title, desc) {
+    enabled: Boolean = false
+) : BaseFeature<Boolean>(key, title, desc) {
 
-    private val enabledConfig = configValue("features", key, enabled_)
+    private val enabledConfig = configValue("features", key, enabled)
     override var componentType: ComponentType? = ComponentType.SWITCH
-    override val property = ::enabled
+    override val propertyValue: PropertyValue by lazy { KPropertyBackedPropertyValue(this::enabled) }
 
     var enabled = enabledConfig.value
         set(value) {
@@ -47,11 +49,11 @@ abstract class SimpleFeature(
         }
 }
 
-abstract class BaseFeature<T : Any, E : Any>(
+abstract class BaseFeature<T : Any>(
     key: String,
     title: String,
     desc: String = ""
-) : AbstractDefaultFeature<T, E>() {
+) : AbstractDefaultFeature<T>() {
 
     init {
         this.key = key

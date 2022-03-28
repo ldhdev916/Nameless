@@ -23,9 +23,10 @@ set(value) {
 package com.happyandjust.nameless.features.impl.general
 
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.autoFillEnum
-import com.happyandjust.nameless.features.base.listParameter
-import com.happyandjust.nameless.features.enabledPotionTypes
+import com.happyandjust.nameless.features.base.hierarchy
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
+import net.minecraft.potion.Potion
 
 object RemoveNegativeEffects : SimpleFeature(
     "removeNegativeEffects",
@@ -33,31 +34,27 @@ object RemoveNegativeEffects : SimpleFeature(
     "Support Blindness, Nausea"
 ) {
 
-    @JvmStatic
-    var enabledPotionTypesJVM
-        get() = enabledPotionTypes
-        set(value) {
-            enabledPotionTypes = value
-        }
-
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-
     init {
-        listParameter(PotionType.values().toList()) {
-            matchKeyCategory()
-            key = "enabledPotionTypes"
-            title = "Potion Types"
+        hierarchy {
+            +::enabledPotionTypes
+        }
+    }
 
+    @JvmStatic
+    var enabledPotionTypes by parameter(PotionType.values().toList()) {
+        matchKeyCategory()
+        key = "enabledPotionTypes"
+        title = "Potion Types"
+
+        settings {
             autoFillEnum {
-                val name = it.name
-                "${name[0]}${name.drop(1).lowercase()}"
+                val name = it.name.lowercase()
+                name.replaceFirstChar { char -> char.uppercaseChar() }
             }
         }
     }
 
-    enum class PotionType {
-        BLINDNESS, NAUSEA
+    enum class PotionType(val potionId: Int) {
+        BLINDNESS(Potion.blindness.id), NAUSEA(Potion.confusion.id)
     }
 }

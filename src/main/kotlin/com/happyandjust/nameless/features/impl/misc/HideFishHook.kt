@@ -23,9 +23,4 @@ import com.happyandjust.nameless.features.base.SimpleFeature
 object HideFishHook : SimpleFeature(
     "hideOthersFishHook",
     "Hide Other Player's Fish Hook"
-) {
-
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-}
+)

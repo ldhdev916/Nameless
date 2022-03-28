@@ -18,15 +18,16 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.OverlayFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -40,47 +41,54 @@ import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
 object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Show Wither Shield CoolTime", "", false) {
 
     init {
-        parameter(false) {
-            matchKeyCategory()
-            key = "onlyHeld"
-            title = "Show only when you are holding Hyperion, Scylla, Valkyrie, Astraea"
+        hierarchy {
+            +::onlyHeld
+
+            +::onlyCoolTime
+
+            +::precision
+
+            +::readyText
+
+            +::text
         }
+    }
 
-        parameter(false) {
-            matchKeyCategory()
-            key = "onlyCooltime"
-            title = "Show only when wither shield is on cooltime"
+    private var onlyHeld by parameter(false) {
+        key = "onlyHeld"
+        title = "Show only when you are holding Hyperion, Scylla, Valkyrie, Astraea"
+    }
+
+    private var onlyCoolTime by parameter(false) {
+        key = "onlyCoolTime"
+        title = "Show only when wither shield is on cooltime"
+    }
+
+    private var precision by parameter(3) {
+        key = "precision"
+        title = "Decimal Point Precision"
+        desc = "Decimal point precision of cooltime"
+
+        settings {
+            ordinal = 1
+            maxValueInt = 3
         }
+    }
 
-        parameter(3) {
-            matchKeyCategory()
-            key = "precision"
-            title = "Decimal Point Precision"
-            desc = "Decimal point precision of cooltime"
+    private var readyText by parameter("&aShield: Ready") {
+        key = "readyText"
+        title = "Overlay Available Text"
+        desc = "Text when wither shield is ready"
 
-            settings {
-                ordinal = 1
-                maxValueInt = 3
-            }
-        }
+        settings { ordinal = 2 }
+    }
 
-        parameter("&aShield: Ready") {
-            matchKeyCategory()
-            key = "readyText"
-            title = "Overlay Available Text"
-            desc = "Text when wither shield is ready"
+    private var text by parameter("&6Shield: {value}s") {
+        key = "text"
+        title = "Overlay Text"
+        desc = "Text when wither shield is on cooltime"
 
-            settings { ordinal = 2 }
-        }
-
-        parameter("&6Shield: {value}s") {
-            matchKeyCategory()
-            key = "text"
-            title = "Overlay Text"
-            desc = "Text when wither shield is on cooltime"
-
-            settings { ordinal = 3 }
-        }
+        settings { ordinal = 3 }
     }
 
     override var overlayPoint by configValue("withershield", "overlay", Overlay.DEFAULT)
@@ -120,15 +128,15 @@ object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Sh
             val timeLeft = 5 - (System.currentTimeMillis() - it) / 1000.0
             text.replace(
                 "{value}",
-                timeLeft.transformToPrecisionString(precision)
+                timeLeft.withPrecisionText(precision)
             )
-        } ?: if (onlyCooltime) null else readyText
+        } ?: if (onlyCoolTime) null else readyText
     }
 
     init {
         on<PacketEvent.Sending>().filter { lastWitherShieldUse == null && Hypixel.currentGame is SkyBlock }
             .subscribe {
-                packet.withInstance<C08PacketPlayerBlockPlacement> {
+                withInstance<C08PacketPlayerBlockPlacement>(packet) {
                     if (stack.getSkyBlockID() in swords) {
                         lastWitherShieldUse = System.currentTimeMillis()
                     }

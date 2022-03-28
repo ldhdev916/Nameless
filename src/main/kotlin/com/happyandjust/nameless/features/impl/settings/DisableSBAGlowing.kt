@@ -24,8 +24,4 @@ object DisableSBAGlowing : SimpleFeature(
     "disableSbaGlowing",
     "Disable SBA Glowing",
     "It seems that glowing doesn't work with sba, if this feature is enabled this disables sba's glowing and make glowing work"
-) {
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-}
+)

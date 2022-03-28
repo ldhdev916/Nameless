@@ -21,14 +21,16 @@ package com.happyandjust.nameless.features.impl.general
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.core.value.toChromaColor
+import com.happyandjust.nameless.dsl.getPlayersInTab
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.mixins.accessors.AccessorEntity
-import com.happyandjust.nameless.utils.Utils
 import net.minecraft.entity.player.EntityPlayer
 import java.awt.Color
 
@@ -38,46 +40,41 @@ object GlowAllPlayers : SimpleFeature(
     "Glow all players in selected color except npc(hopefully)"
 ) {
 
-    @JvmStatic
-    var invisibleJVM
-        get() = invisible
-        set(value) {
-            invisible = value
-        }
-
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-
     init {
-        parameter(Color.red.toChromaColor()) {
-            matchKeyCategory()
-            key = "color"
-            title = "Glowing Color"
+        hierarchy {
+            +::color
+
+            ::invisible {
+                +::invisibleOverride
+
+                +::invisibleColor
+            }
         }
+    }
 
-        parameter(false) {
-            matchKeyCategory()
-            key = "invisible"
-            title = "Show Invisible Players"
+    private var color by parameter(Color.red.toChromaColor()) {
+        key = "color"
+        title = "Glowing Color"
+    }
 
-            parameter(false) {
-                matchKeyCategory()
-                key = "override"
-                title = "Use Different Glowing Color on Invisible Players"
-            }
+    @JvmStatic
+    var invisible by parameter(false) {
+        key = "invisible"
+        title = "Show Invisible Players"
+    }
 
-            parameter(Color.green.toChromaColor()) {
-                matchKeyCategory()
-                key = "color"
+    private var invisibleOverride by parameter(false) {
+        key = "override"
+        title = "Use Different Glowing Color on Invisible Players"
+    }
 
-                settings {
-                    ordinal = 1
-                }
+    private var invisibleColor by parameter(Color.green.toChromaColor()) {
+        key = "color"
+        title = "Color for Invisible Players"
+        desc = "Require 'Use Different Glowing Color on Invisible Players' to be enabled"
 
-                title = "Color for Invisible Players"
-                desc = "Require 'Use Different Glowing Color on Invisible Players' to be enabled"
-            }
+        settings {
+            ordinal = 1
         }
     }
 
@@ -87,8 +84,8 @@ object GlowAllPlayers : SimpleFeature(
 
     init {
         on<OutlineRenderEvent>().filter { enabled && entity in playersInTab }.subscribe {
-            val color = if ((entity as AccessorEntity).invokeGetFlag(5) && invisible_override) {
-                invisible_color
+            val color = if ((entity as AccessorEntity).invokeGetFlag(5) && invisibleOverride) {
+                invisibleColor
             } else {
                 color
             }.rgb
@@ -97,7 +94,7 @@ object GlowAllPlayers : SimpleFeature(
         }
 
         on<SpecialTickEvent>().filter { scanTimer.update().check() }.subscribe {
-            playersInTab = Utils.getPlayersInTab()
+            playersInTab = mc.theWorld.getPlayersInTab()
         }
     }
 

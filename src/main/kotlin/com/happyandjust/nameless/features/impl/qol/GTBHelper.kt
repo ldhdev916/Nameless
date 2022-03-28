@@ -18,15 +18,14 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.base.OverlayFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.clipboard
 import com.happyandjust.nameless.features.settings
-import com.happyandjust.nameless.features.translate
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -61,31 +60,38 @@ object GTBHelper : OverlayFeature(
     "Shows possible matching words in screen, also you can press tab to auto complete"
 ) {
 
+    init {
+        hierarchy {
+            +::translate
+
+            +::clipboard
+        }
+    }
+
+    private val wordInputStream = ResourceLocation("nameless", "words.json").inputStream()
+
     // english, korean
     @OptIn(ExperimentalSerializationApi::class)
     private val words =
-        Json.decodeFromStream<List<Map<String, String>>>(ResourceLocation("nameless", "words.json").inputStream())
-            .associate {
-                it["english"]!! to it["korean"]!!
-            }
-
-    init {
-        parameter(false) {
-            matchKeyCategory()
-            key = "translate"
-            title = "Translate Words"
-            desc = "Translate all words, themes from english to korean for korean users like me"
+        wordInputStream.use { inputStream ->
+            Json.decodeFromStream<List<WordData>>(inputStream).associate { it.english to it.korean }
         }
 
-        parameter(false) {
-            matchKeyCategory()
-            key = "clipboard"
-            title = "Copy to Clipboard"
-            desc = "When there's only 1 word that matches, copy it to your clipboard"
+    private var translate by parameter(false) {
+        matchKeyCategory()
+        key = "translate"
+        title = "Translate Words"
+        desc = "Translate all words, themes from english to korean for korean users like me"
+    }
 
-            settings {
-                ordinal = 1
-            }
+    private var clipboard by parameter(false) {
+        matchKeyCategory()
+        key = "clipboard"
+        title = "Copy to Clipboard"
+        desc = "When there's only 1 word that matches, copy it to your clipboard"
+
+        settings {
+            ordinal = 1
         }
     }
 
@@ -173,8 +179,8 @@ object GTBHelper : OverlayFeature(
 
     init {
         on<PacketEvent.Received>().filter { checkForEnabledAndGuessTheBuild() }.subscribe {
-            packet.withInstance<S3APacketTabComplete> {
-                mc.currentScreen.withInstance<AccessorGuiChat> {
+            withInstance<S3APacketTabComplete>(packet) {
+                withInstance<AccessorGuiChat>(mc.currentScreen) {
                     val text = inputField.text
 
                     if (!text.startsWith("/")) {
@@ -186,4 +192,6 @@ object GTBHelper : OverlayFeature(
         }
     }
 
+    @kotlinx.serialization.Serializable
+    private data class WordData(val english: String, val korean: String)
 }

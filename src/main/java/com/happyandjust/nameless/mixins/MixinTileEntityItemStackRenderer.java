@@ -40,7 +40,7 @@ public class MixinTileEntityItemStackRenderer {
     @Inject(method = "renderByItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/tileentity/TileEntitySkullRenderer;renderSkull(FFFLnet/minecraft/util/EnumFacing;FILcom/mojang/authlib/GameProfile;I)V"), cancellable = true)
     public void changeSkin(ItemStack itemStack, CallbackInfo ci) {
         GameProfile gameProfile = null;
-        if (EquipPetSkin.getEnabledJVM()) {
+        if (EquipPetSkin.INSTANCE.getEnabled()) {
 
             EquipPetSkin.PetSkinChangeInfo info = EquipPetSkin.currentPetSkinChangeInfo;
             if (info != null && info.getItemStack().equals(itemStack)) {
@@ -51,8 +51,8 @@ public class MixinTileEntityItemStackRenderer {
             }
         }
 
-        if (ChangeHelmetTexture.getEnabledJVM() && itemStack.equals(Minecraft.getMinecraft().thePlayer.getEquipmentInSlot(4))) {
-            Pair<SkyBlockItem, GameProfile> pair = ChangeHelmetTexture.getCurrentlyEquipedTexture();
+        if (ChangeHelmetTexture.INSTANCE.getEnabled() && itemStack.equals(Minecraft.getMinecraft().thePlayer.getEquipmentInSlot(4))) {
+            Pair<SkyBlockItem, GameProfile> pair = ChangeHelmetTexture.getCurrentlyEquippedTexture();
 
             if (pair != null) gameProfile = pair.getSecond();
         }

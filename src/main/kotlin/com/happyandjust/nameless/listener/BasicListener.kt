@@ -28,24 +28,34 @@ import com.happyandjust.nameless.gui.feature.FeatureGui
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import gg.essential.api.utils.GuiUtil
 import net.minecraft.client.renderer.GlStateManager.color
+import net.minecraft.client.settings.KeyBinding
 import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.common.network.FMLNetworkEvent
+import org.lwjgl.input.Keyboard
+import org.lwjgl.input.Mouse
 
 object BasicListener {
 
     private val prevPressed = hashMapOf<KeyBindingCategory, Boolean>().withDefault { false }
 
     init {
-        on<KeyPressEvent>().filter { isNew && !inGui && keyBindingCategory == KeyBindingCategory.OPEN_GUI }
-            .subscribe {
-                GuiUtil.open(FeatureGui())
+        on<KeyPressEvent>().filter { isNew && !inGui && keyBindingCategory == KeyBindingCategory.OPEN_GUI }.subscribe {
+            GuiUtil.open(FeatureGui())
+        }
+
+        val realKeyDown: KeyBinding.() -> Boolean = {
+            when {
+                keyCode == Keyboard.KEY_NONE -> false
+                keyCode < 0 -> Mouse.isButtonDown(keyCode + 100)
+                else -> Keyboard.isKeyDown(keyCode)
             }
+        }
 
         on<SpecialTickEvent>().subscribe {
             for (keyBindingCategory in KeyBindingCategory.values()) {
-                val pressed = keyBindingCategory.getKeyBinding().isKeyDown
+                val pressed = keyBindingCategory.keyBinding.realKeyDown()
                 if (pressed) {
                     MinecraftForge.EVENT_BUS.post(
                         KeyPressEvent(

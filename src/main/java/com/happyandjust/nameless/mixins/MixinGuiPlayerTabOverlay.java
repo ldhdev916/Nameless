@@ -46,6 +46,6 @@ public class MixinGuiPlayerTabOverlay {
     public Collection<NetworkPlayerInfo> filterNPC(NetHandlerPlayClient netHandlerPlayClient) {
         Collection<NetworkPlayerInfo> map = netHandlerPlayClient.getPlayerInfoMap();
 
-        return HideNPC.getEnabledJVM() ? Collections2.filter(map, player -> player != null && player.getGameProfile().getId().version() != 2) : map;
+        return HideNPC.INSTANCE.getEnabled() ? Collections2.filter(map, player -> player != null && player.getGameProfile().getId().version() != 2) : map;
     }
 }

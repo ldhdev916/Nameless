@@ -20,24 +20,23 @@ package com.happyandjust.nameless.features.impl.misc
 
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.skyColor
 import net.minecraft.util.Vec3
 import java.awt.Color
 
 object ChangeSkyColor : SimpleFeature("changeSkyColor", "Change Sky Color") {
 
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-
     init {
-        parameter(Color.black.toChromaColor()) {
-            matchKeyCategory()
-            key = "skyColor"
-            title = "Sky Color"
-            desc = "Alpha is not allowed"
+        hierarchy {
+            +::skyColor
         }
+    }
+
+    private var skyColor by parameter(Color.black.toChromaColor()) {
+        key = "skyColor"
+        title = "Sky Color"
+        desc = "Alpha is not allowed"
     }
 
     @JvmStatic

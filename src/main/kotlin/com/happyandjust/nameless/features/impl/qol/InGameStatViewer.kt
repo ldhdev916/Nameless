@@ -18,12 +18,14 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.core.property.Identifiers
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
-import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.overlayParameter
 import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.gui.feature.components.MultiSelectorComponent
 import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
@@ -34,7 +36,6 @@ import com.happyandjust.nameless.hypixel.games.Lobby
 import com.happyandjust.nameless.hypixel.games.MurderMystery
 import com.happyandjust.nameless.hypixel.games.SkyWars
 import com.happyandjust.nameless.utils.StatAPIUtils
-import com.happyandjust.nameless.utils.Utils
 import gg.essential.api.EssentialAPI
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIContainer
@@ -63,111 +64,7 @@ object InGameStatViewer : SimpleFeature(
 ) {
 
     init {
-        overlayParameter(DisplayType.OVERLAY) {
-            matchKeyCategory()
-            key = "displayType"
-            title = "Display Type"
-            desc = DisplayType.values().joinToString("\n") { "${it.name}: ${it.lore}" }
-
-            config("inGameStatViewer", "overlay", Overlay.DEFAULT)
-            component {
-                val container = UIContainer().constrain {
-                    width = ChildBasedMaxSizeConstraint()
-                    height = ChildBasedSizeConstraint()
-                }
-
-                for (text in arrayOf(
-                    "Hypixel Level: 10",
-                    "BedWars Level: 999§e✫",
-                    "BedWars FKDR: 1.0",
-                    "SkyWars Kills: 9999"
-                )) {
-                    UIText(text).constrain {
-                        y = SiblingConstraint()
-
-                        textScale = basicTextScaleConstraint { currentScale.toFloat() }.fixed()
-                    } childOf container
-                }
-
-                container
-            }
-
-            shouldDisplay { enabled && value == DisplayType.OVERLAY }
-            render {
-                if (!enabled || value != DisplayType.OVERLAY) return@render
-                for (player in getPlayersForRender()) {
-                    matrix {
-                        setup(overlayPoint)
-
-                        mc.fontRendererObj.drawString("§e${player.name}", 0f, 0f, Color.white.rgb, true)
-
-                        var y = mc.fontRendererObj.FONT_HEIGHT
-
-                        for (identifier in order.filter { it.supportGames.any(SupportGame::shouldDisplay) }) {
-                            mc.fontRendererObj.drawString(
-                                identifier.informationType.getFormatText(player),
-                                0f,
-                                y.toFloat(),
-                                Color.white.rgb,
-                                true
-                            )
-                            y += mc.fontRendererObj.FONT_HEIGHT
-                        }
-                    }
-                }
-            }
-
-            parameter(0.0) {
-                matchKeyCategory()
-                key = "yOffset"
-                title = "Y Offset"
-                desc = "Offset y from player's head (Only for display type 'HEAD')"
-
-                settings {
-                    minValueInt = -5
-                    maxValueInt = 5
-                }
-            }
-
-            parameter(1.0) {
-                matchKeyCategory()
-                key = "scale"
-                title = "Text Scale"
-                desc = "Select text scale (Only for display type 'HEAD')"
-
-                settings {
-                    ordinal = 1
-                    minValue = 0.5
-                    maxValue = 5.0
-                }
-            }
-
-            parameter(true) {
-                matchKeyCategory()
-                key = "onlyLook"
-                title = "Only Looking At"
-                desc =
-                    "Show stats of only a player you're currently looking at instead of everyone (Only for display type 'HEAD')"
-
-                settings {
-                    ordinal = 2
-                }
-            }
-        }
-
-        parameter(emptyList<InGameStatIdentifier>()) {
-            matchKeyCategory()
-            key = "order"
-            title = "Stats List"
-
-            settings {
-                ordinal = 3
-                allIdentifiers = InformationType.values().map { InGameStatIdentifier(it, listOf(SupportGame.ALL)) }
-            }
-        }
-
-        parameter(Unit) {
-            matchKeyCategory()
+        val texts = parameter(Unit) {
             key = "texts"
             title = "Each Stat Texts"
             desc = "{value} is converted to actual value(like level) when rendering and & will be converted to §"
@@ -187,16 +84,146 @@ object InGameStatViewer : SimpleFeature(
                 }
             }
         }
+
+        val informationParameters = InformationType.values().map {
+            val informationName = it.name.lowercase()
+            val statName = it.statName
+
+            parameter("$statName: {value}") {
+                key = "${informationName}_text"
+                title = statName
+            }
+        }
+
+
+        hierarchy {
+            ::displayType {
+                +::yOffset
+
+                +::scale
+
+                +::onlyLook
+            }
+
+            +::order
+
+            texts {
+                for (parameter in informationParameters) {
+                    +parameter
+                }
+            }
+        }
+    }
+
+    private var displayType by overlayParameter(DisplayType.OVERLAY) {
+        key = "displayType"
+        title = "Display Type"
+        desc = DisplayType.values().joinToString("\n") { "${it.name}: ${it.lore}" }
+
+        config("inGameStatViewer", "overlay", Overlay.DEFAULT)
+        component {
+            val container = UIContainer().constrain {
+                width = ChildBasedMaxSizeConstraint()
+                height = ChildBasedSizeConstraint()
+            }
+
+            for (text in arrayOf(
+                "Hypixel Level: 10",
+                "BedWars Level: 999§e✫",
+                "BedWars FKDR: 1.0",
+                "SkyWars Kills: 9999"
+            )) {
+                UIText(text).constrain {
+                    y = SiblingConstraint()
+
+                    textScale = basicTextScaleConstraint { currentScale.toFloat() }.fixed()
+                } childOf container
+            }
+
+            container
+        }
+
+        shouldDisplay { enabled && value == DisplayType.OVERLAY }
+        render {
+            if (!enabled || value != DisplayType.OVERLAY) return@render
+            for (player in getPlayersForRender()) {
+                matrix {
+                    setup(overlayPoint)
+
+                    mc.fontRendererObj.drawString("§e${player.name}", 0f, 0f, Color.white.rgb, true)
+
+                    var y = mc.fontRendererObj.FONT_HEIGHT
+
+
+                    for (identifier in order.filter { it.supportGames.any(SupportGame::shouldDisplay) }) {
+                        mc.fontRendererObj.drawString(
+                            identifier.informationType.getFormatText(player),
+                            0f,
+                            y.toFloat(),
+                            Color.white.rgb,
+                            true
+                        )
+                        y += mc.fontRendererObj.FONT_HEIGHT
+                    }
+                }
+            }
+        }
+    }
+
+    private var yOffset by parameter(0.0) {
+        key = "yOffset"
+        title = "Y Offset"
+        desc = "Offset y from player's head (Only for display type 'HEAD')"
+
+        settings {
+            minValue = -5.0
+            maxValue = 5.0
+        }
+    }
+
+    private var scale by parameter(1.0) {
+        key = "scale"
+        title = "Text Scale"
+        desc = "Select text scale (Only for display type 'HEAD')"
+
+        settings {
+            ordinal = 1
+            minValue = 0.5
+            maxValue = 5.0
+        }
+    }
+
+    private var onlyLook by parameter(true) {
+        key = "onlyLook"
+        title = "Only Looking At"
+        desc =
+            "Show stats of only a player you're currently looking at instead of everyone (Only for display type 'HEAD')"
+
+        settings {
+            ordinal = 2
+        }
+    }
+
+    var order by parameter(Identifiers(emptyList<InGameStatIdentifier>())) {
+        matchKeyCategory()
+        key = "order"
+        title = "Stats List"
+
+        settings {
+            ordinal = 3
+
+            allIdentifiers = InformationType.values().map { InGameStatIdentifier(it, listOf(SupportGame.ALL)) }
+        }
     }
 
     private fun getPlayersForRender(): List<EntityPlayer> {
-        return if (displayType == DisplayType.OVERLAY || displayType_onlyLook) {
+        return if (displayType == DisplayType.OVERLAY || onlyLook) {
             mc.objectMouseOver?.takeIf { it.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY }?.let {
                 val entity = it.entityHit
                 if (entity is EntityPlayer) arrayListOf(entity) else emptyList()
             } ?: emptyList()
         } else {
-            Utils.getPlayersInTab() - mc.thePlayer
+            mc.theWorld.getPlayersInTab() - mc.thePlayer
         }
     }
 
@@ -204,16 +231,13 @@ object InGameStatViewer : SimpleFeature(
         on<RenderWorldLastEvent>().filter { enabled && displayType == DisplayType.HEAD }.subscribe {
             val render = mc.renderViewEntity
 
-            val renderX = render.getRenderPosX(partialTicks)
-            val renderY = render.getRenderPosY(partialTicks)
-            val renderZ = render.getRenderPosZ(partialTicks)
-
+            val (renderX, renderY, renderZ) = render.getRenderPos(partialTicks)
 
             for (player in getPlayersForRender()) {
                 matrix {
                     translate(
                         player.posX - renderX,
-                        player.posY + player.getEyeHeight() + displayType_yOffset - renderY,
+                        player.posY + player.getEyeHeight() + yOffset - renderY,
                         player.posZ - renderZ
                     )
                     rotate(-mc.renderManager.playerViewY, 0f, 1f, 0f)
@@ -224,7 +248,7 @@ object InGameStatViewer : SimpleFeature(
                     for (identifier in order.filter { it.supportGames.any(SupportGame::shouldDisplay) }.reversed()) {
                         val text = identifier.informationType.getFormatText(player)
 
-                        val fixedScale = displayType_scale / wrapScaleTo1Block(text)
+                        val fixedScale = scale / wrapScaleTo1Block(text)
 
                         matrix {
                             scale(-fixedScale, -fixedScale, -fixedScale)
@@ -253,7 +277,7 @@ object InGameStatViewer : SimpleFeature(
 
 
     @Serializable
-    data class InGameStatIdentifier(
+    class InGameStatIdentifier(
         val informationType: InformationType,
         var supportGames: List<SupportGame>
     ) : Identifier {
@@ -281,16 +305,28 @@ object InGameStatViewer : SimpleFeature(
             } childOf container
 
             multiSelector.onValueChange {
-                it as List<Int>
-                supportGames = it.map(values::get)
+                it as List<*>
+                supportGames = it.filterIsInstance<Int>().map(values::get)
                 gui.saveValue()
             }
             return container
         }
 
-        override fun areEqual(other: Identifier): Boolean {
-            return (other === this) || (other is InGameStatIdentifier && other.informationType === informationType)
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as InGameStatIdentifier
+
+            if (informationType != other.informationType) return false
+
+            return true
         }
+
+        override fun hashCode(): Int {
+            return informationType.hashCode()
+        }
+
 
     }
 
@@ -375,7 +411,7 @@ object InGameStatViewer : SimpleFeature(
                 val kill = runCatching { jsonObject.getGameStat("SkyWars")["kills"]!!.int }.getOrDefault(0)
                 val death = runCatching { jsonObject.getGameStat("SkyWars")["deaths"]!!.int }.getOrDefault(0)
 
-                return (kill.toDouble() / death.coerceAtLeast(1)).transformToPrecisionString(2)
+                return (kill.toDouble() / death.coerceAtLeast(1)).withPrecisionText(2)
             }
         },
         SKYWARS_WL("SkyWars W/L") {
@@ -383,7 +419,7 @@ object InGameStatViewer : SimpleFeature(
                 val win = runCatching { jsonObject.getGameStat("SkyWars")["wins"]!!.int }.getOrDefault(0)
                 val loss = runCatching { jsonObject.getGameStat("SkyWars")["deaths"]!!.int }.getOrDefault(0)
 
-                return (win.toDouble() / loss.coerceAtLeast(1)).transformToPrecisionString(2)
+                return (win.toDouble() / loss.coerceAtLeast(1)).withPrecisionText(2)
             }
         },
         SKYWARS_COINS("SkyWars Coins") {
@@ -444,7 +480,7 @@ object InGameStatViewer : SimpleFeature(
                 val kill = runCatching { jsonObject.getGameStat("Bedwars")["kills_bedwars"]!!.int }.getOrDefault(0)
                 val death = runCatching { jsonObject.getGameStat("Bedwars")["deaths_bedwars"]!!.int }.getOrDefault(0)
 
-                return (kill.toDouble() / death.coerceAtLeast(1)).transformToPrecisionString(2)
+                return (kill.toDouble() / death.coerceAtLeast(1)).withPrecisionText(2)
             }
         },
         BEDWARS_FINAL_KD("BedWars Final K/D") {
@@ -454,7 +490,7 @@ object InGameStatViewer : SimpleFeature(
                 val final_death =
                     runCatching { jsonObject.getGameStat("Bedwars")["final_deaths_bedwars"]!!.int }.getOrDefault(0)
 
-                return (final_kill.toDouble() / final_death.coerceAtLeast(1)).transformToPrecisionString(2)
+                return (final_kill.toDouble() / final_death.coerceAtLeast(1)).withPrecisionText(2)
             }
         },
         BEDWARS_WL("BedWars W/L") {
@@ -462,7 +498,7 @@ object InGameStatViewer : SimpleFeature(
                 val win = runCatching { jsonObject.getGameStat("Bedwars")["wins_bedwars"]!!.int }.getOrDefault(0)
                 val loss = runCatching { jsonObject.getGameStat("Bedwars")["losses_bedwars"]!!.int }.getOrDefault(0)
 
-                return (win.toDouble() / loss.coerceAtLeast(1)).transformToPrecisionString(2)
+                return (win.toDouble() / loss.coerceAtLeast(1)).withPrecisionText(2)
             }
         };
 

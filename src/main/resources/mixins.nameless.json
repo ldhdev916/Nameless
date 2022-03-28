@@ -12,6 +12,7 @@
     "MixinGuiPlayerTabOverlay",
     "MixinLayerCustomHead",
     "MixinMinecraft",
+    "MixinNetworkPlayerInfo",
     "MixinRenderEntityItem",
     "MixinRendererLivingEntity",
     "MixinRenderFish",
@@ -19,14 +20,12 @@
     "MixinRenderManager",
     "MixinTileEntityItemStackRenderer",
     "MixinTileEntitySkullRenderer",
-    "accessors.AccessorAbstractClientPlayer",
     "accessors.AccessorEntityFX",
     "accessors.AccessorGuiChat",
     "accessors.AccessorGuiContainer",
     "accessors.AccessorGuiDisconnected",
     "accessors.AccessorGuiNewChat",
     "accessors.AccessorGuiScreen",
-    "accessors.AccessorNetworkPlayerInfo",
     "accessors.AccessorRenderGlobal"
   ],
   "mixins": [

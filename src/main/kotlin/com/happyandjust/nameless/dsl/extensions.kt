@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.dsl
 
-import com.happyandjust.nameless.config.configMap
+import com.happyandjust.nameless.config.ConfigMap.Companion.configMap
 import com.mojang.authlib.GameProfile
 import gg.essential.api.EssentialAPI
 import net.minecraft.block.Block
@@ -26,6 +26,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTUtil
+import net.minecraft.scoreboard.ScorePlayerTeam
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
 import net.minecraft.util.StringUtils
@@ -57,7 +58,7 @@ inline val LOGGER: Logger
 
 
 fun String.getMD5() =
-    md5Cache.getOrPut(this) { md.digest(toByteArray()).joinToString("", transform = "%02x"::format)}
+    md5Cache.getOrPut(this) { md.digest(toByteArray()).joinToString("", transform = "%02x"::format) }
 
 fun String.copyToClipboard() =
     Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(this), null)
@@ -69,7 +70,7 @@ fun BlockPos.getAxisAlignedBB() =
 
 fun String.stripControlCodes(): String = StringUtils.stripControlCodes(this)
 
-fun Int.withAlpha(alpha: Int) = this and ((alpha and 255 shl 24) or 0xFFFFFF)
+fun Int.withAlpha(alpha: Int) = (this or 0xFF000000.toInt()) and ((alpha and 0xFF shl 24) or 0xFFFFFF)
 
 fun Int.withAlpha(alpha: Float) = withAlpha((alpha * 255).toInt())
 
@@ -94,7 +95,7 @@ inline fun <T> Pattern.matchesMatcher(s: String, block: Matcher.() -> T) =
 
 inline fun <T> Pattern.findMatcher(s: String, block: Matcher.() -> T) = matcher(s).takeIf { it.find() }?.run(block)
 
-fun Double.transformToPrecision(precision: Int): Double {
+fun Double.withPrecision(precision: Int): Double {
     if (precision == 0) return roundToInt().toDouble()
 
     val pow = 10.0.pow(precision)
@@ -102,12 +103,10 @@ fun Double.transformToPrecision(precision: Int): Double {
     return round(this * pow) / pow
 }
 
-fun Double.transformToPrecisionString(precision: Int) = transformToPrecision(precision).formatDouble()
+fun Double.withPrecisionText(precision: Int) = withPrecision(precision).formatDouble()
 
-inline fun <reified E> Any?.withInstance(action: E.() -> Unit) {
-    if (this is E) {
-        action()
-    }
+inline fun <reified T> withInstance(target: Any?, action: T.() -> Unit) {
+    if (target is T) target.action()
 }
 
 fun getUUID(username: String) = runCatching { EssentialAPI.getMojangAPI().getUUID(username)?.get() }.getOrNull()
@@ -119,3 +118,30 @@ val Block.displayName: String
     get() = runCatching { ItemStack(this).displayName }.getOrDefault(registryName.split(":")[1])
 
 inline fun <reified T : Enum<T>> listEnum() = enumValues<T>().toList()
+
+fun World.getPlayersInTab() = mc.netHandler?.playerInfoMap.orEmpty().mapNotNull { playerInfo ->
+    playerInfo.gameProfile.name?.let(this::getPlayerEntityByName)
+}
+
+/**
+ * Taken from Danker's Skyblock Mod under GPL-3.0 License
+ *
+ * https://github.com/bowser0000/SkyblockMod/blob/master/LICENSE
+ * @author bowser0000
+ */
+fun World.getSidebarLines(): List<String> {
+    val objective = scoreboard.getObjectiveInDisplaySlot(1) ?: return emptyList()
+
+    var scores = scoreboard.getSortedScores(objective).filterNotNull()
+
+    val list = scores.filter { it.playerName?.startsWith("#") == false }
+
+    scores = if (list.size > 15) list.drop(list.size - 15) else list
+
+    return scores.mapNotNull {
+        val team = scoreboard.getPlayersTeam(it.playerName) ?: return@mapNotNull null
+
+        ScorePlayerTeam.formatPlayerName(team, it.playerName).stripControlCodes()
+            .filter { char -> char.code in 21..126 }
+    }
+}

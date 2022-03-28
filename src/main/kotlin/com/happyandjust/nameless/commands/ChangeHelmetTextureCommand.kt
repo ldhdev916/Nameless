@@ -49,14 +49,13 @@ object ChangeHelmetTextureCommand : Command("helmettexture") {
 
     private fun getSkyBlockItemByID(id: String): SkyBlockItem {
         val skyBlockItem = SkyblockUtils.getItemFromId(id) ?: error("§cNo Such SkyBlock Item $id")
-        return if (skyBlockItem.skin.isBlank()) {
-            error("§c${skyBlockItem.id} doesn't have skin")
-        } else skyBlockItem
+        skyBlockItem.skin.ifBlank { error("§c${skyBlockItem.id} doesn't have skin") }
+        return skyBlockItem
     }
 
     init {
         on<PacketEvent.Received>().filter { packet is S3APacketTabComplete }.subscribe {
-            mc.currentScreen.withInstance<AccessorGuiChat> {
+            withInstance<AccessorGuiChat>(mc.currentScreen) {
                 pattern.matchesMatcher(inputField.text) {
                     packet = S3APacketTabComplete(getTabCompletion())
                 }

@@ -26,19 +26,14 @@ import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.events.SpecialOverlayEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.autoFillEnum
-import com.happyandjust.nameless.features.base.listParameter
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.color
-import com.happyandjust.nameless.features.renderDirectionArrow
-import com.happyandjust.nameless.features.selectedTypes
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.GrinchSimulator
 import com.happyandjust.nameless.hypixel.games.Lobby
 import com.happyandjust.nameless.hypixel.games.MurderMystery
 import com.happyandjust.nameless.hypixel.games.SkyBlock
-import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.elementa.utils.withAlpha
 import kotlinx.coroutines.DelicateCoroutinesApi
 import net.minecraft.entity.EntityLivingBase
@@ -46,7 +41,6 @@ import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.network.play.client.C02PacketUseEntity
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
 import net.minecraft.tileentity.TileEntitySkull
-import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
 import java.awt.Color
 
@@ -57,35 +51,42 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
     private val foundGiftsPositions = hashSetOf<BlockPos>()
 
     init {
-        parameter(Color.green.withAlpha(64).toChromaColor()) {
-            matchKeyCategory()
-            key = "color"
-            title = "Box Color"
+        hierarchy {
+            +::color
+
+            +::selectedTypes
+
+            +::renderDirectionArrow
         }
+    }
 
-        listParameter(GiftGameType.values().toList()) {
-            matchKeyCategory()
-            key = "selectedTypes"
-            title = "Game Types"
+    private var color by parameter(Color.green.withAlpha(64).toChromaColor()) {
+        key = "color"
+        title = "Box Color"
+    }
 
-            settings { ordinal = 1 }
+    private var selectedTypes by parameter(listEnum<GiftGameType>()) {
+        key = "selectedTypes"
+        title = "Game Types"
+
+        settings {
+            ordinal = 1
+
             autoFillEnum { it.prettyName }
         }
+    }
 
-        parameter(false) {
-            matchKeyCategory()
-            key = "renderDirectionArrow"
-            title = "Render Direction Arrow to Nearest Gift"
+    private var renderDirectionArrow by parameter(false) {
+        key = "renderDirectionArrow"
+        title = "Render Direction Arrow to Nearest Gift"
 
-            settings { ordinal = 2 }
-        }
+        settings { ordinal = 2 }
     }
 
     private var currentGiftGameType: GiftGameType? = null
 
     private val giftArmorStands = hashSetOf<EntityArmorStand>()
     private val giftTileEntities = hashSetOf<TileEntitySkull>()
-
 
     init {
         on<SpecialTickEvent>().filter { scanTimer.update().check() }.subscribe {
@@ -113,7 +114,7 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
         }
 
         on<PacketEvent.Sending>().subscribe {
-            packet.withInstance<C02PacketUseEntity> {
+            withInstance<C02PacketUseEntity>(packet) {
                 val entity = (getEntityFromWorld(mc.theWorld) as? EntityArmorStand)?.takeIf {
                     check(it.getEquipmentInSlot(4)?.getSkullOwner())
                 } ?: return@subscribe
@@ -121,7 +122,7 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
                 foundGiftsPositions.add(BlockPos(entity).up(2))
                 return@subscribe
             }
-            packet.withInstance<C08PacketPlayerBlockPlacement> {
+            withInstance<C08PacketPlayerBlockPlacement>(packet) {
                 val tileEntitySkull = mc.theWorld.getTileEntity(position) as? TileEntitySkull ?: return@withInstance
                 if (check(tileEntitySkull.playerProfile?.getSkullOwner())) {
                     foundGiftsPositions.add(position)
@@ -142,9 +143,7 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
                 else -> return@subscribe
             } - foundGiftsPositions
 
-            RenderUtils.drawDirectionArrow(
-                targets.minByOrNull(mc.thePlayer::getDistanceSq)?.toVec3() ?: return@subscribe, Color.red.rgb
-            )
+            targets.minByOrNull { mc.thePlayer.getDistanceSq(it) }?.toVec3()?.drawDirectionArrow(Color.red.rgb)
         }//  196 7 -17
     }
 
@@ -157,7 +156,7 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
         if (tileEntitySkull.pos in foundGiftsPositions) return
         if (tileEntitySkull !in giftTileEntities) return
 
-        render(partialTicks, tileEntitySkull.renderBoundingBox)
+        tileEntitySkull.renderBoundingBox.drawFilledBox(color.rgb, partialTicks)
     }
 
     @JvmStatic
@@ -167,14 +166,7 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
         if (entityLivingBase !in giftArmorStands) return
         if (BlockPos(entityLivingBase).up(2) in foundGiftsPositions) return
 
-        render(
-            partialTicks,
-            BlockPos(entityLivingBase).up(2).getAxisAlignedBB()
-        )
-    }
-
-    private fun render(partialTicks: Float, boundingBox: AxisAlignedBB) {
-        RenderUtils.drawBox(boundingBox, color.rgb, partialTicks)
+        BlockPos(entityLivingBase).up(2).getAxisAlignedBB().drawFilledBox(color.rgb, partialTicks)
     }
 
     private fun GiftGameType.shouldRender(): Boolean {

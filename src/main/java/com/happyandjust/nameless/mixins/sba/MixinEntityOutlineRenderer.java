@@ -34,6 +34,8 @@ public class MixinEntityOutlineRenderer {
     @Dynamic
     @Inject(method = "renderEntityOutlines", at = @At("RETURN"), cancellable = true)
     private static void letMeDrawOutline(ICamera camera, float partialTicks, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(DisableSBAGlowing.getEnabledJVM());
+        if (DisableSBAGlowing.INSTANCE.getEnabled()) {
+            cir.setReturnValue(true);
+        }
     }
 }

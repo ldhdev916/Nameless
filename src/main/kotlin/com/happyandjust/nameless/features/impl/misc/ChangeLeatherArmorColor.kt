@@ -20,9 +20,10 @@ package com.happyandjust.nameless.features.impl.misc
 
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
 import net.minecraft.init.Items
 import net.minecraft.item.ItemArmor
 import net.minecraft.item.ItemStack
@@ -35,76 +36,85 @@ object ChangeLeatherArmorColor : SimpleFeature(
 ) {
 
     init {
-        parameter(true) {
-            matchKeyCategory()
-            key = "helmet"
-            title = "Customize Helmet Color"
+        hierarchy {
+            ::helmet {
+                +::helmetColor
+            }
 
-            parameter(Color.white.toChromaColor()) {
-                matchKeyCategory()
-                key = "color"
-                title = "Leather Helmet Color"
+            ::chestplate {
+                +::chestplateColor
+            }
+
+            ::leggings {
+                +::leggingsColor
+            }
+
+            ::boots {
+                +::bootsColor
             }
         }
+    }
 
-        parameter(true) {
-            matchKeyCategory()
-            key = "chestplate"
-            title = "Customize Chestplate Color"
+    private var helmet by parameter(true) {
+        key = "helmet"
+        title = "Customize Helmet Color"
+    }
 
-            settings {
-                ordinal = 1
-            }
+    private var helmetColor by parameter(Color.white.toChromaColor()) {
+        key = "color"
+        title = "Leather Helmet Color"
+    }
 
-            parameter(Color.white.toChromaColor()) {
-                matchKeyCategory()
-                key = "color"
-                title = "Leather Chestplate Color"
-            }
+    private var chestplate by parameter(true) {
+        key = "chestplate"
+        title = "Customize Chestplate Color"
 
+        settings {
+            ordinal = 1
         }
+    }
 
-        parameter(true) {
-            matchKeyCategory()
-            key = "leggings"
-            title = "Customize Leggings Color"
+    private var chestplateColor by parameter(Color.white.toChromaColor()) {
+        key = "color"
+        title = "Leather Chestplate Color"
+    }
 
-            settings {
-                ordinal = 2
-            }
+    private var leggings by parameter(true) {
+        key = "leggings"
+        title = "Customize Leggings Color"
 
-            parameter(Color.white.toChromaColor()) {
-                matchKeyCategory()
-                key = "color"
-                title = "Leather Leggings Color"
-            }
+        settings {
+            ordinal = 2
         }
+    }
 
-        parameter(true) {
-            matchKeyCategory()
-            key = "boots"
-            title = "Customize Boots Color"
+    private var leggingsColor by parameter(Color.white.toChromaColor()) {
+        key = "color"
+        title = "Leather Leggings Color"
+    }
 
-            settings {
-                ordinal = 3
-            }
+    private var boots by parameter(true) {
+        key = "boots"
+        title = "Customize Boots Color"
 
-            parameter(Color.white.toChromaColor()) {
-                matchKeyCategory()
-                key = "color"
-                title = "Leather Boots Color"
-            }
+        settings {
+            ordinal = 3
         }
+    }
+
+    private var bootsColor by parameter(Color.white.toChromaColor()) {
+        key = "color"
+        title = "Leather Boots Color"
     }
 
     @JvmStatic
     fun ItemArmor.getCustomColor(itemStack: ItemStack): Int? {
         if (!enabled || itemStack !in mc.thePlayer.inventory.armorInventory) return null
         return when (this) {
-            Items.leather_helmet -> if (helmet) helmet_color else null
-            Items.leather_chestplate -> if (chestplate) chestplate_color else null
-            Items.leather_leggings -> if (leggings) leggings_color else null
-            Items.leather_boots -> if (boots) boots_color else null
+            Items.leather_helmet -> if (helmet) helmetColor else null
+            Items.leather_chestplate -> if (chestplate) chestplateColor else null
+            Items.leather_leggings -> if (leggings) leggingsColor else null
+            Items.leather_boots -> if (boots) bootsColor else null
             else -> null
         }?.rgb
     }

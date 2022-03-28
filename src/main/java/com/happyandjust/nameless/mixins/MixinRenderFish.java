@@ -32,7 +32,7 @@ public class MixinRenderFish {
 
     @Inject(method = "doRender(Lnet/minecraft/entity/projectile/EntityFishHook;DDDFF)V", at = @At("HEAD"), cancellable = true)
     public void cancelRendering(EntityFishHook d4, double d6, double d8, double d10, float f10, float l, CallbackInfo ci) {
-        if (HideFishHook.getEnabledJVM()) {
+        if (HideFishHook.INSTANCE.getEnabled()) {
             if (d4.angler != Minecraft.getMinecraft().thePlayer) ci.cancel();
         }
     }

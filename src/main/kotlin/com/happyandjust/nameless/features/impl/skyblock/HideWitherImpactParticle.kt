@@ -44,7 +44,7 @@ object HideWitherImpactParticle : SimpleFeature(
 
     init {
         on<PacketEvent.Received>().filter { enabled && Hypixel.currentGame is SkyBlock }.subscribe {
-            packet.withInstance<S2APacketParticles> {
+            withInstance<S2APacketParticles>(packet) {
                 if (particleType == EnumParticleTypes.EXPLOSION_LARGE && isLongDistance && particleArgs.none() && particleCount == 8 && particleSpeed == 8f) {
                     val players = findWitherSwordsPlayers().ifEmpty { return@subscribe }
 

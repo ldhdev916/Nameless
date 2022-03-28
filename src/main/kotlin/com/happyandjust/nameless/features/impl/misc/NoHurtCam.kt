@@ -18,21 +18,24 @@
 
 package com.happyandjust.nameless.features.impl.misc
 
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
+import com.happyandjust.nameless.core.property.ConfigBackedPropertyValue
 import com.happyandjust.nameless.features.base.BaseFeature
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.ComponentType
 
-object NoHurtCam : BaseFeature<Int, Any>(
+object NoHurtCam : BaseFeature<Int>(
     "noHurtCam",
     "HurtCam Adjuster",
     "Adjust the hurt animation when being hit(default 14)"
 ) {
 
+    private val configDelegate = configValue("hurtCam", "value", 14)
+
     @JvmStatic
-    var hurtCamModifier by configValue("hurtCam", "value", 14)
+    var hurtCamModifier by configDelegate
     override var componentType: ComponentType? = ComponentType.SLIDER
-    override val property = ::hurtCamModifier
+    override val propertyValue = ConfigBackedPropertyValue(configDelegate)
 
     init {
         settings {

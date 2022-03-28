@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.gui.graph
 
-import com.happyandjust.nameless.dsl.transformToPrecisionString
+import com.happyandjust.nameless.dsl.withPrecisionText
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.components.Window
@@ -107,7 +107,7 @@ class GraphComponent(window: Window, private var expression: String) : UICompone
     private val screenBottom
         get() = screenTop + screenHeight
 
-    private fun Double.t() = transformToPrecisionString(1)
+    private fun Double.t() = withPrecisionText(1)
 
     private val lambdaStates = arrayListOf(
         // screenTop < screenBottom

@@ -28,19 +28,19 @@ import net.minecraftforge.fml.common.Loader
 
 object FeatureRegistry {
 
-    val features = arrayListOf<BaseFeature<*, *>>()
-    val featuresByCategory = hashMapOf<Category, ArrayList<BaseFeature<*, *>>>()
+    val features = arrayListOf<BaseFeature<*>>()
+    val featuresByCategory
+        get() = features.groupBy { it.category }
 
-    private fun String.add(feature: BaseFeature<*, *>) {
+    private fun String.add(feature: BaseFeature<*>) {
         features.add(feature)
 
         feature.propertySetting.subCategory = this
 
         feature.parseParameters()
-        featuresByCategory.getOrPut(feature.category) { arrayListOf() }.add(feature)
     }
 
-    private fun <T : BaseFeature<*, *>> T.parseParameters() {
+    private fun <T : BaseFeature<*>> T.parseParameters() {
         if (!categoryInitialized) {
             val fullName = javaClass.name
 
@@ -77,7 +77,7 @@ object FeatureRegistry {
             add(Charm)
             add(GiftESP)
             add(DropperHelper)
-            add(BlockTracker)
+            //   add(BlockTracker)
         }
 
         with("Mod") {

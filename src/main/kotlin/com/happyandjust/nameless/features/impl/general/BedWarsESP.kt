@@ -20,17 +20,15 @@ package com.happyandjust.nameless.features.impl.general
 
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.info.ColorInfo
-import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.dsl.withAlpha
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.invisible
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.BedWars
-import com.happyandjust.nameless.utils.Utils
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemArmor
 
@@ -40,16 +38,18 @@ object BedWarsESP : SimpleFeature(
     "Glow all players in your game according to their team color."
 ) {
 
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
+    init {
+        hierarchy {
+            +::invisible
+        }
+    }
 
     @JvmStatic
-    var invisibleJVM
-        get() = invisible
-        set(value) {
-            invisible = value
-        }
+    var invisible by parameter(true) {
+        key = "invisible"
+        title = "Glow Invisible Players"
+        desc = "If you turn this on, invisibility on players will be removed"
+    }
 
     private fun checkForEnabledAndBedwars() = enabled && Hypixel.currentGame is BedWars
 
@@ -58,21 +58,19 @@ object BedWarsESP : SimpleFeature(
     private val scanTimer = TickTimer.withSecond(2)
 
     init {
-        parameter(true) {
-            matchKeyCategory()
-            key = "invisible"
-            title = "Glow Invisible Players"
-            desc = "If you turn this on, invisibility on players will be removed"
-        }
 
         on<SpecialTickEvent>().filter { checkForEnabledAndBedwars() && scanTimer.update().check() }.subscribe {
-            for (player in Utils.getPlayersInTab() - teamColorCache.keys) {
-                val chestplate = player.getEquipmentInSlot(3) ?: continue
+            for (player in mc.theWorld.getPlayersInTab() - teamColorCache.keys) {
+                val chestPlate = player.getEquipmentInSlot(3) ?: continue
 
-                val item = chestplate.item
+                val item = chestPlate.item
 
                 if (item !is ItemArmor || item.armorMaterial != ItemArmor.ArmorMaterial.LEATHER) continue
-                teamColorCache[player] = item.getColor(chestplate).withAlpha(1f)
+                val color = item.getColor(chestPlate).withAlpha(1f)
+
+                sendDebugMessage("${player.name}: ${"%08x".format(color).uppercase()}")
+
+                teamColorCache[player] = color
             }
         }
 

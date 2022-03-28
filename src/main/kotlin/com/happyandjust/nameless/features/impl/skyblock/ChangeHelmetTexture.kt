@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
@@ -33,31 +33,29 @@ object ChangeHelmetTexture : SimpleFeature(
     "Change your current helmet. only works if you're wearing skull in SkyBlock. To select helmet texture, type /helmettexture [SkyBlock ID]"
 ) {
 
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-    private val currentlyEquipedTextureConfig = configValue("helmetTexture", "current", SkyBlockItem("", "", "", ""))
+
+    private val currentlyEquippedTextureConfig = configValue("helmetTexture", "current", SkyBlockItem("", "", "", ""))
 
     @JvmStatic
-    var currentlyEquipedTexture: Pair<SkyBlockItem, GameProfile>? = null
+    var currentlyEquippedTexture: Pair<SkyBlockItem, GameProfile>? = null
         get() = if (Hypixel.currentGame !is SkyBlock) null else field
         set(value) {
             field = value
 
             value?.let {
-                currentlyEquipedTextureConfig.value = it.first
+                currentlyEquippedTextureConfig.value = it.first
             }
         }
 
     init {
-        currentlyEquipedTextureConfig.value.takeIf { it.skin.isNotBlank() }?.let {
+        currentlyEquippedTextureConfig.value.takeIf { it.skin.isNotBlank() }?.let {
             setCurrentHelmetTexture(it)
         }
     }
 
 
     fun setCurrentHelmetTexture(skyBlockItem: SkyBlockItem) {
-        currentlyEquipedTexture = skyBlockItem to GameProfile(UUID.randomUUID(), "CustomHelmetTexture").also {
+        currentlyEquippedTexture = skyBlockItem to GameProfile(UUID.randomUUID(), "CustomHelmetTexture").also {
             it.properties.put("textures", Property("textures", skyBlockItem.skin, null))
         }
     }

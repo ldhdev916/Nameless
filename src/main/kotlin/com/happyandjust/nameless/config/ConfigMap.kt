@@ -65,6 +65,8 @@ open class ConfigMap<V>(
     override fun putAll(from: Map<out String, V>) {
         from.forEach(::put)
     }
-}
 
-inline fun <reified V> configMap(category: String) = ConfigMap<V>(category, serializer())
+    companion object {
+        inline fun <reified V> configMap(category: String) = ConfigMap(category, serializer<V>())
+    }
+}

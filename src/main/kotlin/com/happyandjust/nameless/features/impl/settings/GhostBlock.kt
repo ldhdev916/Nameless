@@ -25,9 +25,8 @@ import com.happyandjust.nameless.events.KeyPressEvent
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.ignoreSecret
-import com.happyandjust.nameless.features.restore
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.ComponentType
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -49,32 +48,35 @@ object GhostBlock : SimpleFeature(
     "Make client-side air where you are looking at"
 ) {
 
+    init {
+        hierarchy {
+            +::restore
+
+            +::ignoreSecret
+        }
+    }
+
     private val ghostBlocks = hashMapOf<BlockPos, BlockInfo>()
 
-    init {
-        parameter(10) {
-            matchKeyCategory()
-            key = "restore"
-            title = "Restore Seconds"
-            desc =
-                "after the seconds you selected, block you made client-side air will be restored back\n-1 for not restoring back"
+    private var restore by parameter(10) {
+        key = "restore"
+        title = "Restore Seconds"
+        desc =
+            "after the seconds you selected, block you made client-side air will be restored back\n-1 for not restoring back"
 
-
-            settings {
-                minValueInt = -1
-                maxValueInt = 60
-            }
+        settings {
+            minValueInt = -1
+            maxValueInt = 60
         }
+    }
 
-        parameter(true) {
-            matchKeyCategory()
-            key = "ignoreSecret"
-            title = "Ignore Dungeons Secrets"
-            desc = "Prevent making skyblock dungeons secrets ghost-block"
+    private var ignoreSecret by parameter(true) {
+        key = "ignoreSecret"
+        title = "Ignore Dungeons Secrets"
+        desc = "Prevent making skyblock dungeons secrets ghost-block"
 
-            settings {
-                ordinal = 1
-            }
+        settings {
+            ordinal = 1
         }
     }
 

@@ -18,39 +18,39 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.dsl.disableEntityShadow
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.base.SimpleFeature
 import net.minecraft.client.renderer.GlStateManager.*
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.BlockPos
 import org.lwjgl.opengl.GL11
 
 object Charm : SimpleFeature("charm", "Charm", "Allow you to look players through walls") {
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
 
     @JvmStatic
     fun render(partialTicks: Float) {
         clear(GL11.GL_DEPTH_BUFFER_BIT)
 
-        disableEntityShadow {
-            mc.entityRenderer.enableLightmap()
-            blendFunc(770, 771)
-            enableCull()
-            bindTexture(0)
-            color(-1f, -1f, -1f, -1f)
+        val entityShadow = mc.gameSettings.entityShadows
+        mc.gameSettings.entityShadows = false
 
-            for (player in mc.theWorld.playerEntities.filter {
-                (it != mc.renderViewEntity || mc.gameSettings.thirdPersonView != 0 || it.isPlayerSleeping) &&
-                        (it.posY !in 0.0..256.0 || mc.theWorld.isBlockLoaded(BlockPos(it)))
-            }) {
-                mc.renderManager.renderEntitySimple(player, partialTicks)
-            }
-            mc.entityRenderer.disableLightmap()
+        mc.entityRenderer.enableLightmap()
+        blendFunc(770, 771)
+        enableCull()
+        bindTexture(0)
+        color(-1f, -1f, -1f, -1f)
+        for (player in mc.theWorld.playerEntities.filter { shouldRender(it) }) {
+            mc.renderManager.renderEntitySimple(player, partialTicks)
         }
+        mc.entityRenderer.disableLightmap()
+
+        mc.gameSettings.entityShadows = entityShadow
 
         disableCull()
         color(1f, 1f, 1f, 0.5f)
     }
+
+    private fun shouldRender(it: EntityPlayer) =
+        (it != mc.renderViewEntity || mc.gameSettings.thirdPersonView != 0 || it.isPlayerSleeping) &&
+                (it.posY !in 0.0..256.0 || mc.theWorld.isBlockLoaded(BlockPos(it)))
 }

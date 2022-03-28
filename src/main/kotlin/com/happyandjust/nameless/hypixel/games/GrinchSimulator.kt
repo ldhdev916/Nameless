@@ -22,14 +22,16 @@ import com.happyandjust.nameless.hypixel.LocrawInfo
 
 class GrinchSimulator : GameType {
 
-    override fun isCurrent(locrawInfo: LocrawInfo) =
-        locrawInfo.gameType == "ARCADE" && locrawInfo.mode == "GRINCH_SIMULATOR_V2"
 
     override fun handleProperty(locrawInfo: LocrawInfo) = Unit
 
     override fun printProperties() = Unit
 
-    companion object : GameTypeFactory {
+    companion object : GameTypeCreator {
+
+        override fun isCurrent(locrawInfo: LocrawInfo) =
+            locrawInfo.gameType == "ARCADE" && locrawInfo.mode == "GRINCH_SIMULATOR_V2"
+
         override fun createGameTypeImpl() = GrinchSimulator()
     }
 

@@ -24,12 +24,12 @@ import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.SpecialOverlayEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.*
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.PixelParty
-import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.elementa.utils.withAlpha
 import kotlinx.coroutines.*
 import net.minecraft.block.BlockAir
@@ -48,36 +48,43 @@ import kotlin.math.sqrt
 object PixelPartyHelper : SimpleFeature("pixelPartyHelper", "Pixel Party Helper", "") {
 
     init {
-        parameter(Color.red.withAlpha(64).toChromaColor()) {
-            matchKeyCategory()
-            key = "boxColor"
-            title = "Box Color"
+        hierarchy {
+            +::boxColor
+
+            +::beaconColor
+
+            +::beaconArrow
+
+            +::findSafe
         }
+    }
 
-        parameter(Color.blue.withAlpha(0.7f).toChromaColor()) {
-            matchKeyCategory()
-            key = "beaconColor"
-            title = "Beacon Color"
+    private var boxColor by parameter(Color.red.withAlpha(64).toChromaColor()) {
+        key = "boxColor"
+        title = "Box Color"
+    }
 
-            settings { ordinal = 1 }
-        }
+    private var beaconColor by parameter(Color.blue.withAlpha(0.7f).toChromaColor()) {
+        key = "beaconColor"
+        title = "Beacon Color"
 
-        parameter(true) {
-            matchKeyCategory()
-            key = "beaconArrow"
-            title = "Show Direction Arrow to Beacon"
+        settings { ordinal = 1 }
+    }
 
-            settings { ordinal = 2 }
-        }
+    private var beaconArrow by parameter(true) {
+        matchKeyCategory()
+        key = "beaconArrow"
+        title = "Show Direction Arrow to Beacon"
 
-        parameter(false) {
-            matchKeyCategory()
-            key = "findSafe"
-            title = "Find Safe Position"
-            desc = "Find position where distance to all kinds of blocks are nearly same\nSo you can go anywhere fast"
+        settings { ordinal = 2 }
+    }
 
-            settings { ordinal = 3 }
-        }
+    private var findSafe by parameter(false) {
+        key = "findSafe"
+        title = "Find Safe Position"
+        desc = "Find position where distance to all kinds of blocks are nearly same\nSo you can go anywhere fast"
+
+        settings { ordinal = 3 }
     }
 
     private var scanTimer = TickTimer(3)
@@ -192,7 +199,7 @@ object PixelPartyHelper : SimpleFeature("pixelPartyHelper", "Pixel Party Helper"
         }
 
         on<RenderWorldLastEvent>().filter { checkForRequirement() }.subscribe {
-            sameBlocks.forEach { RenderUtils.drawBox(it, boxColor.rgb, partialTicks) }
+            sameBlocks.forEach { it.drawFilledBox(boxColor.rgb, partialTicks) }
 
             if (safePosition.isNotEmpty()) {
                 val firstStandardDeviation = safePosition[0].second.standardDeviation
@@ -203,33 +210,18 @@ object PixelPartyHelper : SimpleFeature("pixelPartyHelper", "Pixel Party Helper"
 
                     val rgb = getColorByStandardDeviationDiff(diff)
 
-                    RenderUtils.drawBox(pos.getAxisAlignedBB(), rgb and 0x40FFFFFF, partialTicks)
-                    RenderUtils.renderBeaconBeam(pos.toVec3(), rgb, 0.7F, partialTicks)
+                    pos.getAxisAlignedBB().drawFilledBox(rgb.withAlpha(0x40), partialTicks)
+                    pos.toVec3().renderBeaconBeam(rgb, 0.7f, partialTicks)
 
-                    RenderUtils.draw3DString(
-                        "#${it.index + 1}",
-                        pos.up(5),
-                        2.0,
-                        Color.red.rgb,
-                        partialTicks
-                    )
+                    pos.up(5).drawStringAtCenter("#${it.index + 1}", 2, Color.red.rgb, partialTicks)
                 }
             }
 
-            beaconPosition?.let {
-                RenderUtils.renderBeaconBeam(
-                    it,
-                    beaconColor.rgb,
-                    beaconColor.alpha / 255f,
-                    partialTicks
-                )
-            }
+            beaconPosition?.renderBeaconBeam(beaconColor.rgb, beaconColor.alpha / 255f, partialTicks)
         }
 
         on<SpecialOverlayEvent>().filter { checkForRequirement() && beaconArrow }.subscribe {
-            beaconPosition?.let {
-                RenderUtils.drawDirectionArrow(it, Color.red.rgb)
-            }
+            beaconPosition?.drawDirectionArrow(Color.red.rgb)
         }
 
         on<HypixelServerChangeEvent>().subscribe { shouldScanAgain = true }

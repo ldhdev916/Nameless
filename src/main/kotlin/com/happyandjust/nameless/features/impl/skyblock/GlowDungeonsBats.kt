@@ -23,22 +23,27 @@ import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.color
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import net.minecraft.entity.passive.EntityBat
 import java.awt.Color
 
-object GlowDungeonsBats : SimpleFeature("glowBats", "Glow Bats in SkyBlock Dungeons", "") {
+object GlowDungeonsBats : SimpleFeature("glowBats", "Glow Bats in SkyBlock Dungeons") {
 
     init {
-
-        parameter(Color.pink.toChromaColor()) {
-            matchKeyCategory()
-            key = "color"
-            title = "Glowing Color"
+        hierarchy {
+            +::color
         }
+    }
+
+    private var color by parameter(Color.pink.toChromaColor()) {
+        key = "color"
+        title = "Glowing Color"
+    }
+
+    init {
 
         on<OutlineRenderEvent>().filter {
             val currentGame = Hypixel.currentGame

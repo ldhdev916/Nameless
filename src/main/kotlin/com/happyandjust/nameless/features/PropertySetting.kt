@@ -18,10 +18,11 @@
 
 package com.happyandjust.nameless.features
 
+import com.happyandjust.nameless.dsl.listEnum
 import com.happyandjust.nameless.features.base.AbstractDefaultFeature
 import com.happyandjust.nameless.gui.feature.components.Identifier
 
-open class PropertySetting<T : Any, E : Any> {
+class PropertySetting {
     var ordinal = 0
     var subCategory = ""
 
@@ -34,15 +35,40 @@ open class PropertySetting<T : Any, E : Any> {
     var minValueInt = 0
     var maxValueInt = 0
 
-    var stringSerializer: (T) -> String = { it.javaClass.name }
-    var allValueList = { emptyList<T>() }
-
-    var listStringSerializer: (E) -> String = { it.javaClass.name }
-    var listAllValueList = { emptyList<E>() }
-
     var allIdentifiers = emptyList<Identifier>()
+
+    var stringSerializer: (Any) -> String = { it.javaClass.name }
+    var allValueList = { emptyList<Any>() }
+
+    inline fun <reified T : Any> AbstractDefaultFeature<T>.serializer(crossinline value: (T) -> String) {
+        stringSerializer = {
+            value(it as T)
+        }
+    }
+
+    inline fun <reified T : Any, E : List<T>> AbstractDefaultFeature<E>.listSerializer(crossinline value: (T) -> String) {
+        stringSerializer = { value(it as T) }
+    }
+
+    inline fun <reified T : Enum<T>> AbstractDefaultFeature<T>.autoFillEnum(
+        noinline allValueList: () -> List<T> = { listEnum() },
+        crossinline stringSerializer: (T) -> String = { it.name }
+    ) {
+        serializer(stringSerializer)
+        this@PropertySetting.allValueList = allValueList
+
+    }
+
+    @JvmName("listAutoFillEnum")
+    inline fun <reified T : Enum<T>, E : List<T>> AbstractDefaultFeature<E>.autoFillEnum(
+        noinline allValueList: () -> List<T> = { listEnum() },
+        crossinline stringSerializer: (T) -> String = { it.name }
+    ) {
+        listSerializer(stringSerializer)
+        this@PropertySetting.allValueList = allValueList
+    }
 }
 
-inline fun <T : Any, E : Any> AbstractDefaultFeature<T, E>.settings(settingBuilder: PropertySetting<T, E>.() -> Unit) {
-    propertySetting.settingBuilder()
+inline fun AbstractDefaultFeature<*>.settings(builder: PropertySetting.() -> Unit) {
+    propertySetting.builder()
 }

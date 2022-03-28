@@ -20,15 +20,11 @@ package com.happyandjust.nameless.features.impl.general
 
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.toChromaColor
-import com.happyandjust.nameless.dsl.drawOnSlot
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.dsl.withInstance
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.color
-import com.happyandjust.nameless.features.scale
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyWars
@@ -49,43 +45,35 @@ object DisplayBetterArmor : SimpleFeature(
     "In SkyWars, if there's a better armor than a one you're equipping, Draw box on item if it's in your inventory, make bigger if it's in ground. If mutltiple, only show the highest"
 ) {
 
-    @JvmStatic
-    var scaleJVM
-        get() = scale
-        set(value) {
-            scale = value
-        }
-
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-
     init {
-        parameter(Color.green.withAlpha(80).toChromaColor()) {
-            matchKeyCategory()
-            key = "color"
-            title = "Inventory Box Color"
+        hierarchy {
+            +::color
+
+            +::scale
         }
+    }
 
-        parameter(3.0) {
-            matchKeyCategory()
-            key = "scale"
-            title = "Dropped Item Scale"
+    private var color by parameter(Color.green.withAlpha(80).toChromaColor()) {
+        key = "color"
+        title = "Inventory Box Color"
+    }
 
-            settings {
-                ordinal = 1
+    private var scale by parameter(3.0) {
+        key = "scale"
+        title = "Dropped Item Scale"
 
-                minValue = 1.5
-                maxValue = 7.0
-            }
+        settings {
+            ordinal = 1
+
+            minValue = 1.5
+            maxValue = 7.0
         }
     }
 
     private val scanTimer = TickTimer(7)
     private val drawSlots = arrayListOf<Slot>()
 
-    @JvmField
-    val scaledItems = arrayListOf<EntityItem>()
+    private val scaledItems = arrayListOf<EntityItem>()
 
     private fun ItemStack.getFinalDamage() = calcDamage(item as ItemArmor, getProtectionLevel(this))
 
@@ -181,13 +169,20 @@ object DisplayBetterArmor : SimpleFeature(
     init {
         on<GuiScreenEvent.BackgroundDrawnEvent>().filter { enabled && Hypixel.currentGame is SkyWars }
             .subscribe {
-                gui.withInstance<GuiInventory> {
+                withInstance<GuiInventory>(gui) {
                     val color = color.rgb
                     for (slot in drawSlots) {
                         drawOnSlot(slot, color)
                     }
                 }
             }
+    }
+
+    @JvmStatic
+    fun scaleEntityItem(entityItem: EntityItem) {
+        if (!enabled || Hypixel.currentGame !is SkyWars) return
+        if (entityItem !in scaledItems) return
+        scale(scale, scale, scale)
     }
 
 }

@@ -70,13 +70,13 @@ public class MixinRenderGlobal {
 
     @Redirect(method = "renderSky(FI)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/WorldClient;getSkyColor(Lnet/minecraft/entity/Entity;F)Lnet/minecraft/util/Vec3;"))
     public Vec3 changeSkyColor(WorldClient instance, Entity entity, float partialTicks) {
-        return ChangeSkyColor.getEnabledJVM() ? ChangeSkyColor.getConvert() : instance.getSkyColor(entity, partialTicks);
+        return ChangeSkyColor.INSTANCE.getEnabled() ? ChangeSkyColor.getConvert() : instance.getSkyColor(entity, partialTicks);
     }
 
     @Redirect(method = "renderEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/RenderManager;renderEntitySimple(Lnet/minecraft/entity/Entity;F)Z", ordinal = 2))
     public boolean cancelRendering(RenderManager instance, Entity entityIn, float partialTicks) {
         if (!(entityIn instanceof EntityPlayer)) return instance.renderEntitySimple(entityIn, partialTicks);
-        return !Charm.getEnabledJVM() && instance.renderEntitySimple(entityIn, partialTicks);
+        return !Charm.INSTANCE.getEnabled() && instance.renderEntitySimple(entityIn, partialTicks);
     }
 
 }

@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.entity.RendererLivingEntity;
 import net.minecraft.entity.EntityLivingBase;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -60,23 +61,30 @@ public class MixinRendererLivingEntity<T extends EntityLivingBase> {
     public float changeRed(float constant) {
 
         Color color = getColor();
-        return color == null ? constant : color.getRed();
+        return color == null ? constant : color.getRed() / 255f;
     }
 
     @ModifyConstant(method = "setBrightness", constant = @Constant(floatValue = 0f, ordinal = 0))
     public float changeGreen(float constant) {
         Color color = getColor();
-        return color == null ? constant : color.getGreen();
+        return color == null ? constant : color.getGreen() / 255f;
     }
 
     @ModifyConstant(method = "setBrightness", constant = @Constant(floatValue = 0f, ordinal = 1))
     public float changeBlue(float constant) {
         Color color = getColor();
-        return color == null ? constant : color.getBlue();
+        return color == null ? constant : color.getBlue() / 255f;
+    }
+
+    @ModifyConstant(method = "setBrightness", constant = @Constant(floatValue = 0.3f))
+    public float changeAlpha(float constant) {
+        Color color = getColor();
+        return color == null ? constant : color.getAlpha() / 255f;
     }
 
     @Unique
+    @Nullable
     private Color getColor() {
-        return ChangeDamagedEntityColor.getEnabledJVM() ? ChangeDamagedEntityColor.getColorJVM() : null;
+        return ChangeDamagedEntityColor.INSTANCE.getEnabled() ? ChangeDamagedEntityColor.getColor() : null;
     }
 }

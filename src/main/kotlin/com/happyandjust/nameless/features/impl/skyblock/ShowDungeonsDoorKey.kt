@@ -20,19 +20,15 @@ package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.toChromaColor
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.dsl.stripControlCodes
-import com.happyandjust.nameless.dsl.toVec3
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.SpecialOverlayEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.color
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
-import com.happyandjust.nameless.utils.RenderUtils
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.util.Vec3
 import java.awt.Color
@@ -43,15 +39,16 @@ object ShowDungeonsDoorKey : SimpleFeature(
     "Renders an arrow on your screen which is pointing to wither/blood key in hypixel skyblock dungeons. So you can find those keys easily"
 ) {
 
+    init {
+        hierarchy { +::color }
+    }
+
     private var keyPosition: Vec3? = null
     private val scanTimer = TickTimer.withSecond(0.5)
 
-    init {
-        parameter(Color.red.toChromaColor()) {
-            matchKeyCategory()
-            key = "color"
-            title = "Direction Arrow Color"
-        }
+    private var color by parameter(Color.red.toChromaColor()) {
+        key = "color"
+        title = "Direction Arrow Color"
     }
 
     private fun checkForRequirement(): Boolean {
@@ -70,9 +67,7 @@ object ShowDungeonsDoorKey : SimpleFeature(
         }
 
         on<SpecialOverlayEvent>().filter { checkForRequirement() }.subscribe {
-            keyPosition?.let {
-                RenderUtils.drawDirectionArrow(it, color.rgb)
-            }
+            keyPosition?.drawDirectionArrow(color.rgb)
         }
 
         on<HypixelServerChangeEvent>().subscribe { keyPosition = null }

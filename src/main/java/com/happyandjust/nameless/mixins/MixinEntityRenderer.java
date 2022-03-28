@@ -59,7 +59,7 @@ public class MixinEntityRenderer {
 
     @ModifyVariable(method = "orientCamera", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/client/multiplayer/WorldClient;rayTraceBlocks(Lnet/minecraft/util/Vec3;Lnet/minecraft/util/Vec3;)Lnet/minecraft/util/MovingObjectPosition;"))
     public MovingObjectPosition f5fix(MovingObjectPosition value) {
-        if (F5Fix.getEnabledJVM()) {
+        if (F5Fix.INSTANCE.getEnabled()) {
             return null;
         } else {
             return value;
@@ -79,7 +79,7 @@ public class MixinEntityRenderer {
 
     @Inject(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;renderEntities(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", ordinal = 1, shift = At.Shift.AFTER))
     public void renderCharm(int pass, float partialTicks, long finishTimeNano, CallbackInfo ci) {
-        if (Charm.getEnabledJVM()) {
+        if (Charm.INSTANCE.getEnabled()) {
             Charm.render(partialTicks);
         }
     }

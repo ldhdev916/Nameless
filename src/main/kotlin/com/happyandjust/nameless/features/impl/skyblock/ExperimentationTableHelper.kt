@@ -18,77 +18,68 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.autoFillEnum
-import com.happyandjust.nameless.features.base.listParameter
+import com.happyandjust.nameless.features.base.hierarchy
+import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
-import com.happyandjust.nameless.processor.Processor
-import com.happyandjust.nameless.processor.experimantation.ChronomatronProcessor
-import com.happyandjust.nameless.processor.experimantation.SuperpairsProcessor
-import com.happyandjust.nameless.processor.experimantation.UltraSequencerProcessor
+import com.happyandjust.nameless.hypixel.skyblock.experimentation.ExperimentationGame
+import com.happyandjust.nameless.hypixel.skyblock.experimentation.ExperimentationType
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.inventory.ContainerChest
-import net.minecraftforge.client.event.GuiOpenEvent
 
 object ExperimentationTableHelper : SimpleFeature("experimentationTableHelper", "Experimentation Table Helper", "") {
 
-    private fun checkForRequirement() = enabled && Hypixel.currentGame is SkyBlock
-    private var currentExperimentationType: ExperimentationType? = null
-    val processors = hashMapOf<Processor, () -> Boolean>()
-
     init {
-        listParameter(listEnum<ExperimentationType>()) {
-            matchKeyCategory()
-            key = "types"
-            title = "Experimentation Types"
+        hierarchy { +::types }
+    }
 
-            autoFillEnum {
-                val name = it.name
-                "${name[0]}${name.drop(1).lowercase()}"
-            }
+    private var currentExperimentationGame: ExperimentationGame? = null
+        set(value) {
+            field?.unregisterAll()
+            field = value
+        }
+    private val scanTimer = TickTimer.withSecond(0.5)
 
-            for (experimentationType in ExperimentationType.values()) {
-                processors[experimentationType.processor] =
-                    { checkForRequirement() && mc.currentScreen is GuiChest && currentExperimentationType == experimentationType && experimentationType in value }
-            }
+    private var types by parameter(listEnum<ExperimentationType>()) {
+        key = "types"
+        title = "Supported Experimentation Games"
+
+        settings {
+            autoFillEnum { it.chestDisplayName }
         }
     }
 
     init {
-        on<SpecialTickEvent>().filter {
-            checkForRequirement().also { if (!it) currentExperimentationType = null }
-        }.subscribe {
-            mc.currentScreen.withInstance<GuiChest> {
+        on<SpecialTickEvent>().timerFilter(scanTimer).subscribe {
+            if (!enabled || Hypixel.currentGame !is SkyBlock) {
+                currentExperimentationGame = null
+                return@subscribe
+            }
+            withInstance<GuiChest>(mc.currentScreen) {
                 val containerChest = inventorySlots as ContainerChest
                 val displayName = containerChest.lowerChestInventory.displayName.unformattedText.stripControlCodes()
                 val size =
                     containerChest.inventorySlots.filter { it.inventory != mc.thePlayer.inventory }.size
 
-                currentExperimentationType = when {
-                    size != 54 -> null
-                    displayName.startsWith("Chronomatron (") -> ExperimentationType.CHRONOMATRON
-                    displayName.startsWith("Ultrasequencer (") -> ExperimentationType.ULTRASEQUENCER
-                    displayName.startsWith("Superpairs (") -> ExperimentationType.SUPERPAIRS
-                    else -> null
+                if (size != 54) return@withInstance
+                val currentGame = getCurrentGame(displayName) ?: return@withInstance
+                if (currentExperimentationGame?.javaClass != currentGame) {
+                    currentExperimentationGame = currentGame
+                    currentGame.registerEventListeners()
+                    sendDebugMessage("ExperimentationTableHelper", "Current Game: $currentGame")
                 }
+
                 return@subscribe
             }
-            currentExperimentationType = null
-        }
-
-        on<GuiOpenEvent>().subscribe {
-            ChronomatronProcessor.chronomatronClicks = 0
-            ChronomatronProcessor.chronomatronPatterns.clear()
-            ChronomatronProcessor.lastRound = 0
-
-            SuperpairsProcessor.itemBySlotNumber.clear()
+            currentExperimentationGame = null
         }
     }
 
-    enum class ExperimentationType(val processor: Processor) {
-        CHRONOMATRON(ChronomatronProcessor), ULTRASEQUENCER(UltraSequencerProcessor), SUPERPAIRS(SuperpairsProcessor)
-    }
+    private fun getCurrentGame(displayName: String) =
+        types.find { displayName.startsWith("${it.chestDisplayName} (") }?.createImpl()
 }

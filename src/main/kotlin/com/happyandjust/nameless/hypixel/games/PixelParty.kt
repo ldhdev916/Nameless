@@ -22,14 +22,15 @@ import com.happyandjust.nameless.hypixel.LocrawInfo
 
 class PixelParty : GameType {
 
-    override fun isCurrent(locrawInfo: LocrawInfo) =
-        locrawInfo.gameType == "PROTOTYPE" && locrawInfo.mode == "PIXEL_PARTY"
-
     override fun handleProperty(locrawInfo: LocrawInfo) = Unit
 
     override fun printProperties() = Unit
 
-    companion object : GameTypeFactory {
+    companion object : GameTypeCreator {
+
+        override fun isCurrent(locrawInfo: LocrawInfo) =
+            locrawInfo.gameType == "PROTOTYPE" && locrawInfo.mode == "PIXEL_PARTY"
+
         override fun createGameTypeImpl() = PixelParty()
     }
 }

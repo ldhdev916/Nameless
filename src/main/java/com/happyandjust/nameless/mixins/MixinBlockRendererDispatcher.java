@@ -34,7 +34,7 @@ public class MixinBlockRendererDispatcher {
 
     @Inject(method = "renderBlock", at = @At("HEAD"), cancellable = true)
     public void cancelRender(IBlockState i, BlockPos crashreport, IBlockAccess crashreportcategory, WorldRenderer throwable, CallbackInfoReturnable<Boolean> cir) {
-        if (CancelCertainBlockRendering.getEnabledJVM() && CancelCertainBlockRendering.getBlocksJVM().contains(i.getBlock())) {
+        if (CancelCertainBlockRendering.INSTANCE.getEnabled() && CancelCertainBlockRendering.getBlocks().contains(i.getBlock())) {
             cir.setReturnValue(false);
         }
     }

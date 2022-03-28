@@ -20,7 +20,6 @@ package com.happyandjust.nameless.mixinhooks
 
 import com.happyandjust.nameless.dsl.matrix
 import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.features.color
 import com.happyandjust.nameless.features.impl.qol.ShowPingInTab
 import net.minecraft.client.network.NetworkPlayerInfo
 import net.minecraft.client.renderer.GlStateManager.scale

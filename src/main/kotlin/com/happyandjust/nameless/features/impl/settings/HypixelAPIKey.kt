@@ -18,7 +18,8 @@
 
 package com.happyandjust.nameless.features.impl.settings
 
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
+import com.happyandjust.nameless.core.property.ConfigBackedPropertyValue
 import com.happyandjust.nameless.dsl.matchesMatcher
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.pureText
@@ -29,13 +30,14 @@ import com.happyandjust.nameless.gui.feature.ComponentType
 import gg.essential.api.EssentialAPI
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 
-object HypixelAPIKey : BaseFeature<String, Any>("hypixelApiKey", "Hypixel API Key", "Your hypixel api key") {
+object HypixelAPIKey : BaseFeature<String>("hypixelApiKey", "Hypixel API Key", "Your hypixel api key") {
 
     private val API_PATTERN = "Your new API key is (?<api>.+)".toPattern()
-    var apiKey by configValue("hypixel", "apikey", "")
+    private val configDelegate = configValue("hypixel", "apikey", "")
+    var apiKey by configDelegate
 
     override var componentType: ComponentType? = ComponentType.PASSWORD
-    override val property = ::apiKey
+    override val propertyValue = ConfigBackedPropertyValue(configDelegate)
 
     init {
         settings {

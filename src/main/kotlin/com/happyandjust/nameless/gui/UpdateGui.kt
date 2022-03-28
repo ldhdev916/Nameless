@@ -18,9 +18,9 @@
 
 package com.happyandjust.nameless.gui
 
-import com.happyandjust.nameless.dsl.transformToPrecisionString
+import com.happyandjust.nameless.Nameless
+import com.happyandjust.nameless.dsl.withPrecisionText
 import com.happyandjust.nameless.gui.feature.ColorCache
-import com.happyandjust.nameless.utils.Utils
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.*
@@ -33,6 +33,7 @@ import gg.essential.universal.UDesktop
 import net.minecraftforge.fml.common.FMLCommonHandler
 import java.awt.Color
 import java.io.File
+import java.io.IOException
 import java.net.URI
 import java.net.URL
 import kotlin.concurrent.thread
@@ -49,7 +50,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
 
     private var canceled = false
 
-    private fun check(): Boolean {
+    private fun isCanceled(): Boolean {
         if (mc.currentScreen !== this) canceled = true
         return canceled
     }
@@ -115,7 +116,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
 
     private fun doUpdate() {
         thread {
-            if (check()) return@thread
+            if (isCanceled()) return@thread
             runCatching {
                 val configDir = File("config/HappyAndJust/")
                 configDir.mkdirs()
@@ -133,7 +134,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
                 UDesktop.open(jarFile.parentFile)
                 Thread.sleep(2000L)
             }
-            if (check()) return@thread
+            if (isCanceled()) return@thread
 
             runCatching {
                 downloadFile(jarFile, downloadURL)
@@ -141,13 +142,51 @@ class UpdateGui(markDownText: String) : WindowScreen(
                 updateMessage.setText("§cException Occurred while downloading latest mod file")
                 UDesktop.browse(htmlURL)
             }
-            if (check()) return@thread
+            if (isCanceled()) return@thread
             Runtime.getRuntime().addShutdownHook(Thread {
-                Utils.deleteOldJar()
+                deleteOldJar()
             })
 
             FMLCommonHandler.instance().exitJava(-1, false)
         }
+    }
+
+    /**
+     * @link https://stackoverflow.com/a/47925649
+     */
+    @Throws(IOException::class)
+    private fun getJavaRuntime(): String {
+        val os = System.getProperty("os.name")
+        val java = "${System.getProperty("java.home")}${File.separator}bin${File.separator}${
+            if (os != null && os.lowercase().startsWith("windows")) "java.exe" else "java"
+        }"
+        if (!File(java).isFile) {
+            throw IOException("Unable to find suitable java runtime at $java")
+        }
+        return java
+    }
+
+    /**
+     * Taken from Skytils under AGPL-3.0
+     *
+     * Modified
+     *
+     * https://github.com/Skytils/SkytilsMod/blob/1.x/LICENSE.md
+     */
+    private fun deleteOldJar() {
+        val modFile = Nameless.modFile
+
+        if (modFile.delete()) {
+            return
+        }
+        val runtime = getJavaRuntime()
+
+        val file = File("config/HappyAndJust/Deleter.jar")
+
+        val cmd = "\"$runtime\" -jar \"${file.absolutePath}\" \"${modFile.absolutePath}\""
+
+        Runtime.getRuntime().exec(cmd)
+
     }
 
     private fun downloadFile(file: File, url: URL) {
@@ -176,7 +215,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
         file.outputStream().buffered().use {
 
             for (byte in bytes) {
-                if (check()) return
+                if (isCanceled()) return
                 count += byte
                 it.write(byte.toInt())
 
@@ -208,7 +247,7 @@ class UpdateGui(markDownText: String) : WindowScreen(
                 field = value.coerceIn(0.0, 1.0)
 
                 progressBar.constraints.width = RelativeConstraint(field.toFloat())
-                progressText.setText("${(field * 100).transformToPrecisionString(2)}%")
+                progressText.setText("${(field * 100).withPrecisionText(2)}%")
             }
 
 

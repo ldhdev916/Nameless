@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.gui.feature
 
+import com.happyandjust.nameless.core.property.PropertyData
 import com.happyandjust.nameless.features.FeatureRegistry
 import gg.essential.elementa.components.GradientComponent
 import gg.essential.elementa.components.ScrollComponent
@@ -32,7 +33,7 @@ import gg.essential.vigilance.utils.onLeftClick
 
 class CategoryFeatures(
     private val gui: FeatureGui,
-    private val categoryItems: List<PropertyData<*, *>>,
+    private val categoryItems: List<PropertyData>,
     private val isFeature: Boolean = false
 ) : UIContainer() {
 
@@ -89,7 +90,7 @@ class CategoryFeatures(
         } childOf this
     }
 
-    private fun getItems(categoryItems: List<PropertyData<*, *>>): List<Setting> {
+    private fun getItems(categoryItems: List<PropertyData>): List<Setting> {
 
         val list = arrayListOf<Setting>()
 

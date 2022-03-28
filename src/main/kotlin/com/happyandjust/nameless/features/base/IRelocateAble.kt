@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.features.base
 
 import com.happyandjust.nameless.config.ConfigValue
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
@@ -28,7 +28,6 @@ import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.gui.relocate.RelocateGui
 import gg.essential.elementa.UIComponent
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.serializer
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -63,10 +62,8 @@ abstract class OverlayFeature(
     }
 }
 
-class OverlayParameter<T : Any, E : Any>(
-    defaultValue: T,
-    serializer: KSerializer<T>
-) : FeatureParameter<T, E>(defaultValue, serializer), IRelocateAble {
+class OverlayParameter<T : Any>(defaultValue: T, serializer: KSerializer<T>) :
+    FeatureParameter<T>(defaultValue, serializer), IRelocateAble {
 
     private lateinit var configDelegate: ConfigValue<Overlay>
     private lateinit var relocateComponent: (RelocateComponent) -> UIComponent
@@ -99,10 +96,10 @@ class OverlayParameter<T : Any, E : Any>(
         on<SpecialOverlayEvent>().filter { mc.currentScreen !is RelocateGui }.subscribe { renderOverlay0(partialTicks) }
     }
 
-    override var overlayPoint by object : ReadWriteProperty<OverlayParameter<T, E>, Overlay> {
-        override fun getValue(thisRef: OverlayParameter<T, E>, property: KProperty<*>) = configDelegate.value
+    override var overlayPoint by object : ReadWriteProperty<OverlayParameter<T>, Overlay> {
+        override fun getValue(thisRef: OverlayParameter<T>, property: KProperty<*>) = configDelegate.value
 
-        override fun setValue(thisRef: OverlayParameter<T, E>, property: KProperty<*>, value: Overlay) {
+        override fun setValue(thisRef: OverlayParameter<T>, property: KProperty<*>, value: Overlay) {
             configDelegate.value = value
         }
     }
@@ -116,15 +113,4 @@ class OverlayParameter<T : Any, E : Any>(
     override fun renderOverlay0(partialTicks: Float) = render(partialTicks)
 
     override fun getWheelSensitive() = wheel
-
-}
-
-inline fun <reified T : Any> AbstractDefaultFeature<*, *>.overlayParameter(
-    defaultValue: T,
-    serializer: KSerializer<T> = serializer(),
-    builderAction: OverlayParameter<T, Any>.() -> Unit
-) = OverlayParameter<T, Any>(defaultValue, serializer).apply {
-    builderAction()
-
-    this@overlayParameter.parameters[key] = this
 }

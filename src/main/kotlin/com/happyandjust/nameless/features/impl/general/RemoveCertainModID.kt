@@ -20,32 +20,70 @@ package com.happyandjust.nameless.features.impl.general
 
 import com.happyandjust.nameless.MOD_ID
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.listParameter
+import com.happyandjust.nameless.features.base.hierarchy
+import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.settings
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import net.minecraftforge.fml.common.DummyModContainer
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.ModContainer
+import net.minecraftforge.fml.common.ModMetadata
 
 object RemoveCertainModID : SimpleFeature(
     "removeModId",
     "Remove Certain Mod ID Sent to Server",
-    enabled_ = true
+    enabled = true
 ) {
 
     init {
-        val mods = (Loader::class.java.getDeclaredField("mods")
-            .apply { isAccessible = true }[Loader.instance()] as List<*>).filterIsInstance<ModContainer>()
+        hierarchy {
+            +::mods
+        }
+    }
 
-        listParameter(mods.filter { it.modId == MOD_ID }) {
-            matchKeyCategory()
-            key = "mods"
-            title = "Mod List"
+    private val modsField = Loader::class.java.getDeclaredField("mods").apply { isAccessible = true }
+    private val allMods = (modsField[Loader.instance()] as List<*>).filterIsInstance<ModContainer>()
 
-            settings {
-                listStringSerializer = { "${it.name} ${it.version}" }
-                listAllValueList = {
-                    mods.sortedBy { it !in value }
-                }
-            }
+    private var mods by parameter(
+        listOf(allMods.single { it.modId == MOD_ID }),
+        serializer = ListSerializer(ModContainerSerializer)
+    ) {
+        matchKeyCategory()
+        key = "mods"
+        title = "Mod List"
+
+        settings {
+            listSerializer { "${it.name} ${it.version}" }
+            allValueList = { allMods.sortedBy { it !in value } }
+        }
+    }
+
+    @JvmStatic
+    fun shouldRemoveModId(id: String): Boolean {
+        return id in mods.map { it.modId }
+    }
+
+    object ModContainerSerializer : KSerializer<ModContainer> {
+
+        private val dummyModContainer by lazy {
+            val metaData = ModMetadata().apply { modId = "Dummy(Error)" }
+            DummyModContainer(metaData)
+        }
+
+        override val descriptor = String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): ModContainer {
+            val modId = decoder.decodeSerializableValue(String.serializer())
+
+            return mods.singleOrNull { it.modId == modId } ?: dummyModContainer
+        }
+
+        override fun serialize(encoder: Encoder, value: ModContainer) {
+            encoder.encodeSerializableValue(String.serializer(), value.modId)
         }
     }
 }

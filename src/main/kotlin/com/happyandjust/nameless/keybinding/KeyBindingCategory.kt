@@ -18,7 +18,9 @@
 
 package com.happyandjust.nameless.keybinding
 
-import com.happyandjust.nameless.Nameless
+import com.happyandjust.nameless.MOD_NAME
+import net.minecraft.client.settings.KeyBinding
+import net.minecraftforge.fml.client.registry.ClientRegistry
 import org.lwjgl.input.Keyboard
 
 enum class KeyBindingCategory(val desc: String, val key: Int) {
@@ -31,5 +33,5 @@ enum class KeyBindingCategory(val desc: String, val key: Int) {
     DENY_PARTY("Deny Party", Keyboard.KEY_N),
     FREEZE_WAYPOINT_PATH("Freeze Waypoint Paths", Keyboard.KEY_NONE);
 
-    fun getKeyBinding() = Nameless.keyBindings[this]!!
+    val keyBinding = KeyBinding(desc, key, MOD_NAME).also { ClientRegistry.registerKeyBinding(it) }
 }

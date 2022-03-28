@@ -20,8 +20,8 @@ package com.happyandjust.nameless.features.impl.misc
 
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.color
 import java.awt.Color
 
 object ChangeDamagedEntityColor : SimpleFeature(
@@ -30,22 +30,16 @@ object ChangeDamagedEntityColor : SimpleFeature(
     ""
 ) {
 
-    @JvmStatic
-    var colorJVM
-        get() = color
-        set(value) {
-            color = value
-        }
-
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-
     init {
-        parameter(Color.red.toChromaColor()) {
-            matchKeyCategory()
-            key = "color"
-            title = "Damaged Entity Color"
+        hierarchy {
+            +::color
         }
+    }
+
+    @JvmStatic
+    var color by parameter(Color.red.toChromaColor()) {
+        matchKeyCategory()
+        key = "color"
+        title = "Damaged Entity Color"
     }
 }

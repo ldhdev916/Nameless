@@ -19,23 +19,21 @@
 package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.dsl.drawFilledBox
 import com.happyandjust.nameless.dsl.getAxisAlignedBB
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.autoFillEnum
-import com.happyandjust.nameless.features.base.listParameter
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.radius
-import com.happyandjust.nameless.features.selectedGemstoneTypes
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.hypixel.skyblock.Gemstone
-import com.happyandjust.nameless.utils.RenderUtils
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.minecraft.init.Blocks
 import net.minecraft.util.AxisAlignedBB
@@ -51,6 +49,15 @@ object GemstoneESP : SimpleFeature(
     "Render box on gemstones in SkyBlock Crystal Hollows"
 ) {
 
+    init {
+        hierarchy {
+
+            +::radius
+
+            +::selectedGemstoneTypes
+        }
+    }
+
     private fun checkForRequirement(): Boolean {
         val currentGame = Hypixel.currentGame
         return enabled && currentGame is SkyBlock && currentGame.island == "crystal_hollows"
@@ -60,30 +67,32 @@ object GemstoneESP : SimpleFeature(
     private var gemstoneBlocks = mapOf<AxisAlignedBB, Int>()
     private val gemstoneBlockMap = Gemstone.values().associateBy { it.metadata }.toMap()
 
-    init {
+    private var radius by parameter(50) {
+        key = "radius"
+        title = "Gemstone Scan Radius"
 
-        parameter(50) {
-            matchKeyCategory()
-            key = "radius"
-            title = "Gemstone Scan Radius"
-
-            settings {
-                minValueInt = 10
-                maxValueInt = 100
-            }
+        settings {
+            minValueInt = 10
+            maxValueInt = 100
         }
+    }
 
-        listParameter(emptyList<Gemstone>()) {
-            matchKeyCategory()
-            key = "selectedGemstoneTypes"
-            title = "Gemstone Types"
+    private var selectedGemstoneTypes by parameter(emptyList<Gemstone>()) {
+        matchKeyCategory()
+        key = "selectedGemstoneTypes"
+        title = "Gemstone Types"
 
+
+        settings {
+            ordinal = 1
             autoFillEnum { it.readableName }
-            settings { ordinal = 1 }
         }
+    }
 
+    init {
+        val scope = CoroutineScope(Dispatchers.Default)
         on<SpecialTickEvent>().filter { checkForRequirement() && scanTimer.update().check() }.subscribe {
-            GlobalScope.launch {
+            scope.launch {
                 val current = BlockPos(mc.thePlayer)
 
                 val curX = current.x
@@ -110,7 +119,7 @@ object GemstoneESP : SimpleFeature(
 
         on<RenderWorldLastEvent>().filter { checkForRequirement() }.subscribe {
             for ((aabb, color) in gemstoneBlocks) {
-                RenderUtils.drawBox(aabb, color, partialTicks)
+                aabb.drawFilledBox(color, partialTicks)
             }
         }
     }

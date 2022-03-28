@@ -18,13 +18,13 @@
 
 package com.happyandjust.nameless.features.impl.general
 
-import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.tessellator
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.mixins.accessors.AccessorEntityFX
-import gg.essential.elementa.utils.invisible
 import net.minecraft.client.particle.EntityFX
 import net.minecraft.client.renderer.GlStateManager.disableDepth
 import net.minecraft.client.renderer.GlStateManager.enableDepth
@@ -42,36 +42,35 @@ object IndicateParticles : SimpleFeature(
     "Indicate certain particle types you selected, set color alpha to 0 if you don't want custom color"
 ) {
 
+    init {
+        hierarchy { +::particleIds }
+    }
+
     private val entities = hashMapOf<EntityFX, Color>()
 
-    init {
-        for (particle in EnumParticleTypes.values()) {
+    private var particleIds by parameter(emptyList<Int>()) {
+        key = "particleIds"
+        title = "Particles"
 
-            val key = particle.particleID.toString()
+        val allParticles = EnumParticleTypes.values().associateBy { it.particleID }
 
-            val name = particle.name.split("_").joinToString(" ") { "${it[0]}${it.drop(1).lowercase()}" }
-
-            parameter(false) {
-                matchKeyCategory()
-                this.key = key
-                title = name
-
-                parameter(Color.red.invisible().toChromaColor()) {
-                    matchKeyCategory()
-                    this.key = "color"
-                    title = "Color of Particle"
+        settings {
+            listSerializer {
+                allParticles.getValue(it).name.split("_").joinToString(" ") { s ->
+                    s.lowercase().replaceFirstChar { c -> c.uppercaseChar() }
                 }
+            }
+            allValueList = {
+                allParticles.values.sortedBy { it.particleID !in value }.map { it.particleID }
             }
         }
     }
 
     @JvmStatic
     fun checkAndAdd(particleId: Int, entityFX: EntityFX) {
-        if (!enabled) return
-        val parameter = getParameter<Boolean>(particleId.toString())
-
-        if (!parameter.value) return
-        entities[entityFX] = parameter.getParameterValue("color")
+        if (!enabled || particleId !in particleIds) return
+        // TODO Set color
+        entities[entityFX] = Color.red
     }
 
     init {
@@ -127,7 +126,5 @@ object IndicateParticles : SimpleFeature(
             begin()
         }
         enableDepth()
-        return
-
     }
 }

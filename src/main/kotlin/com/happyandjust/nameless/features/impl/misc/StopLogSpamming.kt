@@ -25,9 +25,4 @@ object StopLogSpamming : SimpleFeature(
     "Stop Log Spamming",
     "Stops error message spamming in logger when you are in hypixel",
     true
-) {
-
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-}
+)

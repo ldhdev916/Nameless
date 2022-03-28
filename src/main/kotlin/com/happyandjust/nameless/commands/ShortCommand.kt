@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.commands
 
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.events.PacketEvent
@@ -38,7 +38,7 @@ object ShortCommand : Command("shortcommand") {
 
     init {
         on<PacketEvent.Sending>().subscribe {
-            packet.withInstance<C01PacketChatMessage> {
+            withInstance<C01PacketChatMessage>(packet) {
                 val (shortCommandInfo, matcher) = shortCommandInfos
                     .map { it to it.pair.first.matcher(message) }
                     .find { it.second.matches() } ?: return@subscribe

@@ -20,8 +20,8 @@ package com.happyandjust.nameless.features.impl.misc
 
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.color
 import java.awt.Color
 
 object ChangeNicknameColor : SimpleFeature(
@@ -31,18 +31,15 @@ object ChangeNicknameColor : SimpleFeature(
     false
 ) {
 
-    @JvmStatic
-    var colorJVM
-        get() = color
-        set(value) {
-            color = value
-        }
-
     init {
-        parameter(Color.white.toChromaColor()) {
-            matchKeyCategory()
-            key = "color"
-            title = "Nickname Color"
+        hierarchy {
+            +::color
         }
+    }
+
+    @JvmStatic
+    var color by parameter(Color.white.toChromaColor()) {
+        key = "color"
+        title = "Nickname Color"
     }
 }

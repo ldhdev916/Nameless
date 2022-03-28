@@ -46,8 +46,8 @@ public class MixinEntityFX {
     public void setColor(WorldRenderer worldRendererIn, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ, CallbackInfo ci) {
         if (!($this instanceof EntityFishWakeFX)) return;
 
-        if (ChangeFishParticleColor.getEnabledJVM()) {
-            int color = ChangeFishParticleColor.getColorJVM().getRGB();
+        if (ChangeFishParticleColor.INSTANCE.getEnabled()) {
+            int color = ChangeFishParticleColor.getColor().getRGB();
 
             particleRed = (color >> 16 & 255) / 255F;
             particleGreen = (color >> 8 & 255) / 255F;

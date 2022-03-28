@@ -22,6 +22,7 @@ import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
+import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -49,9 +50,6 @@ object EquipPetSkin : SimpleFeature(
     "Equip Pet Skin",
     "Equip existing pet skin on SkyBlock §ethis only changes 'SKIN'§r, mod gets nearest possible pet and changes its skin so it might be inaccurate"
 ) {
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
     private val scanTimer = TickTimer.withSecond(1.5)
     private var currentModifiedPet: EntityArmorStand? = null
         set(value) {
@@ -86,16 +84,14 @@ object EquipPetSkin : SimpleFeature(
 
         val petSkinsByPetName = (PetSkinType.values().toList() - PetSkinType.DEFAULT).groupBy { petSkins[it.name]!! }
 
-        for ((petName, petSkinTypes) in petSkinsByPetName) {
-
-            parameters[petName.lowercase()] = parameter(PetSkinType.DEFAULT) {
-                matchKeyCategory()
+        val parameters = petSkinsByPetName.map { (petName, petSkinTypes) ->
+            parameter(PetSkinType.DEFAULT) {
                 key = petName
                 title = petName
                 desc = "Pet Skins of $petName"
 
                 settings {
-                    stringSerializer = { it.prettyName }
+                    serializer { it.prettyName }
                     allValueList = { petSkinTypes + PetSkinType.DEFAULT }
                 }
 
@@ -107,6 +103,10 @@ object EquipPetSkin : SimpleFeature(
                     }
                 }
             }
+        }
+
+        hierarchy {
+            parameters.forEach { +it }
         }
     }
 

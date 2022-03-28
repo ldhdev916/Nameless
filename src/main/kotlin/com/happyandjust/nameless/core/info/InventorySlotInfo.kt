@@ -18,9 +18,23 @@
 
 package com.happyandjust.nameless.core.info
 
+import com.happyandjust.nameless.dsl.mc
+import net.minecraft.client.settings.GameSettings
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 
 /**
  * @param slot 0 ~ 8
  */
-data class InventorySlotInfo(val slot: Int, val keyName: String, val itemStack: ItemStack?)
+data class InventorySlotInfo(val slot: Int, val keyName: String, val itemStack: ItemStack?) {
+
+    companion object {
+        fun EntityPlayer.getSlotsFromInventory() = mc.gameSettings.keyBindsHotbar.mapIndexed { index, keyBinding ->
+            InventorySlotInfo(
+                index,
+                GameSettings.getKeyDisplayString(keyBinding.keyCode),
+                inventory.getStackInSlot(index)
+            )
+        }
+    }
+}

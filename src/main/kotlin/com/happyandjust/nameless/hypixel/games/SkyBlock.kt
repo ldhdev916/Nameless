@@ -28,8 +28,6 @@ class SkyBlock : GameType {
     var island = ""
         private set
 
-    override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "SKYBLOCK"
-
     override fun handleProperty(locrawInfo: LocrawInfo) {
         inDungeon = locrawInfo.mode == "dungeon"
         island = locrawInfo.mode
@@ -40,7 +38,10 @@ class SkyBlock : GameType {
         sendPrefixMessage("Island: $island")
     }
 
-    companion object : GameTypeFactory {
+    companion object : GameTypeCreator {
+
+        override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "SKYBLOCK"
+
         override fun createGameTypeImpl() = SkyBlock()
     }
 }

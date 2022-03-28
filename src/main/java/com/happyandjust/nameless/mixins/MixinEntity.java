@@ -47,14 +47,14 @@ public abstract class MixinEntity {
 
     @Inject(method = "isInvisible", at = @At("HEAD"), cancellable = true)
     public void setInvisible(CallbackInfoReturnable<Boolean> cir) {
-        if (BedWarsESP.teamColorCache.containsKey(this) && BedWarsESP.getEnabledJVM() && BedWarsESP.getInvisibleJVM()) {
+        if (BedWarsESP.teamColorCache.containsKey(this) && BedWarsESP.INSTANCE.getEnabled() && BedWarsESP.getInvisible()) {
             cir.setReturnValue(false);
             return;
         }
-        if ($this instanceof EntityEnderman && GlowStarDungeonMobs.getEnabledJVM() && GlowStarDungeonMobs.checkedDungeonMobs.containsValue(this) && GlowStarDungeonMobs.getShowFelJVM()) {
+        if ($this instanceof EntityEnderman && GlowStarDungeonMobs.INSTANCE.getEnabled() && GlowStarDungeonMobs.checkedDungeonMobs.containsValue(this) && GlowStarDungeonMobs.getShowFel()) {
             cir.setReturnValue(false);
         }
-        if (GlowAllPlayers.getEnabledJVM() && GlowAllPlayers.getInvisibleJVM() && GlowAllPlayers.playersInTab.contains(this) && $this instanceof EntityPlayer) {
+        if (GlowAllPlayers.INSTANCE.getEnabled() && GlowAllPlayers.getInvisible() && GlowAllPlayers.playersInTab.contains(this) && $this instanceof EntityPlayer) {
             cir.setReturnValue(false);
         }
     }

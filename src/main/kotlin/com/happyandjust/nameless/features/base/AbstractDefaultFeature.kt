@@ -18,42 +18,47 @@
 
 package com.happyandjust.nameless.features.base
 
+import com.happyandjust.nameless.core.property.PropertyData
+import com.happyandjust.nameless.core.property.PropertyValue
 import com.happyandjust.nameless.features.PropertySetting
 import com.happyandjust.nameless.gui.feature.ComponentType
-import com.happyandjust.nameless.gui.feature.PropertyData
-import kotlin.reflect.KMutableProperty0
 
-abstract class AbstractDefaultFeature<T : Any, E : Any> {
-    val parameters = object : HashMap<String, FeatureParameter<*, *>>() {
-        override fun put(key: String, value: FeatureParameter<*, *>): FeatureParameter<*, *>? {
+abstract class AbstractDefaultFeature<T : Any> {
+    val parameters = object : HashMap<String, FeatureParameter<*>>() {
+        override fun put(key: String, value: FeatureParameter<*>): FeatureParameter<*>? {
             value.parent = this@AbstractDefaultFeature
             return super.put(key, value)
         }
     }
-    var parent: AbstractDefaultFeature<*, *>? = null
+    var parent: AbstractDefaultFeature<*>? = null
     abstract var componentType: ComponentType?
-    abstract val property: KMutableProperty0<T>
+    abstract val propertyValue: PropertyValue
 
     lateinit var key: String
     lateinit var title: String
     var desc = ""
 
-    val propertySetting = PropertySetting<T, E>()
+    val propertySetting = PropertySetting()
 
-    open fun toPropertyData(): PropertyData<T, E> = PropertyData(
-        property,
+
+    open fun toPropertyData(): PropertyData = PropertyData(
+        propertyValue,
         title,
         desc,
         componentType,
         propertySetting,
-        parameters.values.map(AbstractDefaultFeature<*, *>::toPropertyData)
+        parameters.values.map { it.toPropertyData() }
     )
 
-    fun <T : Any> getParameter(key: String): FeatureParameter<T, out Any> {
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any> getParameter(key: String): FeatureParameter<T> {
         val split = key.split("/")
         val first = parameters[split.first()]!!
-        return split.drop(1)
-            .fold(first) { parent, newKey -> parent.parameters[newKey]!! } as FeatureParameter<T, out Any>
+        val remainKey = split.drop(1).joinToString("/").ifEmpty {
+            return first as FeatureParameter<T>
+        }
+
+        return first.getParameter(remainKey)
     }
 
     fun <T : Any> getParameterValue(key: String) = getParameter<T>(key).value
@@ -65,6 +70,6 @@ abstract class AbstractDefaultFeature<T : Any, E : Any> {
     }
 
     companion object {
-        val allDefaultFeatures = arrayListOf<AbstractDefaultFeature<*, *>>()
+        val allDefaultFeatures = arrayListOf<AbstractDefaultFeature<*>>()
     }
 }

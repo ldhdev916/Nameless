@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.hypixel.fairysoul
 
-import com.happyandjust.nameless.config.configMap
-import com.happyandjust.nameless.config.configValue
+import com.happyandjust.nameless.config.ConfigMap.Companion.configMap
+import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.dsl.mc
 
 object FairySoulProfileCache {

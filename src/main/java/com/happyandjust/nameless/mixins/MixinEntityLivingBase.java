@@ -48,12 +48,12 @@ public class MixinEntityLivingBase {
 
     @Unique
     private boolean shouldRemove(int potionId) {
-        if (!RemoveNegativeEffects.getEnabledJVM()) return false;
+        if (!RemoveNegativeEffects.INSTANCE.getEnabled()) return false;
 
-        List<RemoveNegativeEffects.PotionType> enabledPotionTypes = RemoveNegativeEffects.getEnabledPotionTypesJVM();
-        if (potionId == Potion.blindness.id && enabledPotionTypes.contains(RemoveNegativeEffects.PotionType.BLINDNESS)) {
-            return true;
-        } else
-            return potionId == Potion.confusion.id && enabledPotionTypes.contains(RemoveNegativeEffects.PotionType.NAUSEA);
+        List<RemoveNegativeEffects.PotionType> enabledPotionTypes = RemoveNegativeEffects.getEnabledPotionTypes();
+        return enabledPotionTypes
+                .stream()
+                .mapToInt(RemoveNegativeEffects.PotionType::getPotionId)
+                .anyMatch(i -> potionId == i);
     }
 }

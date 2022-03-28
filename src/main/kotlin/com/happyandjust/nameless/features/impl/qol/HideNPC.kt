@@ -27,10 +27,6 @@ import net.minecraftforge.client.event.RenderPlayerEvent
 
 object HideNPC : SimpleFeature("hideNpc", "Hide NPC in Lobby", "hide npcs in tab, and stop rendering") {
 
-    @JvmStatic
-    val enabledJVM
-        get() = enabled
-
     init {
         on<RenderPlayerEvent.Pre>().filter { enabled && Hypixel.currentGame is Lobby && entityPlayer.uniqueID.version() == 2 }
             .subscribe {

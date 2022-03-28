@@ -17,6 +17,7 @@
  */
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.happyandjust.build.Deps
 import net.minecraftforge.gradle.user.IReobfuscator
 import net.minecraftforge.gradle.user.ReobfMappingType
 import net.minecraftforge.gradle.user.TaskSingleReobf
@@ -29,9 +30,10 @@ plugins {
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("net.minecraftforge.gradle.forge") version "6f53277"
     id("org.spongepowered.mixin") version "d75e32e"
+    id("include-build")
 }
 
-version = "1.0.5"
+version = "1.0.5-Pre"
 group = "com.happyandjust"
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8
@@ -63,21 +65,27 @@ val include: Configuration by configurations.creating {
 }
 
 dependencies {
-    implementation("org.spongepowered:mixin:0.7.11-SNAPSHOT")
-    implementation("gg.essential:essential-1.8.9-forge:1933")
-    include("gg.essential:loader-launchwrapper:1.1.3")
-    include("net.objecthunter:exp4j:0.4.8")
-    include("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") {
+    implementation(Deps.Mixin.Lib)
+
+    implementation(Deps.Essential.Lib)
+    include(Deps.Essential.LaunchWrapper)
+
+    include(Deps.Exp4j.Lib)
+
+    include(Deps.KotlinX.Serialization) {
         exclude(module = "kotlin-stdlib")
         exclude(module = "kotlin-stdlib-common")
     }
 
-    annotationProcessor("org.spongepowered:mixin:0.8.5")
-    annotationProcessor("com.google.code.gson:gson:2.2.4")
-    annotationProcessor("com.google.guava:guava:21.0")
-    annotationProcessor("org.ow2.asm:asm-tree:6.2")
+    annotationProcessor(Deps.Processor.Mixin)
+    annotationProcessor(Deps.Processor.Gson)
+    annotationProcessor(Deps.Processor.Guava)
+    annotationProcessor(Deps.Processor.ASM)
 
     testImplementation(kotlin("test"))
+    testImplementation(Deps.Test.Junit)
+    testImplementation(Deps.Test.Mockk)
+    testRuntimeOnly(Deps.Test.JunitEngine)
 }
 
 sourceSets.main {
@@ -145,9 +153,13 @@ tasks {
     }
 
     withType<KotlinCompile> {
+
         kotlinOptions {
             jvmTarget = "1.8"
-            freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn", "-Xjvm-default=enable")
+            freeCompilerArgs = listOf(
+                "-Xopt-in=kotlin.RequiresOptIn",
+                "-Xjvm-default=enable"
+            )
         }
     }
 

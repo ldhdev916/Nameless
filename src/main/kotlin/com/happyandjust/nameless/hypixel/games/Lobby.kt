@@ -22,13 +22,14 @@ import com.happyandjust.nameless.hypixel.LocrawInfo
 
 class Lobby : GameType {
 
-    override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.mode == "lobby"
-
     override fun handleProperty(locrawInfo: LocrawInfo) = Unit
 
     override fun printProperties() = Unit
 
-    companion object : GameTypeFactory {
+    companion object : GameTypeCreator {
+
+        override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.mode == "lobby"
+
         override fun createGameTypeImpl() = Lobby()
     }
 }
