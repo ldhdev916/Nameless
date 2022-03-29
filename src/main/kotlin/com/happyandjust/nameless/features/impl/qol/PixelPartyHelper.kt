@@ -27,7 +27,6 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.PixelParty
 import gg.essential.elementa.utils.withAlpha
@@ -67,24 +66,18 @@ object PixelPartyHelper : SimpleFeature("pixelPartyHelper", "Pixel Party Helper"
     private var beaconColor by parameter(Color.blue.withAlpha(0.7f).toChromaColor()) {
         key = "beaconColor"
         title = "Beacon Color"
-
-        settings { ordinal = 1 }
     }
 
     private var beaconArrow by parameter(true) {
         matchKeyCategory()
         key = "beaconArrow"
         title = "Show Direction Arrow to Beacon"
-
-        settings { ordinal = 2 }
     }
 
     private var findSafe by parameter(false) {
         key = "findSafe"
         title = "Find Safe Position"
         desc = "Find position where distance to all kinds of blocks are nearly same\nSo you can go anywhere fast"
-
-        settings { ordinal = 3 }
     }
 
     private var scanTimer = TickTimer(3)

@@ -30,10 +30,12 @@ class MurderMystery : GameType {
 
     var murdererMode: MurdererMode? = null
         private set(value) {
-            field?.unregisterAll()
-            field = value
-            if (value != null && MurdererFinder.enabled && value.isEnabled()) {
-                value.registerEventListeners()
+            if (value?.javaClass != field?.javaClass) {
+                field?.unregisterAll()
+                field = value
+                if (value != null && MurdererFinder.enabled && value.isEnabled()) {
+                    value.registerEventListeners()
+                }
             }
         }
 
@@ -43,6 +45,10 @@ class MurderMystery : GameType {
 
     override fun printProperties() {
         sendPrefixMessage("Murderer Mode: $murdererMode")
+    }
+
+    override fun onDisposed() {
+        murdererMode = null
     }
 
     companion object : GameTypeCreator {

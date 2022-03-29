@@ -7,7 +7,6 @@ import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.base.ParameterHierarchy
 import com.happyandjust.nameless.features.impl.qol.MurdererFinder
-import com.happyandjust.nameless.features.settings
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Items
 import net.minecraftforge.client.event.ClientChatReceivedEvent
@@ -48,7 +47,9 @@ class Infection : MurdererMode {
         override fun add(element: String): Boolean {
             val newlyAdded = super.add(element)
 
-            sendDebugMessage("Infection", "New survivor: $element")
+            if (newlyAdded) {
+                sendDebugMessage("Infection", "New survivor: $element")
+            }
 
             return newlyAdded
         }
@@ -85,7 +86,7 @@ class Infection : MurdererMode {
             val playerName = entityPlayer.name
             when (heldItem.item) {
                 in MurdererFinder.sword_list -> {
-                    val chestPlate = entityPlayer.getEquipmentInSlot(3).item
+                    val chestPlate = entityPlayer.getEquipmentInSlot(3)?.item
 
                     if (chestPlate == Items.iron_chestplate) {
                         alpha = playerName
@@ -136,10 +137,6 @@ class Infection : MurdererMode {
         private var notifyAlpha by parameter(true) {
             key = "notifyAlpha"
             title = "Notify Alpha in Chat"
-
-            settings {
-                ordinal = 1
-            }
         }
 
         private var notifyMessage by parameter("&cAlpha: {name}") {
@@ -150,10 +147,6 @@ class Infection : MurdererMode {
         private var showInfection by parameter(true) {
             key = "showInfection"
             title = "Render Outline on Infections"
-
-            settings {
-                ordinal = 2
-            }
         }
 
         private var infectionColor by parameter(Color.blue.toChromaColor()) {
@@ -164,10 +157,6 @@ class Infection : MurdererMode {
         private var showSurvivor by parameter(true) {
             key = "showSurvivor"
             title = "Render Outline on Survivors"
-
-            settings {
-                ordinal = 3
-            }
         }
 
         private var survivorColor by parameter(Color.green.toChromaColor()) {

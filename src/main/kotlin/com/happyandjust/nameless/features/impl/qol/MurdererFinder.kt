@@ -25,7 +25,6 @@ import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.MurderMystery
 import com.happyandjust.nameless.hypixel.murderer.Assassins
@@ -120,29 +119,17 @@ object MurdererFinder : SimpleFeature(
     var infection by parameter(true) {
         key = "infection"
         title = "Infection Mode Helper"
-
-        settings {
-            ordinal = 1
-        }
     }
 
     var assassins by parameter(true) {
         key = "assassins"
         title = "Assassins Mode Helper"
-
-        settings {
-            ordinal = 2
-        }
     }
 
-    private var glowGold by parameter(false) {
+    private var glowGold by parameter(true) {
         key = "glowGold"
         title = "Glow Gold Ingot"
         desc = "Glow gold ingot when you are in murder mystery"
-
-        settings {
-            ordinal = 3
-        }
     }
 
     private var goldColor by parameter(Color(255, 128, 0).toChromaColor()) {

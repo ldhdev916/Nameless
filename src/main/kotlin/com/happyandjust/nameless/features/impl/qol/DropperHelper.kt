@@ -28,7 +28,6 @@ import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.overlayParameter
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.fixed
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.components.UIText
@@ -76,10 +75,6 @@ object DropperHelper : SimpleFeature(
         key = "showY"
         title = "Display Y Position"
         desc = "Render y position of where you'll land on your screen"
-
-        settings {
-            ordinal = 1
-        }
 
         config("dropper", "yPosition", Overlay.DEFAULT)
 

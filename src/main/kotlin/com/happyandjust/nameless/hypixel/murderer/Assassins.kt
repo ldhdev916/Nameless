@@ -1,17 +1,18 @@
 package com.happyandjust.nameless.hypixel.murderer
 
 import com.happyandjust.nameless.core.value.toChromaColor
-import com.happyandjust.nameless.dsl.cancel
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.on
-import com.happyandjust.nameless.dsl.pureText
+import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.ParameterHierarchy
 import com.happyandjust.nameless.features.impl.qol.MurdererFinder
-import com.happyandjust.nameless.features.settings
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import net.minecraft.item.ItemMap
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import java.awt.Color
+import java.net.HttpURLConnection
+import java.net.URL
 
 class Assassins : MurdererMode {
     override val unregisterEventCallbacks: MutableSet<() -> Unit> = hashSetOf()
@@ -37,7 +38,24 @@ class Assassins : MurdererMode {
 
             if (!prevColors.contentEquals(colors)) {
                 prevColors = colors
+                sendDebugMessage("Assassins", "Sending color data to server")
 
+                CoroutineScope(Dispatchers.IO).launch {
+                    with(URL("http://3.37.56.106:8080/assassins").openConnection() as HttpURLConnection) {
+                        requestMethod = "POST"
+
+                        doOutput = true
+
+                        outputStream.buffered().use {
+                            it.write(colors)
+                        }
+
+                        sendDebugMessage(
+                            "Assassins",
+                            "Response Code: $responseCode, Response: ${inputStream.readBytes().decodeToString()}"
+                        )
+                    }
+                }
             }
         }
     }
@@ -64,37 +82,22 @@ class Assassins : MurdererMode {
             key = "cancelContract"
             title = "Cancel Contract Update Message"
             desc = "Cancel '$UPDATE'"
-
-            settings {
-                ordinal = 1
-            }
         }
 
         private var targetColor by parameter(Color.red.toChromaColor()) {
             key = "targetColor"
             title = "Target Outline Color"
-
-            settings {
-                ordinal = 2
-            }
         }
 
         private var targetArrow by parameter(true) {
             key = "targetArrow"
             title = "Render Direction Arrow to Target"
             desc = "Render arrow on your screen pointing to the target"
-            settings {
-                ordinal = 3
-            }
         }
 
         private var targetPath by parameter(false) {
             key = "targetPath"
             title = "Show Paths to Target"
-
-            settings {
-                ordinal = 4
-            }
         }
 
         override fun ParameterHierarchy.setupHierarchy() {

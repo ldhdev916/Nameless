@@ -47,9 +47,9 @@ object BlockTracker : SimpleFeature("blockTracker", "Block Tracker", "") {
             +::scanRadius
 
             ::showPath {
-                +::showBeacon
-
                 +::canFly
+
+                +::showBeacon
 
                 +::pathBlocks
             }
@@ -61,7 +61,6 @@ object BlockTracker : SimpleFeature("blockTracker", "Block Tracker", "") {
         title = "Scan Radius"
 
         settings {
-            ordinal = 2
             minValueInt = 5
             maxValueInt = 150
         }
@@ -70,20 +69,12 @@ object BlockTracker : SimpleFeature("blockTracker", "Block Tracker", "") {
     private var showPath by parameter(false) {
         key = "showPath"
         title = "Show Path to Nearest Block"
-
-        settings {
-            ordinal = 3
-        }
     }
 
     private var canFly by parameter(true) {
         key = "canFly"
         title = "Can Fly"
         desc = "Whether you can fly or not when path finding"
-
-        settings {
-            ordinal = -2
-        }
     }
 
     private var showBeacon by parameter(true) {
@@ -91,10 +82,6 @@ object BlockTracker : SimpleFeature("blockTracker", "Block Tracker", "") {
         key = "showBeacon"
         title = "Show Beacon"
         desc = "Render beacon at nearest block position"
-
-        settings {
-            ordinal = -1
-        }
     }
 
     private var pathBlocks by parameter(Block.blockRegistry.toList()) {

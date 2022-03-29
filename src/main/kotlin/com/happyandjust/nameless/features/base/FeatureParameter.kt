@@ -34,7 +34,7 @@ open class FeatureParameter<T : Any>(
 
     private val jsonSaveKey: String
         get() = buildString {
-            withInstance<FeatureParameter<*>>(parent) {
+            withInstance<FeatureParameter<*>>(hierarchy.parent?.featureOfHierarchy) {
                 append(jsonSaveKey)
                 append("_")
             }

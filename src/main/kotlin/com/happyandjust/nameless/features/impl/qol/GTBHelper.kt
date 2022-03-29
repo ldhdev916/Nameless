@@ -25,7 +25,6 @@ import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.base.OverlayFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -89,10 +88,6 @@ object GTBHelper : OverlayFeature(
         key = "clipboard"
         title = "Copy to Clipboard"
         desc = "When there's only 1 word that matches, copy it to your clipboard"
-
-        settings {
-            ordinal = 1
-        }
     }
 
     private val THEME = "The theme is (?<word>.+)".toPattern()

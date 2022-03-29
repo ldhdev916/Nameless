@@ -84,7 +84,6 @@ object GemstoneESP : SimpleFeature(
 
 
         settings {
-            ordinal = 1
             autoFillEnum { it.readableName }
         }
     }

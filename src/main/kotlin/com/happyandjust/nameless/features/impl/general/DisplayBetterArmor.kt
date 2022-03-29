@@ -63,8 +63,6 @@ object DisplayBetterArmor : SimpleFeature(
         title = "Dropped Item Scale"
 
         settings {
-            ordinal = 1
-
             minValue = 1.5
             maxValue = 7.0
         }

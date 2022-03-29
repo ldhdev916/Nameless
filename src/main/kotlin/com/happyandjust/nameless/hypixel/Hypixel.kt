@@ -54,15 +54,20 @@ object Hypixel {
             return
         }
 
-        handleServerChange(locraw)
         currentGame?.handleProperty(locraw)
+        handleServerChange(locraw)
     }
 
     private fun handleServerChange(locraw: LocrawInfo) {
         val server = locraw.server
         if (prevServer != server) {
-
+            currentGame?.let {
+                sendDebugMessage("Hypixel", "Disposing $it")
+                it.onDisposed()
+            }
             currentGame = gameTypeCreators.find { it.isCurrent(locraw) }?.createGameTypeImpl()
+            currentGame?.handleProperty(locraw)
+
             sendDebugMessage("Hypixel", "Current Game: $currentGame")
 
             MinecraftForge.EVENT_BUS.post(HypixelServerChangeEvent(server))

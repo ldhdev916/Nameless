@@ -29,7 +29,6 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import net.minecraft.entity.Entity
@@ -66,8 +65,6 @@ object GlowStarDungeonMobs : SimpleFeature(
         key = "showFel"
         title = "Show Fel"
         desc = "Make fel visible"
-
-        settings { ordinal = 1 }
     }
 
     @JvmField

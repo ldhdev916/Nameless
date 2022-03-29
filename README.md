@@ -1,15 +1,15 @@
 <p align="center">
-<a href="https://github.com/HappyAndJust/Nameless/releases/latest" target="_blank">
-    <img alt="release" src="https://img.shields.io/github/v/release/HappyAndJust/Nameless?color=00FFFF&style=for-the-badge" />
+<a href="https://github.com/ldhdev916/Nameless/releases/latest" target="_blank">
+    <img alt="release" src="https://img.shields.io/github/v/release/ldhdev916/Nameless?color=00FFFF&style=for-the-badge" />
   </a>
-<a href="https://github.com/HappyAndJust/Nameless/blob/master/LICENSE">
-    <img alt="license" src="https://img.shields.io/github/license/HappyAndJust/Nameless?color=00FFFF&style=for-the-badge">
+<a href="https://github.com/ldhdev916/Nameless/blob/master/LICENSE">
+    <img alt="license" src="https://img.shields.io/github/license/ldhdev916/Nameless?color=00FFFF&style=for-the-badge">
  </a>
-<a href="https://github.com/HappyAndJust/Nameless/">
-    <img alt="lines" src="https://img.shields.io/tokei/lines/github/HappyAndJust/Nameless?color=00FFFF&style=for-the-badge">
+<a href="https://github.com/ldhdev916/Nameless/">
+    <img alt="lines" src="https://img.shields.io/tokei/lines/github/ldhdev916/Nameless?color=00FFFF&style=for-the-badge">
  </a>
-<a href="https://github.com/HappyAndJust/Nameless/releases/latest">
-    <img alt="downloads" src="https://img.shields.io/github/downloads/HappyAndJust/Nameless/total?color=00FFFF&style=for-the-badge" />
+<a href="https://github.com/ldhdev916/Nameless/releases/latest">
+    <img alt="downloads" src="https://img.shields.io/github/downloads/ldhdev916/Nameless/total?color=00FFFF&style=for-the-badge" />
 </a>
 </p>
 

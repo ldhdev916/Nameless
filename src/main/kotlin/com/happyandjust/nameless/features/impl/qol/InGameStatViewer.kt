@@ -71,8 +71,6 @@ object InGameStatViewer : SimpleFeature(
 
             componentType = null
 
-            settings { ordinal = 3 }
-
             for (informationType in InformationType.values()) {
                 val informationName = informationType.name.lowercase()
                 val statName = informationType.statName
@@ -187,7 +185,6 @@ object InGameStatViewer : SimpleFeature(
         desc = "Select text scale (Only for display type 'HEAD')"
 
         settings {
-            ordinal = 1
             minValue = 0.5
             maxValue = 5.0
         }
@@ -198,10 +195,6 @@ object InGameStatViewer : SimpleFeature(
         title = "Only Looking At"
         desc =
             "Show stats of only a player you're currently looking at instead of everyone (Only for display type 'HEAD')"
-
-        settings {
-            ordinal = 2
-        }
     }
 
     var order by parameter(Identifiers(emptyList<InGameStatIdentifier>())) {
@@ -210,8 +203,6 @@ object InGameStatViewer : SimpleFeature(
         title = "Stats List"
 
         settings {
-            ordinal = 3
-
             allIdentifiers = InformationType.values().map { InGameStatIdentifier(it, listOf(SupportGame.ALL)) }
         }
     }

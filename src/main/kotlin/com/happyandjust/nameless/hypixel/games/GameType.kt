@@ -25,6 +25,8 @@ interface GameType {
     fun handleProperty(locrawInfo: LocrawInfo)
 
     fun printProperties()
+
+    fun onDisposed() {}
 }
 
 interface GameTypeCreator {

@@ -23,7 +23,6 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.settings
 import net.minecraft.init.Items
 import net.minecraft.item.ItemArmor
 import net.minecraft.item.ItemStack
@@ -68,10 +67,6 @@ object ChangeLeatherArmorColor : SimpleFeature(
     private var chestplate by parameter(true) {
         key = "chestplate"
         title = "Customize Chestplate Color"
-
-        settings {
-            ordinal = 1
-        }
     }
 
     private var chestplateColor by parameter(Color.white.toChromaColor()) {
@@ -82,10 +77,6 @@ object ChangeLeatherArmorColor : SimpleFeature(
     private var leggings by parameter(true) {
         key = "leggings"
         title = "Customize Leggings Color"
-
-        settings {
-            ordinal = 2
-        }
     }
 
     private var leggingsColor by parameter(Color.white.toChromaColor()) {
@@ -96,10 +87,6 @@ object ChangeLeatherArmorColor : SimpleFeature(
     private var boots by parameter(true) {
         key = "boots"
         title = "Customize Boots Color"
-
-        settings {
-            ordinal = 3
-        }
     }
 
     private var bootsColor by parameter(Color.white.toChromaColor()) {

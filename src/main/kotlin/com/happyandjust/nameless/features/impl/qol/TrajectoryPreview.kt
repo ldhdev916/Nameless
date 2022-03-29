@@ -77,7 +77,6 @@ object TrajectoryPreview : SimpleFeature(
         title = "End Point Color"
 
         settings {
-            ordinal = 1
             subCategory = "Rendering"
         }
     }
@@ -88,7 +87,6 @@ object TrajectoryPreview : SimpleFeature(
         desc = "Color when end point of trajectory HITS entity"
 
         settings {
-            ordinal = 2
             subCategory = "Rendering"
         }
     }
@@ -99,7 +97,6 @@ object TrajectoryPreview : SimpleFeature(
         desc = "Glow entity which is hit by end point of trajectory"
 
         settings {
-            ordinal = 3
             subCategory = "Rendering"
         }
     }

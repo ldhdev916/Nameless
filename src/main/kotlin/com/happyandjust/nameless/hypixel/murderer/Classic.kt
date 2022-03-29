@@ -10,7 +10,6 @@ import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.base.ParameterHierarchy
 import com.happyandjust.nameless.features.impl.qol.MurdererFinder
-import com.happyandjust.nameless.features.settings
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.network.play.server.S04PacketEntityEquipment
 import net.minecraft.network.play.server.S09PacketHeldItemChange
@@ -75,10 +74,6 @@ class Classic : MurdererMode {
             key = "notifyMurderer"
             title = "Notify Murderer"
             desc = "Notify murderer's name in chat when new murderer is detected"
-
-            settings {
-                ordinal = 1
-            }
         }
 
         // TODO Create new class that automatically converts & into § and {some_name} into value

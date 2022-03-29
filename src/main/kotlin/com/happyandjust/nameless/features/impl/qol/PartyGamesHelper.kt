@@ -21,10 +21,7 @@ package com.happyandjust.nameless.features.impl.qol
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.withInstance
-import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.hierarchy
-import com.happyandjust.nameless.features.base.overlayParameter
-import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.base.*
 import com.happyandjust.nameless.gui.OverlayConstraint.Companion.constraint
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.hypixel.Hypixel
@@ -49,34 +46,36 @@ object PartyGamesHelper : SimpleFeature("partyGamesHelper", "Party Games Helper"
 
     init {
         hierarchy {
-            +::jigsaw
+            nonOrdinal {
+                +::jigsaw
 
-            ::rpg16 {
-                +::rpg16Color
-            }
+                ::rpg16 {
+                    +::rpg16Color
+                }
 
-            ::avalanche {
-                +::avalancheColor
-            }
+                ::avalanche {
+                    +::avalancheColor
+                }
 
-            ::animal {
-                +::animalColor
-            }
+                ::animal {
+                    +::animalColor
+                }
 
-            ::anvil {
-                +::anvilColor
-            }
+                ::anvil {
+                    +::anvilColor
+                }
 
-            +::maze
+                +::maze
 
-            ::dive {
-                +::diveColor
-            }
+                ::dive {
+                    +::diveColor
+                }
 
-            +::labEscape
+                +::labEscape
 
-            ::highGround {
-                +::highGroundColor
+                ::highGround {
+                    +::highGroundColor
+                }
             }
         }
     }
@@ -190,13 +189,16 @@ object PartyGamesHelper : SimpleFeature("partyGamesHelper", "Party Games Helper"
                 y = SiblingConstraint()
 
                 textScale = overlayPoint.constraint()
+
+                color = Color.red.constraint
             } childOf container
         }
         render {
             withInstance<PartyGames>(Hypixel.currentGame) {
                 withInstance<LabEscape>(partyMiniGames) {
-                    keys.forEachIndexed { index, key ->
-                        textComponents[index].setText(key)
+                    for ((index, textComponent) in textComponents.withIndex()) {
+                        val text = keys.getOrElse(index) { "-1" }
+                        textComponent.setText(text)
                     }
 
                     window.draw(UMatrixStack.Compat.get())

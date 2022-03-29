@@ -74,10 +74,6 @@ object GhostBlock : SimpleFeature(
         key = "ignoreSecret"
         title = "Ignore Dungeons Secrets"
         desc = "Prevent making skyblock dungeons secrets ghost-block"
-
-        settings {
-            ordinal = 1
-        }
     }
 
     override var componentType: ComponentType? = null

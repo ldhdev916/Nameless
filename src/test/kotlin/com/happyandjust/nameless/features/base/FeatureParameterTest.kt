@@ -1,5 +1,6 @@
 package com.happyandjust.nameless.features.base
 
+import com.happyandjust.nameless.features.settings
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
@@ -9,34 +10,71 @@ import kotlin.test.assertEquals
 
 internal class FeatureParameterTest {
 
+    private fun setupFeature() = mockk<BaseFeature<Boolean>> {
+        every { key } returns "category"
+        val param = hashMapOf<String, FeatureParameter<*>>()
+        every { parameters } returns param
+        val preHierarchy = ParameterHierarchy(this)
+        every { hierarchy } returns preHierarchy
+    }
+
+    @Test
+    fun `Test Correct Ordinal`() {
+        val feature = setupFeature()
+
+        with(feature) {
+            val param1 = parameter(1) {
+                key = "param1"
+            }
+            val param2 = parameter(false) {
+                key = "param2"
+            }
+            val param3 = parameter(0.0) {
+                key = "param3"
+            }
+
+            executeHierarchy {
+                +param1
+
+                +param2
+
+                nonOrdinal {
+                    +param3
+                }
+            }
+
+            param1.settings {
+                assertEquals(0, ordinal)
+            }
+            param2.settings {
+                assertEquals(1, ordinal)
+            }
+            param3.settings {
+                assertEquals(0, ordinal)
+            }
+        }
+    }
+
     @Test
     fun `Test Correct Category`() {
-        val feature = mockk<BaseFeature<Boolean>> {
-            every { key } returns "category"
-            every { parameters } returns hashMapOf()
-        }
+        val feature = setupFeature()
 
         with(feature) {
             val param1 = parameter(false) {
                 key = "param1"
             }
 
-            hierarchy {
+            executeHierarchy {
                 +param1
             }
 
-            ParameterHierarchy.executeAll()
-
-            assertEquals(param1.category, "category")
+            assertEquals("category", param1.category)
         }
     }
 
     @Test
     fun `Test Correct Json Key`() {
-        val feature = mockk<BaseFeature<Boolean>> {
-            every { key } returns "feature"
-            every { parameters } returns hashMapOf()
-        }
+        val feature = setupFeature()
 
         with(feature) {
             val param1 = parameter(false) {
@@ -51,15 +89,13 @@ internal class FeatureParameterTest {
                 key = "param3"
             }
 
-            hierarchy {
+            executeHierarchy {
                 param1 {
                     param2 {
                         +param3
                     }
                 }
             }
-
-            ParameterHierarchy.executeAll()
 
             assertEquals("param1", param1.getSaveKey())
             assertEquals("param1_param2", param2.getSaveKey())

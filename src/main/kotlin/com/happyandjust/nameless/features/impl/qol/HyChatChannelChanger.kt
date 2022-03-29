@@ -90,7 +90,6 @@ object HyChatChannelChanger : OverlayFeature(
         title = "Selected Chat Types"
 
         settings {
-            ordinal = 1
             autoFillEnum { it.prettyName }
         }
     }

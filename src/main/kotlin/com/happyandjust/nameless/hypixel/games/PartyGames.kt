@@ -39,13 +39,10 @@ class PartyGames : GameType {
         }
 
     override fun handleProperty(locrawInfo: LocrawInfo) {
-        for (scoreboard in mc.theWorld.getSidebarLines()) {
-            val partyMiniGames = findPartyMiniGames(scoreboard)
-            if (isNewMiniGames(partyMiniGames)) {
-                this.partyMiniGames = partyMiniGames
-                sendDebugMessage("Changed to $partyMiniGames")
-                break
-            }
+        val foundPartyMiniGames = mc.theWorld.getSidebarLines().mapNotNull { findPartyMiniGames(it) }.singleOrNull()
+        if (isNewMiniGames(foundPartyMiniGames)) {
+            partyMiniGames = foundPartyMiniGames
+            sendDebugMessage("Changed to $foundPartyMiniGames")
         }
     }
 
@@ -53,7 +50,7 @@ class PartyGames : GameType {
         partyMiniGamesList.find { scoreboard.contains(it.scoreboardIdentifier, true) }?.createImpl()
 
     private fun isNewMiniGames(partyMiniGames: PartyMiniGames?) =
-        partyMiniGames != null && this.partyMiniGames?.javaClass != partyMiniGames.javaClass
+        this.partyMiniGames?.javaClass != partyMiniGames?.javaClass
 
     override fun printProperties() {
         sendPrefixMessage("Party Games Type: ${partyMiniGames?.javaClass?.name}")

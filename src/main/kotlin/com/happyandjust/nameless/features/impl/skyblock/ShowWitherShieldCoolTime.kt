@@ -70,7 +70,6 @@ object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Sh
         desc = "Decimal point precision of cooltime"
 
         settings {
-            ordinal = 1
             maxValueInt = 3
         }
     }
@@ -79,16 +78,12 @@ object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Sh
         key = "readyText"
         title = "Overlay Available Text"
         desc = "Text when wither shield is ready"
-
-        settings { ordinal = 2 }
     }
 
     private var text by parameter("&6Shield: {value}s") {
         key = "text"
         title = "Overlay Text"
         desc = "Text when wither shield is on cooltime"
-
-        settings { ordinal = 3 }
     }
 
     override var overlayPoint by configValue("withershield", "overlay", Overlay.DEFAULT)

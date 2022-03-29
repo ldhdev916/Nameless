@@ -75,10 +75,6 @@ object DisguiseNickname : SimpleFeature(
         onValueChange {
             if (!it) reset()
         }
-
-        settings {
-            ordinal = 1
-        }
     }
 
     private val invalidUsernames = hashSetOf<String>()

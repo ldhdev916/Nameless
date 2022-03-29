@@ -24,13 +24,10 @@ import com.happyandjust.nameless.features.PropertySetting
 import com.happyandjust.nameless.gui.feature.ComponentType
 
 abstract class AbstractDefaultFeature<T : Any> {
-    val parameters = object : HashMap<String, FeatureParameter<*>>() {
-        override fun put(key: String, value: FeatureParameter<*>): FeatureParameter<*>? {
-            value.parent = this@AbstractDefaultFeature
-            return super.put(key, value)
-        }
-    }
-    var parent: AbstractDefaultFeature<*>? = null
+
+    val hierarchy by lazy { ParameterHierarchy(this) }
+
+    val parameters = hashMapOf<String, FeatureParameter<*>>()
     abstract var componentType: ComponentType?
     abstract val propertyValue: PropertyValue
 

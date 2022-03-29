@@ -29,7 +29,6 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.mixins.accessors.AccessorEntity
 import net.minecraft.entity.player.EntityPlayer
 import java.awt.Color
@@ -72,10 +71,6 @@ object GlowAllPlayers : SimpleFeature(
         key = "color"
         title = "Color for Invisible Players"
         desc = "Require 'Use Different Glowing Color on Invisible Players' to be enabled"
-
-        settings {
-            ordinal = 1
-        }
     }
 
     @JvmField

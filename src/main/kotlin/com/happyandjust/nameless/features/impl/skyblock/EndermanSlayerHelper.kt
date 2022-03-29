@@ -119,8 +119,6 @@ object EndermanSlayerHelper :
     private var skull by parameter(true) {
         key = "skull"
         title = "Highlight Skulls"
-
-        settings { ordinal = 1 }
     }
 
     private var skullColor by parameter(Color.red.withAlpha(0.5f).toChromaColor()) {
@@ -134,7 +132,6 @@ object EndermanSlayerHelper :
         title = "Information List"
 
         settings {
-            ordinal = 2
             allIdentifiers = VoidgloomInformation.values().map(::VoidgloomIdentifier)
         }
     }

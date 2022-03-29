@@ -65,7 +65,6 @@ object AutoRequeue : SimpleFeature(
         desc = "Send delay in seconds"
 
         settings {
-            ordinal = 1
             maxValueInt = 5
         }
     }
@@ -74,10 +73,6 @@ object AutoRequeue : SimpleFeature(
         key = "waitForGG"
         title = "Wait GG"
         desc = "Wait until AutoGG send gg message then send command"
-
-        settings {
-            ordinal = 2
-        }
     }
     private val isAutoGGLoaded by lazy { Loader.isModLoaded("autogg") }
 

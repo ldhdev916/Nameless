@@ -70,8 +70,6 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
         title = "Game Types"
 
         settings {
-            ordinal = 1
-
             autoFillEnum { it.prettyName }
         }
     }
@@ -79,8 +77,6 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
     private var renderDirectionArrow by parameter(false) {
         key = "renderDirectionArrow"
         title = "Render Direction Arrow to Nearest Gift"
-
-        settings { ordinal = 2 }
     }
 
     private var currentGiftGameType: GiftGameType? = null
