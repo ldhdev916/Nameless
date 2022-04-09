@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.happyandjust.build.Deps
 import net.minecraftforge.gradle.user.IReobfuscator
 import net.minecraftforge.gradle.user.ReobfMappingType
@@ -25,8 +24,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
-    kotlin("jvm") version "1.6.10"
-    kotlin("plugin.serialization") version "1.6.10"
+    kotlin("jvm") version "1.6.20"
+    kotlin("plugin.serialization") version "1.6.20"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("net.minecraftforge.gradle.forge") version "6f53277"
     id("org.spongepowered.mixin") version "d75e32e"
@@ -90,7 +89,7 @@ dependencies {
 
 sourceSets.main {
     ext["refmap"] = "mixins.nameless.refmap.json"
-    output.setResourcesDir(file("$buildDir/classes/kotlin/main"))
+    output.resourcesDir = file("$buildDir/classes/kotlin/main")
 }
 
 configure<NamedDomainObjectContainer<IReobfuscator>> {
@@ -119,7 +118,7 @@ tasks {
         dependsOn("shadowJar")
     }
 
-    named<Jar>("jar") {
+    jar {
         manifest.attributes(
             mapOf(
                 "TweakClass" to "gg.essential.loader.stage0.EssentialSetupTweaker",
@@ -133,7 +132,7 @@ tasks {
         enabled = false
     }
 
-    named<ShadowJar>("shadowJar") {
+    shadowJar {
         archiveClassifier.set("")
         configurations = listOf(include)
 
@@ -153,7 +152,6 @@ tasks {
     }
 
     withType<KotlinCompile> {
-
         kotlinOptions {
             jvmTarget = "1.8"
             freeCompilerArgs = listOf(
