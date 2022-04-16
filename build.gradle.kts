@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import com.happyandjust.build.Deps
 import net.minecraftforge.gradle.user.IReobfuscator
 import net.minecraftforge.gradle.user.ReobfMappingType
 import net.minecraftforge.gradle.user.TaskSingleReobf
@@ -29,7 +28,6 @@ plugins {
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("net.minecraftforge.gradle.forge") version "6f53277"
     id("org.spongepowered.mixin") version "d75e32e"
-    id("include-build")
 }
 
 version = "1.0.5-Pre"
@@ -64,32 +62,35 @@ val include: Configuration by configurations.creating {
 }
 
 dependencies {
-    implementation(Deps.Mixin.Lib)
 
-    implementation(Deps.Essential.Lib)
-    include(Deps.Essential.LaunchWrapper)
+    implementation("org.spongepowered:mixin:0.7.11-SNAPSHOT")
 
-    include(Deps.Exp4j.Lib)
+    implementation("gg.essential:essential-1.8.9-forge:2289")
+    include("gg.essential:loader-launchwrapper:1.1.3")
 
-    include(Deps.KotlinX.Serialization) {
+    include("net.objecthunter:exp4j:0.4.8")
+
+    include("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") {
         exclude(module = "kotlin-stdlib")
         exclude(module = "kotlin-stdlib-common")
     }
 
-    annotationProcessor(Deps.Processor.Mixin)
-    annotationProcessor(Deps.Processor.Gson)
-    annotationProcessor(Deps.Processor.Guava)
-    annotationProcessor(Deps.Processor.ASM)
+    annotationProcessor("org.spongepowered:mixin:0.8.5")
+    annotationProcessor("com.google.code.gson:gson:2.2.4")
+    annotationProcessor("com.google.guava:guava:21.0")
+    annotationProcessor("org.ow2.asm:asm-tree:6.2")
 
     testImplementation(kotlin("test"))
-    testImplementation(Deps.Test.Junit)
-    testImplementation(Deps.Test.Mockk)
-    testRuntimeOnly(Deps.Test.JunitEngine)
+    testImplementation("io.mockk:mockk:1.12.3")
+
+    val junit = "5.8.2"
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junit")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit")
 }
 
 sourceSets.main {
     ext["refmap"] = "mixins.nameless.refmap.json"
-    output.resourcesDir = file("$buildDir/classes/kotlin/main")
+    output.setResourcesDir(file("$buildDir/classes/kotlin/main"))
 }
 
 configure<NamedDomainObjectContainer<IReobfuscator>> {
