@@ -47,7 +47,7 @@ import kotlin.math.round
 import kotlin.math.roundToInt
 
 private val md = MessageDigest.getInstance("MD5")
-private val md5Cache = configMap<String>("md5")
+private val md5Cache = configMap<String>("newMD5")
 private val decimalFormat =
     DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)).apply { maximumFractionDigits = 640 }
 inline val mc: Minecraft
@@ -57,8 +57,11 @@ inline val LOGGER: Logger
     get() = LogManager.getLogger()
 
 
-fun String.getMD5() =
-    md5Cache.getOrPut(this) { md.digest(toByteArray()).joinToString("", transform = "%02x"::format) }
+fun String.getMD5() = toByteArray().getMD5()
+
+fun ByteArray.getMD5() = md5Cache.getOrPut(Base64.getEncoder().encodeToString(this)) {
+    md.digest(this).joinToString("", transform = "%02x"::format)
+}
 
 fun String.copyToClipboard() =
     Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(this), null)

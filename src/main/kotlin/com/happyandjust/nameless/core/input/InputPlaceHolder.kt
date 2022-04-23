@@ -16,16 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.hypixel.partygames
+package com.happyandjust.nameless.core.input
 
-import com.happyandjust.nameless.dsl.TempEventListener
-
-interface PartyMiniGames : TempEventListener {
-    fun isEnabled(): Boolean
-}
-
-interface PartyMiniGamesCreator {
-    fun createImpl(): PartyMiniGames
-
-    val scoreboardIdentifier: String
-}
+data class InputPlaceHolder(val name: String, val description: String)

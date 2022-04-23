@@ -1,9 +1,5 @@
 /*
- *var enabledPotionTypes
-get() = this.enabledPotionTypes__273e5a27_8e4c_4c6a_af77_ac19194e43a1.value
-set(value) {
-        this.enabledPotionTypes__273e5a27_8e4c_4c6a_af77_ac19194e43a1.value = value
-    } Nameless - 1.8.9 Hypixel Quality Of Life Mod
+ * Nameless - 1.8.9 Hypixel Quality Of Life Mod
  * Copyright (C) 2022 HappyAndJust
  *
  * This program is free software: you can redistribute it and/or modify

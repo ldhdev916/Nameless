@@ -5,6 +5,9 @@
 Config file structure was changed<br>
 Some settings might be reset
 
+### Minor Changes
+- Add a thing called `UserInputItem`
+
 ### Bug Fixes
 
 - Fix change leather armor color not working properly
@@ -12,4 +15,5 @@ Some settings might be reset
 - Fix outline not working due to SkyblockAddons
 
 ### Removal
+
 - Workshop in Party Games Helper - Too complex for me to implement

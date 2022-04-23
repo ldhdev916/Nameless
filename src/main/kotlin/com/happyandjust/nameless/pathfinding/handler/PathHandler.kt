@@ -16,16 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.hypixel.partygames
+package com.happyandjust.nameless.pathfinding.handler
 
-import com.happyandjust.nameless.dsl.TempEventListener
+import com.happyandjust.nameless.pathfinding.ModPathFinding
+import net.minecraft.util.BlockPos
 
-interface PartyMiniGames : TempEventListener {
-    fun isEnabled(): Boolean
+interface PathHandler {
+
+    fun getPath(destination: BlockPos): List<BlockPos>
 }
 
-interface PartyMiniGamesCreator {
-    fun createImpl(): PartyMiniGames
+class PathHandlerImpl(
+    var canFly: Boolean,
+    var timeout: Long = 300,
+    var cacheBlock: Boolean = true,
+    var additionalValidCheck: (BlockPos) -> Boolean = { true }
+) : PathHandler {
 
-    val scoreboardIdentifier: String
+    override fun getPath(destination: BlockPos): List<BlockPos> {
+        return ModPathFinding(destination, canFly, timeout, cacheBlock, additionalValidCheck).findPath()
+    }
 }

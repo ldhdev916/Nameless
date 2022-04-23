@@ -1,14 +1,36 @@
+/*
+ * Nameless - 1.8.9 Hypixel Quality Of Life Mod
+ * Copyright (C) 2022 HappyAndJust
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.happyandjust.nameless.hypixel.murderer
 
 import com.happyandjust.nameless.core.info.ColorInfo
+import com.happyandjust.nameless.core.input.InputPlaceHolder
+import com.happyandjust.nameless.core.input.buildComposite
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.base.ParameterHierarchy
 import com.happyandjust.nameless.features.impl.qol.MurdererFinder
+import com.happyandjust.nameless.features.settings
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Items
+import net.minecraft.util.EnumChatFormatting
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import java.awt.Color
 
@@ -21,8 +43,7 @@ class Infection : MurdererMode {
         set(value) {
             if (field != value && value != null) {
                 if (notifyAlpha && value != mc.thePlayer.name) {
-                    val message = notifyMessage.replace("&", "§").replace("{name}", value)
-                    sendPrefixMessage(message)
+                    sendPrefixMessage(notifyMessage.asString("name" to value))
                 }
                 sendDebugMessage("Infection", "New alpha: $value")
             }
@@ -139,9 +160,17 @@ class Infection : MurdererMode {
             title = "Notify Alpha in Chat"
         }
 
-        private var notifyMessage by parameter("&cAlpha: {name}") {
+        private var notifyMessage by userInputParameter(buildComposite {
+            color { EnumChatFormatting.RED }
+            text { "Alpha: " }
+            value { "name" }
+        }) {
             key = "notifyMessage"
             title = "Notify Message"
+
+            settings {
+                registeredPlaceHolders = listOf(InputPlaceHolder("name", "Alpha's name"))
+            }
         }
 
         private var showInfection by parameter(true) {

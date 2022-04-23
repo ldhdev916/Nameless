@@ -27,7 +27,7 @@ import java.awt.Color
 object ChangeNicknameColor : SimpleFeature(
     "nicknameColor",
     "Change Nickname Color",
-    "Customize your nickname color",
+    "Customize your nickname color\n§lIncompatiable with Patcher's 'Optimized Font Renderer'",
     false
 ) {
 

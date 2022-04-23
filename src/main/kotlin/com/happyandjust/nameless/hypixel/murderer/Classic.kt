@@ -1,6 +1,26 @@
+/*
+ * Nameless - 1.8.9 Hypixel Quality Of Life Mod
+ * Copyright (C) 2022 HappyAndJust
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.happyandjust.nameless.hypixel.murderer
 
 import com.happyandjust.nameless.core.info.ColorInfo
+import com.happyandjust.nameless.core.input.InputPlaceHolder
+import com.happyandjust.nameless.core.input.buildComposite
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
@@ -10,9 +30,11 @@ import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.base.ParameterHierarchy
 import com.happyandjust.nameless.features.impl.qol.MurdererFinder
+import com.happyandjust.nameless.features.settings
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.network.play.server.S04PacketEntityEquipment
 import net.minecraft.network.play.server.S09PacketHeldItemChange
+import net.minecraft.util.EnumChatFormatting
 import java.awt.Color
 
 class Classic : MurdererMode {
@@ -25,8 +47,7 @@ class Classic : MurdererMode {
             val newlyAdded = super.add(element)
             if (newlyAdded) {
                 if (notifyMurderer) {
-                    val message = notifyMessage.replace("&", "§").replace("{name}", element)
-                    sendPrefixMessage(message)
+                    sendPrefixMessage(notifyMessage.asString("name" to element))
                 }
                 sendDebugMessage("Classic", "Added murderer: $element")
             }
@@ -76,11 +97,18 @@ class Classic : MurdererMode {
             desc = "Notify murderer's name in chat when new murderer is detected"
         }
 
-        // TODO Create new class that automatically converts & into § and {some_name} into value
-        private var notifyMessage by parameter("&cMurderer: {name}") {
+        private var notifyMessage by userInputParameter(buildComposite {
+            color { EnumChatFormatting.RED }
+            text { "Murderer: " }
+            value { "name" }
+        }) {
             key = "notifyMessage"
             title = "Notify Message"
             desc = "{name}: Murderer's name"
+
+            settings {
+                registeredPlaceHolders = listOf(InputPlaceHolder("name", "Murderer's name"))
+            }
         }
 
         override fun ParameterHierarchy.setupHierarchy() {

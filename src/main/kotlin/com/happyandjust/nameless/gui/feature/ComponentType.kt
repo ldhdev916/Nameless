@@ -18,13 +18,11 @@
 
 package com.happyandjust.nameless.gui.feature
 
+import com.happyandjust.nameless.core.input.UserInputItem
 import com.happyandjust.nameless.core.property.Identifiers
 import com.happyandjust.nameless.core.property.PropertyData
 import com.happyandjust.nameless.core.value.ChromaColor
-import com.happyandjust.nameless.gui.feature.components.MultiSelectorComponent
-import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
-import com.happyandjust.nameless.gui.feature.components.toChromaColorComponent
-import com.happyandjust.nameless.gui.feature.components.toFilterTextComponent
+import com.happyandjust.nameless.gui.feature.components.*
 import gg.essential.vigilance.gui.settings.*
 
 enum class ComponentType {
@@ -197,6 +195,26 @@ enum class ComponentType {
 
         override fun isProperData(value: Any): Boolean {
             return value is List<*> && value !is Identifiers<*>
+        }
+    },
+    USER_INPUT {
+        override fun getComponent(propertyData: PropertyData): SettingComponent {
+            val helpers = mutableListOf<InputHelperComponent>(ColorHelperComponent)
+
+            val placeHolders = propertyData.propertySetting.registeredPlaceHolders
+            if (placeHolders.isNotEmpty()) {
+                helpers.add(ValueHelperComponent(placeHolders))
+            }
+
+            return UserInputItemComponent(propertyData.cast(), helpers).apply {
+                onValueChange {
+                    propertyData.set(it)
+                }
+            }
+        }
+
+        override fun isProperData(value: Any): Boolean {
+            return value is UserInputItem
         }
     };
 

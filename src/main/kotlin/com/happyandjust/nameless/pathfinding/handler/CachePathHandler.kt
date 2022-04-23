@@ -16,16 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.hypixel.partygames
+package com.happyandjust.nameless.pathfinding.handler
 
-import com.happyandjust.nameless.dsl.TempEventListener
+import net.minecraft.util.BlockPos
 
-interface PartyMiniGames : TempEventListener {
-    fun isEnabled(): Boolean
-}
+class CachePathHandler(private val base: PathHandler, var cacheSecond: Number) : PathHandler {
 
-interface PartyMiniGamesCreator {
-    fun createImpl(): PartyMiniGames
+    private var lastCachedTime = -1L
+    private var cached: List<BlockPos>? = null
+        get() = field?.takeIf { (System.currentTimeMillis() - lastCachedTime) <= (cacheSecond.toDouble() * 1000) }
+        set(value) {
+            field = value
+            lastCachedTime = System.currentTimeMillis()
+        }
 
-    val scoreboardIdentifier: String
+    override fun getPath(destination: BlockPos): List<BlockPos> {
+        return cached ?: base.getPath(destination).also { cached = it }
+    }
 }

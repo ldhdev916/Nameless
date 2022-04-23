@@ -16,16 +16,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.hypixel.partygames
+package com.happyandjust.nameless.core.input
 
-import com.happyandjust.nameless.dsl.TempEventListener
+import net.minecraft.util.EnumChatFormatting
 
-interface PartyMiniGames : TempEventListener {
-    fun isEnabled(): Boolean
+class CompositeInputItemBuilder(private val items: MutableList<UserInputItem>) {
+
+    inline fun text(value: () -> String) {
+        add(TextInputItem(value()))
+    }
+
+    inline fun color(value: () -> EnumChatFormatting) {
+        add(ColorInputItem(value()))
+    }
+
+    fun value(placeholder: () -> String) {
+        add(ValueInputItem(placeholder()))
+    }
+
+    fun add(input: UserInputItem) {
+        items.add(input)
+    }
 }
 
-interface PartyMiniGamesCreator {
-    fun createImpl(): PartyMiniGames
+inline fun buildComposite(action: CompositeInputItemBuilder.() -> Unit): CompositeInputItem {
+    val items = mutableListOf<UserInputItem>()
+    CompositeInputItemBuilder(items).action()
 
-    val scoreboardIdentifier: String
+    return CompositeInputItem(items)
 }

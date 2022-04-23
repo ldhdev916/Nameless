@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+@file:Suppress("VulnerableLibrariesLocal")
+
 import net.minecraftforge.gradle.user.IReobfuscator
 import net.minecraftforge.gradle.user.ReobfMappingType
 import net.minecraftforge.gradle.user.TaskSingleReobf
@@ -23,8 +25,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
-    kotlin("jvm") version "1.6.20"
-    kotlin("plugin.serialization") version "1.6.20"
+    kotlin("jvm") version "1.6.21"
+    kotlin("plugin.serialization") version "1.6.21"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("net.minecraftforge.gradle.forge") version "6f53277"
     id("org.spongepowered.mixin") version "d75e32e"
@@ -156,8 +158,8 @@ tasks {
         kotlinOptions {
             jvmTarget = "1.8"
             freeCompilerArgs = listOf(
-                "-Xopt-in=kotlin.RequiresOptIn",
-                "-Xjvm-default=enable"
+                "-opt-in=kotlin.RequiresOptIn",
+                "-Xjvm-default=all"
             )
         }
     }

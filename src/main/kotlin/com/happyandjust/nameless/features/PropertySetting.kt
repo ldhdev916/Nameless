@@ -16,8 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+@file:Suppress("unused")
+
 package com.happyandjust.nameless.features
 
+import com.happyandjust.nameless.core.input.InputPlaceHolder
 import com.happyandjust.nameless.dsl.listEnum
 import com.happyandjust.nameless.features.base.AbstractDefaultFeature
 import com.happyandjust.nameless.gui.feature.components.Identifier
@@ -39,6 +42,8 @@ class PropertySetting {
 
     var stringSerializer: (Any) -> String = { it.javaClass.name }
     var allValueList = { emptyList<Any>() }
+
+    var registeredPlaceHolders = emptyList<InputPlaceHolder>()
 
     inline fun <reified T : Any> AbstractDefaultFeature<T>.serializer(crossinline value: (T) -> String) {
         stringSerializer = {
