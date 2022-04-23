@@ -6,6 +6,7 @@ Config file structure was changed<br>
 Some settings might be reset
 
 ### Minor Changes
+
 - Add a thing called `UserInputItem`
 
 ### Bug Fixes
