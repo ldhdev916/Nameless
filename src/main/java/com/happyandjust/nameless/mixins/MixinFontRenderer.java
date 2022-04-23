@@ -39,8 +39,10 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.*;
+import java.util.Locale;
+import java.util.Random;
 
 @Mixin(FontRenderer.class)
 public abstract class MixinFontRenderer {
@@ -131,10 +133,10 @@ public abstract class MixinFontRenderer {
 
     @Unique
     private void drawPureString(String text, List<FontRendererHook.MatchInfo> matchInfos) {
-        Map<Integer, Boolean> matchingMap = new HashMap<>();
+        List<Boolean> matching = new ArrayList<>();
 
         for (int i = 0; i < text.length(); ++i) {
-            matchingMap.put(i, hook.isMatching(i, matchInfos));
+            matching.add(hook.isMatching(i, matchInfos));
         }
 
         for (int i = 0; i < text.length(); ++i) {
@@ -142,7 +144,7 @@ public abstract class MixinFontRenderer {
 
             GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP);
 
-            boolean matches = matchingMap.get(i);
+            boolean matches = matching.get(i);
 
             if (c0 == 167 && i + 1 < text.length()) {
                 int i1 = "0123456789abcdefklmnor".indexOf(text.toLowerCase(Locale.ENGLISH).charAt(i + 1));
@@ -248,16 +250,16 @@ public abstract class MixinFontRenderer {
     private void drawCustomString(String text, List<FontRendererHook.MatchInfo> matchInfos, int nicknameColor) {
 
         boolean prevMatches = false;
-        Map<Integer, Boolean> matchingMap = new HashMap<>();
+        List<Boolean> matching = new ArrayList<>();
 
         for (int i = 0; i < text.length(); ++i) {
-            matchingMap.put(i, hook.isMatching(i, matchInfos));
+            matching.add(hook.isMatching(i, matchInfos));
         }
 
         for (int i = 0; i < text.length(); ++i) {
             char c0 = text.charAt(i);
 
-            boolean matches = matchingMap.get(i);
+            boolean matches = matching.get(i);
 
             if (c0 == 167 && i + 1 < text.length()) {
                 int i1 = "0123456789abcdefklmnor".indexOf(text.toLowerCase(Locale.ENGLISH).charAt(i + 1));

@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.gui.feature.components
 
+import com.happyandjust.nameless.core.property.Identifiers
 import com.happyandjust.nameless.gui.feature.ColorCache
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.*
@@ -103,7 +104,7 @@ class VerticalPositionEditableComponent(addedIdentifiers: List<Identifier>, allI
     }
 
     fun saveValue() {
-        changeValue(getValue())
+        changeValue(Identifiers(getValue()))
     }
 
     fun getValue() = addedContainer.children.filterIsInstance<MoveAbleComponent>().sortedBy { it.getTop() }

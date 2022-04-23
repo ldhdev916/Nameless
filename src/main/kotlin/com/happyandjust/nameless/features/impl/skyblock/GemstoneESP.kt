@@ -32,7 +32,6 @@ import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.hypixel.skyblock.Gemstone
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.minecraft.init.Blocks
@@ -42,7 +41,6 @@ import net.minecraftforge.client.event.RenderWorldLastEvent
 import kotlin.math.max
 import kotlin.math.min
 
-@OptIn(DelicateCoroutinesApi::class)
 object GemstoneESP : SimpleFeature(
     "gemstoneEsp",
     "Gemstone ESP",

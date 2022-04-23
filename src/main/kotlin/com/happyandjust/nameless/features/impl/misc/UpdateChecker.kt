@@ -69,16 +69,16 @@ object UpdateChecker : SimpleFeature(
             val latestVersion = DefaultArtifactVersion(latestTag)
 
             if (currentVersion < latestVersion || (fixVersion == latestTag && "Pre" in VERSION)) {
-                val html_url = jsonObject["html_url"]!!.string
+                val htmlUrl = jsonObject["html_url"]!!.string
                 val assets = jsonObject["assets"]!!.jsonArray[0].jsonObject
 
-                val download_url = assets["browser_download_url"]!!.string
+                val downloadUrl = assets["browser_download_url"]!!.string
                 val body = jsonObject["body"]!!.string
 
                 updateGui = {
                     UpdateGui(body).apply {
-                        htmlURL = URI(html_url)
-                        downloadURL = URL(download_url)
+                        htmlURL = URI(htmlUrl)
+                        downloadURL = URL(downloadUrl)
                         jarFile = File(Nameless.modFile.parentFile, assets["name"]!!.string)
                     }
                 }

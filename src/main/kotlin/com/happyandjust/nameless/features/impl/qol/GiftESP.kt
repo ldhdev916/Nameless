@@ -35,7 +35,6 @@ import com.happyandjust.nameless.hypixel.games.Lobby
 import com.happyandjust.nameless.hypixel.games.MurderMystery
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import gg.essential.elementa.utils.withAlpha
-import kotlinx.coroutines.DelicateCoroutinesApi
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.network.play.client.C02PacketUseEntity
@@ -44,7 +43,6 @@ import net.minecraft.tileentity.TileEntitySkull
 import net.minecraft.util.BlockPos
 import java.awt.Color
 
-@OptIn(DelicateCoroutinesApi::class)
 object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
 
     private val scanTimer = TickTimer.withSecond(1)

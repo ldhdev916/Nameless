@@ -18,16 +18,16 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.core.input.InputPlaceHolder
+import com.happyandjust.nameless.core.input.buildComposite
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.drawFilledBox
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.hierarchy
-import com.happyandjust.nameless.features.base.overlayParameter
-import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.base.*
+import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.fixed
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.components.UIText
@@ -37,6 +37,7 @@ import gg.essential.elementa.state.BasicState
 import gg.essential.universal.UMatrixStack
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
+import net.minecraft.util.EnumChatFormatting
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 
@@ -59,19 +60,23 @@ object DropperHelper : SimpleFeature(
     private val textState = BasicState("")
 
     private var boxColor by parameter(Color.green.toChromaColor()) {
-        matchKeyCategory()
         key = "boxColor"
         title = "Box Color"
     }
 
-    private var yText by parameter("&a{value}") {
-        matchKeyCategory()
-        key = "yText"
+    private var yText by userInputParameter(buildComposite {
+        color { EnumChatFormatting.GREEN }
+        value { "value" }
+    }) {
+        key = "yTextUser"
         title = "Y Text"
+
+        settings {
+            registeredPlaceHolders = listOf(InputPlaceHolder("value", "Y value"))
+        }
     }
 
     private val showY = overlayParameter(false) {
-        matchKeyCategory()
         key = "showY"
         title = "Display Y Position"
         desc = "Render y position of where you'll land on your screen"
@@ -79,7 +84,7 @@ object DropperHelper : SimpleFeature(
         config("dropper", "yPosition", Overlay.DEFAULT)
 
         component {
-            UIText(getYText(999)).constrain {
+            UIText(yText.asString("value" to 999)).constrain {
                 textScale = basicTextScaleConstraint { currentScale.toFloat() }.fixed()
             }
         }
@@ -98,8 +103,6 @@ object DropperHelper : SimpleFeature(
         render { if (enabled && value) window.draw(UMatrixStack.Compat.get()) }
     }
 
-    private fun getYText(y: Int) = yText.replace("&", "§").replace("{value}", y.toString())
-
     private var axisAlignedBB: AxisAlignedBB? = null
 
     init {
@@ -113,7 +116,7 @@ object DropperHelper : SimpleFeature(
                 aabb = aabb.offset(0.0, -1.0, 0.0)
             }
             axisAlignedBB = aabb
-            textState.set(getYText(aabb.minY.toInt()))
+            textState.set(yText.asString("value" to aabb.minY.toInt()))
         }
 
         on<RenderWorldLastEvent>().filter { enabled }.subscribe {

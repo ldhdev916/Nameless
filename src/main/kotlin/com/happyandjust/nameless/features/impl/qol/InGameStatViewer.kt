@@ -18,13 +18,12 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.core.input.InputPlaceHolder
+import com.happyandjust.nameless.core.input.buildComposite
 import com.happyandjust.nameless.core.property.Identifiers
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
-import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.features.base.hierarchy
-import com.happyandjust.nameless.features.base.overlayParameter
-import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.base.*
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.gui.feature.components.MultiSelectorComponent
@@ -67,29 +66,25 @@ object InGameStatViewer : SimpleFeature(
         val texts = parameter(Unit) {
             key = "texts"
             title = "Each Stat Texts"
-            desc = "{value} is converted to actual value(like level) when rendering and & will be converted to §"
+            desc = ""
 
             componentType = null
-
-            for (informationType in InformationType.values()) {
-                val informationName = informationType.name.lowercase()
-                val statName = informationType.statName
-
-                parameter("$statName: {value}") {
-                    matchKeyCategory()
-                    key = "${informationName}_text"
-                    title = statName
-                }
-            }
         }
 
         val informationParameters = InformationType.values().map {
             val informationName = it.name.lowercase()
             val statName = it.statName
 
-            parameter("$statName: {value}") {
-                key = "${informationName}_text"
+            userInputParameter(buildComposite {
+                text { "$statName: " }
+                value { "value" }
+            }) {
+                key = "${informationName}UserText"
                 title = statName
+
+                settings {
+                    registeredPlaceHolders = listOf(InputPlaceHolder("value", statName))
+                }
             }
         }
 
@@ -117,6 +112,10 @@ object InGameStatViewer : SimpleFeature(
         key = "displayType"
         title = "Display Type"
         desc = DisplayType.values().joinToString("\n") { "${it.name}: ${it.lore}" }
+
+        settings {
+            autoFillEnum()
+        }
 
         config("inGameStatViewer", "overlay", Overlay.DEFAULT)
         component {
@@ -476,12 +475,12 @@ object InGameStatViewer : SimpleFeature(
         },
         BEDWARS_FINAL_KD("BedWars Final K/D") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                val final_kill =
+                val finalKill =
                     runCatching { jsonObject.getGameStat("Bedwars")["final_kills_bedwars"]!!.int }.getOrDefault(0)
-                val final_death =
+                val finalDeath =
                     runCatching { jsonObject.getGameStat("Bedwars")["final_deaths_bedwars"]!!.int }.getOrDefault(0)
 
-                return (final_kill.toDouble() / final_death.coerceAtLeast(1)).withPrecisionText(2)
+                return (finalKill.toDouble() / finalDeath.coerceAtLeast(1)).withPrecisionText(2)
             }
         },
         BEDWARS_WL("BedWars W/L") {

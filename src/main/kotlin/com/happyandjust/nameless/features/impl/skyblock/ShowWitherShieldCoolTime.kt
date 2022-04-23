@@ -20,6 +20,8 @@ package com.happyandjust.nameless.features.impl.skyblock
 
 import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.TickTimer
+import com.happyandjust.nameless.core.input.InputPlaceHolder
+import com.happyandjust.nameless.core.input.buildComposite
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
@@ -27,6 +29,7 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.OverlayFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
+import com.happyandjust.nameless.features.base.userInputParameter
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
@@ -37,6 +40,7 @@ import gg.essential.elementa.components.UIText
 import gg.essential.elementa.dsl.basicTextScaleConstraint
 import gg.essential.elementa.dsl.constrain
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
+import net.minecraft.util.EnumChatFormatting
 
 object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Show Wither Shield CoolTime", "", false) {
 
@@ -74,16 +78,28 @@ object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Sh
         }
     }
 
-    private var readyText by parameter("&aShield: Ready") {
-        key = "readyText"
+    private var readyText by userInputParameter(buildComposite {
+        color { EnumChatFormatting.GREEN }
+        text { "Shield: Ready" }
+    }) {
+        key = "readyUserText"
         title = "Overlay Available Text"
         desc = "Text when wither shield is ready"
     }
 
-    private var text by parameter("&6Shield: {value}s") {
-        key = "text"
+    private var text by userInputParameter(buildComposite {
+        color { EnumChatFormatting.GOLD }
+        text { "Shield: " }
+        value { "second" }
+        text { "s" }
+    }) {
+        key = "userText"
         title = "Overlay Text"
         desc = "Text when wither shield is on cooltime"
+
+        settings {
+            registeredPlaceHolders = listOf(InputPlaceHolder("second", "Cooltime second"))
+        }
     }
 
     override var overlayPoint by configValue("withershield", "overlay", Overlay.DEFAULT)
@@ -94,7 +110,7 @@ object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Sh
     private val scanTimer = TickTimer(8)
 
     override fun getRelocateComponent(relocateComponent: RelocateComponent): UIComponent {
-        return UIText(readyText.replace("&", "§")).constrain {
+        return UIText(readyText.asString()).constrain {
             textScale = basicTextScaleConstraint { relocateComponent.currentScale.toFloat() }.fixed()
         }
     }
@@ -121,11 +137,8 @@ object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Sh
 
         return lastWitherShieldUse?.let {
             val timeLeft = 5 - (System.currentTimeMillis() - it) / 1000.0
-            text.replace(
-                "{value}",
-                timeLeft.withPrecisionText(precision)
-            )
-        } ?: if (onlyCoolTime) null else readyText
+            text.asString("second" to timeLeft.withPrecisionText(precision))
+        } ?: if (onlyCoolTime) null else readyText.asString()
     }
 
     init {

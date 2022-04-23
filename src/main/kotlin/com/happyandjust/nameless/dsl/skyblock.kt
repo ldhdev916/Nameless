@@ -27,7 +27,7 @@ import net.minecraft.item.ItemStack
 import net.minecraftforge.common.util.Constants
 import java.util.regex.Pattern
 
-private val RARITY_PATTERN = Pattern.compile("(§[0-9a-f]§l§ka§r )?([§0-9a-fk-or]+)(?<rarity>[A-Z]+)")
+private val RARITY_PATTERN = Pattern.compile("(§[\\da-f]§l§ka§r )?([§\\da-fk-or]+)(?<rarity>[A-Z]+)")
 
 /**
  * Taken from SkyblockAddons under MIT License
