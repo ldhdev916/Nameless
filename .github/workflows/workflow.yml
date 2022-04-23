@@ -1,0 +1,38 @@
+name: Nameless Release
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+      - name: Build Jar
+        run: ./gradlew build
+      - name: Grab Jar File
+        id: grab_file
+        run: echo "::set-output name=JAR_FILE::$(find . -name "Nameless-*.jar" -print)"
+      - name: Create Release Body
+        id: create_body
+        run: |
+          checksum=$(sha1sum ${{ steps.grab_file.outputs.JAR_FILE }} | cut -d ' ' -f 1)
+          body="$(cat NextRelease.md)
+          
+          SHA1 File CheckSum: $checksum"
+          body="${body//'%'/'%25'}"
+          body="${body//$'\n'/'%0A'}"
+          body="${body//$'\r'/'%0D'}"
+          echo "::set-output name=BODY::$body"
+      - name: Create Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.TOKEN }}
+          tag: ${{ github.ref }}
+          file: ${{ steps.grab_file.outputs.JAR_FILE }}
+          overwrite: true
+          body: ${{ steps.create_body.outputs.BODY }}
