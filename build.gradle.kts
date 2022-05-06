@@ -25,8 +25,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
-    kotlin("jvm") version "1.6.21"
-    kotlin("plugin.serialization") version "1.6.21"
+    kotlin("jvm") version "1.6.20"
+    kotlin("plugin.serialization") version "1.6.20"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("net.minecraftforge.gradle.forge") version "6f53277"
     id("org.spongepowered.mixin") version "d75e32e"
@@ -67,7 +67,7 @@ dependencies {
 
     implementation("org.spongepowered:mixin:0.7.11-SNAPSHOT")
 
-    implementation("gg.essential:essential-1.8.9-forge:2289")
+    implementation("gg.essential:essential-1.8.9-forge:2666")
     include("gg.essential:loader-launchwrapper:1.1.3")
 
     include("net.objecthunter:exp4j:0.4.8")
@@ -76,6 +76,8 @@ dependencies {
         exclude(module = "kotlin-stdlib")
         exclude(module = "kotlin-stdlib-common")
     }
+
+    include("org.java-websocket:Java-WebSocket:1.5.3")
 
     annotationProcessor("org.spongepowered:mixin:0.8.5")
     annotationProcessor("com.google.code.gson:gson:2.2.4")

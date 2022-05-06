@@ -147,5 +147,6 @@ Unless, You can't use rendering outline on entity
 - /shortcommand, /shortcmd - Open short command gui
 - /pathfind - Do pathfind
 - /graph - Open graph gui
+- /nameless - Open a mod chat gui
 
 </details>

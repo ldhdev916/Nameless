@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.core.BlockSerializer
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
@@ -30,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.serialization.builtins.ListSerializer
 import net.minecraft.block.Block
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
@@ -84,7 +86,7 @@ object BlockTracker : SimpleFeature("blockTracker", "Block Tracker", "") {
         desc = "Render beacon at nearest block position"
     }
 
-    private var pathBlocks by parameter(Block.blockRegistry.toList()) {
+    private var pathBlocks by parameter(Block.blockRegistry.toList(), serializer = ListSerializer(BlockSerializer)) {
         key = "pathBlocks"
         title = "Blocks showing path"
 
@@ -94,7 +96,7 @@ object BlockTracker : SimpleFeature("blockTracker", "Block Tracker", "") {
         }
     }
 
-    private var scanBlocks by parameter(emptyList<Block>()) {
+    private var scanBlocks by parameter(emptyList<Block>(), serializer = ListSerializer(BlockSerializer)) {
         key = "scanBlocks"
         title = "Blocks to Track"
 

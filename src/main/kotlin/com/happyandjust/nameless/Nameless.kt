@@ -22,6 +22,7 @@ import com.happyandjust.nameless.commands.*
 import com.happyandjust.nameless.config.ConfigHandler
 import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.enums.OutlineMode
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.base.ParameterHierarchy
 import com.happyandjust.nameless.features.impl.misc.UpdateChecker
@@ -30,6 +31,7 @@ import com.happyandjust.nameless.listener.BasicListener
 import com.happyandjust.nameless.listener.LocrawListener
 import com.happyandjust.nameless.listener.OutlineHandleListener
 import com.happyandjust.nameless.listener.WaypointListener
+import com.happyandjust.nameless.stomp.StompClient
 import com.happyandjust.nameless.utils.SkyblockUtils
 import gg.essential.api.commands.Command
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +42,7 @@ import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import java.io.File
+import java.net.URI
 
 @Mod(modid = MOD_ID, name = MOD_NAME, version = VERSION, modLanguageAdapter = "gg.essential.api.utils.KotlinAdapter")
 object Nameless {
@@ -53,6 +56,7 @@ object Nameless {
     lateinit var modFile: File
     private val delayedEventHandlers = hashSetOf<Any>()
     private var shouldRegisterHandlers = false
+    val client by lazy { StompClient(URI("ws://3.37.56.106/nameless/stomp"), mc.session.playerID) }
 
     fun requestRegisterEventHandler(handler: Any) {
         if (shouldRegisterHandlers) {
@@ -71,6 +75,10 @@ object Nameless {
         shouldRegisterHandlers = true
         delayedEventHandlers.forEach { MinecraftForge.EVENT_BUS.register(it) }
         delayedEventHandlers.clear()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            client
+        }
     }
 
     @Mod.EventHandler
@@ -95,7 +103,8 @@ object Nameless {
             ChangeHelmetTextureCommand,
             ShortCommand,
             PathFindCommand,
-            GraphCommand
+            GraphCommand,
+            WebSocketCommand
         )
 
         BasicListener

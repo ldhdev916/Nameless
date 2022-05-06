@@ -77,7 +77,7 @@ object FeatureRegistry {
             add(Charm)
             add(GiftESP)
             add(DropperHelper)
-            //   add(BlockTracker)
+            add(BlockTracker)
         }
 
         with("Mod") {

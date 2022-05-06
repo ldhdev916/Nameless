@@ -5,6 +5,10 @@
 Config file structure was changed<br>
 Some settings might be reset
 
+### New Commands
+
+- /nameless - Open a mod chat gui
+
 ### Minor Changes
 
 - Add a thing called `UserInputItem`

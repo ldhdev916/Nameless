@@ -18,13 +18,17 @@
 
 package com.happyandjust.nameless.hypixel
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.sendDebugMessage
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.hypixel.games.*
+import com.happyandjust.nameless.stomp.StompPayload
 import gg.essential.api.EssentialAPI
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import net.minecraftforge.common.MinecraftForge
 
 object Hypixel {
@@ -33,6 +37,14 @@ object Hypixel {
     var currentGame: GameType? = null
         private set
     var locrawInfo: LocrawInfo? = null
+        set(value) {
+            if (field != value) {
+                Nameless.client.send(
+                    StompPayload().header("destination" to "/mod/locraw").payload(Json.encodeToString(value))
+                )
+            }
+            field = value
+        }
     private var prevServer: String? = null
 
     private val updateTimer = TickTimer.withSecond(2)
