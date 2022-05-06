@@ -68,7 +68,7 @@ class UIChatRoom(with: String) : UIContainer() {
         } childOf bottomContainer
 
         val send = send@{
-            val text = input.getText().ifEmpty { return@send }
+            val text = input.getText().ifBlank { return@send }
             Nameless.client.sendChat(with, text)
             input.setText("")
         }
