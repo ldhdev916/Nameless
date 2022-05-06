@@ -27,7 +27,6 @@ import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.ScrollComponent
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIText
-import gg.essential.elementa.components.inspector.Inspector
 import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.constraints.ChildBasedSizeConstraint
 import gg.essential.elementa.constraints.SiblingConstraint
@@ -112,8 +111,6 @@ class SocketGui : WindowScreen(ElementaVersion.V1, newGuiScale = GuiScale.scaleF
                 selectIcons.add(icon)
             }
         }
-
-        Inspector(window) childOf window
     }
 
     init {
