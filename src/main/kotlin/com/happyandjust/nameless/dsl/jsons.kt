@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.dsl
 
-import gg.essential.api.utils.WebUtil
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -30,8 +29,15 @@ import kotlinx.serialization.json.int
 import net.minecraft.util.ResourceLocation
 import java.io.File
 import java.io.InputStream
+import java.net.HttpURLConnection
+import java.net.URL
 
-fun String.fetch() = WebUtil.fetchString(this)!!
+fun String.fetch() = with(URL(this).openConnection() as HttpURLConnection) {
+    requestMethod = "GET"
+    setRequestProperty("User-Agent", "Mozilla/4.76 (Essential)")
+
+    inputStream.readBytes().decodeToString()
+}
 
 fun ResourceLocation.inputStream(): InputStream = mc.mcDefaultResourcePack.getInputStream(this)
 

@@ -58,9 +58,10 @@ class ChatContainer(chats: ObservableChatList) : UIContainer() {
         val scroller = ScrollComponent("No chatting available").constrain {
             width = 100.percent()
             height = 100.percent()
+        }.apply {
+            scrollToBottom()
+            setVerticalScrollBarComponent(scrollBar, hideWhenUseless = true)
         } childOf this
-        scroller.scrollToBottom()
-        scroller.setVerticalScrollBarComponent(scrollBar)
 
         chats.forEach {
             it.toComponent() childOf scroller
@@ -109,7 +110,7 @@ private class ChatBox(chat: StompChat) : UIContainer() {
             height = ChildBasedSizeConstraint() + 10.pixels()
         } childOf this
 
-        if(chat.received) {
+        if (chat.received) {
             timeText childOf this
         }
 
