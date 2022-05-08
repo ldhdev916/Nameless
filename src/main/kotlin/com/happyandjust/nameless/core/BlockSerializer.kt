@@ -29,11 +29,11 @@ object BlockSerializer : KSerializer<Block> {
     override val descriptor = String.serializer().descriptor
 
     override fun serialize(encoder: Encoder, value: Block) {
-        encoder.encodeSerializableValue(String.serializer(), value.registryName)
+        encoder.encodeString(value.registryName)
     }
 
     override fun deserialize(decoder: Decoder): Block {
-        val registryName = decoder.decodeSerializableValue(String.serializer())
+        val registryName = decoder.decodeString()
 
         return Block.getBlockFromName(registryName)
 
