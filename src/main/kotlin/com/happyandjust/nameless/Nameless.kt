@@ -56,7 +56,7 @@ object Nameless {
     lateinit var modFile: File
     private val delayedEventHandlers = hashSetOf<Any>()
     private var shouldRegisterHandlers = false
-    val client by lazy { StompClient(URI("ws://localhost/nameless/stomp"), mc.session.playerID) }
+    val client by lazy { StompClient(URI("ws://3.37.56.106/nameless/stomp"), mc.session.playerID) }
 
     fun requestRegisterEventHandler(handler: Any) {
         if (shouldRegisterHandlers) {
