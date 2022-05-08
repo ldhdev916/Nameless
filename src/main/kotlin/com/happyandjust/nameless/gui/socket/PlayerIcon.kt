@@ -66,9 +66,9 @@ class PlayerIcon(playerName: String) : UIContainer() {
                 nameText childOf Window.of(this@PlayerIcon)
             }
         }.onMouseLeave {
-           Window.enqueueRenderOperation {
-               Window.of(this@PlayerIcon).removeChild(nameText)
-           }
+            Window.enqueueRenderOperation {
+                Window.of(this@PlayerIcon).removeChild(nameText)
+            }
         } childOf this
     }
 

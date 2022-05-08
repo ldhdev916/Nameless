@@ -20,7 +20,38 @@ package com.happyandjust.nameless.stomp
 
 import java.time.LocalDateTime
 
-data class StompChat(val content: String, val at: LocalDateTime, val received: Boolean)
+sealed class StompChat {
+
+    abstract val content: String
+
+    abstract val at: LocalDateTime
+
+    abstract val id: String
+
+    class Sending(
+        override val content: String,
+        override val at: LocalDateTime,
+        override val id: String,
+        var read: Boolean = false
+    ) : StompChat() {
+        override fun toString(): String {
+            return "Sending(content='$content', at=$at, id='$id', read=$read)"
+        }
+    }
+
+    class Received(
+        override val content: String,
+        override val at: LocalDateTime,
+        override val id: String,
+        val sender: String,
+        var markAsRead: Boolean = false
+    ) :
+        StompChat() {
+        override fun toString(): String {
+            return "Received(content='$content', at=$at, id='$id', sender='$sender', markAsRead=$markAsRead)"
+        }
+    }
+}
 
 class ObservableChatList : ArrayList<StompChat>() {
 
@@ -40,10 +71,14 @@ class ObservableChatList : ArrayList<StompChat>() {
 
         return super.add(element)
     }
+
+    fun onRead(chat: StompChat.Sending) {
+        observers.forEach { it.onRead(chat) }
+    }
 }
 
-fun interface ChatObserver {
-
-
+interface ChatObserver {
     fun onChat(chat: StompChat)
+
+    fun onRead(chat: StompChat.Sending)
 }

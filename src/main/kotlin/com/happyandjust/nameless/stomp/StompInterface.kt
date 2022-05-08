@@ -27,5 +27,7 @@ interface StompInterface {
 
     fun sendChat(receiver: String, content: String)
 
+    fun markChatAsRead(chat: StompChat.Received)
+
     fun disconnect()
 }

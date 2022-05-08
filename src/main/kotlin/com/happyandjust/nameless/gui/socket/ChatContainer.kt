@@ -18,10 +18,10 @@
 
 package com.happyandjust.nameless.gui.socket
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.stomp.ChatObserver
 import com.happyandjust.nameless.stomp.ObservableChatList
 import com.happyandjust.nameless.stomp.StompChat
-import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.*
 import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.constraints.ChildBasedMaxSizeConstraint
@@ -34,21 +34,8 @@ import java.time.format.DateTimeFormatter
 
 class ChatContainer(chats: ObservableChatList) : UIContainer() {
 
-    private fun StompChat.toComponent(): UIComponent {
-        val container = UIContainer().constrain {
-
-            y = SiblingConstraint(10f)
-
-            width = 100.percent()
-            height = ChildBasedSizeConstraint()
-        }
-
-        ChatBox(this) childOf container
-
-        return container
-    }
-
     init {
+        chats.filterIsInstance<StompChat.Received>().forEach { Nameless.client.markChatAsRead(it) }
 
         val scrollBar = UIBlock(Color.white.withAlpha(0.15f)).constrain {
             x = 100.percent() - 3.pixels()
@@ -64,25 +51,54 @@ class ChatContainer(chats: ObservableChatList) : UIContainer() {
         } childOf this
 
         chats.forEach {
-            it.toComponent() childOf scroller
+            StompChatContainer(it) childOf scroller
         }
 
-        val observer = ChatObserver {
-            it.toComponent() childOf scroller
+        val observer = object : ChatObserver {
+            override fun onChat(chat: StompChat) {
+                StompChatContainer(chat) childOf scroller
 
-            scroller.scrollToBottom()
+                scroller.scrollToBottom()
+                if (chat is StompChat.Received) {
+                    Nameless.client.markChatAsRead(chat)
+                }
+            }
+
+            override fun onRead(chat: StompChat.Sending) {
+                scroller.allChildren.filterIsInstance<StompChatContainer>().find { it.chat == chat }?.markAsRead()
+            }
         }
 
         chats.addObserver(observer)
     }
 }
 
+private class StompChatContainer(val chat: StompChat) : UIContainer() {
+    init {
+        constrain {
+            y = SiblingConstraint(10f)
+
+            width = 100.percent()
+            height = ChildBasedSizeConstraint()
+        }
+    }
+
+    private val chatBox by ChatBox(chat) childOf this
+
+    fun markAsRead() {
+        chatBox.markAsRead()
+    }
+}
+
 private class ChatBox(chat: StompChat) : UIContainer() {
+    fun markAsRead() {
+        val child = children.find { it is UIText && it.getText() == "1" } ?: return
+        removeChild(child)
+    }
 
     init {
-
         constrain {
-            x = 8.pixel(alignOpposite = !chat.received)
+            x = 8.pixel(alignOpposite = chat is StompChat.Sending)
 
             width = ChildBasedSizeConstraint()
             height = ChildBasedMaxSizeConstraint()
@@ -90,27 +106,33 @@ private class ChatBox(chat: StompChat) : UIContainer() {
 
         val formatter = DateTimeFormatter.ofPattern("a h:mm")
         val timeText = UIText(chat.at.format(formatter)).constrain {
-            if (chat.received) {
+            if (chat is StompChat.Received) {
                 x = SiblingConstraint(3f)
             }
             y = 0.pixel(alignOpposite = true)
         }
 
-        if (!chat.received) {
+        if (chat is StompChat.Sending) {
+            if (!chat.read) {
+                UIText("1").constrain {
+                    color = Color.yellow.constraint
+                    textScale = 0.7.pixels()
+                } childOf this
+            }
             timeText childOf this
         }
 
         val container = UIRoundedRectangle(4f).constrain {
-            if (!chat.received) {
+            if (chat is StompChat.Sending) {
                 x = SiblingConstraint(3f)
             }
-            color = if (chat.received) Color.white.constraint else Color.yellow.constraint
+            color = if (chat is StompChat.Received) Color.white.constraint else Color.yellow.constraint
 
             width = ChildBasedSizeConstraint() + 10.pixels()
             height = ChildBasedSizeConstraint() + 10.pixels()
         } childOf this
 
-        if (chat.received) {
+        if (chat is StompChat.Received) {
             timeText childOf this
         }
 

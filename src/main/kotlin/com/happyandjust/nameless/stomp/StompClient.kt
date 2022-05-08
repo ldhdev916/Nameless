@@ -19,11 +19,13 @@
 package com.happyandjust.nameless.stomp
 
 import com.happyandjust.nameless.VERSION
+import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.sendDebugMessage
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import java.net.URI
 import java.time.LocalDateTime
+import java.util.*
 
 class StompClient(serverUri: URI, private val playerUUID: String) : WebSocketClient(serverUri), StompInterface {
 
@@ -59,10 +61,28 @@ class StompClient(serverUri: URI, private val playerUUID: String) : WebSocketCli
             unsubscribe(subscription!!)
 
             subscribe(StompSubscription("/topic/chat/$uuidIdentifier") { chatPayload ->
-                val sender = chatPayload.headers.getOrDefault("sender", "Unknown")
-                val chat = StompChat(chatPayload.payload!!, LocalDateTime.now(), true)
+                val sender = chatPayload.headers["sender"]!!
+                val chatId = chatPayload.headers[CHAT_ID]!!
+                val chat = StompChat.Received(chatPayload.payload!!, LocalDateTime.now(), chatId, sender)
 
                 chatsByPlayer.getOrPut(sender) { ObservableChatList() }.add(chat)
+            })
+
+            subscribe(StompSubscription("/topic/position/$uuidIdentifier") {
+                val message = mc.thePlayer?.let { player ->
+                    "${player.posX}, ${player.posY}, ${player.posZ}"
+                }.toString()
+
+                send(StompPayload().header("destination" to "/mod/position").payload(message))
+            })
+
+            subscribe(StompSubscription("/topic/read/$uuidIdentifier") { readPayload ->
+                val from = readPayload.headers["from"]!!
+                val chatId = readPayload.headers[CHAT_ID]!!
+                val list = chatsByPlayer[from] ?: return@StompSubscription
+                val chat = list.filterIsInstance<StompChat.Sending>().first { chat -> chat.id == chatId }
+                chat.read = true
+                list.onRead(chat)
             })
         }
         subscribe(StompSubscription("/topic/$playerUUID", handler).also { subscription = it })
@@ -138,10 +158,16 @@ class StompClient(serverUri: URI, private val playerUUID: String) : WebSocketCli
     }
 
     override fun sendChat(receiver: String, content: String) {
-        val chat = StompChat(content, LocalDateTime.now(), false)
+        val chat = StompChat.Sending(content, LocalDateTime.now(), UUID.randomUUID().toString())
 
-        send(StompPayload().header("destination" to "/mod/chat/$receiver").payload(content))
+        send(StompPayload().header("destination" to "/mod/chat/$receiver", CHAT_ID to chat.id).payload(content))
         chatsByPlayer.getOrPut(receiver) { ObservableChatList() }.add(chat)
+    }
+
+    override fun markChatAsRead(chat: StompChat.Received) {
+        if (chat.markAsRead) return
+        chat.markAsRead = true
+        send(StompPayload().header(CHAT_ID to chat.id, "destination" to "/mod/read/${chat.sender}"))
     }
 
     override fun disconnect() {
@@ -159,5 +185,9 @@ class StompClient(serverUri: URI, private val playerUUID: String) : WebSocketCli
 
     private fun checkConnected() {
         check(status == StompClientStatus.CONNECTED) { "Current stomp status: $status" }
+    }
+
+    companion object {
+        const val CHAT_ID = "chat-id"
     }
 }

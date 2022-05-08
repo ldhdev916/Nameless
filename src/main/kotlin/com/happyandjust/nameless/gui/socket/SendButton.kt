@@ -29,7 +29,7 @@ import gg.essential.elementa.dsl.constraint
 import gg.essential.vigilance.utils.onLeftClick
 import java.awt.Color
 
-class SendButton(onClick: () -> Unit): UIRoundedRectangle(6f) {
+class SendButton(onClick: () -> Unit) : UIRoundedRectangle(6f) {
 
     init {
         onLeftClick { onClick() }
