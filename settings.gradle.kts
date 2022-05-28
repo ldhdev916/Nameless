@@ -43,3 +43,4 @@ pluginManagement {
 }
 
 rootProject.name = "Nameless"
+include("socket")

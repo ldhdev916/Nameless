@@ -16,18 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.stomp
+package com.ldhdev.socket.subscription
 
-interface StompInterface {
-    fun send(payload: StompPayload)
+import com.ldhdev.socket.StompClient
+import com.ldhdev.socket.data.StompPayload
 
-    fun subscribe(subscription: StompSubscription)
+fun interface StompMessageHandler {
 
-    fun unsubscribe(subscription: StompSubscription)
-
-    fun sendChat(receiver: String, content: String)
-
-    fun markChatAsRead(chat: StompChat.Received)
-
-    fun disconnect()
+    fun StompClient.handle(payload: StompPayload)
 }

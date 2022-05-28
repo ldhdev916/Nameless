@@ -16,8 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.stomp
+package com.ldhdev.socket.subscription
 
-enum class StompClientStatus {
-    CONNECTING, CONNECTED, DISCONNECTING, DISCONNECTED, ERROR
+data class StompSubscription(
+    val destination: String,
+    val handler: StompMessageHandler
+) {
+    var id = 0
 }

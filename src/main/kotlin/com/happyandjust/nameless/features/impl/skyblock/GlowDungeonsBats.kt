@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.on
@@ -25,7 +26,6 @@ import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import net.minecraft.entity.passive.EntityBat
 import java.awt.Color
@@ -46,7 +46,7 @@ object GlowDungeonsBats : SimpleFeature("glowBats", "Glow Bats in SkyBlock Dunge
     init {
 
         on<OutlineRenderEvent>().filter {
-            val currentGame = Hypixel.currentGame
+            val currentGame = Nameless.hypixel.currentGame
             enabled && currentGame is SkyBlock && currentGame.inDungeon && entity is EntityBat
         }.subscribe {
             colorInfo = ColorInfo(color.rgb, ColorInfo.ColorPriority.HIGHEST)

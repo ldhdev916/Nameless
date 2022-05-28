@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.on
@@ -25,7 +26,6 @@ import com.happyandjust.nameless.events.OutlineRenderEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.MurderMystery
 import com.happyandjust.nameless.hypixel.murderer.Assassins
 import com.happyandjust.nameless.hypixel.murderer.Classic
@@ -139,7 +139,7 @@ object MurdererFinder : SimpleFeature(
 
     init {
         on<OutlineRenderEvent>().filter {
-            enabled && Hypixel.currentGame is MurderMystery && glowGold && entity is EntityItem && entity.entityItem.item == Items.gold_ingot
+            enabled && Nameless.hypixel.currentGame is MurderMystery && glowGold && entity is EntityItem && entity.entityItem.item == Items.gold_ingot
         }.subscribe {
             colorInfo = ColorInfo(goldColor.rgb, ColorInfo.ColorPriority.HIGH)
         }

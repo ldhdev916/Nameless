@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.input.InputPlaceHolder
@@ -33,7 +34,6 @@ import com.happyandjust.nameless.features.base.userInputParameter
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIText
@@ -116,11 +116,11 @@ object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Sh
     }
 
     override fun shouldDisplayInRelocateGui(): Boolean {
-        return enabled && Hypixel.currentGame is SkyBlock
+        return enabled && Nameless.hypixel.currentGame is SkyBlock
     }
 
     override fun renderOverlay0(partialTicks: Float) {
-        if (enabled && Hypixel.currentGame is SkyBlock) {
+        if (enabled && Nameless.hypixel.currentGame is SkyBlock) {
             getCooltimeText()?.let {
                 matrix {
                     setup(overlayPoint)
@@ -142,7 +142,7 @@ object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Sh
     }
 
     init {
-        on<PacketEvent.Sending>().filter { lastWitherShieldUse == null && Hypixel.currentGame is SkyBlock }
+        on<PacketEvent.Sending>().filter { lastWitherShieldUse == null && Nameless.hypixel.currentGame is SkyBlock }
             .subscribe {
                 withInstance<C08PacketPlayerBlockPlacement>(packet) {
                     if (stack.getSkyBlockID() in swords) {
@@ -151,7 +151,7 @@ object ShowWitherShieldCoolTime : OverlayFeature("showWitherShieldCoolTime", "Sh
                 }
             }
 
-        on<SpecialTickEvent>().filter { scanTimer.update().check() && Hypixel.currentGame is SkyBlock }
+        on<SpecialTickEvent>().filter { scanTimer.update().check() && Nameless.hypixel.currentGame is SkyBlock }
             .subscribe {
                 holdingSword = mc.thePlayer.heldItem.getSkyBlockID() in swords
             }

@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.general
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.dsl.*
@@ -27,7 +28,6 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.BedWars
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemArmor
@@ -51,7 +51,7 @@ object BedWarsESP : SimpleFeature(
         desc = "If you turn this on, invisibility on players will be removed"
     }
 
-    private fun checkForEnabledAndBedwars() = enabled && Hypixel.currentGame is BedWars
+    private fun checkForEnabledAndBedwars() = enabled && Nameless.hypixel.currentGame is BedWars
 
     @JvmField
     val teamColorCache = hashMapOf<EntityPlayer, Int>()

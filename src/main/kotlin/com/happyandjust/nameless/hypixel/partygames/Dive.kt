@@ -64,14 +64,10 @@ class Dive : PartyMiniGames {
     }
 
 
-    companion object : PartyMiniGamesCreator {
+    companion object {
 
         private val boxColor
             get() = PartyGamesHelper.diveColor.rgb
-
-        override fun createImpl() = Dive()
-
-        override val scoreboardIdentifier = "Dive"
     }
 
 }

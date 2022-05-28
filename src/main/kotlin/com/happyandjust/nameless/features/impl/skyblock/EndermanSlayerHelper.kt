@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.VOIDGLOOM_SKULL
@@ -35,7 +36,6 @@ import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIContainer
@@ -267,7 +267,7 @@ object EndermanSlayerHelper :
     }
 
     private fun checkForRequirement(): Boolean {
-        val currentGame = Hypixel.currentGame
+        val currentGame = Nameless.hypixel.currentGame
         return enabled && currentGame is SkyBlock && currentGame.island == "combat_3"
     }
 

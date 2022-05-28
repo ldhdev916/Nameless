@@ -18,10 +18,10 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.network.play.server.S2APacketParticles
@@ -43,7 +43,7 @@ object HideWitherImpactParticle : SimpleFeature(
     private fun findWitherSwordsPlayers() = mc.theWorld.playerEntities.filter { it.heldItem.getSkyBlockID() in SWORDS }
 
     init {
-        on<PacketEvent.Received>().filter { enabled && Hypixel.currentGame is SkyBlock }.subscribe {
+        on<PacketEvent.Received>().filter { enabled && Nameless.hypixel.currentGame is SkyBlock }.subscribe {
             withInstance<S2APacketParticles>(packet) {
                 if (particleType == EnumParticleTypes.EXPLOSION_LARGE && isLongDistance && particleArgs.none() && particleCount == 8 && particleSpeed == 8f) {
                     val players = findWitherSwordsPlayers().ifEmpty { return@subscribe }

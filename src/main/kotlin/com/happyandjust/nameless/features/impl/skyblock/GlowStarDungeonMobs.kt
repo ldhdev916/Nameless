@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.info.ColorInfo
 import com.happyandjust.nameless.core.value.toChromaColor
@@ -29,7 +30,6 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityArmorStand
@@ -75,7 +75,7 @@ object GlowStarDungeonMobs : SimpleFeature(
     private val validTimer = TickTimer.withSecond(2.5)
 
     private fun checkForEnabledAndDungeon(): Boolean {
-        val currentGame = Hypixel.currentGame
+        val currentGame = Nameless.hypixel.currentGame
         return enabled && currentGame is SkyBlock && currentGame.inDungeon
     }
 

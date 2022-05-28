@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.*
@@ -29,7 +30,6 @@ import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.settings
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.GrinchSimulator
 import com.happyandjust.nameless.hypixel.games.Lobby
 import com.happyandjust.nameless.hypixel.games.MurderMystery
@@ -166,7 +166,7 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
     private fun GiftGameType.shouldRender(): Boolean {
         if (this !in selectedTypes) return false
 
-        val currentGame = Hypixel.currentGame
+        val currentGame = Nameless.hypixel.currentGame
 
         return when (this) {
             GiftGameType.JERRY_WORKSHOP -> currentGame is SkyBlock && currentGame.island == "winter"

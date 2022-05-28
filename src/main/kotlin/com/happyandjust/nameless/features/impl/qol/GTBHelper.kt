@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.*
@@ -27,7 +28,6 @@ import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.GuessTheBuild
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiChat
 import gg.essential.elementa.UIComponent
@@ -170,7 +170,7 @@ object GTBHelper : OverlayFeature(
         }
     }
 
-    private fun checkForEnabledAndGuessTheBuild() = enabled && Hypixel.currentGame is GuessTheBuild
+    private fun checkForEnabledAndGuessTheBuild() = enabled && Nameless.hypixel.currentGame is GuessTheBuild
 
     init {
         on<PacketEvent.Received>().filter { checkForEnabledAndGuessTheBuild() }.subscribe {

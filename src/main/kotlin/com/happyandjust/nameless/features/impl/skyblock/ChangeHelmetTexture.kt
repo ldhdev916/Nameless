@@ -18,9 +18,9 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.hypixel.skyblock.SkyBlockItem
 import com.mojang.authlib.GameProfile
@@ -38,7 +38,7 @@ object ChangeHelmetTexture : SimpleFeature(
 
     @JvmStatic
     var currentlyEquippedTexture: Pair<SkyBlockItem, GameProfile>? = null
-        get() = if (Hypixel.currentGame !is SkyBlock) null else field
+        get() = if (Nameless.hypixel.currentGame !is SkyBlock) null else field
         set(value) {
             field = value
 

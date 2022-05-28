@@ -20,11 +20,11 @@ package com.happyandjust.nameless.hypixel.games
 
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.features.impl.qol.MurdererFinder
-import com.happyandjust.nameless.hypixel.LocrawInfo
 import com.happyandjust.nameless.hypixel.murderer.Assassins
 import com.happyandjust.nameless.hypixel.murderer.Classic
 import com.happyandjust.nameless.hypixel.murderer.Infection
 import com.happyandjust.nameless.hypixel.murderer.MurdererMode
+import com.ldhdev.socket.data.LocrawInfo
 
 class MurderMystery : GameType {
 
@@ -51,12 +51,8 @@ class MurderMystery : GameType {
         murdererMode = null
     }
 
-    companion object : GameTypeCreator {
+    companion object {
 
         private val murdererModes = setOf(Classic, Infection, Assassins)
-
-        override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "MURDER_MYSTERY"
-
-        override fun createGameTypeImpl() = MurderMystery()
     }
 }

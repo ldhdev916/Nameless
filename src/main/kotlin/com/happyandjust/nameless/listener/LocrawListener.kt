@@ -18,12 +18,12 @@
 
 package com.happyandjust.nameless.listener
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.dsl.cancel
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.pureText
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.hypixel.Hypixel
 import gg.essential.api.EssentialAPI
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -48,7 +48,7 @@ object LocrawListener {
 
         on<ClientChatReceivedEvent>().subscribe {
             if (pureText.matches(JSON)) {
-                with(Hypixel) {
+                with(Nameless.hypixel) {
                     if (sentCommand) {
                         cancel()
                     }

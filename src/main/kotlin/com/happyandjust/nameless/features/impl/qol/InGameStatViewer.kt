@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.input.InputPlaceHolder
 import com.happyandjust.nameless.core.input.buildComposite
 import com.happyandjust.nameless.core.property.Identifiers
@@ -29,7 +30,6 @@ import com.happyandjust.nameless.gui.feature.components.Identifier
 import com.happyandjust.nameless.gui.feature.components.MultiSelectorComponent
 import com.happyandjust.nameless.gui.feature.components.VerticalPositionEditableComponent
 import com.happyandjust.nameless.gui.fixed
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.BedWars
 import com.happyandjust.nameless.hypixel.games.Lobby
 import com.happyandjust.nameless.hypixel.games.MurderMystery
@@ -325,16 +325,17 @@ object InGameStatViewer : SimpleFeature(
             override fun shouldDisplay() = EssentialAPI.getMinecraftUtil().isHypixel()
         },
         EXCEPT_LOBBY {
-            override fun shouldDisplay() = EssentialAPI.getMinecraftUtil().isHypixel() && Hypixel.currentGame !is Lobby
+            override fun shouldDisplay() =
+                EssentialAPI.getMinecraftUtil().isHypixel() && Nameless.hypixel.currentGame !is Lobby
         },
         SKYWARS {
-            override fun shouldDisplay() = Hypixel.currentGame is SkyWars
+            override fun shouldDisplay() = Nameless.hypixel.currentGame is SkyWars
         },
         MURDER_MYSTERY {
-            override fun shouldDisplay() = Hypixel.currentGame is MurderMystery
+            override fun shouldDisplay() = Nameless.hypixel.currentGame is MurderMystery
         },
         BEDWARS {
-            override fun shouldDisplay() = Hypixel.currentGame is BedWars
+            override fun shouldDisplay() = Nameless.hypixel.currentGame is BedWars
         };
 
         abstract fun shouldDisplay(): Boolean

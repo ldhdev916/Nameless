@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.dsl.drawFilledBox
 import com.happyandjust.nameless.dsl.getAxisAlignedBB
@@ -28,7 +29,6 @@ import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.settings
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.hypixel.skyblock.Gemstone
 import kotlinx.coroutines.CoroutineScope
@@ -57,7 +57,7 @@ object GemstoneESP : SimpleFeature(
     }
 
     private fun checkForRequirement(): Boolean {
-        val currentGame = Hypixel.currentGame
+        val currentGame = Nameless.hypixel.currentGame
         return enabled && currentGame is SkyBlock && currentGame.island == "crystal_hollows"
     }
 

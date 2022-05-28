@@ -16,11 +16,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.stomp
+package com.ldhdev.socket
 
-data class StompSubscription(
-    val destination: String,
-    val handler: StompMessageHandler
-) {
-    var id = 0
+import kotlinx.coroutines.delay
+import org.junit.jupiter.api.Test
+import java.net.URI
+
+internal class StompClientTest {
+
+    private fun getClient(playerUUID: String) =
+        StompClient(URI("ws://3.37.56.106/nameless/stomp"), playerUUID, "1.0.5-Pre")
+
+    private suspend inline fun StompClient.runCycle(action: () -> Unit) {
+        connectBlocking()
+
+        delay(2000)
+
+        action()
+
+        delay(2000)
+
+        disconnect()
+    }
+
+    @Test
+    fun socketTest() {
+    }
 }

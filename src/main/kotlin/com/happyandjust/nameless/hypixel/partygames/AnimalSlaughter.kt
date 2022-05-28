@@ -34,11 +34,7 @@ class AnimalSlaughter : PartyMiniGames {
         }
     }
 
-    companion object : PartyMiniGamesCreator {
-        override fun createImpl() = AnimalSlaughter()
-
-        override val scoreboardIdentifier = "Animal Slaughter"
-
+    companion object {
         private val outlineColor
             get() = PartyGamesHelper.animalColor.rgb
     }

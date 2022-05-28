@@ -16,8 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.stomp
+package com.ldhdev.socket.data
 
-enum class StompHeader {
-    CONNECT, STOMP, CONNECTED, SEND, SUBSCRIBE, UNSUBSCRIBE, ACK, NACK, BEGIN, COMMIT, ABORT, DISCONNECT, MESSAGE, RECEIPT, ERROR
-}
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class LocrawInfo(
+    var server: String,
+    @SerialName("gametype") var gameType: String = "",
+    var mode: String = "lobby",
+    var map: String = ""
+)

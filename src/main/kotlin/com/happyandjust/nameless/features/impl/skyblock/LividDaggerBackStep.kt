@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.Overlay
@@ -26,7 +27,6 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.OverlayFeature
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIText
@@ -84,5 +84,5 @@ object LividDaggerBackStep : OverlayFeature(
     }
 
     private fun checkForRequirement() =
-        enabled && Hypixel.currentGame is SkyBlock && mc.thePlayer.heldItem.getSkyBlockID() == "LIVID_DAGGER"
+        enabled && Nameless.hypixel.currentGame is SkyBlock && mc.thePlayer.heldItem.getSkyBlockID() == "LIVID_DAGGER"
 }

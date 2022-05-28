@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.general
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.info.InventorySlotInfo.Companion.getSlotsFromInventory
@@ -28,7 +29,6 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.OverlayFeature
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.BedWars
 import com.happyandjust.nameless.mixins.accessors.AccessorItemAxe
 import com.happyandjust.nameless.mixins.accessors.AccessorItemPickaxe
@@ -82,7 +82,7 @@ object BedWarsRayTraceBed : OverlayFeature(
     override var overlayPoint by configValue("bedWarsOverlay", "overlay", Overlay.DEFAULT)
 
     init {
-        on<SpecialTickEvent>().filter { enabled && Hypixel.currentGame is BedWars }.subscribe {
+        on<SpecialTickEvent>().filter { enabled && Nameless.hypixel.currentGame is BedWars }.subscribe {
             scanForBeds()
 
             if (beds.isEmpty()) return@subscribe
@@ -226,12 +226,12 @@ object BedWarsRayTraceBed : OverlayFeature(
     }
 
     override fun shouldDisplayInRelocateGui(): Boolean {
-        return enabled && Hypixel.currentGame is BedWars
+        return enabled && Nameless.hypixel.currentGame is BedWars
     }
 
     override fun renderOverlay0(partialTicks: Float) {
         if (!enabled) return
-        if (Hypixel.currentGame !is BedWars) return
+        if (Nameless.hypixel.currentGame !is BedWars) return
 
         currentRayTraceInfo?.let {
             matrix {

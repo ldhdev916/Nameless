@@ -68,11 +68,7 @@ class SpiderMaze : PartyMiniGames {
         mc.theWorld.getBlockAtPos(it) !is BlockWeb
     }).findPath()
 
-    companion object : PartyMiniGamesCreator {
-        override fun createImpl() = SpiderMaze()
-
-        override val scoreboardIdentifier = "Spider Maze"
-
+    companion object {
         private val mazeEnds =
             setOf(BlockPos(45, 2, 2099), BlockPos(44, 2, 2098), BlockPos(45, 2, 2098), BlockPos(44, 2, 2099))
     }

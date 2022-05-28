@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
@@ -27,7 +28,6 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoul
 import com.happyandjust.nameless.hypixel.fairysoul.FairySoulProfileCache
 import com.happyandjust.nameless.hypixel.games.SkyBlock
@@ -87,7 +87,7 @@ object FairySoulWaypoint : SimpleFeature(
 
 
     init {
-        on<RenderWorldLastEvent>().filter { enabled && Hypixel.currentGame is SkyBlock }.subscribe {
+        on<RenderWorldLastEvent>().filter { enabled && Nameless.hypixel.currentGame is SkyBlock }.subscribe {
             if (showPath) {
                 val color = if (pathFreezed) freezedPathColor else Color.red.rgb
                 fairySoulPaths.drawPaths(color, partialTicks)
@@ -98,7 +98,7 @@ object FairySoulWaypoint : SimpleFeature(
         }
 
         on<SpecialTickEvent>().filter { enabled }.subscribe {
-            val currentGame = Hypixel.currentGame
+            val currentGame = Nameless.hypixel.currentGame
             if (currentGame !is SkyBlock) return@subscribe
 
             currentSkyblockIsland?.let {
@@ -140,7 +140,7 @@ object FairySoulWaypoint : SimpleFeature(
                 pathFreezed = !pathFreezed
             }
 
-        on<PacketEvent.Sending>().filter { Hypixel.currentGame is SkyBlock }.subscribe {
+        on<PacketEvent.Sending>().filter { Nameless.hypixel.currentGame is SkyBlock }.subscribe {
             withInstance<C02PacketUseEntity>(packet) {
                 if (action == C02PacketUseEntity.Action.ATTACK) {
                     val entity = getEntityFromWorld(mc.theWorld)
@@ -153,14 +153,15 @@ object FairySoulWaypoint : SimpleFeature(
             }
         }
 
-        on<ClientChatReceivedEvent>().filter { type.toInt() != 2 && Hypixel.currentGame is SkyBlock }.subscribe {
-            PROFILE.matchesMatcher(pureText) {
-                currentSkyBlockProfile = group("profile")
+        on<ClientChatReceivedEvent>().filter { type.toInt() != 2 && Nameless.hypixel.currentGame is SkyBlock }
+            .subscribe {
+                PROFILE.matchesMatcher(pureText) {
+                    currentSkyBlockProfile = group("profile")
+                }
+                PROFILE_CHANGE.matchesMatcher(pureText) {
+                    currentSkyBlockProfile = group("profile")
+                }
             }
-            PROFILE_CHANGE.matchesMatcher(pureText) {
-                currentSkyBlockProfile = group("profile")
-            }
-        }
     }
 
     private fun EntityArmorStand.getNearestPossibleFairySoul() =

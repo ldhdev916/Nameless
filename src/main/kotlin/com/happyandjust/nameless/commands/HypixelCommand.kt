@@ -18,18 +18,20 @@
 
 package com.happyandjust.nameless.commands
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.dsl.sendPrefixMessage
-import com.happyandjust.nameless.hypixel.Hypixel
 import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 
 object HypixelCommand : Command("currentdata") {
     @DefaultHandler
     fun handle() {
-        sendPrefixMessage("Current Hypixel Game: ${Hypixel.currentGame}\n")
+        with(Nameless.hypixel) {
+            sendPrefixMessage("Current Hypixel Game: $currentGame\n")
 
-        Hypixel.currentGame?.printProperties()
+            currentGame?.printProperties()
 
-        sendPrefixMessage("\n${Hypixel.locrawInfo}")
+            sendPrefixMessage("\n$locrawInfo")
+        }
     }
 }

@@ -16,8 +16,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.stomp
+package com.ldhdev.socket.chat
 
-fun interface StompMessageHandler {
-    fun StompInterface.handle(payload: StompPayload)
+sealed interface StompChat {
+
+    val data: StompChatData
+
+    class Sending(override val data: StompChatData, val receiver: String) : StompChat {
+        var read = false
+
+        override fun toString(): String {
+            return "Sending(data=$data, receiver='$receiver', read=$read)"
+        }
+
+    }
+
+    class Received(override val data: StompChatData, val sender: String) : StompChat {
+        var markedAsRead = false
+
+        override fun toString(): String {
+            return "Received(data=$data, sender='$sender', markedAsRead=$markedAsRead)"
+        }
+    }
 }

@@ -55,10 +55,4 @@ class LabEscape : PartyMiniGames {
             }
         }
     }
-
-    companion object : PartyMiniGamesCreator {
-        override fun createImpl() = LabEscape()
-
-        override val scoreboardIdentifier = "Lab Escape"
-    }
 }

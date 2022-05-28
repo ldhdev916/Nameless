@@ -19,9 +19,8 @@
 package com.happyandjust.nameless.gui.socket
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.stomp.ChatObserver
-import com.happyandjust.nameless.stomp.ObservableChatList
-import com.happyandjust.nameless.stomp.StompChat
+import com.ldhdev.socket.StompListener
+import com.ldhdev.socket.chat.StompChat
 import gg.essential.elementa.components.*
 import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.constraints.ChildBasedMaxSizeConstraint
@@ -32,7 +31,7 @@ import gg.essential.elementa.utils.withAlpha
 import java.awt.Color
 import java.time.format.DateTimeFormatter
 
-class ChatContainer(chats: ObservableChatList) : UIContainer() {
+class ChatContainer(chats: MutableList<StompChat>) : UIContainer() {
 
     init {
         chats.filterIsInstance<StompChat.Received>().forEach { Nameless.client.markChatAsRead(it) }
@@ -54,22 +53,27 @@ class ChatContainer(chats: ObservableChatList) : UIContainer() {
             StompChatContainer(it) childOf scroller
         }
 
-        val observer = object : ChatObserver {
-            override fun onChat(chat: StompChat) {
-                StompChatContainer(chat) childOf scroller
+        with(Nameless.client) {
+            setListener<StompListener.OnChat> {
+                StompListener.OnChat {
+                    onChat(it)
+                    StompChatContainer(it) childOf scroller
 
-                scroller.scrollToBottom()
-                if (chat is StompChat.Received) {
-                    Nameless.client.markChatAsRead(chat)
+                    scroller.scrollToBottom()
+                    if (it is StompChat.Received) {
+                        markChatAsRead(it)
+                    }
                 }
             }
 
-            override fun onRead(chat: StompChat.Sending) {
-                scroller.allChildren.filterIsInstance<StompChatContainer>().find { it.chat == chat }?.markAsRead()
+            setListener<StompListener.OnRead> {
+                StompListener.OnRead {
+                    onRead(it)
+                    scroller.allChildren.filterIsInstance<StompChatContainer>()
+                        .find { container -> container.chat == it }?.markAsRead()
+                }
             }
         }
-
-        chats.addObserver(observer)
     }
 }
 
@@ -105,7 +109,7 @@ private class ChatBox(chat: StompChat) : UIContainer() {
         }
 
         val formatter = DateTimeFormatter.ofPattern("a h:mm")
-        val timeText = UIText(chat.at.format(formatter)).constrain {
+        val timeText = UIText(chat.data.at.format(formatter)).constrain {
             if (chat is StompChat.Received) {
                 x = SiblingConstraint(3f)
             }
@@ -136,7 +140,7 @@ private class ChatBox(chat: StompChat) : UIContainer() {
             timeText childOf this
         }
 
-        UIWrappedText(chat.content, shadow = false).constrain {
+        UIWrappedText(chat.data.content, shadow = false).constrain {
             x = CenterConstraint()
             y = CenterConstraint()
 

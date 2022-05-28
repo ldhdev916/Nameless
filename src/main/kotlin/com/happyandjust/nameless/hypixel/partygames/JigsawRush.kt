@@ -126,7 +126,7 @@ class JigsawRush : PartyMiniGames {
 
     private data class Canvas(val canvasBlocks: Map<Pos, BlockPos>, val facingToCanvas: EnumFacing)
 
-    companion object : PartyMiniGamesCreator {
+    companion object {
         private val gameCanvas = Pos.values.withIndex().associate { (index, pos) ->
             val yOffset = 3 * ((index / 3) - 1)
             val zOffset = 3 * ((index % 3) - 1)
@@ -135,9 +135,5 @@ class JigsawRush : PartyMiniGames {
         }
 
         private val expandingFacings = EnumFacing.VALUES.filter { it.axis != EnumFacing.Axis.Y }
-
-        override fun createImpl() = JigsawRush()
-
-        override val scoreboardIdentifier = "Jigsaw Rush"
     }
 }

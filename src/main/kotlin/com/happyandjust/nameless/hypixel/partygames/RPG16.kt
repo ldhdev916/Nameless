@@ -36,13 +36,9 @@ class RPG16 : PartyMiniGames {
         }
     }
 
-    companion object : PartyMiniGamesCreator {
+    companion object {
 
         private val outlineColor
             get() = PartyGamesHelper.rpg16Color.rgb
-
-        override fun createImpl() = RPG16()
-
-        override val scoreboardIdentifier = "RPG-16"
     }
 }

@@ -57,10 +57,7 @@ class AnvilSpleef : PartyMiniGames {
         .filterIsInstance<EntityFallingBlock>()
         .filter { it.posY > 1 && it.block.block == Blocks.anvil }
 
-    companion object : PartyMiniGamesCreator {
-        override fun createImpl() = AnvilSpleef()
-
-        override val scoreboardIdentifier = "Anvil Spleef"
+    companion object {
 
         private val anvilColor
             get() = PartyGamesHelper.anvilColor.rgb

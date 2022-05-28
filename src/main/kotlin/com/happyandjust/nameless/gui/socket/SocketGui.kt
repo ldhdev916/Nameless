@@ -20,8 +20,7 @@ package com.happyandjust.nameless.gui.socket
 
 import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.gui.feature.ColorCache
-import com.happyandjust.nameless.stomp.StompPayload
-import com.happyandjust.nameless.stomp.StompSubscription
+import com.ldhdev.socket.requestOnlinePlayers
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.ScrollComponent
@@ -32,98 +31,84 @@ import gg.essential.elementa.constraints.ChildBasedSizeConstraint
 import gg.essential.elementa.constraints.SiblingConstraint
 import gg.essential.elementa.dsl.*
 import gg.essential.universal.GuiScale
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 
 class SocketGui : WindowScreen(ElementaVersion.V1, newGuiScale = GuiScale.scaleForScreenSize().ordinal) {
 
-    private val onlineSubscription = StompSubscription("/topic/onlines/${Nameless.client.uuidIdentifier}") {
-        val players = Json.decodeFromString<List<String>>(it.payload!!)
-        if (players.isEmpty()) {
-            UIText("No Online Players").constrain {
-                x = CenterConstraint()
-                y = CenterConstraint()
-
-                textScale = 5.pixels()
-            } childOf window
-        } else {
-
-            val block = UIBlock(ColorCache.divider).constrain {
-
-                x = CenterConstraint()
-                y = CenterConstraint()
-
-                width = ChildBasedSizeConstraint()
-                height = 320.pixels()
-            } childOf window
-
-            val iconBlock = UIBlock(ColorCache.divider.darker()).constrain {
-                width = ChildBasedSizeConstraint() + 20.pixels()
-                height = 100.percent()
-            } childOf block
-
-            val iconContainer = ScrollComponent().constrain {
-
-                x = CenterConstraint()
-                y = CenterConstraint()
-
-                height = height coerceAtMost 100.percent()
-            } childOf iconBlock
-
-            val selectIcons = mutableListOf<PlayerSelectIcon>()
-            val associatedChatRoom = players.associateWith { name ->
-                UIChatRoom(name).constrain {
-                    x = SiblingConstraint(10f)
-
-                    width = 240.pixels()
-                    height = 100.percent()
-                }
-            }
-
-            players.forEachIndexed { index, name ->
-
-                fun associate() {
-                    val chatRoom = associatedChatRoom[name]!!
-                    if (block.children.indexOf(chatRoom) == -1) { // Just to be safe
-                        chatRoom childOf block
-                    }
-                    (associatedChatRoom - name).values.forEach(block::removeChild)
-                }
-
-                val selected = if (selectedPlayerName != null) name == selectedPlayerName else index == 0
-                if (selected) {
-                    associate()
-                }
-
-                val icon = PlayerSelectIcon(name, selected) {
-                    selectedPlayerName = name
-                    associate()
-                    setSelected(true)
-                    (selectIcons - this).forEach { selectIcon ->
-                        selectIcon.setSelected(false)
-                    }
-                }.constrain {
-                    y = SiblingConstraint(10f)
-
-                    width = 40.pixels()
-                } childOf iconContainer
-
-                selectIcons.add(icon)
-            }
-        }
-    }
-
     init {
-        with(Nameless.client) {
-            subscribe(onlineSubscription)
-            send(StompPayload().header("destination" to "/mod/onlines"))
+        Nameless.client.requestOnlinePlayers { players ->
+            if (players.isEmpty()) {
+                UIText("No Online Players").constrain {
+                    x = CenterConstraint()
+                    y = CenterConstraint()
+
+                    textScale = 5.pixels()
+                } childOf window
+            } else {
+
+                val block = UIBlock(ColorCache.divider).constrain {
+
+                    x = CenterConstraint()
+                    y = CenterConstraint()
+
+                    width = ChildBasedSizeConstraint()
+                    height = 320.pixels()
+                } childOf window
+
+                val iconBlock = UIBlock(ColorCache.divider.darker()).constrain {
+                    width = ChildBasedSizeConstraint() + 20.pixels()
+                    height = 100.percent()
+                } childOf block
+
+                val iconContainer = ScrollComponent().constrain {
+
+                    x = CenterConstraint()
+                    y = CenterConstraint()
+
+                    height = height coerceAtMost 100.percent()
+                } childOf iconBlock
+
+                val selectIcons = mutableListOf<PlayerSelectIcon>()
+                val associatedChatRoom = players.associateWith { name ->
+                    UIChatRoom(name).constrain {
+                        x = SiblingConstraint(10f)
+
+                        width = 240.pixels()
+                        height = 100.percent()
+                    }
+                }
+
+                players.forEachIndexed { index, name ->
+
+                    fun associate() {
+                        val chatRoom = associatedChatRoom[name]!!
+                        if (block.children.indexOf(chatRoom) == -1) { // Just to be safe
+                            chatRoom childOf block
+                        }
+                        (associatedChatRoom - name).values.forEach(block::removeChild)
+                    }
+
+                    val selected = if (selectedPlayerName != null) name == selectedPlayerName else index == 0
+                    if (selected) {
+                        associate()
+                    }
+
+                    val icon = PlayerSelectIcon(name, selected) {
+                        selectedPlayerName = name
+                        associate()
+                        setSelected(true)
+                        (selectIcons - this).forEach { selectIcon ->
+                            selectIcon.setSelected(false)
+                        }
+                    }.constrain {
+                        y = SiblingConstraint(10f)
+
+                        width = 40.pixels()
+                    } childOf iconContainer
+
+                    selectIcons.add(icon)
+                }
+            }
         }
-    }
-
-    override fun onScreenClose() {
-        super.onScreenClose()
-
-        Nameless.client.unsubscribe(onlineSubscription)
     }
 
     companion object {

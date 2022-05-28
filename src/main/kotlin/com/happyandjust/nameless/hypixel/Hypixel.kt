@@ -24,24 +24,20 @@ import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.sendDebugMessage
 import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
-import com.happyandjust.nameless.hypixel.games.*
-import com.happyandjust.nameless.stomp.StompPayload
+import com.happyandjust.nameless.hypixel.games.GameType
+import com.happyandjust.nameless.hypixel.games.GameTypeFactory
+import com.ldhdev.socket.data.LocrawInfo
+import com.ldhdev.socket.data.StompLocrawInfo
 import gg.essential.api.EssentialAPI
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import net.minecraftforge.common.MinecraftForge
 
-object Hypixel {
-    private val gameTypeCreators =
-        setOf(BedWars, GrinchSimulator, GuessTheBuild, Lobby, MurderMystery, PartyGames, PixelParty, SkyBlock, SkyWars)
+class Hypixel(private val factory: GameTypeFactory) {
     var currentGame: GameType? = null
         private set
     var locrawInfo: LocrawInfo? = null
         set(value) {
             if (field != value) {
-                Nameless.client.send(
-                    StompPayload().header("destination" to "/mod/locraw").payload(Json.encodeToString(value))
-                )
+                Nameless.client.send(StompLocrawInfo(value))
             }
             field = value
         }
@@ -77,7 +73,7 @@ object Hypixel {
                 sendDebugMessage("Hypixel", "Disposing $it")
                 it.onDisposed()
             }
-            currentGame = gameTypeCreators.find { it.isCurrent(locraw) }?.createGameTypeImpl()
+            currentGame = factory.createGameType(locraw)
             currentGame?.handleProperty(locraw)
 
             sendDebugMessage("Hypixel", "Current Game: $currentGame")

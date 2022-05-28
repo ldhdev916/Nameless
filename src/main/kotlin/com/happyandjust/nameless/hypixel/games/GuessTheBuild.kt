@@ -18,19 +18,11 @@
 
 package com.happyandjust.nameless.hypixel.games
 
-import com.happyandjust.nameless.hypixel.LocrawInfo
+import com.ldhdev.socket.data.LocrawInfo
 
 class GuessTheBuild : GameType {
 
     override fun handleProperty(locrawInfo: LocrawInfo) = Unit
 
     override fun printProperties() = Unit
-
-    companion object : GameTypeCreator {
-
-        override fun isCurrent(locrawInfo: LocrawInfo) =
-            locrawInfo.gameType == "BUILD_BATTLE" && locrawInfo.mode == "BUILD_BATTLE_GUESS_THE_BUILD"
-
-        override fun createGameTypeImpl() = GuessTheBuild()
-    }
 }

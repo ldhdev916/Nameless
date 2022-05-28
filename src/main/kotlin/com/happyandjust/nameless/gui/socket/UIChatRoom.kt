@@ -19,7 +19,6 @@
 package com.happyandjust.nameless.gui.socket
 
 import com.happyandjust.nameless.Nameless
-import com.happyandjust.nameless.stomp.ObservableChatList
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.components.input.UITextInput
@@ -45,7 +44,7 @@ class UIChatRoom(with: String) : UIContainer() {
             textScale = 2.pixels()
         } childOf topContainer
 
-        ChatContainer(Nameless.client.chatsByPlayer.getOrPut(with) { ObservableChatList() }).constrain {
+        ChatContainer(Nameless.client.getOrCreateChats(with)).constrain {
 
             y = SiblingConstraint()
 

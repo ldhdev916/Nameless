@@ -63,8 +63,7 @@ class Avalanche : PartyMiniGames {
         mc.theWorld.getBlockAtPos(it) == Blocks.wooden_slab
     }
 
-    companion object : PartyMiniGamesCreator {
-        override val scoreboardIdentifier = "Avalanche"
+    companion object {
 
         private val ROUND_CHANGE =
             "Wave \\d+ will begin in \\d+ seconds with \\d+ safe point(s)?! Find cover!".toRegex()
@@ -73,7 +72,5 @@ class Avalanche : PartyMiniGames {
         private val finderTimer = Timer()
         private val boxColor
             get() = PartyGamesHelper.avalancheColor.rgb
-
-        override fun createImpl() = Avalanche()
     }
 }

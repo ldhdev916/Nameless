@@ -18,10 +18,10 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiContainer
 import gg.essential.elementa.ElementaVersion
@@ -65,7 +65,7 @@ object BazaarHelper : SimpleFeature(
     //§8- §6203,887.2 coins §7each | §a9§7x §7in §f1 §7order
 
     init {
-        on<GuiScreenEvent.InitGuiEvent.Post>().filter { enabled && Hypixel.currentGame is SkyBlock && gui is GuiChest }
+        on<GuiScreenEvent.InitGuiEvent.Post>().filter { enabled && Nameless.hypixel.currentGame is SkyBlock && gui is GuiChest }
             .subscribe {
                 withInstance<AccessorGuiContainer>(gui) {
 
@@ -91,7 +91,7 @@ object BazaarHelper : SimpleFeature(
     }
 
     private fun GuiScreen.shouldDisplay(): Boolean {
-        if (!enabled || Hypixel.currentGame !is SkyBlock || this !is GuiChest) return false
+        if (!enabled || Nameless.hypixel.currentGame !is SkyBlock || this !is GuiChest) return false
         withInstance<ContainerChest>(inventorySlots) {
             val slots = inventorySlots.filter { it.inventory != mc.thePlayer.inventory }
             if (slots.size != 36) return false
@@ -106,7 +106,7 @@ object BazaarHelper : SimpleFeature(
     }
 
     private fun GuiScreen.updateDisplay() {
-        if (!enabled || Hypixel.currentGame !is SkyBlock || this !is GuiChest) return
+        if (!enabled || Nameless.hypixel.currentGame !is SkyBlock || this !is GuiChest) return
         withInstance<ContainerChest>(inventorySlots) {
             val slots = inventorySlots.filter { it.inventory != mc.thePlayer.inventory }
             if (slots.size != 36 || slots[10].stack?.displayName?.stripControlCodes() != "Buy Instantly") return

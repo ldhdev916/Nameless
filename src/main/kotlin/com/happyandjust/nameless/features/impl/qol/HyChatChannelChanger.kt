@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.dsl.mc
@@ -33,7 +34,6 @@ import com.happyandjust.nameless.gui.feature.ColorCache
 import com.happyandjust.nameless.gui.fixed
 import com.happyandjust.nameless.gui.relocate.RelocateComponent
 import com.happyandjust.nameless.gui.relocate.RelocateGui
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import gg.essential.api.EssentialAPI
 import gg.essential.elementa.ElementaVersion
@@ -255,7 +255,7 @@ object HyChatChannelChanger : OverlayFeature(
         CO_OP(
             "Co-Op",
             "/cc",
-            { Hypixel.currentGame is SkyBlock }
+            { Nameless.hypixel.currentGame is SkyBlock }
         );
     }
 }

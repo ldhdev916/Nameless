@@ -18,11 +18,11 @@
 
 package com.happyandjust.nameless.mixinhooks
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.dsl.matchesMatcher
 import com.happyandjust.nameless.dsl.stripControlCodes
 import com.happyandjust.nameless.dsl.withPrecisionText
 import com.happyandjust.nameless.features.impl.skyblock.DamageIndicator
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.hypixel.skyblock.DamageIndicateType
 import net.minecraft.util.ChatComponentText
@@ -59,7 +59,7 @@ object EntityHook {
 
     fun getCustomDamageName(origin: ChatComponentText): ChatComponentText {
 
-        if (Hypixel.currentGame is SkyBlock && DamageIndicator.enabled) {
+        if (Nameless.hypixel.currentGame is SkyBlock && DamageIndicator.enabled) {
 
             val unformattedText = origin.unformattedText
 

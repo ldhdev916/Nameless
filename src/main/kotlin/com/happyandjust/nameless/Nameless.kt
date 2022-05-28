@@ -23,16 +23,19 @@ import com.happyandjust.nameless.config.ConfigHandler
 import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.enums.OutlineMode
 import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.sendDebugMessage
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.base.ParameterHierarchy
 import com.happyandjust.nameless.features.impl.misc.UpdateChecker
 import com.happyandjust.nameless.hypixel.Hypixel
+import com.happyandjust.nameless.hypixel.games.GameTypeFactoryImpl
 import com.happyandjust.nameless.listener.BasicListener
 import com.happyandjust.nameless.listener.LocrawListener
 import com.happyandjust.nameless.listener.OutlineHandleListener
 import com.happyandjust.nameless.listener.WaypointListener
-import com.happyandjust.nameless.stomp.StompClient
 import com.happyandjust.nameless.utils.SkyblockUtils
+import com.ldhdev.socket.StompClient
+import com.ldhdev.socket.StompListener
 import gg.essential.api.commands.Command
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,7 +59,8 @@ object Nameless {
     lateinit var modFile: File
     private val delayedEventHandlers = hashSetOf<Any>()
     private var shouldRegisterHandlers = false
-    val client by lazy { StompClient(URI("ws://3.37.56.106/nameless/stomp"), mc.session.playerID) }
+    val client by lazy { StompClient(URI("ws://3.37.56.106/nameless/stomp"), mc.session.playerID, VERSION) }
+    val hypixel by lazy { Hypixel(GameTypeFactoryImpl) }
 
     fun requestRegisterEventHandler(handler: Any) {
         if (shouldRegisterHandlers) {
@@ -77,7 +81,41 @@ object Nameless {
         delayedEventHandlers.clear()
 
         CoroutineScope(Dispatchers.IO).launch {
-            client
+            with(client) {
+                setListener<StompListener.OnPosition>(StompListener.OnPosition {
+                    mc.thePlayer?.let {
+                        Triple(it.posX, it.posY, it.posZ)
+                    }
+                })
+
+                setListener<StompListener.OnOpen> {
+                    StompListener.OnOpen {
+                        onOpen()
+                        Runtime.getRuntime().addShutdownHook(Thread {
+                            disconnect()
+                        })
+                    }
+                }
+
+                setListener<StompListener.OnChat>(StompListener.OnChat {})
+                setListener<StompListener.OnRead>(StompListener.OnRead {})
+
+                setListener<StompListener.OnSend> {
+                    StompListener.OnSend {
+                        onSend(it)
+                        sendDebugMessage("Sending $it")
+                    }
+                }
+
+                setListener<StompListener.OnReceive> {
+                    StompListener.OnReceive {
+                        sendDebugMessage("Received $it")
+                        onReceive(it)
+                    }
+                }
+
+                connectBlocking()
+            }
         }
     }
 
@@ -112,7 +150,7 @@ object Nameless {
         OutlineHandleListener
         WaypointListener
 
-        Hypixel
+        hypixel
     }
 
 

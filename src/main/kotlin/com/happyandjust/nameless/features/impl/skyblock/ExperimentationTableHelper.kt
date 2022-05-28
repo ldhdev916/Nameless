@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.dsl.*
 import com.happyandjust.nameless.events.SpecialTickEvent
@@ -25,7 +26,6 @@ import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.settings
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.hypixel.skyblock.experimentation.ExperimentationGame
 import com.happyandjust.nameless.hypixel.skyblock.experimentation.ExperimentationType
@@ -56,7 +56,7 @@ object ExperimentationTableHelper : SimpleFeature("experimentationTableHelper", 
 
     init {
         on<SpecialTickEvent>().timerFilter(scanTimer).subscribe {
-            if (!enabled || Hypixel.currentGame !is SkyBlock) {
+            if (!enabled || Nameless.hypixel.currentGame !is SkyBlock) {
                 currentExperimentationGame = null
                 return@subscribe
             }

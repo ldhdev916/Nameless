@@ -23,10 +23,11 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.sendDebugMessage
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
-import com.happyandjust.nameless.hypixel.LocrawInfo
-import com.happyandjust.nameless.hypixel.partygames.*
+import com.happyandjust.nameless.hypixel.partygames.PartyMiniGames
+import com.happyandjust.nameless.hypixel.partygames.PartyMiniGamesFactory
+import com.ldhdev.socket.data.LocrawInfo
 
-class PartyGames : GameType {
+class PartyGames(private val factory: PartyMiniGamesFactory) : GameType {
 
     var partyMiniGames: PartyMiniGames? = null
         private set(value) {
@@ -39,38 +40,17 @@ class PartyGames : GameType {
         }
 
     override fun handleProperty(locrawInfo: LocrawInfo) {
-        val foundPartyMiniGames = mc.theWorld.getSidebarLines().mapNotNull { findPartyMiniGames(it) }.singleOrNull()
+        val foundPartyMiniGames = mc.theWorld.getSidebarLines().mapNotNull(factory::createPartyMiniGames).singleOrNull()
         if (isNewMiniGames(foundPartyMiniGames)) {
             partyMiniGames = foundPartyMiniGames
             sendDebugMessage("Changed to $foundPartyMiniGames")
         }
     }
 
-    private fun findPartyMiniGames(scoreboard: String) =
-        partyMiniGamesList.find { scoreboard.contains(it.scoreboardIdentifier, true) }?.createImpl()
-
     private fun isNewMiniGames(partyMiniGames: PartyMiniGames?) =
         this.partyMiniGames?.javaClass != partyMiniGames?.javaClass
 
     override fun printProperties() {
         sendPrefixMessage("Party Games Type: ${partyMiniGames?.javaClass?.name}")
-    }
-
-    companion object : GameTypeCreator {
-        private val partyMiniGamesList = setOf(
-            AnimalSlaughter,
-            AnvilSpleef,
-            Avalanche,
-            Dive,
-            HighGround,
-            JigsawRush,
-            LabEscape,
-            RPG16,
-            SpiderMaze
-        )
-
-        override fun createGameTypeImpl() = PartyGames()
-
-        override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "ARCADE" && locrawInfo.mode == "PARTY"
     }
 }

@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.skyblock
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.*
@@ -27,7 +28,6 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.util.Vec3
@@ -52,7 +52,7 @@ object ShowDungeonsDoorKey : SimpleFeature(
     }
 
     private fun checkForRequirement(): Boolean {
-        val currentGame = Hypixel.currentGame
+        val currentGame = Nameless.hypixel.currentGame
         return enabled && currentGame is SkyBlock && currentGame.inDungeon
     }
 

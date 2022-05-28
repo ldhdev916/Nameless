@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.settings
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.dsl.getBlockAtPos
 import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.on
@@ -29,7 +30,6 @@ import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.gui.feature.ComponentType
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyBlock
 import com.happyandjust.nameless.keybinding.KeyBindingCategory
 import net.minecraft.block.BlockChest
@@ -105,7 +105,7 @@ object GhostBlock : SimpleFeature(
     }
 
     private fun makeGhostBlock(pos: BlockPos) {
-        val currentGame = Hypixel.currentGame
+        val currentGame = Nameless.hypixel.currentGame
         if (currentGame is SkyBlock && currentGame.inDungeon && ignoreSecret) {
             when (mc.theWorld.getBlockAtPos(pos)) {
                 is BlockChest, is BlockLever, is BlockSkull -> return

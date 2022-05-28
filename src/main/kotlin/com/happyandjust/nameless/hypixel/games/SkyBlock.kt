@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.hypixel.games
 
 import com.happyandjust.nameless.dsl.sendPrefixMessage
-import com.happyandjust.nameless.hypixel.LocrawInfo
+import com.ldhdev.socket.data.LocrawInfo
 
 class SkyBlock : GameType {
 
@@ -36,12 +36,5 @@ class SkyBlock : GameType {
     override fun printProperties() {
         sendPrefixMessage("In Dungeon: $inDungeon")
         sendPrefixMessage("Island: $island")
-    }
-
-    companion object : GameTypeCreator {
-
-        override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "SKYBLOCK"
-
-        override fun createGameTypeImpl() = SkyBlock()
     }
 }

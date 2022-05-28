@@ -16,21 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.stomp
+package com.ldhdev.socket.data
 
+import com.ldhdev.namelessstd.*
+import com.ldhdev.socket.chat.StompChat
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.util.*
 
-class StompPayload(val method: StompHeader = StompHeader.SEND) {
+open class StompPayload(val method: StompMethod, val payload: String? = null) {
     val headers = mutableMapOf<String, String>()
-    var payload: String? = null
-        private set
 
-    fun header(vararg header: Pair<String, Any?>) = apply {
-        headers.putAll(header.map { (k, v) -> k to v.toString() })
-    }
-
-    fun payload(s: String?) = apply {
-        payload = s
+    fun header(vararg provided: Pair<String, Any?>) = apply {
+        headers.putAll(provided.map { (k, v) -> k to v.toString() })
     }
 
     fun getMessage() = buildString {
@@ -50,14 +48,14 @@ class StompPayload(val method: StompHeader = StompHeader.SEND) {
     }
 
     override fun toString(): String {
-        return "StompPayload(method=$method, headers=$headers, payload=$payload)"
+        return "StompPayload(method=$method, payload=$payload, headers=$headers)"
     }
 
 
     companion object {
         fun parse(s: String): StompPayload {
             val sc = Scanner(s)
-            val method = StompHeader.valueOf(sc.nextLine())
+            val method = StompMethod.valueOf(sc.nextLine())
             val headers = buildMap {
                 var line: String
                 while (sc.nextLine().also { line = it }.isNotEmpty()) {
@@ -72,7 +70,30 @@ class StompPayload(val method: StompHeader = StompHeader.SEND) {
                 }
             }.joinToString("\n").substringBeforeLast(0.toChar())
 
-            return StompPayload(method).header(*headers.toList().toTypedArray()).payload(payload.ifEmpty { null })
+            return StompPayload(method, payload.ifEmpty { null }).header(*headers.toList().toTypedArray())
         }
     }
 }
+
+open class StompSend(destination: String, payload: String? = null) : StompPayload(StompMethod.SEND, payload) {
+    init {
+        header("destination" to destination.withPrefix(Prefix.Server))
+    }
+}
+
+class StompSendChat(chat: StompChat.Sending) :
+    StompSend(Route.Server.SendChat.withVariables(Variable.To to chat.receiver), chat.data.content) {
+
+    init {
+        header(Headers.ChatId to chat.data.id)
+    }
+}
+
+class StompMarkAsRead(chat: StompChat.Received) :
+    StompSend(Route.Server.ReadChat.withVariables(Variable.Sender to chat.sender)) {
+    init {
+        header(Headers.ChatId to chat.data.id)
+    }
+}
+
+class StompLocrawInfo(locrawInfo: LocrawInfo?) : StompSend(Route.Server.Locraw, Json.encodeToString(locrawInfo))

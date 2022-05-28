@@ -18,17 +18,17 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.dsl.cancel
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.features.base.SimpleFeature
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.Lobby
 import net.minecraftforge.client.event.RenderPlayerEvent
 
 object HideNPC : SimpleFeature("hideNpc", "Hide NPC in Lobby", "hide npcs in tab, and stop rendering") {
 
     init {
-        on<RenderPlayerEvent.Pre>().filter { enabled && Hypixel.currentGame is Lobby && entityPlayer.uniqueID.version() == 2 }
+        on<RenderPlayerEvent.Pre>().filter { enabled && Nameless.hypixel.currentGame is Lobby && entityPlayer.uniqueID.version() == 2 }
             .subscribe {
                 cancel()
             }

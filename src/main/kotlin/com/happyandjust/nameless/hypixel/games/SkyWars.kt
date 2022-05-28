@@ -18,18 +18,11 @@
 
 package com.happyandjust.nameless.hypixel.games
 
-import com.happyandjust.nameless.hypixel.LocrawInfo
+import com.ldhdev.socket.data.LocrawInfo
 
 class SkyWars : GameType {
 
     override fun handleProperty(locrawInfo: LocrawInfo) = Unit
 
     override fun printProperties() = Unit
-
-    companion object : GameTypeCreator {
-
-        override fun isCurrent(locrawInfo: LocrawInfo) = locrawInfo.gameType == "SKYWARS"
-
-        override fun createGameTypeImpl() = SkyWars()
-    }
 }

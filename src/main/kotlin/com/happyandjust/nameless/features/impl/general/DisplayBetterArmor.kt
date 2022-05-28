@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.general
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.*
@@ -26,7 +27,6 @@ import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
 import com.happyandjust.nameless.features.settings
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.SkyWars
 import gg.essential.elementa.utils.withAlpha
 import net.minecraft.client.gui.inventory.GuiInventory
@@ -113,7 +113,7 @@ object DisplayBetterArmor : SimpleFeature(
 
     init {
         on<SpecialTickEvent>()
-            .filter { enabled && Hypixel.currentGame is SkyWars }
+            .filter { enabled && Nameless.hypixel.currentGame is SkyWars }
             .filter { scanTimer.update().check() }.subscribe {
                 scanInventory()
                 scanEntityItem()
@@ -165,7 +165,7 @@ object DisplayBetterArmor : SimpleFeature(
     }
 
     init {
-        on<GuiScreenEvent.BackgroundDrawnEvent>().filter { enabled && Hypixel.currentGame is SkyWars }
+        on<GuiScreenEvent.BackgroundDrawnEvent>().filter { enabled && Nameless.hypixel.currentGame is SkyWars }
             .subscribe {
                 withInstance<GuiInventory>(gui) {
                     val color = color.rgb
@@ -178,7 +178,7 @@ object DisplayBetterArmor : SimpleFeature(
 
     @JvmStatic
     fun scaleEntityItem(entityItem: EntityItem) {
-        if (!enabled || Hypixel.currentGame !is SkyWars) return
+        if (!enabled || Nameless.hypixel.currentGame !is SkyWars) return
         if (entityItem !in scaledItems) return
         scale(scale, scale, scale)
     }

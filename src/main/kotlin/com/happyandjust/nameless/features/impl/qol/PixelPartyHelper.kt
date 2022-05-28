@@ -18,6 +18,7 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.*
@@ -27,7 +28,6 @@ import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.features.base.hierarchy
 import com.happyandjust.nameless.features.base.parameter
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.PixelParty
 import gg.essential.elementa.utils.withAlpha
 import kotlinx.coroutines.*
@@ -99,7 +99,7 @@ object PixelPartyHelper : SimpleFeature("pixelPartyHelper", "Pixel Party Helper"
         }.rgb
     }
 
-    private fun checkForRequirement() = enabled && Hypixel.currentGame is PixelParty
+    private fun checkForRequirement() = enabled && Nameless.hypixel.currentGame is PixelParty
 
     init {
         on<SpecialTickEvent>().filter { checkForRequirement() && scanTimer.update().check() }.subscribe {

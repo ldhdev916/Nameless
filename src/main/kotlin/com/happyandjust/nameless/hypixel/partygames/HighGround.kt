@@ -63,14 +63,10 @@ class HighGround : PartyMiniGames {
         }
     }
 
-    companion object : PartyMiniGamesCreator {
+    companion object {
 
         private val outlineColor
             get() = PartyGamesHelper.highGroundColor.rgb
         private val SCOREBOARD_PATTERN = "(?<name>\\w+): (?<score>\\d+)".toPattern()
-
-        override fun createImpl() = HighGround()
-
-        override val scoreboardIdentifier = "High Ground"
     }
 }

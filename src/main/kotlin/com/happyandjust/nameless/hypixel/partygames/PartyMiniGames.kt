@@ -24,8 +24,23 @@ interface PartyMiniGames : TempEventListener {
     fun isEnabled(): Boolean
 }
 
-interface PartyMiniGamesCreator {
-    fun createImpl(): PartyMiniGames
+fun interface PartyMiniGamesFactory {
+    fun createPartyMiniGames(scoreboardLine: String): PartyMiniGames?
+}
 
-    val scoreboardIdentifier: String
+object PartyMiniGamesFactoryImpl : PartyMiniGamesFactory {
+    override fun createPartyMiniGames(scoreboardLine: String) = when {
+        scoreboardLine find "Animal Slaughter" -> AnimalSlaughter()
+        scoreboardLine find "Anvil Spleef" -> AnvilSpleef()
+        scoreboardLine find "Avalanche" -> Avalanche()
+        scoreboardLine find "Dive" -> Dive()
+        scoreboardLine find "High Ground" -> HighGround()
+        scoreboardLine find "Jigsaw Rush" -> JigsawRush()
+        scoreboardLine find "Lab Escape" -> LabEscape()
+        scoreboardLine find "RPG-16" -> RPG16()
+        scoreboardLine find "Spider Maze" -> SpiderMaze()
+        else -> null
+    }
+
+    private infix fun String.find(other: String) = contains(other, true)
 }

@@ -25,8 +25,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
-    kotlin("jvm") version "1.6.20"
-    kotlin("plugin.serialization") version "1.6.20"
+    kotlin("jvm") version "1.6.21"
+    kotlin("plugin.serialization") version "1.6.21"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("net.minecraftforge.gradle.forge") version "6f53277"
     id("org.spongepowered.mixin") version "d75e32e"
@@ -72,12 +72,10 @@ dependencies {
 
     include("net.objecthunter:exp4j:0.4.8")
 
-    include("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") {
+    include(project(":socket")) {
         exclude(module = "kotlin-stdlib")
         exclude(module = "kotlin-stdlib-common")
     }
-
-    include("org.java-websocket:Java-WebSocket:1.5.3")
 
     annotationProcessor("org.spongepowered:mixin:0.8.5")
     annotationProcessor("com.google.code.gson:gson:2.2.4")
@@ -85,7 +83,7 @@ dependencies {
     annotationProcessor("org.ow2.asm:asm-tree:6.2")
 
     testImplementation(kotlin("test"))
-    testImplementation("io.mockk:mockk:1.12.3")
+    testImplementation("io.mockk:mockk:1.12.4")
 
     val junit = "5.8.2"
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit")

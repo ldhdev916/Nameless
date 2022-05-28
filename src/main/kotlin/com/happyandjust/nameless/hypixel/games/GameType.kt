@@ -18,7 +18,8 @@
 
 package com.happyandjust.nameless.hypixel.games
 
-import com.happyandjust.nameless.hypixel.LocrawInfo
+import com.happyandjust.nameless.hypixel.partygames.PartyMiniGamesFactoryImpl
+import com.ldhdev.socket.data.LocrawInfo
 
 interface GameType {
 
@@ -29,8 +30,23 @@ interface GameType {
     fun onDisposed() {}
 }
 
-interface GameTypeCreator {
-    fun createGameTypeImpl(): GameType
+fun interface GameTypeFactory {
+    fun createGameType(locrawInfo: LocrawInfo): GameType?
+}
 
-    fun isCurrent(locrawInfo: LocrawInfo): Boolean
+object GameTypeFactoryImpl : GameTypeFactory {
+    override fun createGameType(locrawInfo: LocrawInfo) = with(locrawInfo) {
+        when {
+            gameType == "BEDWARS" -> BedWars()
+            gameType == "ARCADE" && mode == "GRINCH_SIMULATOR_V2" -> GrinchSimulator()
+            gameType == "BUILD_BATTLE" && mode == "BUILD_BATTLE_GUESS_THE_BUILD" -> GuessTheBuild()
+            mode == "lobby" -> Lobby()
+            gameType == "MURDER_MYSTERY" -> MurderMystery()
+            gameType == "ARCADE" && mode == "PARTY" -> PartyGames(PartyMiniGamesFactoryImpl)
+            gameType == "PROTOTYPE" && mode == "PIXEL_PARTY" -> PixelParty()
+            gameType == "SKYBLOCK" -> SkyBlock()
+            gameType == "SKYWARS" -> SkyWars()
+            else -> null
+        }
+    }
 }

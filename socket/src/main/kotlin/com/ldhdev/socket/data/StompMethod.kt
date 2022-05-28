@@ -16,15 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.happyandjust.nameless.hypixel
+package com.ldhdev.socket.data
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class LocrawInfo(
-    val server: String,
-    @SerialName("gametype") val gameType: String = "",
-    val mode: String = "lobby",
-    val map: String = ""
-)
+enum class StompMethod {
+    CONNECT, STOMP, CONNECTED, SEND, SUBSCRIBE, UNSUBSCRIBE, ACK, NACK, BEGIN, COMMIT, ABORT, DISCONNECT, MESSAGE, RECEIPT, ERROR
+}

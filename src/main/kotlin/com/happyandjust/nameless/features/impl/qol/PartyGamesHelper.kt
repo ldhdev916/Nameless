@@ -18,13 +18,13 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
+import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.value.Overlay
 import com.happyandjust.nameless.core.value.toChromaColor
 import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.features.base.*
 import com.happyandjust.nameless.gui.OverlayConstraint.Companion.constraint
 import com.happyandjust.nameless.gui.fixed
-import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.games.PartyGames
 import com.happyandjust.nameless.hypixel.partygames.LabEscape
 import gg.essential.elementa.ElementaVersion
@@ -174,7 +174,7 @@ object PartyGamesHelper : SimpleFeature("partyGamesHelper", "Party Games Helper"
             container
         }
 
-        shouldDisplay { enabled && value && Hypixel.currentGame is PartyGames }
+        shouldDisplay { enabled && value && Nameless.hypixel.currentGame is PartyGames }
 
         val window = Window(ElementaVersion.V1)
         val container = UIContainer().constrain {
@@ -194,7 +194,7 @@ object PartyGamesHelper : SimpleFeature("partyGamesHelper", "Party Games Helper"
             } childOf container
         }
         render {
-            withInstance<PartyGames>(Hypixel.currentGame) {
+            withInstance<PartyGames>(Nameless.hypixel.currentGame) {
                 withInstance<LabEscape>(partyMiniGames) {
                     for ((index, textComponent) in textComponents.withIndex()) {
                         val text = keys.getOrElse(index) { "-1" }
