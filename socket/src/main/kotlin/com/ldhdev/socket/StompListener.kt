@@ -63,9 +63,7 @@ sealed interface StompListener {
                             uuidIdentifier = it.payload!!
                             unsubscribe(joinSubscription!!)
 
-                            subscribeWithId(Route.Client.Chat, chatHandler)
-                            subscribeWithId(Route.Client.Position, positionHandler)
-                            subscribeWithId(Route.Client.NotifyRead, readHandler)
+                            withListener<OnModIdSetup> { onModIdSetup() }
                         }
 
                         subscribe(
@@ -202,6 +200,18 @@ sealed interface StompListener {
                 if (chat.markedAsRead) return
                 chat.markedAsRead = true
                 send(StompMarkAsRead(chat))
+            }
+        }
+    }
+
+    fun interface OnModIdSetup : StompListener {
+        fun StompClient.onModIdSetup()
+
+        object Default : OnModIdSetup {
+            override fun StompClient.onModIdSetup() {
+                subscribeWithId(Route.Client.Chat, chatHandler)
+                subscribeWithId(Route.Client.Position, positionHandler)
+                subscribeWithId(Route.Client.NotifyRead, readHandler)
             }
         }
     }

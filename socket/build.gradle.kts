@@ -48,7 +48,7 @@ publishing {
 
             groupId = "com.ldhdev"
             artifactId = "nameless-socket-client"
-            version = "1.0.0"
+            version = "1.0.1"
 
             from(components["java"])
 

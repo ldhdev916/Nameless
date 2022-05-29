@@ -61,6 +61,7 @@ class StompClient(serverUri: URI, val playerUUID: String, val modVersion: String
         setListener<StompListener.OnDisconnect>(StompListener.OnDisconnect.Default)
         setListener<StompListener.OnSendChat>(StompListener.OnSendChat.Default)
         setListener<StompListener.OnMarkAsRead>(StompListener.OnMarkAsRead.Default)
+        setListener<StompListener.OnModIdSetup>(StompListener.OnModIdSetup.Default)
 
     }
 
