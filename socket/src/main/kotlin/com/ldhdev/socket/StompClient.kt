@@ -65,7 +65,7 @@ class StompClient(serverUri: URI, val playerUUID: String, val modVersion: String
 
     }
 
-    fun <T : StompListener, I : T> setListener(clazz: KClass<T>, listener: StompListener) {
+    fun <T : StompListener> setListener(clazz: KClass<T>, listener: StompListener) {
         listeners[clazz] = listener
     }
 
