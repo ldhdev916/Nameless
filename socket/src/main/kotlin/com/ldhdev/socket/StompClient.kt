@@ -65,7 +65,7 @@ class StompClient(serverUri: URI, val playerUUID: String, val modVersion: String
 
     }
 
-    fun <T : StompListener> setListener(clazz: KClass<T>, listener: StompListener) {
+    fun <T : StompListener, I : T> setListener(clazz: KClass<T>, listener: StompListener) {
         listeners[clazz] = listener
     }
 
@@ -73,14 +73,22 @@ class StompClient(serverUri: URI, val playerUUID: String, val modVersion: String
         setListener(T::class, listener)
     }
 
+    /**
+     * @return Previously registered listener
+     */
     @Suppress("UNCHECKED_CAST")
-    fun <T : StompListener> setListener(clazz: KClass<T>, listener: T.() -> T) {
+    fun <T : StompListener> setListener(clazz: KClass<T>, listener: T.() -> T): T {
         val existing = listeners[clazz] as T
         setListener(clazz, listener(existing))
+
+        return existing
     }
 
-    inline fun <reified T : StompListener> setListener(noinline listener: T.() -> T) {
-        setListener(T::class, listener)
+    /**
+     * @return Previously registered listener
+     */
+    inline fun <reified T : StompListener> setListener(noinline listener: T.() -> T): T {
+        return setListener(T::class, listener)
     }
 
     internal inline fun <reified T : StompListener> getListener() = listeners[T::class] as T
