@@ -59,7 +59,7 @@ object Nameless {
     lateinit var modFile: File
     private val delayedEventHandlers = hashSetOf<Any>()
     private var shouldRegisterHandlers = false
-    val client by lazy { StompClient(URI("ws://localhost/nameless/stomp"), mc.session.playerID, VERSION) }
+    val client by lazy { StompClient(URI("ws://3.37.56.106/nameless/stomp"), mc.session.playerID, VERSION) }
     val hypixel by lazy { Hypixel(GameTypeFactoryImpl) }
 
     fun requestRegisterEventHandler(handler: Any) {
