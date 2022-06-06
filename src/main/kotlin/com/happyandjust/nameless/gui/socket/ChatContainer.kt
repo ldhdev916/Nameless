@@ -31,7 +31,7 @@ import gg.essential.elementa.utils.withAlpha
 import java.awt.Color
 import java.time.format.DateTimeFormatter
 
-class ChatContainer(chats: MutableList<StompChat>) : UIContainer() {
+class ChatContainer(gui: SocketGui, chats: MutableList<StompChat>) : UIContainer() {
 
     init {
         chats.filterIsInstance<StompChat.Received>().forEach { Nameless.client.markChatAsRead(it) }
@@ -54,7 +54,7 @@ class ChatContainer(chats: MutableList<StompChat>) : UIContainer() {
         }
 
         with(Nameless.client) {
-            setListener<StompListener.OnChat> {
+            val chatPop = setListener<StompListener.OnChat> {
                 StompListener.OnChat {
                     onChat(it)
                     StompChatContainer(it) childOf scroller
@@ -66,13 +66,16 @@ class ChatContainer(chats: MutableList<StompChat>) : UIContainer() {
                 }
             }
 
-            setListener<StompListener.OnRead> {
+            val readPop = setListener<StompListener.OnRead> {
                 StompListener.OnRead {
                     onRead(it)
                     scroller.allChildren.filterIsInstance<StompChatContainer>()
                         .find { container -> container.chat == it }?.markAsRead()
                 }
             }
+
+            gui.onClose(readPop)
+            gui.onClose(chatPop)
         }
     }
 }

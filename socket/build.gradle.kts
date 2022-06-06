@@ -20,25 +20,37 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     `maven-publish`
+    id("com.google.devtools.ksp") version "1.6.21-1.0.5"
 }
 
 repositories {
     mavenCentral()
-    maven("https://jitpack.io")
 }
 
 dependencies {
     api("org.java-websocket:Java-WebSocket:1.5.3")
-    api("com.github.ldhdev916:NamelessStd:1.0.1")
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
     testImplementation(kotlin("test"))
+
+    compileOnly(project(":socket:ksp"))
+    ksp(project(":socket:ksp"))
 }
 
 tasks {
     test {
         useJUnitPlatform()
+    }
+}
+
+kotlin {
+    sourceSets.main {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
+    }
+
+    sourceSets.test {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
     }
 }
 
@@ -48,7 +60,7 @@ publishing {
 
             groupId = "com.ldhdev"
             artifactId = "nameless-socket-client"
-            version = "1.0.2"
+            version = "1.0.3"
 
             from(components["java"])
 

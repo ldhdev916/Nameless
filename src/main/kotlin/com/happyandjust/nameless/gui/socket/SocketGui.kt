@@ -69,7 +69,7 @@ class SocketGui : WindowScreen(ElementaVersion.V1, newGuiScale = GuiScale.scaleF
 
                 val selectIcons = mutableListOf<PlayerSelectIcon>()
                 val associatedChatRoom = players.associateWith { name ->
-                    UIChatRoom(name).constrain {
+                    UIChatRoom(this, name).constrain {
                         x = SiblingConstraint(10f)
 
                         width = 240.pixels()
@@ -109,6 +109,17 @@ class SocketGui : WindowScreen(ElementaVersion.V1, newGuiScale = GuiScale.scaleF
                 }
             }
         }
+    }
+
+    private val closeListeners = mutableListOf<() -> Unit>()
+    fun onClose(action: () -> Unit) {
+        closeListeners.add(action)
+    }
+
+    override fun onScreenClose() {
+        super.onScreenClose()
+
+        closeListeners.forEach { it() }
     }
 
     companion object {

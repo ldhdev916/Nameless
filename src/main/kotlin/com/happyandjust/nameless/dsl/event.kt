@@ -54,8 +54,6 @@ class SubscriptionBuilder<T : Event>(private val eventClass: KClass<T>) {
 
     fun timerFilter(timer: TickTimer) = filter { timer.update().check() }
 
-    fun timerFilter(getter: () -> TickTimer) = filter { getter().update().check() }
-
     /**
      * @return Callback that unregisters listener
      */

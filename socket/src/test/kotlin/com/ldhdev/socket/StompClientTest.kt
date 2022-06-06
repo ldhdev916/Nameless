@@ -21,20 +21,21 @@ package com.ldhdev.socket
 import kotlinx.coroutines.delay
 import org.junit.jupiter.api.Test
 import java.net.URI
+import kotlin.time.Duration.Companion.seconds
 
 internal class StompClientTest {
 
     private fun getClient(playerUUID: String) =
-        StompClient(URI("ws://3.37.56.106/nameless/stomp"), playerUUID, "1.0.5-Pre")
+        StompClient(URI("ws://localhost/nameless/stomp"), playerUUID, "1.0.5-Pre")
 
-    private suspend inline fun StompClient.runCycle(action: () -> Unit) {
+    private suspend inline fun StompClient.runCycle(action: StompClient.() -> Unit) {
         connectBlocking()
 
-        delay(2000)
+        delay(2.seconds)
 
         action()
 
-        delay(2000)
+        delay(2.seconds)
 
         disconnect()
     }

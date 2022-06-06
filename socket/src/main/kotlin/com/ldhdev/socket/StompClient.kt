@@ -23,13 +23,17 @@ import com.ldhdev.socket.data.StompPayload
 import com.ldhdev.socket.subscription.StompSubscription
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
+import java.lang.reflect.Proxy
 import java.net.URI
 import kotlin.reflect.KClass
 
 class StompClient(serverUri: URI, val playerUUID: String, val modVersion: String) : WebSocketClient(serverUri) {
 
-    private val listeners = mutableMapOf<KClass<out StompListener>, StompListener>()
-    lateinit var uuidIdentifier: String
+    private val listeners = mutableMapOf<KClass<out StompListener>, StompListener>().withDefault {
+        Proxy.newProxyInstance(it.java.classLoader, arrayOf(it.java)) { _, _, _ ->
+
+        } as StompListener // no-op
+    }
 
     val subscriptions = hashMapOf<Int, StompSubscription>()
     val receipts = hashMapOf<Int, StompPayload>()
@@ -48,29 +52,10 @@ class StompClient(serverUri: URI, val playerUUID: String, val modVersion: String
         }
     }
 
-    fun isUUIDInitialized() = ::uuidIdentifier.isInitialized
-
     init {
-        setListener<StompListener.OnError>(StompListener.OnError.Default)
-        setListener<StompListener.OnClose>(StompListener.OnClose.Default)
-        setListener<StompListener.OnReceive>(StompListener.OnReceive.Default)
-        setListener<StompListener.OnOpen>(StompListener.OnOpen.Default)
-        setListener<StompListener.OnSend>(StompListener.OnSend.Default)
-        setListener<StompListener.OnSubscribe>(StompListener.OnSubscribe.Default)
-        setListener<StompListener.OnUnsubscribe>(StompListener.OnUnsubscribe.Default)
-        setListener<StompListener.OnDisconnect>(StompListener.OnDisconnect.Default)
-        setListener<StompListener.OnSendChat>(StompListener.OnSendChat.Default)
-        setListener<StompListener.OnMarkAsRead>(StompListener.OnMarkAsRead.Default)
-        setListener<StompListener.OnModIdSetup>(StompListener.OnModIdSetup.Default)
-
-    }
-
-    fun <T : StompListener> setListener(clazz: KClass<T>, listener: StompListener) {
-        listeners[clazz] = listener
-    }
-
-    inline fun <reified T : StompListener> setListener(listener: StompListener) {
-        setListener(T::class, listener)
+        registerDefaultListeners()
+        addHeader("uuid", playerUUID)
+        addHeader("mod-version", modVersion)
     }
 
     /**
@@ -78,10 +63,10 @@ class StompClient(serverUri: URI, val playerUUID: String, val modVersion: String
      */
     @Suppress("UNCHECKED_CAST")
     fun <T : StompListener> setListener(clazz: KClass<T>, listener: T.() -> T): () -> Unit {
-        val existing = listeners[clazz] as T
-        setListener(clazz, listener(existing))
+        val existing = listeners.getValue(clazz) as T
+        listeners[clazz] = existing.listener()
 
-        return { setListener(clazz, existing) }
+        return { listeners[clazz] = existing }
     }
 
     /**
@@ -91,7 +76,7 @@ class StompClient(serverUri: URI, val playerUUID: String, val modVersion: String
         return setListener(T::class, listener)
     }
 
-    internal inline fun <reified T : StompListener> getListener() = listeners[T::class] as T
+    internal inline fun <reified T : StompListener> getListener() = listeners.getValue(T::class) as T
 
     internal inline fun <reified T : StompListener> withListener(action: T.() -> Unit) = with(getListener(), action)
 

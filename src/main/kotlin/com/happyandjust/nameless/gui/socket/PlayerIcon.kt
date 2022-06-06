@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.gui.socket
 
-import com.happyandjust.nameless.dsl.fetch
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIImage
 import gg.essential.elementa.components.UIText
@@ -28,37 +27,17 @@ import gg.essential.elementa.constraints.MousePositionConstraint
 import gg.essential.elementa.dsl.childOf
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.percent
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import java.net.URL
-import java.util.*
-import java.util.concurrent.CompletableFuture
-import javax.imageio.ImageIO
 
 class PlayerIcon(playerName: String) : UIContainer() {
 
     init {
-        val async = CompletableFuture.supplyAsync {
-            val uuid =
-                Json.decodeFromString<Name2UUID>("https://api.mojang.com/users/profiles/minecraft/$playerName".fetch()).id
-            val profile =
-                Json.decodeFromString<MojangProfile>("https://sessionserver.mojang.com/session/minecraft/profile/$uuid".fetch())
-            val textureProperty = profile.properties.single { it.name == "textures" }
-            val value =
-                Json.decodeFromString<PropertyValue>(Base64.getDecoder().decode(textureProperty.value).decodeToString())
-            val skinUrl = value.textures["SKIN"]!!["url"]!!.jsonPrimitive.content
-
-            ImageIO.read(URL(skinUrl)).getSubimage(8, 8, 8, 8)
-        }
-
         val nameText = UIText(playerName).constrain {
             x = MousePositionConstraint()
             y = MousePositionConstraint()
         }
 
-        UIImage(async).constrain {
+        UIImage.ofURL(URL("https://mc-heads.net/avatar/happyandjust")).constrain {
             width = 100.percent()
             height = ImageAspectConstraint()
         }.onMouseEnter {
@@ -71,21 +50,4 @@ class PlayerIcon(playerName: String) : UIContainer() {
             }
         } childOf this
     }
-
-    @kotlinx.serialization.Serializable
-    private data class Name2UUID(val name: String, val id: String)
-
-    @kotlinx.serialization.Serializable
-    private data class MojangProfile(val id: String, val name: String, val properties: List<ProfileProperty>)
-
-    @kotlinx.serialization.Serializable
-    private data class ProfileProperty(val name: String, val value: String)
-
-    @kotlinx.serialization.Serializable
-    private data class PropertyValue(
-        val timestamp: Long,
-        val profileId: String,
-        val profileName: String,
-        val textures: Map<String, JsonObject>
-    )
 }

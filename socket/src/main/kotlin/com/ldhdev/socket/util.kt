@@ -18,9 +18,6 @@
 
 package com.ldhdev.socket
 
-import com.ldhdev.namelessstd.Route
-import com.ldhdev.namelessstd.Variable
-import com.ldhdev.namelessstd.withVariables
 import com.ldhdev.socket.data.StompSend
 import com.ldhdev.socket.subscription.StompSubscription
 import kotlinx.serialization.decodeFromString
@@ -28,11 +25,12 @@ import kotlinx.serialization.json.Json
 
 fun StompClient.requestOnlinePlayers(action: (List<String>) -> Unit) {
     var subscription: StompSubscription? = null
-    subscription = StompSubscription(Route.Client.SendOnlines.withVariables(Variable.Id to uuidIdentifier)) {
+    subscription = StompSubscription.user("/onlines") {
         val players = Json.decodeFromString<List<String>>(it.payload!!)
         action(players)
         unsubscribe(subscription!!)
     }
+
     subscribe(subscription)
-    send(StompSend(Route.Server.ViewOnline))
+    send(StompSend("/onlines"))
 }

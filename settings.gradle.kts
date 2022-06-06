@@ -44,3 +44,5 @@ pluginManagement {
 
 rootProject.name = "Nameless"
 include("socket")
+include("socket:ksp")
+findProject(":socket:ksp")?.name = "ksp"

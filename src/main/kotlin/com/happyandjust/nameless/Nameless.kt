@@ -59,7 +59,7 @@ object Nameless {
     lateinit var modFile: File
     private val delayedEventHandlers = hashSetOf<Any>()
     private var shouldRegisterHandlers = false
-    val client by lazy { StompClient(URI("ws://3.37.56.106/nameless/stomp"), mc.session.playerID, VERSION) }
+    val client by lazy { StompClient(URI("ws://localhost/nameless/stomp"), mc.session.playerID, VERSION) }
     val hypixel by lazy { Hypixel(GameTypeFactoryImpl) }
 
     fun requestRegisterEventHandler(handler: Any) {
@@ -82,11 +82,13 @@ object Nameless {
 
         CoroutineScope(Dispatchers.IO).launch {
             with(client) {
-                setListener<StompListener.OnPosition>(StompListener.OnPosition {
-                    mc.thePlayer?.let {
-                        Triple(it.posX, it.posY, it.posZ)
+                setListener<StompListener.OnPosition> {
+                    StompListener.OnPosition {
+                        mc.thePlayer?.let {
+                            Triple(it.posX, it.posY, it.posZ)
+                        }
                     }
-                })
+                }
 
                 setListener<StompListener.OnOpen> {
                     StompListener.OnOpen {
@@ -96,9 +98,6 @@ object Nameless {
                         })
                     }
                 }
-
-                setListener<StompListener.OnChat>(StompListener.OnChat {})
-                setListener<StompListener.OnRead>(StompListener.OnRead {})
 
                 setListener<StompListener.OnSend> {
                     StompListener.OnSend {
@@ -114,7 +113,7 @@ object Nameless {
                     }
                 }
 
-                connectBlocking()
+                if (!connectBlocking()) error("Stomp client not connected")
             }
         }
     }

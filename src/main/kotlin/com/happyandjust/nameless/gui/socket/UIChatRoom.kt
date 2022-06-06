@@ -27,7 +27,7 @@ import gg.essential.elementa.dsl.*
 import gg.essential.vigilance.utils.onLeftClick
 import org.lwjgl.input.Keyboard
 
-class UIChatRoom(with: String) : UIContainer() {
+class UIChatRoom(gui: SocketGui, with: String) : UIContainer() {
 
     init {
 
@@ -44,7 +44,7 @@ class UIChatRoom(with: String) : UIContainer() {
             textScale = 2.pixels()
         } childOf topContainer
 
-        ChatContainer(Nameless.client.getOrCreateChats(with)).constrain {
+        ChatContainer(gui, Nameless.client.getOrCreateChats(with)).constrain {
 
             y = SiblingConstraint()
 

@@ -23,4 +23,12 @@ data class StompSubscription(
     val handler: StompMessageHandler
 ) {
     var id = 0
+
+    companion object {
+        fun default(destination: String, handler: StompMessageHandler) =
+            StompSubscription("/topic$destination", handler)
+
+        fun user(destination: String, handler: StompMessageHandler) =
+            StompSubscription("/user/topic$destination", handler)
+    }
 }

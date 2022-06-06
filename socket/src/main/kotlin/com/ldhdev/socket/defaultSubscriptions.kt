@@ -18,24 +18,17 @@
 
 package com.ldhdev.socket
 
-import com.ldhdev.namelessstd.Headers
-import com.ldhdev.namelessstd.Route
-import com.ldhdev.namelessstd.Variable
-import com.ldhdev.namelessstd.withVariables
+import com.ldhdev.ksp.DefaultSubscription
 import com.ldhdev.socket.chat.StompChat
 import com.ldhdev.socket.chat.StompChatData
 import com.ldhdev.socket.data.StompSend
 import com.ldhdev.socket.subscription.StompMessageHandler
-import com.ldhdev.socket.subscription.StompSubscription
 import java.time.LocalDateTime
 
-fun StompClient.subscribeWithId(route: String, handler: StompMessageHandler) {
-    subscribe(StompSubscription(route.withVariables(Variable.Id to uuidIdentifier), handler))
-}
-
+@DefaultSubscription("/chats/send", DefaultSubscription.Kind.USER)
 val chatHandler = StompMessageHandler {
-    val sender = it.headers[Headers.Sender]!!
-    val chatId = it.headers[Headers.ChatId]!!
+    val sender = it.headers["sender"]!!
+    val chatId = it.headers["chat-id"]!!
 
     val chatData = StompChatData(it.payload!!, LocalDateTime.now(), chatId)
     val chat = StompChat.Received(chatData, sender)
@@ -43,19 +36,20 @@ val chatHandler = StompMessageHandler {
     getOrCreateChats(sender).add(chat)
 }
 
-
+@DefaultSubscription("/position", DefaultSubscription.Kind.USER)
 val positionHandler = StompMessageHandler {
     withListener<StompListener.OnPosition> {
         val message = getPosition().toString()
 
-        send(StompSend(Route.Server.Position, message))
+        send(StompSend("/position", message))
     }
 }
 
+@DefaultSubscription("/chats/read", DefaultSubscription.Kind.USER)
 val readHandler = StompMessageHandler {
-    val from = it.headers[Headers.From]!!
-    val chatId = it.headers[Headers.ChatId]!!
-    val list = chats[from] ?: return@StompMessageHandler
+    val reader = it.headers["reader"]!!
+    val chatId = it.headers["chat-id"]!!
+    val list = chats[reader] ?: return@StompMessageHandler
     val chat = list.filterIsInstance<StompChat.Sending>().first { sending -> sending.data.id == chatId }
     chat.read = true
     withListener<StompListener.OnRead> { onRead(chat) }

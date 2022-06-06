@@ -30,6 +30,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("net.minecraftforge.gradle.forge") version "6f53277"
     id("org.spongepowered.mixin") version "d75e32e"
+    id("com.github.ben-manes.versions") version "0.42.0"
 }
 
 version = "1.0.5-Pre"

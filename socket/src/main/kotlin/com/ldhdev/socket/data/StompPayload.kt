@@ -18,7 +18,6 @@
 
 package com.ldhdev.socket.data
 
-import com.ldhdev.namelessstd.*
 import com.ldhdev.socket.chat.StompChat
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -77,23 +76,21 @@ open class StompPayload(val method: StompMethod, val payload: String? = null) {
 
 open class StompSend(destination: String, payload: String? = null) : StompPayload(StompMethod.SEND, payload) {
     init {
-        header("destination" to destination.withPrefix(Prefix.Server))
+        header("destination" to "/mod$destination")
     }
 }
 
-class StompSendChat(chat: StompChat.Sending) :
-    StompSend(Route.Server.SendChat.withVariables(Variable.To to chat.receiver), chat.data.content) {
+class StompSendChat(chat: StompChat.Sending) : StompSend("/chats/send/${chat.receiver}", chat.data.content) {
 
     init {
-        header(Headers.ChatId to chat.data.id)
+        header("chat-id" to chat.data.id)
     }
 }
 
-class StompMarkAsRead(chat: StompChat.Received) :
-    StompSend(Route.Server.ReadChat.withVariables(Variable.Sender to chat.sender)) {
+class StompMarkAsRead(chat: StompChat.Received) : StompSend("/chats/read/${chat.sender}") {
     init {
-        header(Headers.ChatId to chat.data.id)
+        header("chat-id" to chat.data.id)
     }
 }
 
-class StompLocrawInfo(locrawInfo: LocrawInfo?) : StompSend(Route.Server.Locraw, Json.encodeToString(locrawInfo))
+class StompLocrawInfo(locrawInfo: LocrawInfo?) : StompSend("/locraw", Json.encodeToString(locrawInfo))

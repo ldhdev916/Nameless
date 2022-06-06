@@ -18,11 +18,10 @@
 
 package com.ldhdev.socket
 
-import com.ldhdev.namelessstd.*
+import com.ldhdev.ksp.DefaultListener
 import com.ldhdev.socket.chat.StompChat
 import com.ldhdev.socket.chat.StompChatData
 import com.ldhdev.socket.data.*
-import com.ldhdev.socket.subscription.StompMessageHandler
 import com.ldhdev.socket.subscription.StompSubscription
 import java.time.LocalDateTime
 import java.util.*
@@ -35,6 +34,7 @@ sealed interface StompListener {
     fun interface OnError : StompListener {
         fun StompClient.onStompError(e: Exception)
 
+        @DefaultListener(OnError::class)
         object Default : OnError {
             override fun StompClient.onStompError(e: Exception) {
                 e.printStackTrace()
@@ -45,6 +45,7 @@ sealed interface StompListener {
     fun interface OnClose : StompListener {
         fun StompClient.onStompClose(code: Int, reason: String, remote: Boolean)
 
+        @DefaultListener(OnClose::class)
         object Default : OnClose {
             override fun StompClient.onStompClose(code: Int, reason: String, remote: Boolean) = Unit
         }
@@ -53,31 +54,19 @@ sealed interface StompListener {
     fun interface OnReceive : StompListener {
         fun StompClient.onReceive(payload: StompPayload)
 
+        @DefaultListener(OnReceive::class)
         object Default : OnReceive {
 
             override fun StompClient.onReceive(payload: StompPayload) {
                 when (payload.method) {
                     StompMethod.CONNECTED -> {
-                        var joinSubscription: StompSubscription? = null
-                        val handler = StompMessageHandler {
-                            uuidIdentifier = it.payload!!
-                            unsubscribe(joinSubscription!!)
-
-                            withListener<OnModIdSetup> { onModIdSetup() }
-                        }
-
-                        subscribe(
-                            StompSubscription(
-                                Route.Client.SendId.withVariables(Variable.Id to playerUUID),
-                                handler
-                            ).also { joinSubscription = it }
-                        )
                         send(
-                            StompSend(Route.Server.Join).header(
-                                Headers.PlayerUUID to playerUUID,
-                                Headers.ModVersion to modVersion
+                            StompSend("/join").header(
+                                "uuid" to playerUUID,
+                                "mod-version" to modVersion
                             )
                         )
+                        registerDefaultSubscriptions()
                     }
                     StompMethod.ERROR -> close()
                     StompMethod.RECEIPT -> {
@@ -100,6 +89,7 @@ sealed interface StompListener {
     fun interface OnOpen : StompListener {
         fun StompClient.onOpen()
 
+        @DefaultListener(OnOpen::class)
         object Default : OnOpen {
             override fun StompClient.onOpen() {
                 send(StompPayload(StompMethod.CONNECT).header("accept-version" to "1.2", "host" to uri.host))
@@ -110,17 +100,19 @@ sealed interface StompListener {
     fun interface OnSend : StompListener {
         fun StompClient.onSend(payload: StompPayload)
 
+        @DefaultListener(OnSend::class)
         object Default : OnSend {
             override fun StompClient.onSend(payload: StompPayload) {
-                if (isUUIDInitialized()) payload.header(Headers.ModId to uuidIdentifier)
                 send(payload.getMessage())
             }
         }
     }
 
     fun interface OnSubscribe : StompListener {
+
         fun StompClient.onSubscribe(subscription: StompSubscription)
 
+        @DefaultListener(OnSubscribe::class)
         object Default : OnSubscribe {
 
             private var increasingId = 0
@@ -130,7 +122,7 @@ sealed interface StompListener {
                 subscriptions[subscription.id] = subscription
                 send(
                     StompPayload(StompMethod.SUBSCRIBE).header(
-                        "destination" to subscription.destination.client,
+                        "destination" to subscription.destination,
                         "id" to subscription.id
                     )
                 )
@@ -141,6 +133,7 @@ sealed interface StompListener {
     fun interface OnUnsubscribe : StompListener {
         fun StompClient.onUnsubscribe(subscription: StompSubscription)
 
+        @DefaultListener(OnUnsubscribe::class)
         object Default : OnUnsubscribe {
             override fun StompClient.onUnsubscribe(subscription: StompSubscription) {
                 send(StompPayload(StompMethod.UNSUBSCRIBE).header("id" to subscription.id))
@@ -152,10 +145,9 @@ sealed interface StompListener {
     fun interface OnDisconnect : StompListener {
         fun StompClient.onDisconnect()
 
+        @DefaultListener(OnDisconnect::class)
         object Default : OnDisconnect {
             override fun StompClient.onDisconnect() {
-                send(StompSend(Route.Server.Disconnect))
-
                 val id = receiptId++
                 val payload = StompPayload(StompMethod.DISCONNECT).header("receipt" to id)
                 receipts[id] = payload
@@ -182,6 +174,7 @@ sealed interface StompListener {
     fun interface OnSendChat : StompListener {
         fun StompClient.onSendChat(receiver: String, content: String)
 
+        @DefaultListener(OnSendChat::class)
         object Default : OnSendChat {
             override fun StompClient.onSendChat(receiver: String, content: String) {
                 val data = StompChatData(content, LocalDateTime.now(), UUID.randomUUID().toString())
@@ -195,23 +188,12 @@ sealed interface StompListener {
     fun interface OnMarkAsRead : StompListener {
         fun StompClient.onMarkAsRead(chat: StompChat.Received)
 
+        @DefaultListener(OnMarkAsRead::class)
         object Default : OnMarkAsRead {
             override fun StompClient.onMarkAsRead(chat: StompChat.Received) {
                 if (chat.markedAsRead) return
                 chat.markedAsRead = true
                 send(StompMarkAsRead(chat))
-            }
-        }
-    }
-
-    fun interface OnModIdSetup : StompListener {
-        fun StompClient.onModIdSetup()
-
-        object Default : OnModIdSetup {
-            override fun StompClient.onModIdSetup() {
-                subscribeWithId(Route.Client.Chat, chatHandler)
-                subscribeWithId(Route.Client.Position, positionHandler)
-                subscribeWithId(Route.Client.NotifyRead, readHandler)
             }
         }
     }
