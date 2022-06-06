@@ -48,10 +48,10 @@ kotlin {
     sourceSets.main {
         kotlin.srcDir("build/generated/ksp/main/kotlin")
     }
-
-    sourceSets.test {
-        kotlin.srcDir("build/generated/ksp/main/kotlin")
-    }
+//
+//    sourceSets.test {
+//        kotlin.srcDir("build/generated/ksp/main/kotlin")
+//    }
 }
 
 publishing {
