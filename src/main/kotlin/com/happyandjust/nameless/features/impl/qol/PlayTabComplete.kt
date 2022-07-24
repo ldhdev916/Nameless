@@ -36,7 +36,7 @@ object PlayTabComplete : SimpleFeature(
 ) {
 
     private val gameMap =
-        Json.decodeFromString<Map<String, String>>("https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw".fetch())
+        Json.decodeFromString<Map<String, String>>("https://data.woverflow.cc/games.json".fetch())
     private val games = gameMap.keys + gameMap.values
 
     private val PLAY = "/play (?<msg>.*)".toPattern()

@@ -33,6 +33,7 @@ import net.minecraftforge.client.event.RenderWorldLastEvent
 import java.awt.Color
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.system.measureTimeMillis
+import kotlin.time.Duration.Companion.milliseconds
 
 object PathFindCommand : Command("pathfind") {
 
@@ -51,7 +52,7 @@ object PathFindCommand : Command("pathfind") {
             val time = measureTimeMillis {
                 paths.addAll(ModPathFinding(BlockPos(x, y, z), true, (timeout ?: 10) * 1000L).findPath())
             }
-            sendDebugMessage("Path Finding took §a${time / 1000.0}s")
+            sendDebugMessage("Path Finding took §a${time.milliseconds.inWholeSeconds}s")
         }
     }
 

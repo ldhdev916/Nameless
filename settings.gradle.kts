@@ -18,31 +18,13 @@
 
 pluginManagement {
     repositories {
-        mavenCentral()
         gradlePluginPortal()
-
-        maven {
-            name = "Forge"
-            url = uri("https://maven.minecraftforge.net")
-        }
-
-        maven {
-            name = "Jitpack"
-            url = uri("https://jitpack.io/")
-        }
-        maven("https://repo.spongepowered.org/maven")
-    }
-    resolutionStrategy {
-        eachPlugin {
-            when (requested.id.id) {
-                "net.minecraftforge.gradle.forge" -> useModule("com.github.asbyth:ForgeGradle:${requested.version}")
-                "org.spongepowered.mixin" -> useModule("com.github.LxGaming:MixinGradle:${requested.version}")
-            }
-        }
+        mavenCentral()
+        maven("https://repo.essential.gg/repository/maven-public")
+        maven("https://maven.architectury.dev")
+        maven("https://maven.fabricmc.net")
+        maven("https://maven.minecraftforge.net")
     }
 }
 
 rootProject.name = "Nameless"
-include("socket")
-include("socket:ksp")
-findProject(":socket:ksp")?.name = "ksp"

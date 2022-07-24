@@ -28,26 +28,22 @@ import gg.essential.api.commands.DisplayName
 import gg.essential.api.utils.Multithreading
 import gg.essential.api.utils.mojang.Name
 import gg.essential.elementa.dsl.width
-import java.util.*
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 object NameHistoryCommand : Command("name") {
+
+    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd @ HH:mm:ss")
 
     private val transformNameHistoryToString: (Name) -> String = {
         val isOriginal = it.changedToAt == 0L
 
-        val time = it.changedToAt?.takeUnless { time -> time == 0L }?.let {
-            val calendar = Calendar.getInstance().apply { time = Date(it) }
+        val time = it.changedToAt?.takeUnless { time -> time == 0L }?.let { ms ->
+            val localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneId.systemDefault())
 
-            val year = calendar[Calendar.YEAR]
-            val month = "%02d".format(calendar[Calendar.MONTH] + 1)
-            val day = "%02d".format(calendar[Calendar.DATE])
-
-            val hour = "%02d".format(calendar[Calendar.HOUR_OF_DAY])
-            val minute = "%02d".format(calendar[Calendar.MINUTE])
-            val second = "%02d".format(calendar[Calendar.SECOND])
-
-            "$year-$month-$day @ $hour:$minute:$second"
-
+            localDateTime.format(formatter)
         } ?: "Original Name"
 
         buildString {

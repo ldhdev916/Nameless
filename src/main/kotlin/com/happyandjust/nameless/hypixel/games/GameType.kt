@@ -18,8 +18,8 @@
 
 package com.happyandjust.nameless.hypixel.games
 
+import com.happyandjust.nameless.hypixel.LocrawInfo
 import com.happyandjust.nameless.hypixel.partygames.PartyMiniGamesFactoryImpl
-import com.ldhdev.socket.data.LocrawInfo
 
 interface GameType {
 

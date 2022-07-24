@@ -19,7 +19,7 @@
 package com.happyandjust.nameless.hypixel.games
 
 import com.happyandjust.nameless.dsl.sendPrefixMessage
-import com.ldhdev.socket.data.LocrawInfo
+import com.happyandjust.nameless.hypixel.LocrawInfo
 
 class SkyBlock : GameType {
 

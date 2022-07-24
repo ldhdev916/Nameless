@@ -18,7 +18,6 @@
 
 package com.happyandjust.nameless.hypixel
 
-import com.happyandjust.nameless.Nameless
 import com.happyandjust.nameless.core.TickTimer
 import com.happyandjust.nameless.dsl.on
 import com.happyandjust.nameless.dsl.sendDebugMessage
@@ -26,8 +25,6 @@ import com.happyandjust.nameless.events.HypixelServerChangeEvent
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.hypixel.games.GameType
 import com.happyandjust.nameless.hypixel.games.GameTypeFactory
-import com.ldhdev.socket.data.LocrawInfo
-import com.ldhdev.socket.data.StompLocrawInfo
 import gg.essential.api.EssentialAPI
 import net.minecraftforge.common.MinecraftForge
 
@@ -35,12 +32,6 @@ class Hypixel(private val factory: GameTypeFactory) {
     var currentGame: GameType? = null
         private set
     var locrawInfo: LocrawInfo? = null
-        set(value) {
-            if (field != value) {
-                Nameless.client.send(StompLocrawInfo(value))
-            }
-            field = value
-        }
     private var prevServer: String? = null
 
     private val updateTimer = TickTimer.withSecond(2)

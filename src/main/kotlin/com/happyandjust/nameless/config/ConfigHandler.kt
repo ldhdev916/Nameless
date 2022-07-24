@@ -30,15 +30,10 @@ import kotlin.collections.set
 
 object ConfigHandler {
     private val customJson = Json { prettyPrint = true }
-    var file = File("config/Nameless.json").apply {
-        if (!exists() || readBytes().decodeToString().isBlank()) {
-            parentFile.mkdirs()
-            writeText("{}")
-        }
-    }
+    var file = File("config/Nameless.json")
 
     private val config: JsonObject
-        get() = customJson.decodeFromFile(file)
+        get() = if (file.isFile) customJson.decodeFromFile(file) else JsonObject(emptyMap())
 
     private fun Map<String, JsonElement>.readCategory(category: String) =
         get(category) as? JsonObject ?: JsonObject(emptyMap())

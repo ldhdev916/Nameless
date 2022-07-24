@@ -23,9 +23,9 @@ import com.happyandjust.nameless.dsl.mc
 import com.happyandjust.nameless.dsl.sendDebugMessage
 import com.happyandjust.nameless.dsl.sendPrefixMessage
 import com.happyandjust.nameless.features.impl.qol.PartyGamesHelper
+import com.happyandjust.nameless.hypixel.LocrawInfo
 import com.happyandjust.nameless.hypixel.partygames.PartyMiniGames
 import com.happyandjust.nameless.hypixel.partygames.PartyMiniGamesFactory
-import com.ldhdev.socket.data.LocrawInfo
 
 class PartyGames(private val factory: PartyMiniGamesFactory) : GameType {
 

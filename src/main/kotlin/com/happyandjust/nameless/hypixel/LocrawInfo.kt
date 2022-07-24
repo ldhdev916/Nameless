@@ -16,15 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.ldhdev.socket.data
+package com.happyandjust.nameless.hypixel
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class LocrawInfo(
-    var server: String,
-    @SerialName("gametype") var gameType: String = "",
-    var mode: String = "lobby",
-    var map: String = ""
+    val server: String,
+    @SerialName("gametype") val gameType: String = "",
+    val mode: String = "lobby",
+    val map: String = ""
 )

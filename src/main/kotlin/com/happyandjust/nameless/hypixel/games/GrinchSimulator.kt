@@ -18,7 +18,7 @@
 
 package com.happyandjust.nameless.hypixel.games
 
-import com.ldhdev.socket.data.LocrawInfo
+import com.happyandjust.nameless.hypixel.LocrawInfo
 
 class GrinchSimulator : GameType {
 

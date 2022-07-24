@@ -79,7 +79,7 @@ object RemoveCertainModID : SimpleFeature(
         override fun deserialize(decoder: Decoder): ModContainer {
             val modId = decoder.decodeSerializableValue(String.serializer())
 
-            return mods.singleOrNull { it.modId == modId } ?: dummyModContainer
+            return allMods.singleOrNull { it.modId == modId } ?: dummyModContainer
         }
 
         override fun serialize(encoder: Encoder, value: ModContainer) {

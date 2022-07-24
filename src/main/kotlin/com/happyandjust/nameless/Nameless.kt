@@ -22,8 +22,6 @@ import com.happyandjust.nameless.commands.*
 import com.happyandjust.nameless.config.ConfigHandler
 import com.happyandjust.nameless.config.ConfigValue.Companion.configValue
 import com.happyandjust.nameless.core.enums.OutlineMode
-import com.happyandjust.nameless.dsl.mc
-import com.happyandjust.nameless.dsl.sendDebugMessage
 import com.happyandjust.nameless.features.FeatureRegistry
 import com.happyandjust.nameless.features.base.ParameterHierarchy
 import com.happyandjust.nameless.features.impl.misc.UpdateChecker
@@ -34,8 +32,6 @@ import com.happyandjust.nameless.listener.LocrawListener
 import com.happyandjust.nameless.listener.OutlineHandleListener
 import com.happyandjust.nameless.listener.WaypointListener
 import com.happyandjust.nameless.utils.SkyblockUtils
-import com.ldhdev.socket.StompClient
-import com.ldhdev.socket.StompListener
 import gg.essential.api.commands.Command
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +41,6 @@ import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import java.io.File
-import java.net.URI
 
 @Mod(modid = MOD_ID, name = MOD_NAME, version = VERSION, modLanguageAdapter = "gg.essential.api.utils.KotlinAdapter")
 object Nameless {
@@ -59,7 +54,6 @@ object Nameless {
     lateinit var modFile: File
     private val delayedEventHandlers = hashSetOf<Any>()
     private var shouldRegisterHandlers = false
-    val client by lazy { StompClient(URI("ws://3.37.56.106/nameless/stomp"), mc.session.playerID, VERSION) }
     val hypixel by lazy { Hypixel(GameTypeFactoryImpl) }
 
     fun requestRegisterEventHandler(handler: Any) {
@@ -79,43 +73,6 @@ object Nameless {
         shouldRegisterHandlers = true
         delayedEventHandlers.forEach { MinecraftForge.EVENT_BUS.register(it) }
         delayedEventHandlers.clear()
-
-        CoroutineScope(Dispatchers.IO).launch {
-            with(client) {
-                setListener<StompListener.OnPosition> {
-                    StompListener.OnPosition {
-                        mc.thePlayer?.let {
-                            Triple(it.posX, it.posY, it.posZ)
-                        }
-                    }
-                }
-
-                setListener<StompListener.OnOpen> {
-                    StompListener.OnOpen {
-                        onOpen()
-                        Runtime.getRuntime().addShutdownHook(Thread {
-                            disconnect()
-                        })
-                    }
-                }
-
-                setListener<StompListener.OnSend> {
-                    StompListener.OnSend {
-                        onSend(it)
-                        sendDebugMessage("Sending $it")
-                    }
-                }
-
-                setListener<StompListener.OnReceive> {
-                    StompListener.OnReceive {
-                        sendDebugMessage("Received $it")
-                        onReceive(it)
-                    }
-                }
-
-                if (!connectBlocking()) error("Stomp client not connected")
-            }
-        }
     }
 
     @Mod.EventHandler
@@ -140,8 +97,7 @@ object Nameless {
             ChangeHelmetTextureCommand,
             ShortCommand,
             PathFindCommand,
-            GraphCommand,
-            WebSocketCommand
+            GraphCommand
         )
 
         BasicListener
