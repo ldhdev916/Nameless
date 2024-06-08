@@ -92,7 +92,7 @@ object PartyGamesHelper : SimpleFeature("partyGamesHelper", "Party Games Helper"
             parameter(Color.red.toChromaColor()) {
                 matchKeyCategory()
                 key = "color"
-                title = "-50% Entity COlor"
+                title = "-50% Entity Color"
             }
         }
 
@@ -211,33 +211,43 @@ object PartyGamesHelper : SimpleFeature("partyGamesHelper", "Party Games Helper"
         AnimalSlaughterProcessor -> {
             { partyGameType == PartyGamesType.ANIMAL_SLAUGHTER && animal }
         }
+
         AnvilSpleefProcessor -> {
             { partyGameType == PartyGamesType.ANVIL_SPLEEF && anvil }
         }
+
         AvalancheProcessor -> {
             { partyGameType == PartyGamesType.AVALANCHE && avalanche }
         }
+
         DiveProcessor -> {
             { partyGameType == PartyGamesType.DIVE && dive }
         }
+
         JigsawRushProcessor -> {
             { partyGameType == PartyGamesType.JIGSAW_RUSH && jigsaw }
         }
+
         RPG16Processor -> {
             { partyGameType == PartyGamesType.RPG_16 && rpg16 }
         }
+
         SpiderMazeProcessor -> {
             { partyGameType == PartyGamesType.SPIDER_MAZE && maze }
         }
+
         LabEscapeProcessor -> {
             { partyGameType == PartyGamesType.LAB_ESCAPE && labEscape }
         }
+
         WorkshopProcessor -> {
             { partyGameType == PartyGamesType.WORKSHOP && workshop }
         }
+
         HighGroundProcessor -> {
             { partyGameType == PartyGamesType.HIGH_GROUND && highGround }
         }
+
         else -> error("")
     }
 }

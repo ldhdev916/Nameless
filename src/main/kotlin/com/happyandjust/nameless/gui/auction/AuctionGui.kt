@@ -37,7 +37,7 @@ import gg.essential.vigilance.gui.settings.SelectorComponent
 import gg.essential.vigilance.utils.onLeftClick
 
 class AuctionGui(auctionInfos: List<AuctionInfo>) :
-    WindowScreen(ElementaVersion.V1, newGuiScale = GuiScale.scaleForScreenSize().ordinal) {
+    WindowScreen(ElementaVersion.V5, newGuiScale = GuiScale.scaleForScreenSize().ordinal) {
 
     private var miniumRarity = ItemRarity.COMMON
 
@@ -86,7 +86,7 @@ class AuctionGui(auctionInfos: List<AuctionInfo>) :
             y = CenterConstraint()
         } childOf searchBar
 
-        val rarities = ItemRarity.values()
+        val rarities = ItemRarity.entries
 
         val selector = SelectorComponent(rarities.indexOf(miniumRarity), rarities.map { it.loreName }).constrain {
             x = SiblingConstraint(5f)

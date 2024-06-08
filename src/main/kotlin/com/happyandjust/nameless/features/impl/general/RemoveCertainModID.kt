@@ -27,7 +27,7 @@ import net.minecraftforge.fml.common.ModContainer
 object RemoveCertainModID : SimpleFeature(
     "removeModId",
     "Remove Certain Mod ID Sent to Server",
-    enabled_ = true
+    initialEnabled = true
 ) {
 
     init {

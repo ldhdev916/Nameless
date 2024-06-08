@@ -37,7 +37,7 @@ import gg.essential.vigilance.gui.settings.ButtonComponent
 import net.minecraft.util.BlockPos
 
 class WaypointManagerGui : WindowScreen(
-    ElementaVersion.V1,
+    ElementaVersion.V5,
     newGuiScale = GuiScale.scaleForScreenSize().ordinal,
     restoreCurrentGuiOnClose = true,
     drawDefaultBackground = false

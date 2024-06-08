@@ -66,7 +66,7 @@ object HyChatChannelChanger : OverlayFeature(
     override var overlayPoint by configValue("hychat", "overlay", Overlay.DEFAULT)
     private var currentPrefix by configValue("hychat", "currentPrefix", "/ac")
     private val channelButtons = ChannelsContainer.children.filterIsInstance<ChannelButton>()
-    private val window = Window(ElementaVersion.V1).apply { ChannelsContainer childOf this }
+    private val window = Window(ElementaVersion.V5).apply { ChannelsContainer childOf this }
 
     init {
         parameter("!") {
@@ -81,7 +81,7 @@ object HyChatChannelChanger : OverlayFeature(
             }
         }
 
-        listParameter(PrefixType.values().toList()) {
+        listParameter(PrefixType.entries) {
             matchKeyCategory()
             key = "selectedPrefixTypes"
             title = "Selected Chat Types"
@@ -161,7 +161,7 @@ object HyChatChannelChanger : OverlayFeature(
     override fun renderOverlay0(partialTicks: Float) = Unit
 
     object ChannelsContainer : UIContainer() {
-        val buttonsMap = PrefixType.values().associateWith {
+        val buttonsMap = PrefixType.entries.associateWith {
             ChannelButton(
                 it.prettyName,
                 it.messagePrefix,

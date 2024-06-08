@@ -35,7 +35,7 @@ import gg.essential.universal.GuiScale
 
 class ShortCommandGui :
     WindowScreen(
-        ElementaVersion.V1,
+        ElementaVersion.V5,
         newGuiScale = GuiScale.scaleForScreenSize().ordinal,
         restoreCurrentGuiOnClose = true
     ) {

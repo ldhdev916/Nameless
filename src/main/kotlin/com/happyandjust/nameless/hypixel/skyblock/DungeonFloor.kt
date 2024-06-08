@@ -28,9 +28,7 @@ enum class DungeonFloor(val scoreboardName: String) {
 
     companion object {
 
-        private val values = values()
-
-        fun getByScoreboardName(s: String) = values.find { it.scoreboardName == s }
+        fun getByScoreboardName(s: String) = entries.find { it.scoreboardName == s }
 
     }
 }

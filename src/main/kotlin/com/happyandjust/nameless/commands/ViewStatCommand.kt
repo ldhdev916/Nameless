@@ -26,7 +26,6 @@ import gg.essential.api.commands.Command
 import gg.essential.api.commands.DefaultHandler
 import gg.essential.api.commands.DisplayName
 import gg.essential.api.utils.Multithreading
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -91,6 +90,7 @@ object ViewStatCommand : Command("viewstat") {
                     "§b[MVP$color+§b] "
                 }
             }
+
             "MVP" -> "§b[MVP] "
             "VIP_PLUS" -> "§a[VIP§6+§a] "
             "VIP" -> "§a[VIP] "

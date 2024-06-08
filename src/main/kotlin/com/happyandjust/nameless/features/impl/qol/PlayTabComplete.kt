@@ -18,13 +18,14 @@
 
 package com.happyandjust.nameless.features.impl.qol
 
-import com.happyandjust.nameless.dsl.*
+import com.happyandjust.nameless.dsl.matchesMatcher
+import com.happyandjust.nameless.dsl.mc
+import com.happyandjust.nameless.dsl.on
+import com.happyandjust.nameless.dsl.withInstance
 import com.happyandjust.nameless.events.PacketEvent
 import com.happyandjust.nameless.features.base.SimpleFeature
 import com.happyandjust.nameless.mixins.accessors.AccessorGuiChat
 import gg.essential.api.EssentialAPI
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import net.minecraft.network.play.client.C01PacketChatMessage
 import net.minecraft.network.play.server.S3APacketTabComplete
 
@@ -35,8 +36,9 @@ object PlayTabComplete : SimpleFeature(
     true
 ) {
 
-    private val gameMap =
-        Json.decodeFromString<Map<String, String>>("https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw".fetch())
+    //    private val gameMap =
+//        Json.decodeFromString<Map<String, String>>("https://gist.githubusercontent.com/asbyth/16ab6fcbca18f3f4a14d61d04e7ebeb5/raw".fetch())
+    private val gameMap = emptyMap<String, String>()
     private val games = gameMap.keys + gameMap.values
 
     private val PLAY = "/play (?<msg>.*)".toPattern()

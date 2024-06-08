@@ -145,7 +145,7 @@ object PixelPartyHelper : SimpleFeature("pixelPartyHelper", "Pixel Party Helper"
                             { it.second.averageDist }, { current.distanceSq(it.first) })
 
                         val pairs = arrayListOf<Deferred<Pair<BlockPos, DistanceResult>>>().apply {
-                            for (pos in allInBox.groupBy { it.x / 2 to it.z / 2 }.values.map { it.random() }) {
+                            for (pos in allInBox) {
                                 add(async {
                                     val sortedList = getSortedByDistance(pos)
 

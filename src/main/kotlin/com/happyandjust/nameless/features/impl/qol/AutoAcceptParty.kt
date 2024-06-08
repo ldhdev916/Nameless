@@ -87,7 +87,7 @@ object AutoAcceptParty : OverlayFeature("autoAcceptParty", "Auto Accept Party") 
     private var shouldDraw = false
     override var overlayPoint by configValue("party", "overlay", Overlay.DEFAULT)
 
-    private val window = Window(ElementaVersion.V1)
+    private val window = Window(ElementaVersion.V5)
 
     init {
         on<ClientChatReceivedEvent>().filter {

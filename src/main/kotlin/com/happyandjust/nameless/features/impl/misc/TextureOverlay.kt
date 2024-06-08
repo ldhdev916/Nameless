@@ -83,7 +83,7 @@ object TextureOverlay : SimpleFeature(
                 title = name
 
                 val image = ImageIO.read(file)
-                val window = Window(ElementaVersion.V1).apply {
+                val window = Window(ElementaVersion.V5).apply {
                     UIImage(CompletableFuture.supplyAsync { image }).constrain {
                         x = basicXConstraint { overlayPoint.x.toFloat() }.fixed()
                         y = basicYConstraint { overlayPoint.y.toFloat() }.fixed()

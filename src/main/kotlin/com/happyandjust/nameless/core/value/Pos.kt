@@ -31,8 +31,4 @@ enum class Pos {
     BOTTOM_LEFT,
     BOTTOM_CENTER,
     BOTTOM_RIGHT;
-
-    companion object {
-        val v = values()
-    }
 }

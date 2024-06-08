@@ -53,8 +53,8 @@ object BazaarHelper : SimpleFeature(
     "Bazaar Helper",
     "Shows some information to your screen while bazaar gui is open"
 ) {
-    private const val globalTextScale = 1f
-    private val window = Window(ElementaVersion.V1).apply {
+    private const val GLOBAL_TEXT_SCALE = 1f
+    private val window = Window(ElementaVersion.V5).apply {
         BazaarContainer childOf this
     }
 
@@ -70,7 +70,7 @@ object BazaarHelper : SimpleFeature(
             .subscribe {
                 gui.withInstance<AccessorGuiContainer> {
 
-                    BazaarInformation.values().forEach { it.updateValue(Double.NaN, "") }
+                    BazaarInformation.entries.forEach { it.updateValue(Double.NaN, "") }
 
                     BazaarContainer.constrain {
                         x = (window.getRight() - guiLeft).pixels(true)
@@ -180,7 +180,7 @@ object BazaarHelper : SimpleFeature(
         } childOf this
 
         val itemName = UIText().constrain {
-            textScale = globalTextScale.pixels()
+            textScale = GLOBAL_TEXT_SCALE.pixels()
         } childOf wholeContainer
 
         val instantContainer = UIContainer().constrain {
@@ -216,14 +216,14 @@ object BazaarHelper : SimpleFeature(
             }
 
             UIText("§dBuy Orders").constrain {
-                textScale = globalTextScale.pixels()
+                textScale = GLOBAL_TEXT_SCALE.pixels()
             } childOf buyOrderContainer
 
             UIText("§dSell Orders").constrain {
-                textScale = globalTextScale.pixels()
+                textScale = GLOBAL_TEXT_SCALE.pixels()
             } childOf sellOrderContainer
 
-            BazaarInformation.values().forEach {
+            BazaarInformation.entries.forEach {
                 it.textComponent childOf it.parentContainer
                 it.updateValue(Double.NaN, "")
             }
@@ -281,13 +281,13 @@ object BazaarHelper : SimpleFeature(
         class PairTextComponent(infoText: String) : UIContainer() {
 
             val left = UIText("$infoText:").constrain {
-                textScale = globalTextScale.pixels()
+                textScale = GLOBAL_TEXT_SCALE.pixels()
             } childOf this
 
             val right = UIText().constrain {
                 x = 0.pixel(true)
 
-                textScale = globalTextScale.pixels()
+                textScale = GLOBAL_TEXT_SCALE.pixels()
             } childOf this
         }
     }

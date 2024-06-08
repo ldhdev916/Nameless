@@ -84,7 +84,7 @@ object EquipPetSkin : SimpleFeature(
         val petSkins =
             Json.decodeFromStream<Map<String, String>>(ResourceLocation("nameless", "petskins.json").inputStream())
 
-        val petSkinsByPetName = (PetSkinType.values().toList() - PetSkinType.DEFAULT).groupBy { petSkins[it.name]!! }
+        val petSkinsByPetName = (PetSkinType.entries - PetSkinType.DEFAULT).groupBy { petSkins[it.name]!! }
 
         for ((petName, petSkinTypes) in petSkinsByPetName) {
 

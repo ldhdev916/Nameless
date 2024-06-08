@@ -169,9 +169,9 @@ class GraphComponent(window: Window, private var expression: String) : UICompone
                 val left = screenLeft
                 val right = screenRight
 
-                val interval = (right - left + 1) / pointNumber
+                val interval = (right - left + 1) / POINT_NUMBER
 
-                repeat(pointNumber) {
+                repeat(POINT_NUMBER) {
                     runCatching { // divide by zero
                         val x = left + interval * it
                         val y = builder.setVariable("x", x).evaluate()
@@ -254,7 +254,7 @@ class GraphComponent(window: Window, private var expression: String) : UICompone
         get() = getHeight() - ((this - screenTop) / (screenHeight / getHeight()))
 
     companion object {
-        private const val pointNumber = 400000
+        private const val POINT_NUMBER = 400000
     }
 
     private class LambdaState<T>(private val getter: () -> T) : State<T>() {

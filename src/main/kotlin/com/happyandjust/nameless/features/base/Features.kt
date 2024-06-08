@@ -28,10 +28,10 @@ abstract class SimpleFeature(
     key: String,
     title: String,
     desc: String = "",
-    enabled_: Boolean = false
+    initialEnabled: Boolean = false
 ) : BaseFeature<Boolean, Any>(key, title, desc) {
 
-    private val enabledConfig = configValue("features", key, enabled_)
+    private val enabledConfig = configValue("features", key, initialEnabled)
     override var componentType: ComponentType? = ComponentType.SWITCH
     override val property = ::enabled
 

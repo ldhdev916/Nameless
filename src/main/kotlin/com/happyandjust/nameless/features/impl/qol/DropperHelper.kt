@@ -79,7 +79,7 @@ object DropperHelper : SimpleFeature(
 
             shouldDisplay { enabled && value }
 
-            val window = Window(ElementaVersion.V1).apply {
+            val window = Window(ElementaVersion.V5).apply {
                 UIText().constrain {
                     x = basicXConstraint { overlayPoint.x.toFloat() }.fixed()
                     y = basicYConstraint { overlayPoint.y.toFloat() }.fixed()

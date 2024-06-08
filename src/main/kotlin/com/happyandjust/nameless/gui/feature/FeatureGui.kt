@@ -42,7 +42,7 @@ import gg.essential.vigilance.utils.onLeftClick
 import java.util.*
 
 class FeatureGui : WindowScreen(
-    ElementaVersion.V1,
+    ElementaVersion.V5,
     drawDefaultBackground = false,
     newGuiScale = GuiScale.scaleForScreenSize().ordinal,
     restoreCurrentGuiOnClose = true
@@ -145,7 +145,7 @@ class FeatureGui : WindowScreen(
             height = 100.percent() + .5F.pixels()
         } childOf mainContent
 
-        for (category in Category.values()) {
+        for (category in Category.entries) {
             CategoryLabel(this, category).constrain {
                 x = 15.pixels()
                 y = SiblingConstraint()

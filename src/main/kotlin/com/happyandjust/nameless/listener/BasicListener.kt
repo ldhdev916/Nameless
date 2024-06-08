@@ -44,7 +44,7 @@ object BasicListener {
             }
 
         on<SpecialTickEvent>().subscribe {
-            for (keyBindingCategory in KeyBindingCategory.values()) {
+            for (keyBindingCategory in KeyBindingCategory.entries) {
                 val pressed = keyBindingCategory.getKeyBinding().isKeyDown
                 if (pressed) {
                     MinecraftForge.EVENT_BUS.post(

@@ -29,7 +29,7 @@ import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.dsl.*
 
 class RelocateGui(relocateAbleList: List<IRelocateAble>) :
-    WindowScreen(ElementaVersion.V1, drawDefaultBackground = false) {
+    WindowScreen(ElementaVersion.V5, drawDefaultBackground = false) {
 
     private val map = relocateAbleList.associateWith { RelocateComponent(this, it).childOf(window) }
     val yCenterLine = UIBlock(ColorCache.accent).constrain {

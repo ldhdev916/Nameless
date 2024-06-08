@@ -38,7 +38,7 @@ import java.net.URL
 import kotlin.concurrent.thread
 
 class UpdateGui(markDownText: String) : WindowScreen(
-    ElementaVersion.V1,
+    ElementaVersion.V5,
     newGuiScale = GuiScale.scaleForScreenSize().ordinal,
     restoreCurrentGuiOnClose = true
 ) {

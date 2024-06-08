@@ -117,14 +117,14 @@ object EndermanSlayerHelper :
             }
         }
 
-        parameter(VoidgloomInformation.values().map(::VoidgloomIdentifier)) {
+        parameter(VoidgloomInformation.entries.map(::VoidgloomIdentifier)) {
             matchKeyCategory()
             key = "order"
             title = "Information List"
 
             settings {
                 ordinal = 2
-                allIdentifiers = VoidgloomInformation.values().map(::VoidgloomIdentifier)
+                allIdentifiers = VoidgloomInformation.entries.map(::VoidgloomIdentifier)
             }
         }
     }
@@ -135,7 +135,7 @@ object EndermanSlayerHelper :
             height = ChildBasedSizeConstraint()
         }
 
-        for (text in VoidgloomInformation.values().map { it.dummyText }) {
+        for (text in VoidgloomInformation.entries.map { it.dummyText }) {
             UIText(text).constrain {
 
                 y = SiblingConstraint()
@@ -361,9 +361,7 @@ object EndermanSlayerHelper :
 
             other as VoidgloomIdentifier
 
-            if (information != other.information) return false
-
-            return true
+            return information == other.information
         }
 
         override fun hashCode(): Int {

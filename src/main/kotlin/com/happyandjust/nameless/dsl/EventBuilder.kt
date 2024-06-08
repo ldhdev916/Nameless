@@ -24,6 +24,7 @@ import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.fml.common.eventhandler.EventPriority
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.full.staticProperties
@@ -71,7 +72,7 @@ class Handler<T : Event>(private val eventClass: Class<T>) {
         val receiveCanceled: Boolean
     )
 
-    private val listeners = arrayListOf<HandlerData>()
+    private val listeners = CopyOnWriteArrayList<HandlerData>()
 
     fun addListener(handlerData: HandlerData) {
         listeners.add(handlerData)

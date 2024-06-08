@@ -73,7 +73,7 @@ fun ItemStack?.getSkyBlockRarity(): ItemRarity? {
     val display = getSubCompound("display", false) ?: return null
     if (!display.hasKey("Lore")) return null
     val lore = display.getTagList("Lore", Constants.NBT.TAG_STRING)
-    val values = ItemRarity.values()
+    val values = ItemRarity.entries
 
     return List(lore.tagCount()) {
         RARITY_PATTERN.findMatcher(lore.getStringTagAt(it)) {

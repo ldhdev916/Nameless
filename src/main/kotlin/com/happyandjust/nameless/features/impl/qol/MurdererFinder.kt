@@ -259,6 +259,7 @@ object MurdererFinder : SimpleFeature(
                         alpha = group("name")
                     }
                 }
+
                 MurdererMode.ASSASSIN -> {
                     if (pureText == "Your kill contract has been updated!") {
                         cancel()
@@ -266,6 +267,7 @@ object MurdererFinder : SimpleFeature(
                         targetName = null // reset
                     }
                 }
+
                 else -> {}
             }
         }
@@ -286,10 +288,12 @@ object MurdererFinder : SimpleFeature(
                     entityPlayer = mc.theWorld.getEntityByID(msg.entityID) as? EntityPlayer ?: return@subscribe
                     heldItem = msg.itemStack
                 }
+
                 is S09PacketHeldItemChange -> {
                     entityPlayer = mc.thePlayer ?: return@subscribe
                     heldItem = mc.thePlayer.inventory.getStackInSlot(msg.heldItemHotbarIndex)
                 }
+
                 else -> return@subscribe
             }
             heldItem ?: return@subscribe
@@ -320,6 +324,7 @@ object MurdererFinder : SimpleFeature(
                             survivors.add(playerName)
                         }
                     }
+
                     Items.arrow -> { // there's no FAKE ARROW
                         survivors.add(playerName)
                     }
@@ -340,6 +345,7 @@ object MurdererFinder : SimpleFeature(
                     mode == MurdererMode.INFECTION -> if (name in survivors) {
                         if (glowSurvivor) glowSurvivor_color else return@subscribe
                     } else if (name == alpha) alphaColor else return@subscribe
+
                     mode == MurdererMode.ASSASSIN && targetName == name.trim() -> targetColor
                     else -> return@subscribe
                 }.rgb

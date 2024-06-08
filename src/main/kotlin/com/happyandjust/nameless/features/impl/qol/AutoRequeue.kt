@@ -28,7 +28,6 @@ import com.happyandjust.nameless.features.settings
 import com.happyandjust.nameless.features.waitForGG
 import gg.essential.api.EssentialAPI
 import gg.essential.api.utils.Multithreading
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray

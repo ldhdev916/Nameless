@@ -65,7 +65,7 @@ object Hypixel {
 
         val type = locraw.gameType
 
-        currentGame = GameType.values().find {
+        currentGame = GameType.entries.find {
             it.displayName == type && it.modeReqs.let { modeReqs ->
                 modeReqs.isEmpty() || modeReqs.contains(locraw.mode)
             }
@@ -80,6 +80,7 @@ object Hypixel {
                     else -> MurdererMode.CLASSIC // wtf
                 }
             }
+
             GameType.SKYBLOCK -> {
                 currentProperty[PropertyKey.DUNGEON] = locraw.mode == "dungeon"
                 currentProperty[PropertyKey.ISLAND] = locraw.mode
@@ -91,14 +92,16 @@ object Hypixel {
                     }
                 }
             }
+
             GameType.PARTY_GAMES -> {
                 val partyGames =
-                    (PartyGamesType.values().toList() - PartyGamesType.NOTHING).map { it to it.scoreboardName!! }
+                    (PartyGamesType.entries - PartyGamesType.NOTHING).map { it to it.scoreboardName!! }
                 for (scoreboard in ScoreboardUtils.getSidebarLines(true)) {
                     currentProperty[PropertyKey.PARTY_GAME_TYPE] =
                         partyGames.find { scoreboard.contains(it.second, true) }?.first ?: continue
                 }
             }
+
             else -> {}
         }
 

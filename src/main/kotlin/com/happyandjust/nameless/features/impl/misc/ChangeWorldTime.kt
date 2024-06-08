@@ -49,7 +49,7 @@ object ChangeWorldTime : SimpleFeature(
             }
 
             onValueChange { time ->
-                timeFormat = WorldTimeFormat.values().single { time in it.ordinal * 1000 until (it.ordinal + 1) * 1000 }
+                timeFormat = WorldTimeFormat.entries.single { time in it.ordinal * 1000 until (it.ordinal + 1) * 1000 }
             }
         }
 

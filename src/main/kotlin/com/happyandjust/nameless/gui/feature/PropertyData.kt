@@ -86,7 +86,7 @@ class DataComponent<T : Any>(gui: FeatureGui, val data: PropertyData<T, *>) : Se
 
         width = basicWidthConstraint {
             val end =
-                (boundingBox.children - it).map { element -> element.getLeft() }.minOrNull() ?: boundingBox.getRight()
+                (boundingBox.children - it).minOfOrNull { element -> element.getLeft() } ?: boundingBox.getRight()
 
             end - it.getLeft() - 10F
         }

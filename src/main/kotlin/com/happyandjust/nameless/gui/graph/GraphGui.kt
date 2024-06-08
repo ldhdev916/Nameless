@@ -35,7 +35,7 @@ import gg.essential.universal.GuiScale
 import gg.essential.vigilance.utils.onLeftClick
 
 class GraphGui : WindowScreen(
-    ElementaVersion.V1,
+    ElementaVersion.V5,
     restoreCurrentGuiOnClose = true,
     newGuiScale = GuiScale.scaleForScreenSize().ordinal
 ) {

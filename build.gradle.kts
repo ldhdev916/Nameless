@@ -16,38 +16,51 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import net.minecraftforge.gradle.user.IReobfuscator
-import net.minecraftforge.gradle.user.ReobfMappingType
-import net.minecraftforge.gradle.user.TaskSingleReobf
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.apache.commons.lang3.SystemUtils
 
 plugins {
     java
-    kotlin("jvm") version "1.6.10"
-    kotlin("plugin.serialization") version "1.6.10"
-    id("com.github.johnrengelman.shadow") version "6.1.0"
-    id("net.minecraftforge.gradle.forge") version "6f53277"
-    id("org.spongepowered.mixin") version "d75e32e"
+    kotlin("jvm") version "1.9.23"
+    kotlin("plugin.serialization") version "1.9.23"
+    id("gg.essential.loom") version "0.10.0.+"
+    id("dev.architectury.architectury-pack200") version "0.1.3"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 version = "1.0.5"
 group = "com.happyandjust"
 
-java.sourceCompatibility = JavaVersion.VERSION_1_8
-java.targetCompatibility = JavaVersion.VERSION_1_8
+val mcVersion: String by project
 
-minecraft {
-    version = "1.8.9-11.15.1.2318-1.8.9"
-    runDir = "run"
-    mappings = "stable_22"
-    makeObfSourceJar = false
-
-    clientRunArgs += arrayOf("--tweakClass gg.essential.loader.stage0.EssentialSetupTweaker")
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(8))
 }
 
-mixin {
-    add(sourceSets.main.get(), "mixins.nameless.refmap.json")
+loom {
+    log4jConfigs.from(file("log4j2.xml"))
+    launchConfigs {
+        "client" {
+            property("mixin.debug", "true")
+            arg("--tweakClass", "gg.essential.loader.stage0.EssentialSetupTweaker")
+        }
+    }
+    runConfigs {
+        "client" {
+            if (SystemUtils.IS_OS_MAC_OSX) {
+                // This argument causes a crash on macOS
+                vmArgs.remove("-XstartOnFirstThread")
+            }
+        }
+        remove(getByName("server"))
+    }
+    forge {
+        pack200Provider.set(dev.architectury.pack200.java.Pack200Adapter())
+        mixinConfig("mixins.nameless.json")
+    }
+
+    mixin {
+        defaultRefmapName.set("mixins.nameless.refmap.json")
+    }
 }
 
 repositories {
@@ -56,54 +69,62 @@ repositories {
     maven("https://jitpack.io")
     maven("https://repo.spongepowered.org/repository/maven-public/")
     maven("https://repo.sk1er.club/repository/maven-public")
+    maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
+    maven("https://repo.hypixel.net/repository/Hypixel/")
 }
 
-val include: Configuration by configurations.creating {
+val shadowImpl: Configuration by configurations.creating {
     configurations.implementation.get().extendsFrom(this)
 }
 
 dependencies {
+
+    minecraft("com.mojang:minecraft:1.8.9")
+    mappings("de.oceanlabs.mcp:mcp_stable:22-1.8.9")
+    forge("net.minecraftforge:forge:1.8.9-11.15.1.2318-1.8.9")
+
     implementation("org.spongepowered:mixin:0.7.11-SNAPSHOT")
-    implementation("gg.essential:essential-1.8.9-forge:1854")
-    include("gg.essential:loader-launchwrapper:1.1.3")
-    include("net.objecthunter:exp4j:0.4.8")
-    include("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") {
+    implementation("gg.essential:essential-1.8.9-forge:17141+gd6f4cfd3a8")
+
+    shadowImpl("gg.essential:loader-launchwrapper:1.2.3")
+    shadowImpl("net.objecthunter:exp4j:0.4.8")
+    shadowImpl("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") {
         exclude(module = "kotlin-stdlib")
         exclude(module = "kotlin-stdlib-common")
     }
 
+    runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.2.0")
+
     annotationProcessor("org.spongepowered:mixin:0.8.5")
-    annotationProcessor("com.google.code.gson:gson:2.2.4")
-    annotationProcessor("com.google.guava:guava:21.0")
-    annotationProcessor("org.ow2.asm:asm-tree:6.2")
 }
 
 sourceSets.main {
-    ext["refmap"] = "mixins.nameless.refmap.json"
-    output.setResourcesDir(file("$buildDir/classes/kotlin/main"))
+    output.setResourcesDir(sourceSets.main.flatMap { it.java.classesDirectory })
+    java.srcDir(layout.projectDirectory.dir("src/main/kotlin"))
+    kotlin.destinationDirectory.set(java.destinationDirectory)
 }
 
-configure<NamedDomainObjectContainer<IReobfuscator>> {
-    clear()
-    create("shadowJar") {
-        mappingType = ReobfMappingType.SEARGE
-        classpath = sourceSets.main.get().compileClasspath
-    }
+val remapJar by tasks.named<net.fabricmc.loom.task.RemapJarTask>("remapJar") {
+    archiveClassifier.set("")
+    from(tasks.shadowJar)
+    input.set(tasks.shadowJar.get().archiveFile)
 }
 
 tasks {
     processResources {
         inputs.property("version", project.version)
-        inputs.property("mcversion", project.minecraft.version)
+        inputs.property("mcversion", mcVersion)
 
         filesMatching("mcmod.info") {
-            expand(mapOf("version" to project.version, "mcversion" to project.minecraft.version))
+            expand(mapOf("version" to project.version, "mcversion" to mcVersion))
         }
     }
 
-    build.get().dependsOn("shadowJar")
+    assemble {
+        dependsOn(remapJar)
+    }
 
-    named<Jar>("jar") {
+    jar {
         manifest.attributes(
             mapOf(
                 "TweakClass" to "gg.essential.loader.stage0.EssentialSetupTweaker",
@@ -114,36 +135,32 @@ tasks {
         )
         archiveBaseName.set("Nameless")
 
-        enabled = false
+        archiveClassifier.set("without-deps")
+        destinationDirectory.set(layout.buildDirectory.dir("badjars"))
     }
 
-    named<ShadowJar>("shadowJar") {
-        archiveClassifier.set("")
-        configurations = listOf(include)
+    shadowJar {
+        destinationDirectory.set(layout.buildDirectory.dir("badjars"))
+        archiveClassifier.set("all-dev")
+        configurations = listOf(shadowImpl)
+        doLast {
+            configurations.forEach {
+                println("Copying jars into mod: ${it.files}")
+            }
+        }
 
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-        exclude(
-            "dummyThing",
-            "LICENSE.txt",
-            "META-INF/versions/",
-            "fabric.mod.json",
-            "README.md"
-        )
+        fun relocate(name: String) = relocate(name, "com.ldhdev.deps.$name")
     }
 
-    withType<JavaCompile> {
+    compileJava {
         options.encoding = "UTF-8"
+
+        dependsOn(processResources)
     }
 
-    withType<KotlinCompile> {
+    compileKotlin {
         kotlinOptions {
             jvmTarget = "1.8"
-            freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn", "-Xjvm-default=enable")
         }
-    }
-
-    named<TaskSingleReobf>("reobfJar") {
-        enabled = false
     }
 }

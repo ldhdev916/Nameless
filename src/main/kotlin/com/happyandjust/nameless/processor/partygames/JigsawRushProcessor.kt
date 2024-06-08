@@ -78,7 +78,7 @@ object JigsawRushProcessor : Processor() {
 
             val opposite = myCanvas.playerFacingToCanvas.opposite
 
-            for (pos in Pos.v) {
+            for (pos in Pos.entries) {
                 val block = mc.theWorld.getBlockAtPos(canvas[pos]!!)
 
                 val myCanvasPosition = myCanvas.canvas[pos]!!
@@ -111,9 +111,11 @@ object JigsawRushProcessor : Processor() {
                     Blocks.oak_fence_gate -> {
                         return@repeat
                     }
+
                     Blocks.cobblestone_wall -> {
                         return@repeat
                     }
+
                     Blocks.oak_stairs -> {
                         playerFacingToCanvas = expandFacing
                         center = expandPos.offset(expandFacing, it + 1).up(2)

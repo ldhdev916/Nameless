@@ -48,7 +48,7 @@ import java.io.File
 @Mod(modid = MOD_ID, name = MOD_NAME, version = VERSION, modLanguageAdapter = "gg.essential.api.utils.KotlinAdapter")
 object Nameless {
 
-    val keyBindings = KeyBindingCategory.values()
+    val keyBindings = KeyBindingCategory.entries
         .associateWith { NamelessKeyBinding(it.desc, it.key).also(ClientRegistry::registerKeyBinding) }
 
     var selectedOutlineMode by configValue(

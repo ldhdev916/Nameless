@@ -45,7 +45,7 @@ object IndicateParticles : SimpleFeature(
     private val entities = hashMapOf<EntityFX, Color>()
 
     init {
-        for (particle in EnumParticleTypes.values()) {
+        for (particle in EnumParticleTypes.entries) {
 
             val key = particle.particleID.toString()
 

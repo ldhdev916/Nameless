@@ -132,6 +132,7 @@ object GhostBlock : SimpleFeature(
                     ghostBlocks[data.pos]?.blockState = data.blockState
 
                 }
+
                 is S23PacketBlockChange -> {
                     ghostBlocks[msg.blockPosition]?.blockState = msg.blockState ?: return@subscribe
                 }

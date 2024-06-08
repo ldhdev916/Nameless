@@ -50,7 +50,7 @@ object ExperimentationTableHelper : SimpleFeature("experimentationTableHelper", 
                 "${name[0]}${name.drop(1).lowercase()}"
             }
 
-            for (experimentationType in ExperimentationType.values()) {
+            for (experimentationType in ExperimentationType.entries) {
                 processors[experimentationType.processor] =
                     { checkForRequirement() && mc.currentScreen is GuiChest && currentExperimentationType == experimentationType && experimentationType in value }
             }

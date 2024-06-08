@@ -44,7 +44,7 @@ object AddReconnectButton : SimpleFeature(
 ) {
 
     private var lastServerData: ServerData? = null
-    private const val gap = 8
+    private const val GAP = 8
     private var currentDisconnectInfo: DisconnectInfo? = null
 
     init {
@@ -87,7 +87,7 @@ object AddReconnectButton : SimpleFeature(
                                     101,
                                     it.xPosition,
                                     it.yPosition,
-                                    (it.width / 2) - (gap - 2),
+                                    (it.width / 2) - (GAP - 2),
                                     it.height,
                                     text
                                 ).apply {
@@ -113,6 +113,7 @@ object AddReconnectButton : SimpleFeature(
                         }
                     }
                 }
+
                 is GuiConnecting -> lastServerData = mc.currentServerData
             }
         }

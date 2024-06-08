@@ -21,20 +21,23 @@ package com.happyandjust.nameless.gui.feature.components
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIWrappedText
-import gg.essential.elementa.components.input.AbstractTextInput
 import gg.essential.elementa.components.input.UIMultilineTextInput
-import gg.essential.elementa.components.input.UIPasswordInput
-import gg.essential.elementa.components.input.UITextInput
-import gg.essential.elementa.constraints.ChildBasedMaxSizeConstraint
-import gg.essential.elementa.constraints.ChildBasedSizeConstraint
-import gg.essential.elementa.constraints.CopyConstraintFloat
-import gg.essential.elementa.constraints.SiblingConstraint
+import gg.essential.elementa.constraints.*
 import gg.essential.elementa.dsl.*
 import gg.essential.vigilance.gui.settings.SettingComponent
 import gg.essential.vigilance.gui.settings.TextComponent
 import java.awt.Color
 
 class FilterTextComponent(private val textComponent: TextComponent) : SettingComponent() {
+
+    companion object {
+        private val vigilanceTextInputClass = Class.forName("gg.essential.vigilance.gui.common.input.UITextInput")
+
+        private val setMaxWidthMethod =
+            vigilanceTextInputClass.getDeclaredMethod("setMaxWidth", WidthConstraint::class.java).apply {
+                isAccessible = true
+            }
+    }
 
 
     private var isWarningAppeared = false
@@ -54,13 +57,16 @@ class FilterTextComponent(private val textComponent: TextComponent) : SettingCom
 
     override fun setupParentListeners(parent: UIComponent) {
 
-        when (val textInput = TextComponent::class.java.getDeclaredField("textInput")
-            .also { it.isAccessible = true }[textComponent] as AbstractTextInput) {
-            is UIMultilineTextInput -> {
+        val textInput = TextComponent::class.java.getDeclaredField("textInput")
+            .also { it.isAccessible = true }[textComponent]
+
+        when {
+            textInput is UIMultilineTextInput -> {
                 textInput.constraints.width = basicWidthConstraint { this.parent.getWidth() * 0.4f }
             }
-            is UIPasswordInput, is UITextInput -> {
-                (textInput as UITextInput).setMaxWidth(basicWidthConstraint { this.parent.getWidth() * 0.5f })
+
+            vigilanceTextInputClass.isAssignableFrom(textInput.javaClass) -> {
+                setMaxWidthMethod(textInput, basicWidthConstraint { this.parent.getWidth() * 0.5f })
             }
         }
         textComponent childOf this

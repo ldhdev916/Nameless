@@ -38,7 +38,6 @@ import com.happyandjust.nameless.hypixel.Hypixel
 import com.happyandjust.nameless.hypixel.PropertyKey
 import com.happyandjust.nameless.utils.RenderUtils
 import gg.essential.elementa.utils.withAlpha
-import kotlinx.coroutines.DelicateCoroutinesApi
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.network.play.client.C02PacketUseEntity
@@ -48,7 +47,6 @@ import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.BlockPos
 import java.awt.Color
 
-@OptIn(DelicateCoroutinesApi::class)
 object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
 
     private val scanTimer = TickTimer.withSecond(1)
@@ -61,7 +59,7 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
             title = "Box Color"
         }
 
-        listParameter(GiftGameType.values().toList()) {
+        listParameter(GiftGameType.entries) {
             matchKeyCategory()
             key = "selectedTypes"
             title = "Game Types"
@@ -87,7 +85,7 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
 
     init {
         on<SpecialTickEvent>().filter { scanTimer.update().check() }.subscribe {
-            currentGiftGameType = if (enabled) GiftGameType.values().find { it.shouldRender() } else null
+            currentGiftGameType = if (enabled) GiftGameType.entries.find { it.shouldRender() } else null
 
             giftArmorStands.clear()
             giftTileEntities.clear()
@@ -99,6 +97,7 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
 
                     giftTileEntities.map { it.pos }
                 }
+
                 GiftGameType.JERRY_WORKSHOP -> {
                     giftArmorStands.addAll(mc.theWorld.loadedEntityList.filterIsInstance<EntityArmorStand>().filter {
                         check(it.getEquipmentInSlot(4)?.getSkullOwner())
@@ -106,6 +105,7 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
 
                     giftArmorStands.map { BlockPos(it).up(2) }
                 }
+
                 else -> return@subscribe
             }
         }
@@ -179,6 +179,7 @@ object GiftESP : SimpleFeature("giftEsp", "Gift ESP") {
         GiftGameType.JERRY_WORKSHOP -> Hypixel.currentGame == GameType.SKYBLOCK && Hypixel.getProperty<String>(
             PropertyKey.ISLAND
         ) == "winter"
+
         GiftGameType.LOBBY -> Hypixel.inLobby
         GiftGameType.GRINCH_SIMULATOR -> Hypixel.currentGame == GameType.GRINCH_SIMULATOR
         GiftGameType.MURDER_MYSTERY -> Hypixel.currentGame == GameType.MURDER_MYSTERY

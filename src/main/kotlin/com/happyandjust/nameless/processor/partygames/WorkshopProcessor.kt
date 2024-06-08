@@ -74,9 +74,10 @@ object WorkshopProcessor : Processor() {
                 if (arrayOf(
                         mc.theWorld.getBlockAtPos(up()),
                         mc.theWorld.getBlockAtPos(down())
-                    ).all { it is BlockSlab || it is BlockStairs || it is BlockDoubleWoodSlab }
+                    ).all { it is BlockSlab || it is BlockStairs }
                 ) WorkshopBlockType.BREAKABLE else null
             }
+
             else -> null
         }
     }
@@ -272,11 +273,11 @@ object WorkshopProcessor : Processor() {
         fun Any.getItem(): Item? = when (this) {
             is Item -> this
             is ItemStack -> item
-            is List<*> -> mapNotNull { it?.getItem() }.firstOrNull()
+            is List<*> -> firstNotNullOfOrNull { it?.getItem() }
             else -> null
         }
 
-        val values = Pos.values()
+        val values = Pos.entries
 
         for (y in 0 until height) {
             for (x in 0 until width) {
@@ -296,7 +297,7 @@ object WorkshopProcessor : Processor() {
 
         val queue = LinkedList<BlockPos>()
         val visited = hashMapOf<BlockPos, Boolean>()
-        val facings = EnumFacing.values()
+        val facings = EnumFacing.entries
 
         val list = arrayListOf<BlockPos>()
 
@@ -309,11 +310,13 @@ object WorkshopProcessor : Processor() {
 
             queue.addAll(
                 facings
+                    .asSequence()
                     .map { pos.offset(it) }
                     .filterNot { visited[it] ?: false }
                     .filter { it.y in 39..48 }
                     .filterNot { it.isAir() && it.up().isAir() }
                     .onEach { visited[it] = true }
+                    .toList()
             )
         }
 

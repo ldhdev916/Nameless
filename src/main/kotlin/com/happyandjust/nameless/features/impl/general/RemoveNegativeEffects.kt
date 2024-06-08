@@ -45,7 +45,7 @@ object RemoveNegativeEffects : SimpleFeature(
         get() = enabled
 
     init {
-        listParameter(PotionType.values().toList()) {
+        listParameter(PotionType.entries) {
             matchKeyCategory()
             key = "enabledPotionTypes"
             title = "Potion Types"

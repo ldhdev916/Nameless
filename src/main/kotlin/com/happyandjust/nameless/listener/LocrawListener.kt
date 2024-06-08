@@ -26,7 +26,6 @@ import com.happyandjust.nameless.dsl.pureText
 import com.happyandjust.nameless.events.SpecialTickEvent
 import com.happyandjust.nameless.hypixel.Hypixel
 import gg.essential.api.EssentialAPI
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.event.world.WorldEvent
@@ -38,14 +37,18 @@ object LocrawListener {
     private val updateTimer = TickTimer.withSecond(2)
     private var locrawTick = 0
 
+    private val json = Json { ignoreUnknownKeys = true }
+
     init {
         on<SpecialTickEvent>().filter { EssentialAPI.getMinecraftUtil().isHypixel() && ++locrawTick == 20 }.subscribe {
             sentCommand = true
             mc.thePlayer.sendChatMessage("/locraw")
         }
+
         on<SpecialTickEvent>().filter { updateTimer.update().check() }.subscribe {
             Hypixel.updateGame()
         }
+
         on<WorldEvent.Load>().subscribe {
             locrawTick = 0
         }
@@ -58,7 +61,7 @@ object LocrawListener {
                     }
                     val prev = locrawInfo
                     runCatching {
-                        locrawInfo = Json.decodeFromString(pureText)
+                        locrawInfo = json.decodeFromString(pureText)
 
                         updateGame()
                     }.onFailure { locrawInfo = prev }

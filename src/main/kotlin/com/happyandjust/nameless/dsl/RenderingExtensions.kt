@@ -142,7 +142,7 @@ fun Entity.getRenderPosZ(partialTicks: Float) = lastTickPosZ + (posZ - lastTickP
 
 fun Entity.getRenderYaw(partialTicks: Float) = prevRotationYaw + (rotationYaw - prevRotationYaw) * partialTicks
 
-fun WorldRenderer.color(rgb: Int) = color(rgb.red, rgb.green, rgb.blue, rgb.alpha)
+fun WorldRenderer.color(rgb: Int): WorldRenderer = color(rgb.red, rgb.green, rgb.blue, rgb.alpha)
 
 inline fun translate(x: Int, y: Int, z: Int, block: () -> Unit) =
     translate(x.toDouble(), y.toDouble(), z.toDouble(), block)
@@ -214,6 +214,7 @@ fun Rectangle.drawChromaRect(direction: Direction, startHue: Float = 0F, alpha: 
                 wr.pos(currentPosition, top.toDouble(), 0.0).color(color).endVertex()
                 wr.pos(currentPosition, bottom.toDouble(), 0.0).color(color).endVertex()
             }
+
             Direction.UP, Direction.DOWN -> {
                 wr.pos(left.toDouble(), currentPosition, 0.0).color(color).endVertex()
                 wr.pos(right.toDouble(), currentPosition, 0.0).color(color).endVertex()

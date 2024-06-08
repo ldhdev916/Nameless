@@ -28,7 +28,6 @@ import gg.essential.api.commands.DisplayName
 import gg.essential.api.utils.Multithreading
 import gg.essential.api.utils.mojang.Name
 import gg.essential.elementa.dsl.width
-import kotlinx.coroutines.DelicateCoroutinesApi
 import java.util.*
 
 object NameHistoryCommand : Command("name") {
@@ -56,7 +55,6 @@ object NameHistoryCommand : Command("name") {
         "§6${if (isOriginal) "§l" else ""}${it.name} - $time"
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     @DefaultHandler
     fun handle(@DisplayName("Player Name") name: String) {
         Multithreading.runAsync {

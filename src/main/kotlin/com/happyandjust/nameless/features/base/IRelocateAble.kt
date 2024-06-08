@@ -54,8 +54,8 @@ abstract class OverlayFeature(
     key: String,
     title: String,
     desc: String = "",
-    enabled_: Boolean = false
-) : SimpleFeature(key, title, desc, enabled_), IRelocateAble {
+    initialEnabled: Boolean = false
+) : SimpleFeature(key, title, desc, initialEnabled), IRelocateAble {
     override fun getDisplayName() = title
 
     init {

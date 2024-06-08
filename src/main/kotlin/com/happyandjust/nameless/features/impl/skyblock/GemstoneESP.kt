@@ -58,7 +58,7 @@ object GemstoneESP : SimpleFeature(
 
     private val scanTimer = TickTimer.withSecond(2)
     private var gemstoneBlocks = mapOf<AxisAlignedBB, Int>()
-    private val gemstoneBlockMap = Gemstone.values().associateBy { it.metadata }.toMap()
+    private val gemstoneBlockMap = Gemstone.entries.associateBy { it.metadata }.toMap()
 
     init {
 

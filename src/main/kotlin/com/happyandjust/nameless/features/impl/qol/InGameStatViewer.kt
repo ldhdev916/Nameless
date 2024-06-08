@@ -61,7 +61,7 @@ object InGameStatViewer : SimpleFeature(
             matchKeyCategory()
             key = "displayType"
             title = "Display Type"
-            desc = DisplayType.values().joinToString("\n") { "${it.name}: ${it.lore}" }
+            desc = DisplayType.entries.joinToString("\n") { "${it.name}: ${it.lore}" }
 
             config("inGameStatViewer", "overlay", Overlay.DEFAULT)
             component {
@@ -156,7 +156,7 @@ object InGameStatViewer : SimpleFeature(
 
             settings {
                 ordinal = 3
-                allIdentifiers = InformationType.values().map { InGameStatIdentifier(it, listOf(SupportGame.ALL)) }
+                allIdentifiers = InformationType.entries.map { InGameStatIdentifier(it, listOf(SupportGame.ALL)) }
             }
         }
 
@@ -170,7 +170,7 @@ object InGameStatViewer : SimpleFeature(
 
             settings { ordinal = 3 }
 
-            for (informationType in InformationType.values()) {
+            for (informationType in InformationType.entries) {
                 val informationName = informationType.name.lowercase()
                 val statName = informationType.statName
 
@@ -259,7 +259,7 @@ object InGameStatViewer : SimpleFeature(
                 textScale = 1.3.pixels()
             }
 
-            val values = SupportGame.values()
+            val values = SupportGame.entries
 
             val container = UIContainer().constrain {
                 width = ChildBasedSizeConstraint()
@@ -443,12 +443,12 @@ object InGameStatViewer : SimpleFeature(
         },
         BEDWARS_FINAL_KD("BedWars Final K/D") {
             override fun getStatValue(jsonObject: JsonObject): String {
-                val final_kill =
+                val finalKill =
                     runCatching { jsonObject.getGameStat("Bedwars")["final_kills_bedwars"]!!.int }.getOrDefault(0)
-                val final_death =
+                val finalDeath =
                     runCatching { jsonObject.getGameStat("Bedwars")["final_deaths_bedwars"]!!.int }.getOrDefault(0)
 
-                return (final_kill.toDouble() / final_death.coerceAtLeast(1)).transformToPrecisionString(2)
+                return (finalKill.toDouble() / finalDeath.coerceAtLeast(1)).transformToPrecisionString(2)
             }
         },
         BEDWARS_WL("BedWars W/L") {
